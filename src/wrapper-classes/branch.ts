@@ -44,32 +44,32 @@ function traverseGitTreeFromCommitUntilBranch(
     return new Set([branchList[commit]]);
   }
 
+  // Limit the seach
   if (n > MAX_COMMITS_TO_TRAVERSE_FOR_NEXT_OR_PREV) {
     return null;
   }
 
-  if (commit in gitTree) {
-    const ret = new Set<string>();
-    for (const next of gitTree[commit]) {
-      const childRet = traverseGitTreeFromCommitUntilBranch(
-        next,
-        gitTree,
-        branchList,
-        n + 1
-      );
-      if (childRet === null) {
-        return null;
-      } else {
-        childRet.forEach((v) => {
-          ret.add(v);
-        });
-      }
-    }
-
-    return ret;
+  if (!gitTree[commit] || gitTree[commit].length == 0) {
+    return null;
   }
 
-  return null;
+  const commitsMatchingBranches = new Set<string>();
+  for (const neighborCommit of gitTree[commit]) {
+    const discoveredMatches = traverseGitTreeFromCommitUntilBranch(
+      neighborCommit,
+      gitTree,
+      branchList,
+      n + 1
+    );
+    if (discoveredMatches === null) {
+      return null;
+    } else {
+      discoveredMatches.forEach((commit) => {
+        commitsMatchingBranches.add(commit);
+      });
+    }
+  }
+  return commitsMatchingBranches;
 }
 
 export default class Branch {
