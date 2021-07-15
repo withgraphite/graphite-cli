@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import os from "os";
 import path from "path";
 
-const USER_CONFIG_PATH = path.join(os.homedir(), ".sdconfig");
+const USER_CONFIG_PATH = path.join(os.homedir(), ".graphiteconfig");
 
 export function makeId(length: number) {
   let result = "";
@@ -24,6 +24,6 @@ if (fs.existsSync(USER_CONFIG_PATH)) {
   try {
     userConfig = JSON.parse(userConfigRaw.toString().trim());
   } catch (e) {
-    console.log(chalk.yellow("Warning: Malformed ~/.sdconfig"));
+    console.log(chalk.yellow(`Warning: Malformed ${USER_CONFIG_PATH}`));
   }
 }
