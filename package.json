@@ -37,7 +37,7 @@
     "test-one": "yarn ts-mocha"
   },
   "bin": {
-    "sd": "dist/src/index.js"
+    "gp": "dist/src/index.js"
   },
   "devDependencies": {}
 }
