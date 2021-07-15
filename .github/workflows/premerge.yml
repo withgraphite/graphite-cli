@@ -1,0 +1,31 @@
+name: premerge
+
+on:
+  pull_request:
+    types: [
+        # Default pull_request trigger types.
+        opened,
+        synchronize,
+        reopened,
+      ]
+
+jobs:
+  lint_build_test:
+    runs-on: ubuntu-latest
+    steps:
+      # Basic setup
+      - uses: actions/checkout@v2
+        with:
+          clean: "false"
+          fetch-depth: 0
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: 15.14.0
+      - name: Install
+        run: yarn install
+      - name: Lint
+        run: yarn lint
+      - name: Build
+        run: yarn build
+      - name: Test
+        run: yarn test
