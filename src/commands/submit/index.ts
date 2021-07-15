@@ -3,6 +3,8 @@ import { execSync } from "child_process";
 import yargs from "yargs";
 import Branch from "../../wrapper-classes/branch";
 import AbstractCommand from "../abstract_command";
+import PrintStacksCommand from "../print-stacks";
+import ValidateCommand from "../validate";
 
 const args = {
   silent: {
@@ -45,6 +47,13 @@ export default class SubmitCommand extends AbstractCommand<typeof args> {
         )
       );
       process.exit(1);
+    }
+
+    try {
+      await new ValidateCommand().executeUnprofiled({ silent: true });
+    } catch {
+      await new PrintStacksCommand().executeUnprofiled(argv);
+      throw new Error(`Validation failed before submitting.`);
     }
 
     let currentBranch: Branch | undefined = await Branch.getCurrentBranch();
