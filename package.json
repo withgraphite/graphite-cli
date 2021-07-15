@@ -1,6 +1,6 @@
 {
-  "name": "pancake-cli",
-  "version": "0.36.0",
+  "name": "graphite-cli",
+  "version": "0.1.0",
   "license": "None",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,6 +37,7 @@
     "test-one": "yarn ts-mocha"
   },
   "bin": {
-    "sd": "dist/src/index.js"
-  }
+    "gp": "dist/src/index.js"
+  },
+  "devDependencies": {}
 }
