@@ -9,24 +9,62 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export default class PrintStacksCommand extends AbstractCommand<typeof args> {
   static args = args;
   public async _execute(argv: argsT) {
-    const dag: { [name: string]: string[] } = {};
-
-    const allBranches = await Branch.getAllBranches();
-    for (const branch of allBranches) {
+    const gitDag: { [name: string]: string[] } = {};
+    (await Branch.getAllBranches()).forEach((branch) => {
       const children = branch.getChildrenFromGit();
-      dag[branch.name] = children ? children.map((c) => c.name) : [];
+      gitDag[branch.name] = children ? children.map((c) => c.name) : [];
+    });
+
+    const metaDag: { [name: string]: string[] } = {};
+    for (const branch of await Branch.getAllBranches()) {
+      const children = await branch.getChildrenFromMeta();
+      metaDag[branch.name] = children.map((c) => c.name);
     }
 
     const currentBranch = await Branch.getCurrentBranch();
     if (currentBranch) {
-      console.log(chalk.green(`Current branch: ${currentBranch.name}`));
+      console.log(`Current branch: ${chalk.green(`(${currentBranch.name})`)}`);
     }
-    dfsPrintBranches({
-      currentBranchName: currentBranch.name,
-      branchName: currentBranch.getTrunkBranchFromGit().name,
-      dag,
-      depthIndents: [],
-    });
+
+    const dagsAreEqual =
+      Object.keys(gitDag).length == Object.keys(metaDag).length &&
+      Object.keys(gitDag).every(
+        (key) => metaDag[key].sort().join() == gitDag[key].sort().join()
+      );
+    if (dagsAreEqual) {
+      dfsPrintBranches({
+        currentBranchName: currentBranch.name,
+        branchName: currentBranch.getTrunkBranchFromGit().name,
+        dag: gitDag,
+        depthIndents: [],
+      });
+    } else {
+      console.log(
+        [
+          chalk.yellow(`Git derived stack differs from meta derived stack.`),
+          `Run "${chalk.green(
+            "restack"
+          )}" to update the git stack to match the meta stack.`,
+          `Alternatively, run "${chalk.green(
+            "regen"
+          )}" to update the meta-stack to match the git-stack.\n`,
+        ].join("\n")
+      );
+      console.log(`Git derived stack:`);
+      dfsPrintBranches({
+        currentBranchName: currentBranch.name,
+        branchName: currentBranch.getTrunkBranchFromGit().name,
+        dag: gitDag,
+        depthIndents: [],
+      });
+      console.log(`Meta derived stack:`);
+      dfsPrintBranches({
+        currentBranchName: currentBranch.name,
+        branchName: currentBranch.getTrunkBranchFromGit().name,
+        dag: metaDag,
+        depthIndents: [],
+      });
+    }
   }
 }
 
