@@ -18,11 +18,18 @@ const args = {
     type: "boolean",
     default: false,
   },
+  fill: {
+    describe: "Do not prompt for title/body and just use commit info",
+    demandOption: false,
+    type: "boolean",
+    default: false,
+    alias: "f",
+  },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export default class SubmitCommand extends AbstractCommand<typeof args> {
   static args = args;
-  public async _execute(argv: argsT) {
+  public async _execute(argv: argsT): Promise<void> {
     try {
       execSync(`gh --version`);
     } catch {
@@ -62,11 +69,12 @@ export default class SubmitCommand extends AbstractCommand<typeof args> {
     stackOfBranches.forEach((branch, i) => {
       const parentBranch: undefined | Branch =
         i > 0 ? stackOfBranches[i - 1] : undefined;
-      execSync(`git checkout ${branch.name}`);
       execSync(
         [
           `gh pr create`,
+          `--head ${branch.name}`,
           ...(parentBranch ? [`--base ${parentBranch.name}`] : []),
+          ...(argv.quick ? [`-f`] : []),
         ].join(" "),
         { stdio: "inherit" }
       );
