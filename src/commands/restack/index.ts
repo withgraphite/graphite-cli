@@ -38,7 +38,7 @@ function checkBranchCanBeMoved(branch: Branch, opts: argsT) {
 }
 export default class RestackCommand extends AbstractCommand<typeof args> {
   static args = args;
-  public async _execute(argv: argsT) {
+  public async _execute(argv: argsT): Promise<void> {
     await validateBeforeRestack(argv);
 
     log(`Before restack:`, argv);
@@ -93,13 +93,7 @@ async function validateBeforeRestack(opts: argsT) {
   try {
     await new ValidateCommand().executeUnprofiled({ silent: true });
   } catch (err) {
-    log(
-      chalk.yellow(
-        `Cannot restack, the current graph of git branches does not match sd's meta dag. Please rebase your git branches or call "sd fix" to regenerate sd's meta dag.`
-      ),
-      opts
-    );
-    process.exit(1);
+    throw new Error(`Cannot restack, the current graph of git branches does not match sd's meta dag. Please rebase your git branches or call "sd fix" to regenerate sd's meta dag.`)
   }
 }
 
@@ -110,7 +104,7 @@ export async function restackBranch(
   // Because rebasing duplicates commits, so there wont be a shared commit anymore.
   oldBranchHead: string,
   opts: argsT
-) {
+): Promise<void> {
   const childBranches = await currentBranch.getChildrenFromMeta();
   if (!childBranches) {
     log(chalk.yellow(`Cannot restack, found no child branches`), opts);
