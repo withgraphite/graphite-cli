@@ -4,6 +4,7 @@
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[javascript, typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -17,8 +18,7 @@
     "**/.git": true,
     "**/node_modules/**": true
   },
-  "files.watcherExclude": {
-  },
+  "files.watcherExclude": {},
   "search.exclude": {
     "**/.yarn": true,
     "**/.pnp.*": true
