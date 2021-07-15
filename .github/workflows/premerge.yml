@@ -27,5 +27,7 @@ jobs:
         run: yarn lint
       - name: Build
         run: yarn build
+      - name: Setup git
+        run: git config --global user.email "test@gmail.com" && git config --global user.name "test"
       - name: Test
         run: yarn test
