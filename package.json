@@ -38,6 +38,5 @@
   },
   "bin": {
     "sd": "dist/src/index.js"
-  },
-  "devDependencies": {}
+  }
 }
