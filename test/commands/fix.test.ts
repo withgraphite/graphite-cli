@@ -5,7 +5,7 @@ import Branch from "../../src/wrapper-classes/branch";
 import GitRepo from "../utils/git_repo";
 import { execCliCommand } from "../utils/misc";
 
-describe("Regen tests", function () {
+describe("Fix tests", function () {
   let tmpDir: tmp.DirResult;
   let repo: GitRepo;
   const oldDir = __dirname;
@@ -22,7 +22,7 @@ describe("Regen tests", function () {
   });
   this.timeout(5000);
 
-  it("Can regen a stack", () => {
+  it("Can fix a stack", () => {
     repo.createChange("2");
     execCliCommand(`diff -b "a" -s`, { fromDir: tmpDir.name });
 
@@ -36,7 +36,7 @@ describe("Regen tests", function () {
       branch.stackByTracingGitParents().join(",")
     );
 
-    execCliCommand("regen -s", { fromDir: tmpDir.name });
+    execCliCommand("fix -s", { fromDir: tmpDir.name });
 
     expect(branch.stackByTracingMetaParents().join(",")).to.equal(
       branch.stackByTracingGitParents().join(",")

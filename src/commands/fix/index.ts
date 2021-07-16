@@ -14,7 +14,7 @@ const args = {
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
-export default class RegenCommand extends AbstractCommand<typeof args> {
+export default class FixCommand extends AbstractCommand<typeof args> {
   static args = args;
   public async _execute(argv: argsT) {
     const branch = await Branch.getCurrentBranch();
@@ -31,7 +31,7 @@ export default class RegenCommand extends AbstractCommand<typeof args> {
     );
 
     // Walk the current branch down to the base and create stacks.
-    await recursiveRegen(branch, argv);
+    await recursiveFix(branch, argv);
 
     printBranchNameStack(
       `(New meta stack)`,
@@ -48,7 +48,7 @@ function printBranchNameStack(message: string, names: string[], opts: argsT) {
   );
 }
 
-async function recursiveRegen(branch: Branch, opts: argsT) {
+async function recursiveFix(branch: Branch, opts: argsT) {
   const gitParents = branch.getParentsFromGit();
 
   if (!gitParents) {
@@ -77,7 +77,7 @@ async function recursiveRegen(branch: Branch, opts: argsT) {
       `-> (${branch.name}) has matching meta and git parent branch (${metaParent.name}), no update`,
       opts
     );
-    await recursiveRegen(metaParent, opts);
+    await recursiveFix(metaParent, opts);
   } else if (gitParents.length === 1) {
     if (metaParent) {
       log(
@@ -97,7 +97,7 @@ async function recursiveRegen(branch: Branch, opts: argsT) {
       );
     }
     branch.setParentBranchName(gitParents[0].name);
-    await recursiveRegen(gitParents[0], opts);
+    await recursiveFix(gitParents[0], opts);
   } else if (metaParent && gitParents.length > 1) {
     log(
       `-> (${branch.name}) has meta parent branch (${
@@ -121,7 +121,7 @@ async function recursiveRegen(branch: Branch, opts: argsT) {
   } else {
     log(
       chalk.yellow(
-        `Error: No regen patern detected for git: ${gitParents}, meta: ${metaParent}, exiting`
+        `Error: No fix patern detected for git: ${gitParents}, meta: ${metaParent}, exiting`
       ),
       opts
     );
