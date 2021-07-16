@@ -4,10 +4,10 @@ import yargs from "yargs";
 import AmendCommand from "./commands/amend";
 import DemoCommand from "./commands/demo";
 import DiffCommand from "./commands/diff";
+import FixCommand from "./commands/fix";
 import LogCommand from "./commands/log";
 import { NextCommand, PrevCommand } from "./commands/next-or-prev";
 import PrintStacksCommand from "./commands/print-stacks";
-import RegenCommand from "./commands/regen";
 import RestackCommand from "./commands/restack";
 import SubmitCommand from "./commands/submit";
 import ValidateCommand from "./commands/validate";
@@ -79,11 +79,11 @@ yargs
     }
   )
   .command(
-    "regen",
+    "fix",
     "Trace the current branch through its parents, down to the base branch. Establish dependencies between each branch for later traversal and restacking.",
-    RegenCommand.args,
+    FixCommand.args,
     async (argv) => {
-      await new RegenCommand().execute(argv);
+      await new FixCommand().execute(argv);
     }
   )
   .command(
