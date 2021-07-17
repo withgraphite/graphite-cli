@@ -54,14 +54,9 @@ yargs
       await new AmendCommand().execute(argv);
     }
   )
-  .command(
-    "submit",
-    "Creates a PR for all branches between you and main, setting up dependencies such that each one takes the previous branch as the merge-base.",
-    SubmitCommand.args,
-    async (argv) => {
-      await new SubmitCommand().execute(argv);
-    }
-  )
+  .command("submit", false, SubmitCommand.args, async (argv) => {
+    await new SubmitCommand().execute(argv);
+  })
   .command(
     "stacks",
     "Prints all current stacks.",
