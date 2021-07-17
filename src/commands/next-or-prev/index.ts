@@ -23,7 +23,7 @@ export class PrevCommand extends AbstractCommand<typeof args> {
 }
 
 async function nextOrPrev(nextOrPrev: "next" | "prev") {
-  const currentBranch = await Branch.getCurrentBranch();
+  const currentBranch = Branch.getCurrentBranch();
 
   const candidates =
     nextOrPrev === "next"

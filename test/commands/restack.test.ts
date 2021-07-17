@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import fs from "fs-extra";
 import tmp from "tmp";
 import GitRepo from "../utils/git_repo";
 import { execCliCommand } from "../utils/misc";
@@ -13,8 +12,8 @@ describe("Restack", function () {
     repo.createChangeAndCommit("1");
   });
   afterEach(() => {
-    fs.emptyDirSync(tmpDir.name);
-    tmpDir.removeCallback();
+    // fs.emptyDirSync(tmpDir.name);
+    // tmpDir.removeCallback();
   });
   this.timeout(5000);
 
@@ -69,5 +68,20 @@ describe("Restack", function () {
     );
     expect(() => execCliCommand("validate -s", { fromDir: tmpDir.name })).not.to
       .throw;
+  });
+
+  it("Can restack a leaf stack onto main", () => {
+    repo.createChange("2");
+    execCliCommand("diff -b 'a' -m '2' -s", { fromDir: tmpDir.name });
+
+    repo.createChange("3");
+    execCliCommand("diff -b 'b' -m '3' -s", { fromDir: tmpDir.name });
+
+    execCliCommand("restack -s --onto main", { fromDir: tmpDir.name });
+    expect(repo.listCurrentBranchCommitMessages().join(", ")).to.equal("3, 1");
+    expect(() => execCliCommand("validate -s", { fromDir: tmpDir.name })).not.to
+      .throw;
+
+    console.log(tmpDir.name);
   });
 });

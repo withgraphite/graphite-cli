@@ -17,9 +17,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export default class ValidateCommand extends AbstractCommand<typeof args> {
   static args = args;
   public async _execute(argv: argsT) {
-    const baseBranch = (
-      await Branch.getCurrentBranch()
-    ).getTrunkBranchFromGit();
+    const baseBranch = Branch.getCurrentBranch().getTrunkBranchFromGit();
     await validateBranch(baseBranch, argv);
     log(`Current stack is valid`, argv);
   }

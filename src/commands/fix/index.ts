@@ -17,7 +17,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export default class FixCommand extends AbstractCommand<typeof args> {
   static args = args;
   public async _execute(argv: argsT) {
-    const branch = await Branch.getCurrentBranch();
+    const branch = Branch.getCurrentBranch();
 
     printBranchNameStack(
       `(Original  git derived stack)`,

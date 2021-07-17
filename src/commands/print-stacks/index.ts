@@ -40,7 +40,7 @@ export default class PrintStacksCommand extends AbstractCommand<typeof args> {
     const gitInfo = computeDag("GIT");
     const metaInfo = computeDag("META");
 
-    const currentBranch = await Branch.getCurrentBranch();
+    const currentBranch = Branch.getCurrentBranch();
     if (currentBranch) {
       console.log(`Current branch: ${chalk.green(`(${currentBranch.name})`)}`);
     }

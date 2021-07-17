@@ -2,9 +2,11 @@ import chalk from "chalk";
 import { execSync } from "child_process";
 import yargs from "yargs";
 import { log } from "../../lib/log";
+import { CURRENT_REPO_CONFIG_PATH, trunkBranches } from "../../lib/utils";
 import Branch from "../../wrapper-classes/branch";
 import AbstractCommand from "../abstract_command";
 import PrintStacksCommand from "../print-stacks";
+import ValidateCommand from "../validate";
 
 const args = {
   silent: {
@@ -23,68 +25,80 @@ const args = {
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
-function checkBranchCanBeMoved(branch: Branch, opts: argsT) {
-  const gitParents = branch.getParentsFromGit();
-  if (!gitParents || gitParents.length === 0) {
+function getParentForRebaseOnto(branch: Branch, argv: argsT): Branch {
+  const parent = branch.getParentFromMeta();
+  if (!parent) {
     log(
       chalk.red(
-        `Cannot restack (${branch.name}) onto ${opts.onto}, (${branch.name}) appears to be a trunk branch.`
+        `Cannot "restack --onto", (${branch.name}) has no parent as defined by the meta.`
+      ),
+      argv
+    );
+    process.exit(1);
+  }
+  return parent;
+}
+
+export default class RestackCommand extends AbstractCommand<typeof args> {
+  static args = args;
+  public async _execute(argv: argsT): Promise<void> {
+    // Print state before
+    log(`Before restack:`, argv);
+    !argv.silent && (await new PrintStacksCommand().executeUnprofiled(args));
+
+    const originalBranch = Branch.getCurrentBranch();
+    if (argv.onto) {
+      await restackOnto(originalBranch, argv.onto, argv);
+    } else {
+      await restackBranch(originalBranch, originalBranch.name, argv);
+    }
+    execSync(`git checkout -q ${originalBranch.name}`);
+
+    // Print state after
+    log(`After restack:`, argv);
+    !argv.silent && (await new PrintStacksCommand().executeUnprofiled(args));
+  }
+}
+
+function checkBranchCanBeMoved(branch: Branch, opts: argsT) {
+  if (trunkBranches && branch.name in trunkBranches) {
+    log(
+      chalk.red(
+        `Cannot restack (${branch.name}) onto ${opts.onto}, (${branch.name}) is listed in (${CURRENT_REPO_CONFIG_PATH}) as a trunk branch.`
       ),
       opts
     );
     process.exit(1);
   }
 }
-export default class RestackCommand extends AbstractCommand<typeof args> {
-  static args = args;
-  public async _execute(argv: argsT): Promise<void> {
 
-    log(`Before restack:`, argv);
-    !argv.silent && (await new PrintStacksCommand().executeUnprofiled(args));
-
-    const curBranch = await Branch.getCurrentBranch();
-    if (argv.onto) {
-      // Check that the current branch has a parent to prevent moving main
-      checkBranchCanBeMoved(curBranch, argv);
-
-      // Check that onto is a real branch
-      const ontoBranch = await Branch.branchWithName(argv.onto);
-
-      // set current branch's parent
-      curBranch.setParentBranchName(ontoBranch.name);
-      const gitParents = curBranch.getParentsFromGit();
-      if (!gitParents || gitParents.length !== 1) {
-        log(
-          chalk.red(
-            `Cannot restack onto, (${curBranch.name}) does not have a single git parent branch`
-          ),
-          argv
-        );
-        process.exit(1);
-      }
-      const gitParent = gitParents[0];
-      execSync(
-        `git rebase --onto ${ontoBranch.name} $(git merge-base ${curBranch.name} ${gitParent.name}) -Xtheirs`,
-        { stdio: "ignore" }
-      );
-
-      // Now perform a restack starting from the onto branch:
-      execSync(
-        `git checkout ${ontoBranch.name}`,
-        argv.silent ? { stdio: "ignore" } : {}
-      );
-      await restackBranch(ontoBranch, ontoBranch.name, argv);
-      execSync(
-        `git checkout ${curBranch.name}`,
-        argv.silent ? { stdio: "ignore" } : {}
-      );
-    } else {
-      await restackBranch(curBranch, curBranch.name, argv);
-    }
-
-    log(`After restack:`, argv);
-    !argv.silent && (await new PrintStacksCommand().executeUnprofiled(args));
+async function validate(argv: argsT) {
+  try {
+    await new ValidateCommand().executeUnprofiled({ silent: true });
+  } catch {
+    log(
+      chalk.red(
+        `Cannot "restack --onto", git derrived stack must match meta defined stack. Consider running "restack" or "fix" first.`
+      ),
+      argv
+    );
+    process.exit(1);
   }
+}
+
+async function restackOnto(currentBranch: Branch, onto: string, argv: argsT) {
+  // Check that the current branch has a parent to prevent moving main
+  checkBranchCanBeMoved(currentBranch, argv);
+  await validate(argv);
+  const parent = getParentForRebaseOnto(currentBranch, argv);
+  execSync(
+    `git rebase --onto ${onto} $(git merge-base ${currentBranch.name} ${parent.name}) ${currentBranch.name} -Xtheirs`,
+    { stdio: "ignore" }
+  );
+  // set current branch's parent only if the rebase succeeds.
+  currentBranch.setParentBranchName(onto);
+  // Now perform a restack starting from the onto branch:
+  await restackBranch(new Branch(onto), onto, argv);
 }
 
 export async function restackBranch(
@@ -101,15 +115,16 @@ export async function restackBranch(
     process.exit(1);
   }
   for (const childBranch of childBranches) {
-    execSync(`git checkout ${childBranch.name}`, { stdio: "ignore" });
     const shaBeforeRebase = execSync(`git rev-parse ${childBranch.name}`)
       .toString()
       .trim();
+    console.log(
+      `git rebase --onto ${currentBranch.name} $(git merge-base ${childBranch.name} ${oldBranchHead}) ${childBranch.name} -Xtheirs`
+    );
     execSync(
-      `git rebase --onto ${currentBranch.name} $(git merge-base ${childBranch.name} ${oldBranchHead}) -Xtheirs`,
+      `git rebase --onto ${currentBranch.name} $(git merge-base ${childBranch.name} ${oldBranchHead}) ${childBranch.name} -Xtheirs`,
       { stdio: "ignore" }
     );
     await restackBranch(childBranch, shaBeforeRebase, opts);
   }
-  execSync(`git checkout ${currentBranch.name}`, { stdio: "ignore" });
 }

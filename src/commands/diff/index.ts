@@ -28,7 +28,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export default class DiffCommand extends AbstractCommand<typeof args> {
   static args = args;
   public async _execute(argv: argsT) {
-    const parentBranch = await Branch.getCurrentBranch();
+    const parentBranch = Branch.getCurrentBranch();
     execSync(
       `git checkout -b "${
         argv["branch-name"] || `${userConfig.branchPrefix || ""}${makeId(6)}`
@@ -37,7 +37,7 @@ export default class DiffCommand extends AbstractCommand<typeof args> {
     );
     execSync("git add --all");
     execSync(`git commit -m "${argv.message || "Updates"}"`);
-    const currentBranch = await Branch.getCurrentBranch();
+    const currentBranch = Branch.getCurrentBranch();
     currentBranch.setParentBranchName(parentBranch.name);
   }
 }

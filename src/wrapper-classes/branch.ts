@@ -181,7 +181,7 @@ export default class Branch {
     return new Branch(name);
   }
 
-  static async getCurrentBranch(): Promise<Branch> {
+  static getCurrentBranch(): Branch {
     return new Branch(
       execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim()
     );
