@@ -6,20 +6,39 @@ import AbstractCommand from "../abstract_command";
 
 const args = {} as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
+
+function computeDag(truth: "GIT" | "META"): {
+  dag: { [name: string]: string[] };
+  sourceBranches: string[];
+} {
+  const dag: { [name: string]: string[] } = {};
+  const sourceBranches: string[] = [];
+  Branch.allBranches().forEach((branch) => {
+    const parents =
+      truth == "GIT"
+        ? branch.getParentsFromGit() || []
+        : ([branch.getParentFromMeta()].filter(
+            (b) => b != undefined
+          ) as Branch[]);
+    if (parents.length > 0) {
+      parents.forEach((parent) => {
+        if (dag[parent.name]) {
+          dag[parent.name].push(branch.name);
+        } else {
+          dag[parent.name] = [branch.name];
+        }
+      });
+    } else {
+      sourceBranches.push(branch.name);
+    }
+  });
+  return { dag, sourceBranches };
+}
 export default class PrintStacksCommand extends AbstractCommand<typeof args> {
   static args = args;
   public async _execute(argv: argsT) {
-    const gitDag: { [name: string]: string[] } = {};
-    (await Branch.getAllBranches()).forEach((branch) => {
-      const children = branch.getChildrenFromGit();
-      gitDag[branch.name] = children ? children.map((c) => c.name) : [];
-    });
-
-    const metaDag: { [name: string]: string[] } = {};
-    for (const branch of await Branch.getAllBranches()) {
-      const children = await branch.getChildrenFromMeta();
-      metaDag[branch.name] = children.map((c) => c.name);
-    }
+    const gitInfo = computeDag("GIT");
+    const metaInfo = computeDag("META");
 
     const currentBranch = await Branch.getCurrentBranch();
     if (currentBranch) {
@@ -27,16 +46,19 @@ export default class PrintStacksCommand extends AbstractCommand<typeof args> {
     }
 
     const dagsAreEqual =
-      Object.keys(gitDag).length == Object.keys(metaDag).length &&
-      Object.keys(gitDag).every(
-        (key) => metaDag[key].sort().join() == gitDag[key].sort().join()
+      Object.keys(gitInfo.dag).length == Object.keys(metaInfo.dag).length &&
+      Object.keys(gitInfo.dag).every(
+        (key) =>
+          metaInfo.dag[key].sort().join() == gitInfo.dag[key].sort().join()
       );
     if (dagsAreEqual) {
-      dfsPrintBranches({
-        currentBranchName: currentBranch.name,
-        branchName: currentBranch.getTrunkBranchFromGit().name,
-        dag: gitDag,
-        depthIndents: [],
+      gitInfo.sourceBranches.forEach((sourceBranch) => {
+        dfsPrintBranches({
+          currentBranchName: currentBranch.name,
+          branchName: sourceBranch,
+          dag: gitInfo.dag,
+          depthIndents: [],
+        });
       });
     } else {
       console.log(
@@ -50,19 +72,24 @@ export default class PrintStacksCommand extends AbstractCommand<typeof args> {
           )}" to update the meta-stack to match the git-stack.\n`,
         ].join("\n")
       );
-      console.log(`Git derived stack:`);
-      dfsPrintBranches({
-        currentBranchName: currentBranch.name,
-        branchName: currentBranch.getTrunkBranchFromGit().name,
-        dag: gitDag,
-        depthIndents: [],
+      console.log(`Git derived stacks:`);
+      gitInfo.sourceBranches.forEach((sourceBranch) => {
+        dfsPrintBranches({
+          currentBranchName: currentBranch.name,
+          branchName: sourceBranch,
+          dag: gitInfo.dag,
+          depthIndents: [],
+        });
       });
-      console.log(`Meta derived stack:`);
-      dfsPrintBranches({
-        currentBranchName: currentBranch.name,
-        branchName: currentBranch.getTrunkBranchFromGit().name,
-        dag: metaDag,
-        depthIndents: [],
+      console.log("");
+      console.log(`Meta derived stacks:`);
+      metaInfo.sourceBranches.forEach((sourceBranch) => {
+        dfsPrintBranches({
+          currentBranchName: currentBranch.name,
+          branchName: sourceBranch,
+          dag: metaInfo.dag,
+          depthIndents: [],
+        });
       });
     }
   }

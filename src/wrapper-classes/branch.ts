@@ -1,7 +1,5 @@
 import { execSync } from "child_process";
-import simpleGit, { SimpleGit } from "simple-git";
 import Commit from "./commit";
-const git: SimpleGit = simpleGit();
 
 type TBranchDesc = {
   parentBranchName: string;
@@ -142,12 +140,16 @@ export default class Branch {
     return undefined;
   }
 
+  static allBranches(): Branch[] {
+    return execSync(`git for-each-ref --format='%(refname:short)' refs/heads/`)
+      .toString()
+      .trim()
+      .split("\n")
+      .map((name) => new Branch(name));
+  }
+
   async getChildrenFromMeta(): Promise<Branch[]> {
-    const branchesSummary = await git.branch();
-    const branches = Object.values(branchesSummary.branches).map(
-      (b) => new Branch(b.name)
-    );
-    const children = branches.filter(
+    const children = Branch.allBranches().filter(
       (b) => b.getMeta()?.parentBranchName === this.name
     );
     return children;
@@ -172,10 +174,7 @@ export default class Branch {
   }
 
   static async branchWithName(name: string): Promise<Branch> {
-    const branchesSummary = await git.branch();
-    const branch = Object.values(branchesSummary.branches).find(
-      (b) => b.name === name
-    );
+    const branch = Branch.allBranches().find((b) => b.name === name);
     if (!branch) {
       throw new Error(`Failed to find branch named ${name}`);
     }
@@ -183,36 +182,20 @@ export default class Branch {
   }
 
   static async getCurrentBranch(): Promise<Branch> {
-    const branchesSummary = await git.branch();
-    const currentBranchSummary =
-      branchesSummary.branches[branchesSummary.current];
-    return new Branch(currentBranchSummary.name);
+    return new Branch(
+      execSync(`git rev-parse --abbrev-ref HEAD`).toString().trim()
+    );
   }
 
   static async getAllBranchesWithoutParents(): Promise<Branch[]> {
-    const branchesSummary = await git.branch();
-    const branches = Object.values(branchesSummary.branches).map(
-      (b) => new Branch(b.name)
-    );
-    return branches.filter((b) => {
+    return Branch.allBranches().filter((b) => {
       const parents = b.getParentsFromGit();
       return parents == undefined || parents.length > 0;
     });
   }
 
-  static async getAllBranches(): Promise<Branch[]> {
-    const branchesSummary = await git.branch();
-    return Object.values(branchesSummary.branches)
-      .filter((b) => !b.name.includes("remotes/origin/"))
-      .map((b) => new Branch(b.name));
-  }
-
   static async getAllBranchesWithParents(): Promise<Branch[]> {
-    const branchesSummary = await git.branch();
-    const branches = Object.values(branchesSummary.branches).map(
-      (b) => new Branch(b.name)
-    );
-    return branches.filter((b) => {
+    return Branch.allBranches().filter((b) => {
       const parents = b.getParentsFromGit();
       return parents != undefined && parents.length > 0;
     });
