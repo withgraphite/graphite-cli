@@ -1,10 +1,42 @@
 // Why does an open source CLI include telemetry?
 // We the creators want to understand how people are using the tool
 // All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
+import chalk from "chalk";
 import { execSync } from "child_process";
 import fetch from "node-fetch";
+import { version } from "../../../package.json";
 
-function shouldReportTelemetry(): boolean {
+export async function checkForUpgrade(): Promise<void> {
+  if (!shouldReportTelemetry()) {
+    return;
+  }
+  try {
+    const user = userEmail();
+    const response = await fetch(
+      `https://api.graphite.dev/v1/graphite/upgrade?${[
+        ...(user ? [`user=${user}`] : []),
+        `currentVersion=${version}`,
+      ].join("&")}`,
+      { method: "GET" }
+    );
+    if (response.status == 200) {
+      const prompt = JSON.parse(response.body.toString()).prompt as
+        | { message: string; blocking: boolean }
+        | undefined;
+      if (prompt) {
+        if (!prompt.blocking) {
+          console.log(chalk.yellow(prompt.message));
+        } else {
+          console.log(chalk.red(prompt.message));
+          process.exit(1);
+        }
+      }
+    }
+  } catch (err) {
+    return;
+  }
+}
+export function shouldReportTelemetry(): boolean {
   return process.env.NODE_ENV != "development";
 }
 

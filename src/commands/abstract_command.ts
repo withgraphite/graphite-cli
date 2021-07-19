@@ -1,36 +1,6 @@
-import chalk from "chalk";
-import fetch from "node-fetch";
 import yargs from "yargs";
-import { version } from "../../package.json";
-import { profile, userEmail } from "../lib/telemetry";
+import { checkForUpgrade, profile } from "../lib/telemetry";
 
-async function checkForUpgrade(): Promise<void> {
-  try {
-    const user = userEmail();
-    const response = await fetch(
-      `https://api.graphite.dev/v1/graphite/upgrade?${[
-        ...(user ? [`user=${user}`] : []),
-        `currentVersion=${version}`,
-      ].join("&")}`,
-      { method: "GET" }
-    );
-    if (response.status == 200) {
-      const prompt = JSON.parse(response.body.toString()).prompt as
-        | { message: string; blocking: boolean }
-        | undefined;
-      if (prompt) {
-        if (!prompt.blocking) {
-          console.log(chalk.yellow(prompt.message));
-        } else {
-          console.log(chalk.red(prompt.message));
-          process.exit(1);
-        }
-      }
-    }
-  } catch (err) {
-    console.log(`Failed to check for upgrade, ${err}`);
-  }
-}
 export default abstract class AbstractCommand<
   T extends { [key: string]: yargs.Options }
 > {
