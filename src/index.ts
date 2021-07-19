@@ -11,15 +11,9 @@ import PrintStacksCommand from "./commands/print-stacks";
 import RestackCommand from "./commands/restack";
 import SubmitCommand from "./commands/submit";
 import ValidateCommand from "./commands/validate";
-import { logError } from "./lib/telemetry";
 
 // https://www.npmjs.com/package/tmp#graceful-cleanup
 tmp.setGracefulCleanup();
-
-process.on("uncaughtException", async (err) => {
-  await logError(err);
-  process.exit(1);
-});
 
 yargs
   .command(

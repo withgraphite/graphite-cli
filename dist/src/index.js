@@ -25,13 +25,8 @@ const print_stacks_1 = __importDefault(require("./commands/print-stacks"));
 const restack_1 = __importDefault(require("./commands/restack"));
 const submit_1 = __importDefault(require("./commands/submit"));
 const validate_1 = __importDefault(require("./commands/validate"));
-const telemetry_1 = require("./lib/telemetry");
 // https://www.npmjs.com/package/tmp#graceful-cleanup
 tmp_1.default.setGracefulCleanup();
-process.on("uncaughtException", (err) => __awaiter(void 0, void 0, void 0, function* () {
-    yield telemetry_1.logError(err);
-    process.exit(1);
-}));
 yargs_1.default
     .command("next", "If you're in a stack: Branch A → Branch B (you are here) → Branch C. Takes you to the next branch (Branch C). If there are two descendent branches, errors out and tells you the various branches you could go to.", next_or_prev_1.NextCommand.args, (argv) => __awaiter(void 0, void 0, void 0, function* () {
     yield new next_or_prev_1.NextCommand().execute(argv);
