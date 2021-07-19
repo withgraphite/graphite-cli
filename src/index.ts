@@ -4,6 +4,7 @@ import yargs from "yargs";
 import AmendCommand from "./commands/amend";
 import DemoCommand from "./commands/demo";
 import DiffCommand from "./commands/diff";
+import FeedbackCommand from "./commands/feedback";
 import FixCommand from "./commands/fix";
 import LogCommand from "./commands/log";
 import { NextCommand, PrevCommand } from "./commands/next-or-prev";
@@ -89,6 +90,14 @@ yargs
     ValidateCommand.args,
     async (argv) => {
       await new ValidateCommand().execute(argv);
+    }
+  )
+  .command(
+    "feedback <message>",
+    "Post a string directly to the maintainers' Slack where they can factor in your feedback, laugh at your jokes, cry at your insults, or test the bounds of Slack injection attacks.",
+    FeedbackCommand.args,
+    async (argv) => {
+      await new FeedbackCommand().execute(argv);
     }
   )
   .command("demo", false, DemoCommand.args, async (argv) => {

@@ -4,7 +4,7 @@ import yargs from "yargs";
 import { version } from "../../package.json";
 import { profile, userEmail } from "../lib/telemetry";
 
-async function checkForUpgrade() {
+async function checkForUpgrade(): Promise<void> {
   try {
     const user = userEmail();
     const response = await fetch(
