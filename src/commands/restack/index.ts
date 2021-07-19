@@ -6,7 +6,6 @@ import { CURRENT_REPO_CONFIG_PATH, trunkBranches } from "../../lib/utils";
 import Branch from "../../wrapper-classes/branch";
 import AbstractCommand from "../abstract_command";
 import PrintStacksCommand from "../print-stacks";
-import ValidateCommand from "../validate";
 
 const args = {
   silent: {
@@ -74,7 +73,8 @@ function checkBranchCanBeMoved(branch: Branch, opts: argsT) {
 
 async function validate(argv: argsT) {
   try {
-    await new ValidateCommand().executeUnprofiled({ silent: true });
+    // await new ValidateCommand().executeUnprofiled({ silent: true });
+    //
   } catch {
     log(
       chalk.red(

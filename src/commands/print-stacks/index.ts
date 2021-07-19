@@ -69,7 +69,7 @@ export default class PrintStacksCommand extends AbstractCommand<typeof args> {
             "restack"
           )}" to update the git stack to match the meta stack.`,
           `Alternatively, run "${chalk.green(
-            "regen"
+            "fix"
           )}" to update the meta-stack to match the git-stack.\n`,
         ].join("\n")
       );

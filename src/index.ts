@@ -11,6 +11,7 @@ import { NextCommand, PrevCommand } from "./commands/next-or-prev";
 import PrintStacksCommand from "./commands/print-stacks";
 import RestackCommand from "./commands/restack";
 import SubmitCommand from "./commands/submit";
+import SyncCommand from "./commands/sync";
 import ValidateCommand from "./commands/validate";
 
 // https://www.npmjs.com/package/tmp#graceful-cleanup
@@ -98,6 +99,15 @@ yargs
     FeedbackCommand.args,
     async (argv) => {
       await new FeedbackCommand().execute(argv);
+    }
+  )
+  .command(
+    "sync",
+    false, // Unlisted for now
+    // "Delete any stacks that have been merged or squashed into your trunk branch.",
+    SyncCommand.args,
+    async (argv) => {
+      await new SyncCommand().execute(argv);
     }
   )
   .command("demo", false, DemoCommand.args, async (argv) => {
