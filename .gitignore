@@ -7,4 +7,5 @@ xcuserdata/
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+dist/
 
