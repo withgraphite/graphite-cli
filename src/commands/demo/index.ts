@@ -55,7 +55,7 @@ export default class DemoCommand extends AbstractCommand<typeof args> {
 }
 
 function execCliCommand(command: string, opts: { fromDir: string }) {
-  execSync(`sd ${command}`, {
+  execSync(`gp ${command}`, {
     stdio: "inherit",
     cwd: opts.fromDir,
   });
