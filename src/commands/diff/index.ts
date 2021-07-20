@@ -1,5 +1,6 @@
 import { execSync } from "child_process";
 import yargs from "yargs";
+import { workingTreeClean } from "../../lib/git-utils";
 import { logErrorAndExit, makeId, userConfig } from "../../lib/utils";
 import Branch from "../../wrapper-classes/branch";
 import AbstractCommand from "../abstract_command";
@@ -42,8 +43,11 @@ export default class DiffCommand extends AbstractCommand<typeof args> {
       `git checkout -b "${branchName}"`,
       argv.silent ? { stdio: "ignore" } : {}
     );
-    execSync("git add --all");
-    execSync(`git commit -m "${argv.message || "Updates"}"`);
+
+    if (!workingTreeClean()) {
+      execSync("git add --all");
+      execSync(`git commit -m "${argv.message || "Updates"}"`);
+    }
 
     const currentBranch = Branch.getCurrentBranch();
     if (currentBranch === null) {

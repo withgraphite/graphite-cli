@@ -1,5 +1,6 @@
 import yargs from "yargs";
-import { gpExecSync, logInternalErrorAndExit } from "../../lib/utils";
+import { workingTreeClean } from "../../lib/git-utils";
+import { gpExecSync, logInfo, logInternalErrorAndExit } from "../../lib/utils";
 import AbstractCommand from "../abstract_command";
 import RestackCommand from "../restack";
 
@@ -21,6 +22,11 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export default class AmendCommand extends AbstractCommand<typeof args> {
   static args = args;
   public async _execute(argv: argsT): Promise<void> {
+    if (workingTreeClean()) {
+      logInfo("No changes to amend.");
+      return;
+    }
+
     gpExecSync(
       {
         command: "git add --all",
