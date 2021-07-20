@@ -194,7 +194,10 @@ export default class Branch {
       .toString()
       .trim();
 
-    return name.length > 0 ? new Branch(name) : null;
+    // When the object we've checked out is a commit (and not a branch),
+    // git rev-parse --abbrev-ref HEAD returns 'HEAD'. This isn't a valid
+    // branch.
+    return name.length > 0 && name !== "HEAD" ? new Branch(name) : null;
   }
 
   static async getAllBranchesWithoutParents(): Promise<Branch[]> {
