@@ -78,7 +78,7 @@ async function validate(argv: argsT) {
   } catch {
     log(
       chalk.red(
-        `Cannot "restack --onto", git derrived stack must match meta defined stack. Consider running "restack" or "fix" first.`
+        `Cannot "restack --onto", git derived stack must match meta defined stack. Consider running "restack" or "fix" first.`
       ),
       argv
     );
