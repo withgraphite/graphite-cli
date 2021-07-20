@@ -1,7 +1,12 @@
-import { execSync } from "child_process";
 import yargs from "yargs";
 import { workingTreeClean } from "../../lib/git-utils";
-import { logErrorAndExit, makeId, userConfig } from "../../lib/utils";
+import {
+  gpExecSync,
+  logErrorAndExit,
+  logInternalErrorAndExit,
+  makeId,
+  userConfig,
+} from "../../lib/utils";
 import Branch from "../../wrapper-classes/branch";
 import AbstractCommand from "../abstract_command";
 
@@ -39,14 +44,53 @@ export default class DiffCommand extends AbstractCommand<typeof args> {
     const branchName =
       argv["branch-name"] || `${userConfig.branchPrefix || ""}${makeId(6)}`;
 
-    execSync(
-      `git checkout -b "${branchName}"`,
-      argv.silent ? { stdio: "ignore" } : {}
+    gpExecSync(
+      {
+        command: `git checkout -b "${branchName}"`,
+        options: argv.silent ? { stdio: "ignore" } : {},
+      },
+      (_) => {
+        logInternalErrorAndExit(`Failed to checkout new branch ${branchName}`);
+      }
     );
 
     if (!workingTreeClean()) {
-      execSync("git add --all");
-      execSync(`git commit -m "${argv.message || "Updates"}"`);
+      /**
+       * For these 2 commands, we silence errors and ignore them. This
+       * isn't great but our main concern is that we're able to create
+       * and check out the new branch and these types of error point to
+       * larger failure outside of our control.
+       */
+      gpExecSync(
+        {
+          command: "git add --all",
+          options: {
+            stdio: [
+              "pipe", // stdin
+              "pipe", // stdout
+              "ignore", // stderr
+            ],
+          },
+        },
+        (_) => {
+          return Buffer.alloc(0);
+        }
+      );
+      gpExecSync(
+        {
+          command: `git commit -m "${argv.message || "Updates"}"`,
+          options: {
+            stdio: [
+              "pipe", // stdin
+              "pipe", // stdout
+              "ignore", // stderr
+            ],
+          },
+        },
+        (_) => {
+          return Buffer.alloc(0);
+        }
+      );
     }
 
     const currentBranch = Branch.getCurrentBranch();
