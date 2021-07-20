@@ -20,7 +20,7 @@ export default class FixCommand extends AbstractCommand<typeof args> {
     const branch = Branch.getCurrentBranch();
 
     printBranchNameStack(
-      `(Original  git derived stack)`,
+      `(Original git derived stack)`,
       branch.stackByTracingGitParents(),
       argv
     );
@@ -48,75 +48,20 @@ function printBranchNameStack(message: string, names: string[], opts: argsT) {
   );
 }
 
-async function recursiveFix(branch: Branch, opts: argsT) {
-  const gitParents = branch.getParentsFromGit();
+function recursiveFix(branch: Branch, opts: argsT) {
+  const gitChildren = branch.getChildrenFromGit();
   // Check if we're at a base branch
-  if (gitParents.length === 0) {
-    log(
-      `-> (${branch.name}) has no git parent branches and so is considered to be the base`,
-      opts
-    );
-    return;
-  }
-
-  const metaParent = branch.getParentFromMeta();
-
-  if (
-    metaParent &&
-    gitParents.some((gitParent) => gitParent.name == metaParent.name)
-  ) {
-    log(
-      `-> (${branch.name}) has matching meta and git parent branch (${metaParent.name}), no update`,
-      opts
-    );
-    await recursiveFix(metaParent, opts);
-  } else if (gitParents.length === 1) {
-    if (metaParent) {
+  gitChildren.forEach((child) => {
+    const oldMetaParent = child.getParentFromMeta();
+    if (!oldMetaParent || oldMetaParent.name !== branch.name) {
       log(
-        `-> (${branch.name}) has meta parent branch (${
-          metaParent.name
-        }) but git parent branch (${gitParents[0].name}), ${chalk.green(
-          "updating"
-        )}`,
+        `Updating (${child.name}) meta parent from (${
+          oldMetaParent?.name
+        }) to (${chalk.green(branch.name)})`,
         opts
-      );
-    } else {
-      log(
-        `-> (${branch.name}) has no meta parent branch but git parent branch (${
-          gitParents[0].name
-        }), ${chalk.green("updating")}`,
-        opts
-      );
-    }
-    branch.setParentBranchName(gitParents[0].name);
-    await recursiveFix(gitParents[0], opts);
-  } else if (metaParent && gitParents.length > 1) {
-    log(
-      `-> (${branch.name}) has meta parent branch (${
-        metaParent.name
-      }) but multiple git parent branches [${gitParents
-        .map((b) => `(${b.name})`)
-        .join(", ")}]. ${chalk.red("Cannot continue")}`,
-      opts
-    );
-    process.exit(1);
-  } else if (!metaParent && gitParents.length > 1) {
-    log(
-      `-> (${
-        branch.name
-      }) has no meta parent branch but multiple git parent branches [${gitParents
-        .map((b) => `(${b.name})`)
-        .join(", ")}].  ${chalk.red("Cannot continue")}`,
-      opts
-    );
-    process.exit(1);
-  } else {
-    log(
-      chalk.yellow(
-        `Error: No fix patern detected for git: ${gitParents}, meta: ${metaParent}, exiting`
       ),
-      opts
-    );
-    process.exit(1);
-  }
+        child.setParentBranchName(branch.name);
+    }
+    recursiveFix(child, opts);
+  });
 }

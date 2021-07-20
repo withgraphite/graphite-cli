@@ -36,7 +36,11 @@ describe("Fix tests", function () {
       branch.stackByTracingGitParents().join(",")
     );
 
+    repo.checkoutBranch("main");
+
     execCliCommand("fix -s", { fromDir: tmpDir.name });
+
+    repo.checkoutBranch("b");
 
     expect(branch.stackByTracingMetaParents().join(",")).to.equal(
       branch.stackByTracingGitParents().join(",")
