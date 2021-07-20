@@ -1,5 +1,5 @@
-import { execSync } from "child_process";
 import yargs from "yargs";
+import { gpExecSync, logInternalErrorAndExit } from "../../lib/utils";
 import AbstractCommand from "../abstract_command";
 import RestackCommand from "../restack";
 
@@ -21,8 +21,23 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export default class AmendCommand extends AbstractCommand<typeof args> {
   static args = args;
   public async _execute(argv: argsT): Promise<void> {
-    execSync("git add --all");
-    execSync(`git commit -m "${argv.message || "Updates"}"`);
+    gpExecSync(
+      {
+        command: "git add --all",
+      },
+      (_) => {
+        logInternalErrorAndExit("Failed to add changes. Aborting...");
+      }
+    );
+
+    gpExecSync(
+      {
+        command: `git commit -m "${argv.message || "Updates"}"`,
+      },
+      (_) => {
+        logInternalErrorAndExit("Failed to commit changes. Aborting...");
+      }
+    );
     await new RestackCommand().executeUnprofiled(args);
   }
 }

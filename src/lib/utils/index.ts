@@ -10,6 +10,7 @@ import {
   logError,
   logErrorAndExit,
   logInfo,
+  logInternalErrorAndExit,
   logSuccess,
   logWarn,
 } from "./splog";
@@ -23,6 +24,7 @@ export {
   gpExecSync,
   logError,
   logErrorAndExit,
+  logInternalErrorAndExit,
   logInfo,
   logSuccess,
   logWarn,
