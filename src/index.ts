@@ -28,7 +28,7 @@ yargs
   )
   .command(
     "prev",
-    "If you're in a stack: Branch A → Branch B (you are here) → Branch C. Takes you to the previous branch (Branch A). If there are two ancestral branches, errors out and tells you the various branches you could go to.",
+    "If you're in a stack: Branch A → Branch B (you are here) → Branch C. Takes you to the previous branch (Branch A). If there are two parent branches, errors out and tells you the various branches you could go to.",
     PrevCommand.args,
     async (argv) => {
       await new PrevCommand().execute(argv);
