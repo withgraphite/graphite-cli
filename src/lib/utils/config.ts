@@ -9,6 +9,7 @@ const CONFIG_NAME = ".graphite_repo_config";
 const USER_CONFIG_PATH = path.join(os.homedir(), CONFIG_NAME);
 type UserConfigT = {
   branchPrefix?: string;
+  authToken?: string;
 };
 type RepoConfigT = {
   trunkBranches?: string[];
@@ -52,6 +53,11 @@ if (fs.existsSync(USER_CONFIG_PATH)) {
   } catch (e) {
     console.log(chalk.yellow(`Warning: Malformed ${USER_CONFIG_PATH}`));
   }
+}
+
+export function updateUserConfig(config: UserConfigT) {
+  fs.writeFileSync(USER_CONFIG_PATH, JSON.stringify(config));
+  userConfig = config;
 }
 
 export let repoConfig: RepoConfigT = {};

@@ -4,6 +4,7 @@ import {
   makeId,
   repoConfig,
   trunkBranches,
+  updateUserConfig,
   userConfig,
 } from "./config";
 import { detectStagedChanges } from "./detect_staged_changes";
@@ -23,6 +24,7 @@ export {
   CURRENT_REPO_CONFIG_PATH,
   makeId,
   userConfig,
+  updateUserConfig,
   repoConfig,
   trunkBranches,
   gpExecSync,
