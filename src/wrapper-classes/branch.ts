@@ -2,8 +2,9 @@ import { execSync } from "child_process";
 import { gpExecSync } from "../lib/utils";
 import Commit from "./commit";
 
-type TBranchDesc = {
-  parentBranchName: string;
+type TMeta = {
+  parentBranchName?: string;
+  prevRef?: string;
 };
 
 export const MAX_COMMITS_TO_TRAVERSE_FOR_NEXT_OR_PREV = 50;
@@ -80,7 +81,7 @@ export default class Branch {
     return this.name;
   }
 
-  private getMeta(): TBranchDesc | undefined {
+  private getMeta(): TMeta | undefined {
     try {
       const metaString = execSync(
         `git cat-file -p refs/branch-metadata/${this.name} 2> /dev/null`
@@ -98,7 +99,7 @@ export default class Branch {
     }
   }
 
-  private writeMeta(desc: TBranchDesc) {
+  private writeMeta(desc: TMeta) {
     const metaSha = execSync(`git hash-object -w --stdin`, {
       input: JSON.stringify(desc),
     }).toString();
@@ -154,8 +155,57 @@ export default class Branch {
     return children;
   }
 
+  public getMetaMergeBase(): string | undefined {
+    const parent = this.getParentFromMeta();
+    if (!parent) {
+      return undefined;
+    }
+    const curParentRef = parent.getCurrentRef();
+    const prevParentRef = parent.getMetaPrevRef();
+    const curParentMergeBase = execSync(
+      `git merge-base ${curParentRef} ${this.name}`
+    )
+      .toString()
+      .trim();
+    if (!prevParentRef) {
+      return curParentMergeBase;
+    }
+
+    const prevParentMergeBase = execSync(
+      `git merge-base ${prevParentRef} ${this.name}`
+    )
+      .toString()
+      .trim();
+
+    // The merge base of the two merge bases = the one closer to the trunk.
+    // Therefore, the other must be closer or equal to the head of the branch.
+    const closestMergeBase =
+      execSync(`git merge-base ${prevParentMergeBase} ${curParentMergeBase}`)
+        .toString()
+        .trim() === curParentMergeBase
+        ? prevParentMergeBase
+        : curParentMergeBase;
+    return closestMergeBase;
+  }
+
+  public getMetaPrevRef(): string | undefined {
+    return this.getMeta()?.prevRef;
+  }
+
+  public getCurrentRef(): string {
+    return execSync(`git rev-parse ${this.name}`).toString().trim();
+  }
+
   public setParentBranchName(parentBranchName: string): void {
-    this.writeMeta({ parentBranchName });
+    const meta: TMeta = this.getMeta() || {};
+    meta.parentBranchName = parentBranchName;
+    this.writeMeta(meta);
+  }
+
+  public setMetaPrevRef(prevRef: string): void {
+    const meta: TMeta = this.getMeta() || {};
+    meta.prevRef = prevRef;
+    this.writeMeta(meta);
   }
 
   public getTrunkBranchFromGit(): Branch {

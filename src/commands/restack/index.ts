@@ -3,6 +3,7 @@ import { execSync } from "child_process";
 import yargs from "yargs";
 import { log } from "../../lib/log";
 import {
+  checkoutBranch,
   CURRENT_REPO_CONFIG_PATH,
   logErrorAndExit,
   trunkBranches,
@@ -58,7 +59,9 @@ export default class RestackCommand extends AbstractCommand<typeof args> {
     if (argv.onto) {
       await restackOnto(originalBranch, argv.onto, argv);
     } else {
-      await restackBranch(originalBranch, originalBranch.name, argv);
+      for (const child of await originalBranch.getChildrenFromMeta()) {
+        await restackBranch(child, argv);
+      }
     }
     execSync(`git checkout -q ${originalBranch.name}`);
 
@@ -99,37 +102,47 @@ async function restackOnto(currentBranch: Branch, onto: string, argv: argsT) {
   checkBranchCanBeMoved(currentBranch, argv);
   await validate(argv);
   const parent = getParentForRebaseOnto(currentBranch, argv);
+  const oldRef = currentBranch.getCurrentRef();
   execSync(
     `git rebase --onto ${onto} $(git merge-base ${currentBranch.name} ${parent.name}) ${currentBranch.name} -Xtheirs`,
     { stdio: "ignore" }
   );
+  // Save the old ref from before rebasing so that children can find their bases.
+  currentBranch.setMetaPrevRef(oldRef);
   // set current branch's parent only if the rebase succeeds.
   currentBranch.setParentBranchName(onto);
   // Now perform a restack starting from the onto branch:
-  await restackBranch(new Branch(onto), onto, argv);
+  for (const child of await currentBranch.getChildrenFromMeta()) {
+    await restackBranch(child, argv);
+  }
 }
 
 export async function restackBranch(
   currentBranch: Branch,
-  // Pass the ref to the branch head _before_ it was rebased
-  // We need this ref, because we can't find the child's merge base after the parent is rebased
-  // Because rebasing duplicates commits, so there wont be a shared commit anymore.
-  oldBranchHead: string,
   opts: argsT
 ): Promise<void> {
-  const childBranches = await currentBranch.getChildrenFromMeta();
-  if (!childBranches) {
-    log(chalk.yellow(`Cannot restack, found no child branches`), opts);
-    process.exit(1);
-  }
-  for (const childBranch of childBranches) {
-    const shaBeforeRebase = execSync(`git rev-parse ${childBranch.name}`)
-      .toString()
-      .trim();
-    execSync(
-      `git rebase --onto ${currentBranch.name} $(git merge-base ${childBranch.name} ${oldBranchHead}) ${childBranch.name} -Xtheirs`,
-      { stdio: "ignore" }
+  const parentBranch = currentBranch.getParentFromMeta();
+  if (!parentBranch) {
+    logErrorAndExit(
+      `Cannot find parent from meta defined stack for (${currentBranch.name}), stopping restack`
     );
-    await restackBranch(childBranch, shaBeforeRebase, opts);
+  }
+  const mergeBase = currentBranch.getMetaMergeBase();
+  if (!mergeBase) {
+    logErrorAndExit(
+      `Cannot find a merge base from meta defined stack for (${currentBranch.name}), stopping restack`
+    );
+  }
+
+  const oldRef = currentBranch.getCurrentRef();
+  checkoutBranch(currentBranch.name);
+  execSync(
+    `git rebase --onto ${parentBranch.name} ${mergeBase} ${currentBranch.name} -Xtheirs`,
+    { stdio: "ignore" }
+  );
+  currentBranch.setMetaPrevRef(oldRef);
+
+  for (const child of await currentBranch.getChildrenFromMeta()) {
+    await restackBranch(child, opts);
   }
 }
