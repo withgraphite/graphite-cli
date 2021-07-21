@@ -87,7 +87,7 @@ yargs
   )
   .command(
     "validate",
-    "Validates that the sd meta graph matches the current graph of git branches and commits.",
+    "Validates that the gp meta graph matches the current graph of git branches and commits.",
     ValidateCommand.args,
     async (argv) => {
       await new ValidateCommand().execute(argv);

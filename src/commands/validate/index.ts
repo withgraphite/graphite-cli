@@ -35,7 +35,7 @@ async function validateBranch(branch: Branch, opts: argsT) {
   const hasGitChildren = gitChildren && gitChildren.length > 0;
   const hasMetaChildren = metaChildren.length > 0;
   if (hasGitChildren && !hasMetaChildren) {
-    throw new Error(`${branch.name} missing a child in sd's meta graph`);
+    throw new Error(`${branch.name} missing a child in graphite's meta graph`);
   }
   if (!hasGitChildren && hasMetaChildren) {
     throw new Error(`Unable to find child branches in git for ${branch.name}`);
@@ -52,7 +52,7 @@ async function validateBranch(branch: Branch, opts: argsT) {
     throw new Error(
       `Child branches [${gitChildrenMissingInMeta
         .map((b) => `(${b.name})`)
-        .join(", ")}] not found in sd's meta graph.`
+        .join(", ")}] not found in graphite's meta graph.`
     );
   }
   log(`✅ ${chalk.green(`(${branch.name}) validated`)}`, opts);
