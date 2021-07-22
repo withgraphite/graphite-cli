@@ -58,7 +58,8 @@ async function sync(opts: argsT) {
       continue;
     }
     for (const child of children) {
-      execSync(`git checkout -q ${child.name}`);
+      checkoutBranch(child.name);
+      log(`Restacking (${child.name}) onto (${opts.trunk})`);
       await new RestackCommand().executeUnprofiled({
         onto: opts.trunk,
         silent: true,
