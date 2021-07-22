@@ -1,4 +1,6 @@
+import chalk from "chalk";
 import { execSync } from "child_process";
+import prompts from "prompts";
 import yargs from "yargs";
 import { log } from "../../lib/log";
 import { checkoutBranch, logWarn } from "../../lib/utils";
@@ -19,6 +21,13 @@ const args = {
     default: false,
     type: "boolean",
     alias: "s",
+  },
+  force: {
+    describe: `Don't prompt on each branch to confirm deletion.`,
+    demandOption: false,
+    default: false,
+    type: "boolean",
+    alias: "f",
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -57,8 +66,7 @@ async function sync(opts: argsT) {
       trunkChildren.push(child);
     }
     checkoutBranch(opts.trunk);
-    log(`Deleting ${branch.name}`, opts);
-    deleteBranch(branch.name);
+    await deleteBranch(branch.name, opts);
     await new FixCommand().executeUnprofiled({ silent: true });
   } while (trunkChildren.length > 0);
   checkoutBranch(oldBranchName);
@@ -82,6 +90,21 @@ function shouldDeleteBranch(branchName: string, trunk: string): boolean {
   return false;
 }
 
-function deleteBranch(branchName: string) {
+async function deleteBranch(branchName: string, opts: argsT) {
+  if (!opts.force) {
+    const response = await prompts({
+      type: "confirm",
+      name: "value",
+      message: `Delete (${chalk.green(
+        branchName
+      )}), which has been merged into (${opts.trunk})?`,
+      initial: true,
+    });
+    if (response.value != true) {
+      process.exit(0);
+    }
+  } else {
+    log(`Deleting ${branchName}`, opts);
+  }
   execSync(`git branch -D ${branchName}`);
 }
