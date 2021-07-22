@@ -1,17 +1,17 @@
 import { execSync } from "child_process";
 import yargs from "yargs";
 import { log } from "../../lib/log";
-import { logWarn } from "../../lib/utils";
+import { checkoutBranch, logWarn } from "../../lib/utils";
 import Branch from "../../wrapper-classes/branch";
 import AbstractCommand from "../abstract_command";
 import FixCommand from "../fix";
 import RestackCommand from "../restack";
 
 const args = {
-  "dry-run": {
-    type: "boolean",
-    default: false,
-    describe: "List branches that would be deleted",
+  trunk: {
+    type: "string",
+    describe: "The name of your trunk branch that stacks get merged into.",
+    required: true,
   },
   silent: {
     describe: `silence output from the command`,
@@ -38,33 +38,35 @@ async function sync(opts: argsT) {
   }
 
   const oldBranchName = oldBranch.name;
-  execSync(`git checkout -q main`);
-  const mainChildren: Branch[] = await new Branch("main").getChildrenFromMeta();
+  checkoutBranch(opts.trunk);
+  const trunkChildren: Branch[] = await new Branch(
+    opts.trunk
+  ).getChildrenFromMeta();
   do {
-    const branch = mainChildren.pop()!;
+    const branch = trunkChildren.pop()!;
     const children = await branch.getChildrenFromMeta();
-    if (!shouldDeleteBranch(branch.name)) {
+    if (!shouldDeleteBranch(branch.name, opts.trunk)) {
       continue;
     }
     for (const child of children) {
       execSync(`git checkout -q ${child.name}`);
       await new RestackCommand().executeUnprofiled({
-        onto: "main",
+        onto: opts.trunk,
         silent: true,
       });
-      mainChildren.push(child);
+      trunkChildren.push(child);
     }
-    execSync(`git checkout -q main`);
+    checkoutBranch(opts.trunk);
     log(`Deleting ${branch.name}`, opts);
     deleteBranch(branch.name);
     await new FixCommand().executeUnprofiled({ silent: true });
-  } while (mainChildren.length > 0);
-  execSync(`git checkout -q ${oldBranchName}`);
+  } while (trunkChildren.length > 0);
+  checkoutBranch(oldBranchName);
 }
 
-function shouldDeleteBranch(branchName: string): boolean {
+function shouldDeleteBranch(branchName: string, trunk: string): boolean {
   const cherryCheckProvesMerged = execSync(
-    `mergeBase=$(git merge-base main ${branchName}) && git cherry main $(git commit-tree $(git rev-parse "${branchName}^{tree}") -p $mergeBase -m _)`
+    `mergeBase=$(git merge-base ${trunk} ${branchName}) && git cherry ${trunk} $(git commit-tree $(git rev-parse "${branchName}^{tree}") -p $mergeBase -m _)`
   )
     .toString()
     .trim()
@@ -73,7 +75,7 @@ function shouldDeleteBranch(branchName: string): boolean {
     return true;
   }
   const diffCheckProvesMerged =
-    execSync(`git diff ${branchName} main`).toString().trim().length == 0;
+    execSync(`git diff ${branchName} ${trunk}`).toString().trim().length == 0;
   if (diffCheckProvesMerged) {
     return true;
   }

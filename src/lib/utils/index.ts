@@ -1,3 +1,4 @@
+import { checkoutBranch } from "./checkout_branch";
 import {
   CURRENT_REPO_CONFIG_PATH,
   makeId,
@@ -28,4 +29,5 @@ export {
   logInfo,
   logSuccess,
   logWarn,
+  checkoutBranch,
 };
