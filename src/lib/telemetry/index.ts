@@ -64,6 +64,7 @@ export async function logCommand(
         commandName: commandName,
         durationMiliSeconds: durationMiliSeconds,
         user: userEmail() || "NotFound",
+        version: version,
         err: err
           ? {
               name: err.name,
