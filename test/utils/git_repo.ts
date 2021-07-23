@@ -1,5 +1,6 @@
 import { execSync } from "child_process";
 import fs from "fs-extra";
+import { rebaseInProgress } from "../../src/lib/utils";
 
 const TEXT_FILE_NAME = "test.txt";
 export default class GitRepo {
@@ -9,26 +10,42 @@ export default class GitRepo {
     execSync(`git init ${dir} -b main`);
   }
 
-  createChange(textValue: string) {
-    fs.writeFileSync(`${this.dir}/${TEXT_FILE_NAME}`, textValue);
+  createChange(textValue: string, prefix?: string): void {
+    fs.writeFileSync(
+      `${this.dir}/${prefix ? prefix + "_" : ""}${TEXT_FILE_NAME}`,
+      textValue
+    );
   }
 
-  createChangeAndCommit(textValue: string) {
-    this.createChange(textValue);
-    execSync(`git -C ${this.dir} add "${this.dir}/test.txt"`);
+  createChangeAndCommit(textValue: string, prefix?: string): void {
+    this.createChange(textValue, prefix);
+    execSync(`git -C ${this.dir} add .`);
     execSync(`git -C ${this.dir} commit -m "${textValue}"`);
   }
 
-  createAndCheckoutBranch(name: string) {
+  createAndCheckoutBranch(name: string): void {
     execSync(`git -C ${this.dir} checkout -b "${name}"`, { stdio: "ignore" });
   }
 
-  checkoutBranch(name: string) {
+  checkoutBranch(name: string): void {
     execSync(`git -C ${this.dir} checkout "${name}"`, { stdio: "ignore" });
   }
 
+  rebaseInProgress(): boolean {
+    return rebaseInProgress({ dir: this.dir });
+  }
+
+  finishInteractiveRebase(): void {
+    while (this.rebaseInProgress()) {
+      execSync(`git -C ${this.dir} add .`, { stdio: "ignore" });
+      execSync(`GIT_EDITOR="touch $1" git -C ${this.dir} rebase --continue`, {
+        stdio: "ignore",
+      });
+    }
+  }
+
   currentBranchName(): string {
-    return execSync(`git -C ${this.dir} rev-parse --abbrev-ref HEAD`)
+    return execSync(`git -C ${this.dir} branch --show-current`)
       .toString()
       .trim();
   }

@@ -7,6 +7,7 @@ import {
   userConfig,
 } from "./config";
 import { gpExecSync } from "./exec_sync";
+import { rebaseInProgress } from "./rebase_in_progress";
 import {
   logError,
   logErrorAndExit,
@@ -30,4 +31,5 @@ export {
   logSuccess,
   logWarn,
   checkoutBranch,
+  rebaseInProgress,
 };
