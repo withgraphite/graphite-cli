@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import fs from "fs-extra";
 import tmp from "tmp";
+import { execCliCommand } from "../utils/exec_cli_command";
 import GitRepo from "../utils/git_repo";
-import { execCliCommand } from "../utils/misc";
 
 describe("Restack", function () {
   let tmpDir: tmp.DirResult;
@@ -10,7 +10,7 @@ describe("Restack", function () {
   this.beforeEach(() => {
     tmpDir = tmp.dirSync();
     repo = new GitRepo(tmpDir.name);
-    repo.createChangeAndCommit("1");
+    repo.createChangeAndCommit("1", "first");
   });
   afterEach(() => {
     fs.emptyDirSync(tmpDir.name);
@@ -19,15 +19,15 @@ describe("Restack", function () {
   this.timeout(5000);
 
   it("Can restack a stack of three branches", () => {
-    repo.createChange("2");
+    repo.createChange("2", "a");
     execCliCommand("diff -b 'a' -m '2' -s", { fromDir: tmpDir.name });
-    repo.createChangeAndCommit("2.5");
+    repo.createChangeAndCommit("2.5", "a.5");
 
-    repo.createChange("3");
+    repo.createChange("3", "b");
     execCliCommand("diff -b 'b' -m '3' -s", { fromDir: tmpDir.name });
-    repo.createChangeAndCommit("3.5");
+    repo.createChangeAndCommit("3.5", "b.5");
 
-    repo.createChange("4");
+    repo.createChange("4", "c");
     execCliCommand("diff -b 'c' -m '4' -s", { fromDir: tmpDir.name });
 
     expect(repo.listCurrentBranchCommitMessages().join(", ")).to.equal(
@@ -35,13 +35,13 @@ describe("Restack", function () {
     );
 
     repo.checkoutBranch("main");
-    repo.createChangeAndCommit("1.5");
+    repo.createChangeAndCommit("1.5", "main");
     expect(repo.listCurrentBranchCommitMessages().join(", ")).to.equal(
       "1.5, 1"
     );
 
     execCliCommand("restack -s", { fromDir: tmpDir.name });
-    // Expect restacking not to change the current checked out branch.
+
     expect(repo.currentBranchName()).to.equal("main");
 
     repo.checkoutBranch("c");
@@ -51,15 +51,15 @@ describe("Restack", function () {
   });
 
   it("Can restack a stack onto another", () => {
-    repo.createChange("2");
+    repo.createChange("2", "a");
     execCliCommand("diff -b 'a' -m '2' -s", { fromDir: tmpDir.name });
 
-    repo.createChange("3");
+    repo.createChange("3", "b");
     execCliCommand("diff -b 'b' -m '3' -s", { fromDir: tmpDir.name });
 
     repo.checkoutBranch("main");
 
-    repo.createChange("4");
+    repo.createChange("4", "c");
     execCliCommand("diff -b 'c' -m '4' -s", { fromDir: tmpDir.name });
 
     expect(repo.listCurrentBranchCommitMessages().join(", ")).to.equal("4, 1");
@@ -72,10 +72,10 @@ describe("Restack", function () {
   });
 
   it("Can restack a leaf stack onto main", () => {
-    repo.createChange("2");
+    repo.createChange("2", "a");
     execCliCommand("diff -b 'a' -m '2' -s", { fromDir: tmpDir.name });
 
-    repo.createChange("3");
+    repo.createChange("3", "b");
     execCliCommand("diff -b 'b' -m '3' -s", { fromDir: tmpDir.name });
 
     execCliCommand("restack -s --onto main", { fromDir: tmpDir.name });

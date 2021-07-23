@@ -185,6 +185,7 @@ export default class Branch {
         .trim() === curParentMergeBase
         ? prevParentMergeBase
         : curParentMergeBase;
+
     return closestMergeBase;
   }
 

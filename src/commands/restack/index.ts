@@ -6,6 +6,7 @@ import {
   checkoutBranch,
   CURRENT_REPO_CONFIG_PATH,
   logErrorAndExit,
+  rebaseInProgress,
   trunkBranches,
 } from "../../lib/utils";
 import Branch from "../../wrapper-classes/branch";
@@ -63,7 +64,7 @@ export default class RestackCommand extends AbstractCommand<typeof args> {
         await restackBranch(child, argv);
       }
     }
-    execSync(`git checkout -q ${originalBranch.name}`);
+    checkoutBranch(originalBranch.name);
 
     // Print state after
     log(`After restack:`, argv);
@@ -102,13 +103,12 @@ async function restackOnto(currentBranch: Branch, onto: string, argv: argsT) {
   checkBranchCanBeMoved(currentBranch, argv);
   await validate(argv);
   const parent = getParentForRebaseOnto(currentBranch, argv);
-  const oldRef = currentBranch.getCurrentRef();
+  // Save the old ref from before rebasing so that children can find their bases.
+  currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
   execSync(
-    `git rebase --onto ${onto} $(git merge-base ${currentBranch.name} ${parent.name}) ${currentBranch.name} -Xtheirs`,
+    `git rebase --onto ${onto} $(git merge-base ${currentBranch.name} ${parent.name}) ${currentBranch.name}`,
     { stdio: "ignore" }
   );
-  // Save the old ref from before rebasing so that children can find their bases.
-  currentBranch.setMetaPrevRef(oldRef);
   // set current branch's parent only if the rebase succeeds.
   currentBranch.setParentBranchName(onto);
   // Now perform a restack starting from the onto branch:
@@ -121,6 +121,11 @@ export async function restackBranch(
   currentBranch: Branch,
   opts: argsT
 ): Promise<void> {
+  if (rebaseInProgress()) {
+    logErrorAndExit(
+      `Interactive rebase in progress, cannot restack (${currentBranch.name}). Complete the rebase and re-run restack command.`
+    );
+  }
   const parentBranch = currentBranch.getParentFromMeta();
   if (!parentBranch) {
     logErrorAndExit(
@@ -134,13 +139,12 @@ export async function restackBranch(
     );
   }
 
-  const oldRef = currentBranch.getCurrentRef();
+  currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
   checkoutBranch(currentBranch.name);
   execSync(
-    `git rebase --onto ${parentBranch.name} ${mergeBase} ${currentBranch.name} -Xtheirs`,
+    `git rebase --onto ${parentBranch.name} ${mergeBase} ${currentBranch.name}`,
     { stdio: "ignore" }
   );
-  currentBranch.setMetaPrevRef(oldRef);
 
   for (const child of await currentBranch.getChildrenFromMeta()) {
     await restackBranch(child, opts);
