@@ -83,4 +83,33 @@ describe("Restack", function () {
     expect(() => execCliCommand("validate -s", { fromDir: tmpDir.name })).not.to
       .throw;
   });
+
+  it("Can handle merge conflicts, leveraging prevRef metadata", () => {
+    repo.createChange("2");
+    execCliCommand("diff -b 'a' -m '2' -s", { fromDir: tmpDir.name });
+
+    repo.createChange("3");
+    execCliCommand("diff -b 'b' -m '3' -s", { fromDir: tmpDir.name });
+
+    repo.checkoutBranch("main");
+    repo.createChangeAndCommit("1.5");
+
+    try {
+      execCliCommand("restack -s", { fromDir: repo.dir });
+    } catch {
+      repo.finishInteractiveRebase();
+    }
+    expect(repo.rebaseInProgress()).to.eq(false);
+    expect(repo.currentBranchName()).to.eq("a");
+    try {
+      execCliCommand("restack -s", { fromDir: repo.dir });
+    } catch {
+      repo.finishInteractiveRebase();
+    }
+
+    expect(repo.currentBranchName()).to.eq("b");
+    expect(repo.listCurrentBranchCommitMessages().join(", ")).to.equal(
+      "3, 2, 1.5, 1"
+    );
+  });
 });
