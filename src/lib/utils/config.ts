@@ -13,9 +13,11 @@ type UserConfigT = {
 };
 type RepoConfigT = {
   trunkBranches?: string[];
+  owner?: string;
+  repoName?: string;
 };
 
-export const CURRENT_REPO_CONFIG_PATH: string | undefined = (() => {
+export const CURRENT_REPO_CONFIG_PATH: string = (() => {
   const repoRootPath = gpExecSync(
     {
       command: `git rev-parse --show-toplevel`,
@@ -69,13 +71,77 @@ function setUserConfig(config: UserConfigT): void {
 }
 
 export let repoConfig: RepoConfigT = {};
-if (CURRENT_REPO_CONFIG_PATH && fs.existsSync(CURRENT_REPO_CONFIG_PATH)) {
+const inferredRepoInfo = inferRepoInfo();
+if (fs.existsSync(CURRENT_REPO_CONFIG_PATH)) {
   const repoConfigRaw = fs.readFileSync(CURRENT_REPO_CONFIG_PATH);
   try {
     repoConfig = JSON.parse(repoConfigRaw.toString().trim()) as RepoConfigT;
   } catch (e) {
     console.log(chalk.yellow(`Warning: Malformed ${CURRENT_REPO_CONFIG_PATH}`));
   }
+}
+
+if (inferredRepoInfo !== null) {
+  if (
+    repoConfig !== null &&
+    (repoConfig.owner === undefined || repoConfig.repoName === undefined)
+  ) {
+    repoConfig = {
+      ...repoConfig,
+      owner: inferredRepoInfo.owner,
+      repoName: inferredRepoInfo.name,
+    };
+  } else {
+    repoConfig = {
+      owner: inferredRepoInfo.owner,
+      repoName: inferredRepoInfo.name,
+    };
+  }
+  updateRepoConfig(repoConfig);
+}
+
+function updateRepoConfig(config: RepoConfigT) {
+  fs.writeFileSync(CURRENT_REPO_CONFIG_PATH, JSON.stringify(config));
+  repoConfig = config;
+}
+
+function inferRepoInfo(): {
+  owner: string;
+  name: string;
+} | null {
+  // This assumes that the remote to use is named 'origin' and that the remote
+  // to fetch from is the same as the remote to push to. If a user runs into
+  // an issue where any of these invariants are not true, they can manually
+  // edit the repo config file to overrule what our CLI tries to intelligently
+  // infer.
+  const url = gpExecSync(
+    {
+      command: `git config --get remote.origin.url`,
+    },
+    (_) => {
+      return Buffer.alloc(0);
+    }
+  )
+    .toString()
+    .trim();
+  if (!url || url.length === 0) {
+    return null;
+  }
+
+  // e.g. in screenplaydev/graphite-cli we're trying to parse 'screenplaydev'
+  // and 'graphite-cli'
+  const matches = /git@github.com:([^/]+)\/(.+)?.git/.exec(url);
+  const owner = matches?.[1];
+  const name = matches?.[2];
+
+  if (owner === undefined || name === undefined) {
+    return null;
+  }
+
+  return {
+    owner: owner,
+    name: name,
+  };
 }
 
 export const trunkBranches: string[] | undefined = repoConfig.trunkBranches;
