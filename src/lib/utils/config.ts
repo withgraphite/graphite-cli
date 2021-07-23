@@ -81,6 +81,10 @@ if (fs.existsSync(CURRENT_REPO_CONFIG_PATH)) {
   }
 }
 
+// Only infer repo info if all of these conditions are satisfied:
+// 1) repo info can be inferred
+// 2) the repo config doesn't already have these fields (e.g. the user may
+//    have manually saved some settings)
 if (inferredRepoInfo !== null) {
   if (
     repoConfig !== null &&
