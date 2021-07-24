@@ -1,6 +1,7 @@
 import yargs from "yargs";
 import { workingTreeClean } from "../../lib/git-utils";
 import {
+  detectStagedChanges,
   gpExecSync,
   logErrorAndExit,
   logInternalErrorAndExit,
@@ -30,7 +31,6 @@ const args = {
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
-
 export default class DiffCommand extends AbstractCommand<typeof args> {
   static args = args;
   public async _execute(argv: argsT): Promise<void> {
@@ -41,56 +41,28 @@ export default class DiffCommand extends AbstractCommand<typeof args> {
       );
     }
 
-    const branchName =
-      argv["branch-name"] || `${userConfig.branchPrefix || ""}${makeId(6)}`;
+    ensureSomeStagedChanges();
 
-    gpExecSync(
-      {
-        command: `git checkout -b "${branchName}"`,
-        options: argv.silent ? { stdio: "ignore" } : {},
-      },
-      (_) => {
-        logInternalErrorAndExit(`Failed to checkout new branch ${branchName}`);
-      }
-    );
+    const branchName = newBranchName(argv);
+    checkoutNewBranch(branchName, argv);
 
     if (!workingTreeClean()) {
       /**
-       * For these 2 commands, we silence errors and ignore them. This
+       * Here, we silence errors and ignore them. This
        * isn't great but our main concern is that we're able to create
        * and check out the new branch and these types of error point to
        * larger failure outside of our control.
        */
-      gpExecSync(
-        {
-          command: "git add --all",
-          options: {
-            stdio: [
-              "pipe", // stdin
-              "pipe", // stdout
-              "ignore", // stderr
-            ],
-          },
+      gpExecSync({
+        command: `git commit -m "${argv.message || "Updates"}"`,
+        options: {
+          stdio: [
+            "pipe", // stdin
+            "pipe", // stdout
+            "ignore", // stderr
+          ],
         },
-        (_) => {
-          return Buffer.alloc(0);
-        }
-      );
-      gpExecSync(
-        {
-          command: `git commit -m "${argv.message || "Updates"}"`,
-          options: {
-            stdio: [
-              "pipe", // stdin
-              "pipe", // stdout
-              "ignore", // stderr
-            ],
-          },
-        },
-        (_) => {
-          return Buffer.alloc(0);
-        }
-      );
+      });
     }
 
     const currentBranch = Branch.getCurrentBranch();
@@ -102,4 +74,29 @@ export default class DiffCommand extends AbstractCommand<typeof args> {
 
     currentBranch.setParentBranchName(parentBranch.name);
   }
+}
+
+function ensureSomeStagedChanges(): void {
+  if (!detectStagedChanges()) {
+    if (!args.silent) {
+      gpExecSync({ command: `git status`, options: { stdio: "inherit" } });
+    }
+    logErrorAndExit(`Cannot "diff", no staged changes detected.`);
+  }
+}
+
+function newBranchName(argv: argsT): string {
+  return argv["branch-name"] || `${userConfig.branchPrefix || ""}${makeId(6)}`;
+}
+
+function checkoutNewBranch(branchName: string, argv: argsT): void {
+  gpExecSync(
+    {
+      command: `git checkout -b "${branchName}"`,
+      options: argv.silent ? { stdio: "ignore" } : {},
+    },
+    (_) => {
+      logInternalErrorAndExit(`Failed to checkout new branch ${branchName}`);
+    }
+  );
 }

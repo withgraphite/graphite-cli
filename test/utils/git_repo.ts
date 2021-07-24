@@ -11,10 +11,11 @@ export default class GitRepo {
   }
 
   createChange(textValue: string, prefix?: string): void {
-    fs.writeFileSync(
-      `${this.dir}/${prefix ? prefix + "_" : ""}${TEXT_FILE_NAME}`,
-      textValue
-    );
+    const filePath = `${this.dir}/${
+      prefix ? prefix + "_" : ""
+    }${TEXT_FILE_NAME}`;
+    fs.writeFileSync(filePath, textValue);
+    execSync(`git -C ${this.dir} add ${filePath}`);
   }
 
   createChangeAndCommit(textValue: string, prefix?: string): void {
