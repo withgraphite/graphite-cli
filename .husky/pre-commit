@@ -1,5 +1,5 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "Linting..."
+echo "Linting pre commit..."
 yarn lint && echo "Done!"

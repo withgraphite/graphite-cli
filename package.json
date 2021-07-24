@@ -46,6 +46,8 @@
     "gp": "dist/src/index.js"
   },
   "devDependencies": {
-    "husky": "^7.0.0"
+    "@commitlint/cli": "^13.1.0",
+    "@commitlint/config-conventional": "^13.1.0",
+    "husky": "^7.0.1"
   }
 }
