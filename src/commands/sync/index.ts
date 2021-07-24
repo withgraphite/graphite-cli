@@ -3,7 +3,12 @@ import { execSync } from "child_process";
 import prompts from "prompts";
 import yargs from "yargs";
 import { log } from "../../lib/log";
-import { checkoutBranch, logWarn } from "../../lib/utils";
+import {
+  checkoutBranch,
+  gpExecSync,
+  logInternalErrorAndExit,
+  logWarn,
+} from "../../lib/utils";
 import Branch from "../../wrapper-classes/branch";
 import AbstractCommand from "../abstract_command";
 import FixCommand from "../fix";
@@ -30,6 +35,13 @@ const args = {
     type: "boolean",
     alias: "f",
   },
+  pull: {
+    describe: `Pull the trunk branch before comparison.`,
+    demandOption: false,
+    default: false,
+    type: "boolean",
+    alias: "p",
+  },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
@@ -49,6 +61,12 @@ async function sync(opts: argsT) {
 
   const oldBranchName = oldBranch.name;
   checkoutBranch(opts.trunk);
+  if (opts.pull) {
+    gpExecSync({ command: `git pull` }, () => {
+      checkoutBranch(oldBranchName);
+      logInternalErrorAndExit(`Failed to pull trunk ${opts.trunk}`);
+    });
+  }
   const trunkChildren: Branch[] = await new Branch(
     opts.trunk
   ).getChildrenFromMeta();
