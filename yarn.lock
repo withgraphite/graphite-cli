@@ -1817,6 +1817,7 @@ fsevents@~2.3.1:
     chalk: ^4.1.0
     eslint: ^7.20.0
     fs-extra: ^9.0.1
+    husky: ^7.0.0
     mocha: ^8.3.2
     node-fetch: ^2.6.1
     prompts: ^2.4.1
@@ -1934,6 +1935,15 @@ fsevents@~2.3.1:
   dependencies:
     ms: ^2.0.0
   checksum: 4a08769434132a229a6153e77c869a9fe7132dc003d90119d54958e7b75feb65a3c4eca19fb18921568878ac455b6f399013279ad33248d94bd61a25def1fdda
+  languageName: node
+  linkType: hard
+
+"husky@npm:^7.0.0":
+  version: 7.0.1
+  resolution: "husky@npm:7.0.1"
+  bin:
+    husky: lib/bin.js
+  checksum: 1f6d87cab4339551615080664347b60168d81f3c3b84b9dc1f888068d3fe946d8b5513db5ea53bc086f235e6cc617b0aba903552e959596a49f2153ffac33cb4
   languageName: node
   linkType: hard
 

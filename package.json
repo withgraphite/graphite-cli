@@ -39,9 +39,13 @@
     "cli": "ts-node ./src/index.ts",
     "test": "yarn ts-mocha \"test/**/*.test.ts\"",
     "test-one": "yarn ts-mocha",
-    "deploy": "ts-node ./scripts/deploy.ts"
+    "deploy": "ts-node ./scripts/deploy.ts",
+    "postinstall": "husky install"
   },
   "bin": {
     "gp": "dist/src/index.js"
+  },
+  "devDependencies": {
+    "husky": "^7.0.0"
   }
 }
