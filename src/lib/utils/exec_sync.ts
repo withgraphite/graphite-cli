@@ -5,13 +5,14 @@ export function gpExecSync(
     command: string;
     options?: ExecSyncOptions;
   },
-  onError: (e: any) => Buffer | never
+  onError?: (e: Error) => void
 ): Buffer {
   try {
     return execSync(command.command, {
       ...command.options,
     });
   } catch (e) {
-    return onError(e);
+    onError?.(e);
+    return Buffer.alloc(0);
   }
 }
