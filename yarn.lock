@@ -294,6 +294,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@screenplaydev/graphite-cli-routes@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@screenplaydev/graphite-cli-routes@npm:0.1.0"
+  dependencies:
+    "@screenplaydev/retype": ^0.2.0
+    "@screenplaydev/retyped-routes": ^0.1.0
+    "@types/node": ^14.14.37
+  checksum: 1e0acaa3f216f4287ba30bc3278c31846149dbbc8541cbbc3a3ee3bae718469bc8628662f889162c770063e19602686ab9df4b41f205b6baaaeec805916e7e25
+  languageName: node
+  linkType: hard
+
+"@screenplaydev/retype@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@screenplaydev/retype@npm:0.2.0"
+  checksum: 9b633e952ccf172609f91157eb939b5aaabcde97ad222b3b942b3acf9ecf22f0e20aa7a8e63070ec48cbdac7ddcb52d3051e93250ecb7c789f828a0c9bd03e2a
+  languageName: node
+  linkType: hard
+
+"@screenplaydev/retyped-routes@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@screenplaydev/retyped-routes@npm:0.1.0"
+  dependencies:
+    "@screenplaydev/retype": ^0.2.0
+    "@types/isomorphic-fetch": ^0.0.35
+    "@types/node": ^14.14.37
+    isomorphic-fetch: ^3.0.0
+    path-to-regexp: ^6.1.0
+  checksum: 42c5ada2a3eed0726c6478d45f3d6278dc5584eb6b774e194d067e00aa99d5c362907295940e37c142caeb8e74fcbfa2bc7d97fd638043ccef640ebb00bacf34
+  languageName: node
+  linkType: hard
+
 "@sindresorhus/is@npm:^4.0.0":
   version: 4.0.1
   resolution: "@sindresorhus/is@npm:4.0.1"
@@ -365,6 +396,13 @@ __metadata:
   version: 4.0.1
   resolution: "@types/http-cache-semantics@npm:4.0.1"
   checksum: 16b8d0c7ea707bda68eeb009fe3c43b5af806882d31b13c436e23477e511f0b1a234f11f0c707293d649489e2f21941d11af06f091ce35d8a3dc8e8ac9a52afe
+  languageName: node
+  linkType: hard
+
+"@types/isomorphic-fetch@npm:^0.0.35":
+  version: 0.0.35
+  resolution: "@types/isomorphic-fetch@npm:0.0.35"
+  checksum: a9806f9618e860b7b8b37b8b283ca67ef81bc67fb6110c87d06684fe256d81b2e4ef395852c6b7804014c7c7023fddf42112a7868bf71a5d13d84d44e67b08ed
   languageName: node
   linkType: hard
 
@@ -2207,6 +2245,8 @@ fsevents@~2.3.1:
   dependencies:
     "@commitlint/cli": ^13.1.0
     "@commitlint/config-conventional": ^13.1.0
+    "@screenplaydev/graphite-cli-routes": ^0.1.0
+    "@screenplaydev/retyped-routes": ^0.1.0
     "@types/chai": ^4.2.14
     "@types/chalk": ^2.2.0
     "@types/fs-extra": ^9.0.1
@@ -2608,6 +2648,16 @@ fsevents@~2.3.1:
   version: 2.0.0
   resolution: "isexe@npm:2.0.0"
   checksum: 7b437980bb77881a146fba85cfbdf01edc2b148673e9c2722a1e49661fea73adf524430a80fdbfb8ce9f60d43224e682c657c45030482bd39e0c488fc29b4afe
+  languageName: node
+  linkType: hard
+
+"isomorphic-fetch@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "isomorphic-fetch@npm:3.0.0"
+  dependencies:
+    node-fetch: ^2.6.1
+    whatwg-fetch: ^3.4.1
+  checksum: 999c2845d440a6d53755d7954af40e55b38a25140a81f782aced55d56698f05aae8a0528ba6fd5630cc1040ecbf330c9858340a63b25645c0f81fa2f057fd0bb
   languageName: node
   linkType: hard
 
@@ -3457,6 +3507,13 @@ fsevents@~2.3.1:
   version: 1.0.7
   resolution: "path-parse@npm:1.0.7"
   checksum: 6de0bfa37b4f09af465ff3900fb4104ca9cb1e1fa5cbe869c40cedd10d5d625d04c284afc34967830eee780bf83fd69c017d72a23ffd35718ec861192ec91dd9
+  languageName: node
+  linkType: hard
+
+"path-to-regexp@npm:^6.1.0":
+  version: 6.2.0
+  resolution: "path-to-regexp@npm:6.2.0"
+  checksum: 4116de71f5453163910347f199ab28fdd07f4053ed88093acb42dc044a2e5e7d9e18379e81e8d5d982d1b88291be3666e56be34a0741298673248fd21e3c1c16
   languageName: node
   linkType: hard
 
@@ -4506,6 +4563,13 @@ typescript@^4.2.4:
     spdx-correct: ^3.0.0
     spdx-expression-parse: ^3.0.0
   checksum: 940899bd4eacfa012ceecb10a5814ba0e8103da5243aa74d0d62f1f8a405efcd23e034fb7193e2d05b392870c53aabcb1f66439b062075cdcb28bc5d562a8ff6
+  languageName: node
+  linkType: hard
+
+"whatwg-fetch@npm:^3.4.1":
+  version: 3.6.2
+  resolution: "whatwg-fetch@npm:3.6.2"
+  checksum: eaa370015f81fbf7fc69d5410a13c2200d3342fa783397e9a7e64215498276459993c05e826ed736d28a8abe4e7cc3f97e9b2ffadbc58129a55f443abdfea494
   languageName: node
   linkType: hard
 

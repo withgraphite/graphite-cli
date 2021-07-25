@@ -1,5 +1,7 @@
+import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
+import { request } from "@screenplaydev/retyped-routes";
 import chalk from "chalk";
-import fetch from "node-fetch";
+import { API_SERVER } from "src/lib/api";
 import yargs from "yargs";
 import { profiledHandler, userEmail } from "../lib/telemetry";
 
@@ -20,17 +22,16 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profiledHandler(command, async () => {
     const user = userEmail();
-    const response = await fetch(
-      `https://api.graphite.dev/v1/graphite/feedback`,
+    const response = await request.requestWithArgs(
+      API_SERVER,
+      graphiteCLIRoutes.feedback,
       {
-        method: "POST",
-        body: JSON.stringify({
-          user: user || "NotFound",
-          message: argv.message,
-        }),
+        user: user || "NotFound",
+        message: argv.message || "",
+        debugContext: undefined,
       }
     );
-    if (response.status == 200) {
+    if (response._response.status == 200) {
       console.log(
         chalk.green(
           `Feedback received loud and clear (in a team Slack channel) :)`

@@ -1,10 +1,13 @@
 // Why does an open source CLI include telemetry?
 // We the creators want to understand how people are using the tool
 // All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
+import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
+import { request } from "@screenplaydev/retyped-routes";
 import chalk from "chalk";
 import { execSync } from "child_process";
 import fetch from "node-fetch";
 import { version } from "../../../package.json";
+import { API_SERVER } from "../api";
 
 export async function profiledHandler(
   name: string,
@@ -68,22 +71,19 @@ export async function logCommand(
   err?: Error
 ): Promise<void> {
   if (shouldReportTelemetry()) {
-    await fetch("https://api.graphite.dev/v1/graphite/log-command", {
-      method: "POST",
-      body: JSON.stringify({
-        commandName: commandName,
-        durationMiliSeconds: durationMiliSeconds,
-        user: userEmail() || "NotFound",
-        version: version,
-        err: err
-          ? {
-              name: err.name,
-              message: err.message,
-              stackTrace: err.stack || "",
-              debugContext: undefined,
-            }
-          : undefined,
-      }),
+    await request.requestWithArgs(API_SERVER, graphiteCLIRoutes.logCommand, {
+      commandName: commandName,
+      durationMiliSeconds: durationMiliSeconds,
+      user: userEmail() || "NotFound",
+      version: version,
+      err: err
+        ? {
+            name: err.name,
+            message: err.message,
+            stackTrace: err.stack || "",
+            debugContext: undefined,
+          }
+        : undefined,
     });
   }
 }
