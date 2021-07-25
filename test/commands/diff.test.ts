@@ -27,4 +27,14 @@ describe("Diff tests", function () {
     execCliCommand("prev", { fromDir: tmpDir.name });
     expect(repo.currentBranchName()).to.equal("main");
   });
+
+  it("Can rollback changes on a failed commit hook", () => {
+    // Agressive AF commit hook from your angry coworker
+    repo.createPrecommitHook("exit 1");
+    repo.createChange("2");
+    expect(() => {
+      execCliCommand(`diff -b "a" -s`, { fromDir: tmpDir.name });
+    }).to.throw;
+    expect(repo.currentBranchName()).to.equal("main");
+  });
 });

@@ -24,6 +24,12 @@ export default class GitRepo {
     execSync(`git -C ${this.dir} commit -m "${textValue}"`);
   }
 
+  createPrecommitHook(contents: string): void {
+    fs.mkdirpSync(`${this.dir}/.git/hooks`);
+    fs.writeFileSync(`${this.dir}/.git/hooks/pre-commit`, contents);
+    execSync(`chmod +x ${this.dir}/.git/hooks/pre-commit`);
+  }
+
   createAndCheckoutBranch(name: string): void {
     execSync(`git -C ${this.dir} checkout -b "${name}"`, { stdio: "ignore" });
   }
