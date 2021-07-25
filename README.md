@@ -7,6 +7,8 @@ Everything is still a little early, so please add comments if you have any quest
 
 ---
 
+<img src="./demo/full.svg">
+
 ### **Getting started**
 
 Install Graphite using Homebrew ([https://brew.sh/](https://brew.sh/))

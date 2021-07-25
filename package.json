@@ -21,7 +21,8 @@
     "cli": "ts-node ./src/index.ts",
     "test": "yarn ts-mocha \"test/**/*.test.ts\"",
     "test-one": "yarn ts-mocha",
-    "deploy": "ts-node ./scripts/deploy.ts"
+    "deploy": "ts-node ./scripts/deploy.ts",
+    "regen-demo": "ts-node ./scripts/demo/index.ts"
   },
   "files": [
     "dist"
