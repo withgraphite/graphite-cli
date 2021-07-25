@@ -1,6 +1,6 @@
 import yargs from "yargs";
-import { workingTreeClean } from "../../lib/git-utils";
 import {
+  checkoutBranch,
   detectStagedChanges,
   gpExecSync,
   logErrorAndExit,
@@ -46,24 +46,29 @@ export default class DiffCommand extends AbstractCommand<typeof args> {
     const branchName = newBranchName(argv);
     checkoutNewBranch(branchName, argv);
 
-    if (!workingTreeClean()) {
-      /**
-       * Here, we silence errors and ignore them. This
-       * isn't great but our main concern is that we're able to create
-       * and check out the new branch and these types of error point to
-       * larger failure outside of our control.
-       */
-      gpExecSync({
+    /**
+     * Here, we silence errors and ignore them. This
+     * isn't great but our main concern is that we're able to create
+     * and check out the new branch and these types of error point to
+     * larger failure outside of our control.
+     */
+    gpExecSync(
+      {
         command: `git commit -m "${argv.message || "Updates"}"`,
         options: {
-          stdio: [
-            "pipe", // stdin
-            "pipe", // stdout
-            "ignore", // stderr
-          ],
+          stdio: "inherit",
         },
-      });
-    }
+      },
+      () => {
+        // Commit failed, usually due to precommit hooks. Rollback the branch.
+        checkoutBranch(parentBranch.name);
+        gpExecSync({
+          command: `git branch -d ${branchName}`,
+          options: { stdio: "ignore" },
+        });
+        logErrorAndExit("Failed to commit changes, aborting diff");
+      }
+    );
 
     const currentBranch = Branch.getCurrentBranch();
     if (currentBranch === null) {
