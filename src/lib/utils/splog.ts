@@ -25,3 +25,7 @@ export function logInfo(msg: string): void {
 export function logSuccess(msg: string): void {
   console.log(chalk.green(`${msg}`));
 }
+
+export function logNewline(): void {
+  console.log("");
+}

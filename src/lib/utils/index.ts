@@ -15,6 +15,7 @@ import {
   logErrorAndExit,
   logInfo,
   logInternalErrorAndExit,
+  logNewline,
   logSuccess,
   logWarn,
 } from "./splog";
@@ -34,6 +35,7 @@ export {
   logInfo,
   logSuccess,
   logWarn,
+  logNewline,
   checkoutBranch,
   rebaseInProgress,
   detectStagedChanges,
