@@ -2,9 +2,18 @@ import { execSync } from "child_process";
 import { gpExecSync, logErrorAndExit } from "../lib/utils";
 import Commit from "./commit";
 
+<<<<<<< HEAD
 type TMeta = {
   parentBranchName?: string;
   prevRef?: string;
+=======
+type TBranchDesc = {
+  parentBranchName?: string;
+  prInfo?: {
+    number: number;
+    url: string;
+  };
+>>>>>>> 456f081 ([Submit] Store returned PR info in branch metadata)
 };
 
 export const MAX_COMMITS_TO_TRAVERSE_FOR_NEXT_OR_PREV = 50;
@@ -316,5 +325,16 @@ export default class Branch {
     return Array.from(
       traverseGitTreeFromCommitUntilBranch(headSha, gitTree, branchList, 0)
     ).map((name) => new Branch(name));
+  }
+
+  public setPRInfo(prInfo: { number: number; url: string }): void {
+    this.writeMeta({
+      ...this.getMeta(),
+      prInfo: prInfo,
+    });
+  }
+
+  public getPRInfo(): { number: number; url: string } | undefined {
+    return this.getMeta()?.prInfo;
   }
 }
