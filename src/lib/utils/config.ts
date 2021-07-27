@@ -71,7 +71,6 @@ function setUserConfig(config: UserConfigT): void {
 }
 
 export let repoConfig: RepoConfigT = {};
-const inferredRepoInfo = inferRepoInfo();
 if (fs.existsSync(CURRENT_REPO_CONFIG_PATH)) {
   const repoConfigRaw = fs.readFileSync(CURRENT_REPO_CONFIG_PATH);
   try {
@@ -80,36 +79,32 @@ if (fs.existsSync(CURRENT_REPO_CONFIG_PATH)) {
     console.log(chalk.yellow(`Warning: Malformed ${CURRENT_REPO_CONFIG_PATH}`));
   }
 }
+initializeRepoConfigWithInferredInfo();
 
-// Only infer repo info if all of these conditions are satisfied:
-// 1) repo info can be inferred
-// 2) the repo config doesn't already have these fields (e.g. the user may
-//    have manually saved some settings)
-if (inferredRepoInfo !== null) {
-  if (
-    repoConfig !== null &&
-    (repoConfig.owner === undefined || repoConfig.repoName === undefined)
-  ) {
-    repoConfig = {
-      ...repoConfig,
-      owner: inferredRepoInfo.owner,
-      repoName: inferredRepoInfo.name,
-    };
-  } else {
-    repoConfig = {
-      owner: inferredRepoInfo.owner,
-      repoName: inferredRepoInfo.name,
-    };
+function initializeRepoConfigWithInferredInfo(): void {
+  const githubInfo = inferRepoGitHubInfo();
+  if (githubInfo === null) {
+    return;
   }
-  updateRepoConfig(repoConfig);
+
+  // If the repo config already has these fields populated, we skip inferring
+  // them (the user may have manually modified their config).
+  if (repoConfig.owner === undefined) {
+    setRepoConfig({
+      ...repoConfig,
+      owner: githubInfo.owner,
+    });
+  }
+
+  if (repoConfig.repoName === undefined) {
+    setRepoConfig({
+      ...repoConfig,
+      repoName: githubInfo.name,
+    });
+  }
 }
 
-function updateRepoConfig(config: RepoConfigT) {
-  fs.writeFileSync(CURRENT_REPO_CONFIG_PATH, JSON.stringify(config));
-  repoConfig = config;
-}
-
-function inferRepoInfo(): {
+function inferRepoGitHubInfo(): {
   owner: string;
   name: string;
 } | null {
@@ -132,9 +127,18 @@ function inferRepoInfo(): {
     return null;
   }
 
-  // e.g. in screenplaydev/graphite-cli we're trying to parse 'screenplaydev'
-  // and 'graphite-cli'
-  const matches = /git@github.com:([^/]+)\/(.+)?.git/.exec(url);
+  let regex = undefined;
+  if (url.startsWith("git@github.com")) {
+    regex = /git@github.com:([^/]+)\/(.+)?.git/;
+  } else if (url.startsWith("https://")) {
+    regex = /https:\/\/github.com\/([^/]+)\/(.+)?.git/;
+  } else {
+    return null;
+  }
+
+  // e.g. in screenplaydev/graphite-cli we're trying to get the owner
+  // ('screenplaydev') and the repo name ('graphite-cli')
+  const matches = regex.exec(url);
   const owner = matches?.[1];
   const name = matches?.[2];
 
@@ -146,6 +150,11 @@ function inferRepoInfo(): {
     owner: owner,
     name: name,
   };
+}
+
+function setRepoConfig(config: RepoConfigT) {
+  fs.writeFileSync(CURRENT_REPO_CONFIG_PATH, JSON.stringify(config));
+  repoConfig = config;
 }
 
 export const trunkBranches: string[] | undefined = repoConfig.trunkBranches;
