@@ -83,6 +83,7 @@ export default class SubmitCommand extends AbstractCommand<typeof args> {
     }
 
     this.printSubmittedPRInfo(submittedPRInfo.prs);
+    this.saveBranchPRInfo(submittedPRInfo.prs);
   }
 
   getCLIAuthToken(): string {
@@ -168,15 +169,26 @@ export default class SubmitCommand extends AbstractCommand<typeof args> {
       // a PR for has a valid parent.
       const parentBranchName = branch.getParentFromMeta()!.name;
 
-      branchPRInfo.push({
-        action: "create",
-        head: branch.name,
-        base: parentBranchName,
-        // Default placeholder title.
-        // TODO (nicholasyan): improve this by using the commit message if the
-        // branch only has 1 commit.
-        title: `Merge ${branch.name} into ${parentBranchName}`,
-      });
+      const prInfo = branch.getPRInfo();
+
+      if (prInfo) {
+        branchPRInfo.push({
+          action: "update",
+          head: branch.name,
+          base: parentBranchName,
+          prNumber: prInfo.number,
+        });
+      } else {
+        branchPRInfo.push({
+          action: "create",
+          head: branch.name,
+          base: parentBranchName,
+          // Default placeholder title.
+          // TODO (nicholasyan): improve this by using the commit message if the
+          // branch only has 1 commit.
+          title: `Merge ${branch.name} into ${parentBranchName}`,
+        });
+      }
     });
 
     try {
@@ -234,6 +246,23 @@ export default class SubmitCommand extends AbstractCommand<typeof args> {
       }
 
       logNewline();
+    });
+  }
+
+  saveBranchPRInfo(
+    prs: t.UnwrapSchemaMap<
+      typeof graphiteCLIRoutes.submitPullRequests.response
+    >["prs"]
+  ): void {
+    prs.forEach((pr) => {
+      if (pr.status === "updated" || pr.status === "created") {
+        Branch.branchWithName(pr.head).then((branch) => {
+          branch.setPRInfo({
+            number: pr.prNumber,
+            url: pr.prURL,
+          });
+        });
+      }
     });
   }
 
