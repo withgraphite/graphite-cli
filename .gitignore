@@ -9,3 +9,4 @@ xcuserdata/
 .pnp.*
 dist/
 .eslintcache
+.graphite_repo_config

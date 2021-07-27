@@ -55,7 +55,15 @@ if (fs.existsSync(USER_CONFIG_PATH)) {
   }
 }
 
-export function updateUserConfig(config: UserConfigT) {
+export function setUserAuthToken(authToken: string): void {
+  const newConfig = {
+    ...userConfig,
+    authToken: authToken,
+  };
+  setUserConfig(newConfig);
+}
+
+function setUserConfig(config: UserConfigT): void {
   fs.writeFileSync(USER_CONFIG_PATH, JSON.stringify(config));
   userConfig = config;
 }
