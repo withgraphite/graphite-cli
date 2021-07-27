@@ -4,21 +4,12 @@ import yargs from "yargs";
 import DemoCommand from "./commands/original-commands/demo";
 import FeedbackCommand from "./commands/original-commands/feedback";
 import PrintStacksCommand from "./commands/original-commands/print-stacks";
-import SubmitCommand from "./commands/original-commands/submit";
 
 // https://www.npmjs.com/package/tmp#graceful-cleanup
 tmp.setGracefulCleanup();
 
 yargs
   .commandDir("commands")
-  .command(
-    "submit",
-    "Experimental: Create PR's for each branch in the current stack",
-    SubmitCommand.args,
-    async (argv) => {
-      await new SubmitCommand().execute(argv);
-    }
-  )
   .command(
     "stacks",
     "Prints all current stacks.",
