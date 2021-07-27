@@ -2246,6 +2246,7 @@ fsevents@~2.3.1:
     "@commitlint/cli": ^13.1.0
     "@commitlint/config-conventional": ^13.1.0
     "@screenplaydev/graphite-cli-routes": ^0.2.0
+    "@screenplaydev/retype": ^0.2.0
     "@screenplaydev/retyped-routes": ^0.1.0
     "@types/chai": ^4.2.14
     "@types/chalk": ^2.2.0
