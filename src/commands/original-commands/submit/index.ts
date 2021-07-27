@@ -198,7 +198,7 @@ export default class SubmitCommand extends AbstractCommand<typeof args> {
         return null;
       }
 
-      return response._response.json();
+      return response;
     } catch (error) {
       return null;
     }
