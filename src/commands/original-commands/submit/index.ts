@@ -254,13 +254,12 @@ export default class SubmitCommand extends AbstractCommand<typeof args> {
       typeof graphiteCLIRoutes.submitPullRequests.response
     >["prs"]
   ): void {
-    prs.forEach((pr) => {
+    prs.forEach(async (pr) => {
       if (pr.status === "updated" || pr.status === "created") {
-        Branch.branchWithName(pr.head).then((branch) => {
-          branch.setPRInfo({
-            number: pr.prNumber,
-            url: pr.prURL,
-          });
+        const branch = await Branch.branchWithName(pr.head);
+        branch.setPRInfo({
+          number: pr.prNumber,
+          url: pr.prURL,
         });
       }
     });
