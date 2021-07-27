@@ -1,8 +1,8 @@
 import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
 import { request } from "@screenplaydev/retyped-routes";
 import chalk from "chalk";
-import { API_SERVER } from "src/lib/api";
 import yargs from "yargs";
+import { API_SERVER } from "../lib/api";
 import { profiledHandler, userEmail } from "../lib/telemetry";
 
 const args = {
