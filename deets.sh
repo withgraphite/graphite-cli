@@ -1,6 +1,7 @@
 # gp stack ...
 gp stack fix # rebases git branches to match stack
 gp stack onto # move stack onto some other branch
+gp stack regen # create stacks based on the git branches.
 gp stack submit # create pr's / force pushes for full stack
 gp stack land # attempt to land full stack
 gp stack clean # delete branches in the stack which have been merged into stack trunk
