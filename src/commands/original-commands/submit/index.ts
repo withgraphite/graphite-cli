@@ -69,6 +69,10 @@ export default class SubmitCommand extends AbstractCommand<typeof args> {
     }
 
     const stackOfBranches = await this.getDownstackInclusive(currentBranch);
+    if (stackOfBranches.length === 0) {
+      logWarn("No downstack branches found.");
+      return;
+    }
 
     this.pushBranchesToRemote(stackOfBranches);
 
