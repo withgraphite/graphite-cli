@@ -3,7 +3,6 @@ import tmp from "tmp";
 import yargs from "yargs";
 import DemoCommand from "./commands/original-commands/demo";
 import FeedbackCommand from "./commands/original-commands/feedback";
-import FixCommand from "./commands/original-commands/fix";
 import PrintStacksCommand from "./commands/original-commands/print-stacks";
 import SubmitCommand from "./commands/original-commands/submit";
 import ValidateCommand from "./commands/original-commands/validate";
@@ -30,14 +29,6 @@ yargs
     }
   )
   .command(
-    "fix",
-    "Trace the current branch through its parents, down to the base branch. Establish dependencies between each branch for later traversal and restacking.",
-    FixCommand.args,
-    async (argv) => {
-      await new FixCommand().execute(argv);
-    }
-  )
-  .command(
     "validate",
     "Validates that the gp meta graph matches the current graph of git branches and commits.",
     ValidateCommand.args,
@@ -53,7 +44,6 @@ yargs
       await new FeedbackCommand().execute(argv);
     }
   )
-
   .command("demo", false, DemoCommand.args, async (argv) => {
     await new DemoCommand().execute(argv);
   })

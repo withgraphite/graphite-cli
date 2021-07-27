@@ -5,7 +5,7 @@ import Branch from "../../src/wrapper-classes/branch";
 import { execCliCommand } from "../utils/exec_cli_command";
 import GitRepo from "../utils/git_repo";
 
-describe("Fix tests", function () {
+describe("stack regen", function () {
   let tmpDir: tmp.DirResult;
   let repo: GitRepo;
   const oldDir = __dirname;
@@ -38,7 +38,7 @@ describe("Fix tests", function () {
 
     repo.checkoutBranch("main");
 
-    execCliCommand("fix -s", { fromDir: tmpDir.name });
+    execCliCommand("stack regen -s", { fromDir: tmpDir.name });
 
     repo.checkoutBranch("b");
 

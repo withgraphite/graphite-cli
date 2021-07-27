@@ -1,7 +1,7 @@
 import yargs from "yargs";
 import SyncCommand from "../original-commands/sync";
 
-export const command = "sync";
+export const command = "clean";
 export const description =
   "Delete any stacks that have been merged or squashed into your trunk branch, and restack their children recursively.";
 export const builder = SyncCommand.args;

@@ -42,7 +42,7 @@ function expectBranches(repo: GitRepo, sortedBranches: string) {
 }
 
 // eslint-disable-next-line max-lines-per-function
-describe("Sync tests", function () {
+describe("stack clean", function () {
   let tmpDir: tmp.DirResult;
   let repo: GitRepo;
   const oldDir = __dirname;
@@ -66,7 +66,7 @@ describe("Sync tests", function () {
     expectBranches(repo, "a, main");
 
     fakeGitSquashAndMerge(repo, "a", "squash");
-    execCliCommand(`stack sync -sf --trunk main`, { fromDir: tmpDir.name });
+    execCliCommand(`stack clean -sf --trunk main`, { fromDir: tmpDir.name });
 
     expectBranches(repo, "main");
   });
@@ -81,7 +81,7 @@ describe("Sync tests", function () {
     expectBranches(repo, "a, b, main");
 
     fakeGitSquashAndMerge(repo, "a", "squash");
-    execCliCommand(`stack sync -sf --trunk main`, { fromDir: tmpDir.name });
+    execCliCommand(`stack clean -sf --trunk main`, { fromDir: tmpDir.name });
 
     expectBranches(repo, "b, main");
     expectCommits(repo, "squash, 1");
@@ -104,7 +104,7 @@ describe("Sync tests", function () {
 
     fakeGitSquashAndMerge(repo, "a", "squash_a");
     fakeGitSquashAndMerge(repo, "b", "squash_b");
-    execCliCommand(`stack sync -sf --trunk main`, { fromDir: tmpDir.name });
+    execCliCommand(`stack clean -sf --trunk main`, { fromDir: tmpDir.name });
 
     expectBranches(repo, "c, main");
     expectCommits(repo, "squash_b, squash_a, 1");
@@ -123,9 +123,9 @@ describe("Sync tests", function () {
     expectBranches(repo, "a, b, c, main");
 
     fakeGitSquashAndMerge(repo, "a", "squash_a");
-    execCliCommand(`stack sync -sf --trunk main`, { fromDir: tmpDir.name });
+    execCliCommand(`stack clean -sf --trunk main`, { fromDir: tmpDir.name });
     fakeGitSquashAndMerge(repo, "b", "squash_b");
-    execCliCommand(`stack sync -sf --trunk main`, { fromDir: tmpDir.name });
+    execCliCommand(`stack clean -sf --trunk main`, { fromDir: tmpDir.name });
 
     expectBranches(repo, "c, main");
     expectCommits(repo, "squash_b, squash_a, 1");
@@ -155,7 +155,7 @@ describe("Sync tests", function () {
     fakeGitSquashAndMerge(repo, "b", "squash_b");
     fakeGitSquashAndMerge(repo, "d", "squash_d");
 
-    execCliCommand(`stack sync -sf --trunk main`, { fromDir: tmpDir.name });
+    execCliCommand(`stack clean -sf --trunk main`, { fromDir: tmpDir.name });
 
     expectBranches(repo, "c, e, main");
     repo.checkoutBranch("main");
