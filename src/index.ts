@@ -5,7 +5,6 @@ import DemoCommand from "./commands/original-commands/demo";
 import FeedbackCommand from "./commands/original-commands/feedback";
 import PrintStacksCommand from "./commands/original-commands/print-stacks";
 import SubmitCommand from "./commands/original-commands/submit";
-import ValidateCommand from "./commands/original-commands/validate";
 
 // https://www.npmjs.com/package/tmp#graceful-cleanup
 tmp.setGracefulCleanup();
@@ -26,14 +25,6 @@ yargs
     PrintStacksCommand.args,
     async (argv) => {
       await new PrintStacksCommand().execute(argv);
-    }
-  )
-  .command(
-    "validate",
-    "Validates that the gp meta graph matches the current graph of git branches and commits.",
-    ValidateCommand.args,
-    async (argv) => {
-      await new ValidateCommand().execute(argv);
     }
   )
   .command(

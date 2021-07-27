@@ -4,7 +4,7 @@ import tmp from "tmp";
 import { execCliCommand } from "../utils/exec_cli_command";
 import GitRepo from "../utils/git_repo";
 
-describe("Validate tests", function () {
+describe("stack validate", function () {
   let tmpDir: tmp.DirResult;
   let repo: GitRepo;
   this.beforeEach(() => {
@@ -25,7 +25,7 @@ describe("Validate tests", function () {
     execCliCommand(`branch create "b" -s`, { fromDir: tmpDir.name });
 
     // Expect this command not to fail.
-    execCliCommand("validate -s", { fromDir: tmpDir.name });
+    execCliCommand("stack validate -s", { fromDir: tmpDir.name });
   });
 
   it("Can fail validation", () => {
@@ -40,7 +40,7 @@ describe("Validate tests", function () {
 
     // Expect this command to fail for having no meta.
     expect(() => {
-      execCliCommand("validate -s", { fromDir: tmpDir.name });
+      execCliCommand("stack validate -s", { fromDir: tmpDir.name });
     }).to.throw;
   });
 });
