@@ -12,10 +12,6 @@ export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
   await profiledHandler(command, async () => {
-    await submitAction({
-      silent: argv.silent,
-      fromCommits: argv["from-commits"],
-      fill: argv.fill,
-    });
+    await submitAction({});
   });
 };
