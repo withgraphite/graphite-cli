@@ -1,14 +1,16 @@
 import chalk from "chalk";
+import {
+  CURRENT_REPO_CONFIG_PATH,
+  trunkBranches,
+} from "../actions/repo_config";
 import { validate } from "../actions/validate";
 import PrintStacksCommand from "../commands/original-commands/print-stacks";
 import { log } from "../lib/log";
 import {
   checkoutBranch,
-  CURRENT_REPO_CONFIG_PATH,
   gpExecSync,
   logErrorAndExit,
   rebaseInProgress,
-  trunkBranches,
   uncommittedChanges,
 } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
