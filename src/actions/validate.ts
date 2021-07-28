@@ -28,10 +28,17 @@ export async function validate(scope: scopeT, silent: boolean): Promise<void> {
 async function validateBranchDownInclusive(branch: Branch, silent: boolean) {
   const metaParent = await branch.getParentFromMeta();
   const gitParents = branch.getParentsFromGit();
+  const metaParentMatchesBranchWithSameHead =
+    !!metaParent &&
+    !!branch.branchesWithSameCommit().find((b) => b.name == metaParent.name);
   if (gitParents.length === 0 && !metaParent) {
     return;
   }
-  if (gitParents.length === 0 && metaParent) {
+  if (
+    gitParents.length === 0 &&
+    metaParent &&
+    !metaParentMatchesBranchWithSameHead
+  ) {
     throw new Error(
       `(${branch.name}) has stack parent (${metaParent.name}), but no parent in the git graph.`
     );
@@ -51,7 +58,10 @@ async function validateBranchDownInclusive(branch: Branch, silent: boolean) {
   if (!metaParent) {
     throw new Error("Unreachable");
   }
-  if (gitParents[0].name !== metaParent.name) {
+  if (
+    !metaParentMatchesBranchWithSameHead &&
+    gitParents[0].name !== metaParent.name
+  ) {
     throw new Error(
       `(${branch.name}) has git parent (${gitParents[0].name}) but stack parent (${metaParent.name})`
     );
@@ -65,12 +75,6 @@ async function validateBranchUpInclusive(branch: Branch, silent: boolean) {
   const gitChildren = branch.getChildrenFromGit();
   const hasGitChildren = gitChildren && gitChildren.length > 0;
   const hasMetaChildren = metaChildren.length > 0;
-  if (hasGitChildren && !hasMetaChildren) {
-    throw new Error(`${branch.name} missing a child in the stack`);
-  }
-  if (!hasGitChildren && hasMetaChildren) {
-    throw new Error(`Unable to find child branches in git for ${branch.name}`);
-  }
   if (!hasGitChildren && !hasMetaChildren) {
     // Assume to be a trunk branch and implicately valid.
     log(`✅ ${chalk.green(`(${branch.name}) validated`)}`, { silent });
@@ -84,6 +88,19 @@ async function validateBranchUpInclusive(branch: Branch, silent: boolean) {
       `Child branches [${gitChildrenMissingInMeta
         .map((b) => `(${b.name})`)
         .join(", ")}] not found in the stack.`
+    );
+  }
+  const gitChildrenAndEquals = gitChildren.concat(
+    branch.branchesWithSameCommit()
+  );
+  const metaChildrenMissingInGit = metaChildren!.filter(
+    (metaChild) => !gitChildrenAndEquals!.find((b) => b.name === metaChild.name)
+  );
+  if (metaChildrenMissingInGit.length > 0) {
+    throw new Error(
+      `Stack children [${metaChildrenMissingInGit
+        .map((b) => `(${b.name})`)
+        .join(", ")}] not found as git child branchs.`
     );
   }
   log(`✅ ${chalk.green(`(${branch.name}) validated`)}`, { silent });

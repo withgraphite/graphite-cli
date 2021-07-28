@@ -10,7 +10,7 @@ describe("stack validate", function () {
   this.beforeEach(() => {
     tmpDir = tmp.dirSync();
     repo = new GitRepo(tmpDir.name);
-    repo.createChangeAndCommit("1");
+    repo.createChangeAndCommit("1", "first");
   });
   afterEach(() => {
     fs.emptyDirSync(tmpDir.name);
@@ -29,10 +29,6 @@ describe("stack validate", function () {
   });
 
   it("Can fail validation", () => {
-    const tmpDir = tmp.dirSync();
-    const repo = new GitRepo(tmpDir.name);
-
-    repo.createChangeAndCommit("1");
     repo.createAndCheckoutBranch("a");
     repo.createChangeAndCommit("2");
     repo.createAndCheckoutBranch("b");
@@ -41,6 +37,22 @@ describe("stack validate", function () {
     // Expect this command to fail for having no meta.
     expect(() => {
       execCliCommand("stack validate -s", { fromDir: tmpDir.name });
-    }).to.throw;
+    }).to.throw(Error);
+  });
+
+  it("Can pass validation if child branch points to same commit as parent", () => {
+    repo.createAndCheckoutBranch("a");
+    repo.checkoutBranch("a");
+    execCliCommand("upstack onto main", { fromDir: tmpDir.name });
+
+    expect(() => {
+      execCliCommand("stack validate -s", { fromDir: tmpDir.name });
+    }).to.not.throw(Error);
+
+    repo.checkoutBranch("main");
+
+    expect(() => {
+      execCliCommand("stack validate -s", { fromDir: tmpDir.name });
+    }).to.not.throw(Error);
   });
 });
