@@ -22,11 +22,7 @@ import { validate } from "./validate";
 type TSubmittedPRInfo = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.submitPullRequests.response
 >;
-export async function submitAction(args: {
-  silent: boolean;
-  fromCommits: boolean;
-  fill: boolean;
-}): Promise<void> {
+export async function submitAction(args: {}): Promise<void> {
   const cliAuthToken = getCLIAuthToken();
   const repoName = getRepoName();
   const repoOwner = getRepoOwner();
