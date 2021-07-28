@@ -342,4 +342,21 @@ export default class Branch {
   public getPRInfo(): { number: number; url: string } | undefined {
     return this.getMeta()?.prInfo;
   }
+
+  public branchesWithSameCommit(): Branch[] {
+    const curBranchSha = execSync(
+      `git show-ref --heads | grep refs/heads/${this.name} -s | awk '{print $1}'`
+    )
+      .toString()
+      .trim();
+    const matchingBranches = execSync(
+      `git show-ref --heads | grep ${curBranchSha} | grep -v "refs/heads/${this.name}" | awk '{print $2}'`
+    )
+      .toString()
+      .trim()
+      .split("\n")
+      .map((refName) => refName.replace("refs/heads/", ""))
+      .map((name) => new Branch(name));
+    return matchingBranches;
+  }
 }

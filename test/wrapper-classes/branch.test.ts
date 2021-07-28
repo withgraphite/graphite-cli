@@ -6,15 +6,23 @@ import { execCliCommand } from "../utils/exec_cli_command";
 import GitRepo from "../utils/git_repo";
 
 describe("Branch tests", function () {
-  it("Can list git parent for a branch", () => {
-    const tmpDir = tmp.dirSync();
-    const repo = new GitRepo(tmpDir.name);
-    const oldDir = __dirname;
+  let tmpDir: tmp.DirResult;
+  let repo: GitRepo;
+  const oldDir = __dirname;
+  this.beforeEach(() => {
+    tmpDir = tmp.dirSync();
     process.chdir(tmpDir.name);
+    repo = new GitRepo(tmpDir.name);
+    repo.createChangeAndCommit("1", "first");
+  });
+  afterEach(() => {
+    process.chdir(oldDir);
+    fs.emptyDirSync(tmpDir.name);
+    tmpDir.removeCallback();
+  });
 
-    repo.createChangeAndCommit("1");
+  it("Can list git parent for a branch", () => {
     repo.createChange("2");
-
     execCliCommand(`branch create "a" -s`, { fromDir: tmpDir.name });
 
     const branch = new Branch("a");
@@ -26,14 +34,7 @@ describe("Branch tests", function () {
   });
 
   it("Can list parent based on meta for a branch", () => {
-    const tmpDir = tmp.dirSync();
-    const repo = new GitRepo(tmpDir.name);
-    const oldDir = __dirname;
-    process.chdir(tmpDir.name);
-
-    repo.createChangeAndCommit("1");
     repo.createChange("2");
-
     execCliCommand(`branch create "a" -s`, { fromDir: tmpDir.name });
 
     const branch = new Branch("a");
@@ -43,5 +44,19 @@ describe("Branch tests", function () {
     process.chdir(oldDir);
     fs.emptyDirSync(tmpDir.name);
     tmpDir.removeCallback();
+  });
+
+  it("Can fetch branches that point to the same commit", () => {
+    repo.createAndCheckoutBranch("a");
+    repo.createChangeAndCommit("2");
+    repo.createAndCheckoutBranch("b");
+    repo.createAndCheckoutBranch("c");
+    expect(
+      new Branch("a")
+        .branchesWithSameCommit()
+        .map((b) => b.name)
+        .sort()
+        .join(", ")
+    ).to.eq("b, c");
   });
 });
