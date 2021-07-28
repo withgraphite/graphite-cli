@@ -17,12 +17,15 @@ import {
 } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 import { getRepoName, getRepoOwner } from "./repo_config";
+import { TScope } from "./scope";
 import { validate } from "./validate";
 
 type TSubmittedPRInfo = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.submitPullRequests.response
 >;
+
 export async function submitAction(
+  scope: TScope,
   args: Record<string, unknown>
 ): Promise<void> {
   const cliAuthToken = getCLIAuthToken();
@@ -30,7 +33,7 @@ export async function submitAction(
   const repoOwner = getRepoOwner();
 
   try {
-    await validate("FULLSTACK", true);
+    await validate(scope, true);
   } catch {
     await new PrintStacksCommand().executeUnprofiled({});
     throw new Error(`Validation failed before submitting.`);

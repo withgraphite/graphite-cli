@@ -2,9 +2,9 @@ import chalk from "chalk";
 import { log } from "../lib/log";
 import { logErrorAndExit } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
+import { TScope } from "./scope";
 
-type scopeT = "UPSTACK" | "DOWNSTACK" | "FULLSTACK";
-export async function validate(scope: scopeT, silent: boolean): Promise<void> {
+export async function validate(scope: TScope, silent: boolean): Promise<void> {
   const branch = Branch.getCurrentBranch();
   if (branch === null) {
     logErrorAndExit("Not currently on a branch; no stack to validate.");
