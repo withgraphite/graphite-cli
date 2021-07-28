@@ -6,14 +6,15 @@ const args = {
   token: {
     type: "string",
     alias: "t",
-    describe: "The auth token for the current session",
+    describe: "Auth token",
     demandOption: true,
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "auth";
-export const description = "Authenticate current Graphite CLI";
+export const description =
+  "Associates an auth token with your Graphite CLI. This token is used to associate your CLI with your account, allowing us to create and update your PRs on GitHub, for example. To obtain your CLI token, visit https://app.graphite.com/activate.";
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
