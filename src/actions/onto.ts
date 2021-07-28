@@ -1,12 +1,13 @@
 import chalk from "chalk";
-import { execSync } from "child_process";
 import { validate } from "../actions/validate";
 import PrintStacksCommand from "../commands/original-commands/print-stacks";
 import { log } from "../lib/log";
 import {
   checkoutBranch,
   CURRENT_REPO_CONFIG_PATH,
+  gpExecSync,
   logErrorAndExit,
+  rebaseInProgress,
   trunkBranches,
   uncommittedChanges,
 } from "../lib/utils";
@@ -45,9 +46,23 @@ async function restackOnto(
   const parent = getParentForRebaseOnto(currentBranch, silent);
   // Save the old ref from before rebasing so that children can find their bases.
   currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
-  execSync(
-    `git rebase --onto ${onto} $(git merge-base ${currentBranch.name} ${parent.name}) ${currentBranch.name}`,
-    { stdio: "ignore" }
+
+  // Add try catch check for rebase interactive....
+  gpExecSync(
+    {
+      command: `git rebase --onto ${onto} $(git merge-base ${currentBranch.name} ${parent.name}) ${currentBranch.name}`,
+      options: { stdio: "ignore" },
+    },
+    () => {
+      if (rebaseInProgress()) {
+        log(
+          chalk.yellow(
+            "Please resolve the rebase conflict and then continue with your `stack onto` command."
+          )
+        );
+        process.exit(0);
+      }
+    }
   );
   // set current branch's parent only if the rebase succeeds.
   currentBranch.setParentBranchName(onto);
