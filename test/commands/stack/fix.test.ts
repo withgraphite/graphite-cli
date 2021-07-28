@@ -60,18 +60,14 @@ describe("stack fix", function () {
     repo.checkoutBranch("main");
     repo.createChangeAndCommit("1.5");
 
-    try {
-      execCliCommand("stack fix -s", { fromDir: repo.dir });
-    } catch {
-      repo.finishInteractiveRebase();
-    }
+    execCliCommand("stack fix -s", { fromDir: repo.dir });
+    repo.finishInteractiveRebase();
+
     expect(repo.rebaseInProgress()).to.eq(false);
     expect(repo.currentBranchName()).to.eq("a");
-    try {
-      execCliCommand("stack fix -s", { fromDir: repo.dir });
-    } catch {
-      repo.finishInteractiveRebase();
-    }
+
+    execCliCommand("stack fix -s", { fromDir: repo.dir });
+    repo.finishInteractiveRebase();
 
     expect(repo.currentBranchName()).to.eq("b");
     expect(repo.listCurrentBranchCommitMessages().join(", ")).to.equal(

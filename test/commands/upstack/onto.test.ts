@@ -30,4 +30,17 @@ describe("upstack onto", function () {
     expect(() => execCliCommand("validate -s", { fromDir: tmpDir.name })).not.to
       .throw;
   });
+
+  it("Can gracefully catch a merge conflict on first rebase", () => {
+    repo.createChange("2", "a");
+    execCliCommand("branch create 'a' -m '2' -s", { fromDir: tmpDir.name });
+
+    repo.checkoutBranch("main");
+    repo.createChangeAndCommit("3", "a");
+
+    repo.checkoutBranch("a");
+    expect(() => {
+      execCliCommand("upstack onto main -s", { fromDir: tmpDir.name });
+    }).to.not.throw();
+  });
 });
