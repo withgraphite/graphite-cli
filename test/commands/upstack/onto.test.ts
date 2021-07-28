@@ -43,4 +43,23 @@ describe("upstack onto", function () {
       execCliCommand("upstack onto main -s", { fromDir: tmpDir.name });
     }).to.not.throw();
   });
+
+  it("Can recover a branch that has no git and meta parents", () => {
+    // Create our dangling branch
+    repo.createAndCheckoutBranch("a");
+    repo.createChangeAndCommit("a", "a");
+
+    // Move main forward
+    repo.checkoutBranch("main");
+    repo.createChangeAndCommit("b", "b");
+
+    // branch a is dangling now, but we should still be able to "upstack onto" main
+    repo.checkoutBranch("a");
+    expect(() => {
+      execCliCommand("upstack onto main", { fromDir: tmpDir.name });
+    }).to.not.throw();
+    expect(repo.listCurrentBranchCommitMessages().join(", ")).to.equal(
+      "a, b, 1"
+    );
+  });
 });

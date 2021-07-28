@@ -40,10 +40,15 @@ async function restackOnto(
   onto: string,
   silent: boolean
 ) {
+  if (!Branch.exists(onto)) {
+    logErrorAndExit(
+      `Branch named "${onto}" does not exist in the current repo`
+    );
+  }
   // Check that the current branch has a parent to prevent moving main
   checkBranchCanBeMoved(currentBranch, onto, silent);
   await validateStack(silent);
-  const parent = getParentForRebaseOnto(currentBranch, silent);
+  const parent = await getParentForRebaseOnto(currentBranch, onto, silent);
   // Save the old ref from before rebasing so that children can find their bases.
   currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
 
@@ -77,7 +82,7 @@ async function validateStack(silent: boolean) {
   } catch {
     log(
       chalk.red(
-        `Cannot move stack "onto", git branches must match stack. Consider running "fix" or "regen" first.`
+        `Cannot stack "onto", git branches must match stack. Consider running "fix" or "regen" first.`
       ),
       { silent }
     );
@@ -89,7 +94,7 @@ function checkBranchCanBeMoved(branch: Branch, onto: string, silent: boolean) {
   if (trunkBranches && branch.name in trunkBranches) {
     log(
       chalk.red(
-        `Cannot fix (${branch.name}) onto ${onto}, (${branch.name}) is listed in (${CURRENT_REPO_CONFIG_PATH}) as a trunk branch.`
+        `Cannot stack (${branch.name}) onto ${onto}, (${branch.name}) is listed in (${CURRENT_REPO_CONFIG_PATH}) as a trunk branch.`
       ),
       { silent }
     );
@@ -97,16 +102,23 @@ function checkBranchCanBeMoved(branch: Branch, onto: string, silent: boolean) {
   }
 }
 
-function getParentForRebaseOnto(branch: Branch, silent: boolean): Branch {
-  const parent = branch.getParentFromMeta();
-  if (!parent) {
-    log(
-      chalk.red(
-        `Cannot "fix --onto", (${branch.name}) has no branch parent in the stack.`
-      ),
-      { silent }
-    );
-    process.exit(1);
+async function getParentForRebaseOnto(
+  branch: Branch,
+  onto: string,
+  silent: boolean
+): Promise<Branch> {
+  const metaParent = branch.getParentFromMeta();
+  if (metaParent) {
+    return metaParent;
   }
-  return parent;
+  // If no meta parent, consider one chance to recover automatically:
+  if (branch.getParentsFromGit().length == 0) {
+    // The branch has fallen behind main and has no metadata to recover it.
+    // Automatically recover the situation by setting the meta parent.
+    branch.setParentBranchName(onto);
+    return new Branch(onto);
+  }
+  logErrorAndExit(
+    `Cannot stack onto, (${branch.name}) has no parent branch in the stack.`
+  );
 }
