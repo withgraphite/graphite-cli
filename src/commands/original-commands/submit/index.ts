@@ -104,17 +104,24 @@ export default class SubmitCommand extends AbstractCommand<typeof args> {
     repoName: string;
     repoOwner: string;
   } {
-    const repoName = repoConfig.repoName;
-    const repoOwner = repoConfig.owner;
-    if (repoName === undefined || repoOwner === undefined) {
-      logErrorAndExit(
-        "Could not infer repoName and/or repo owner. Please fill out these fields in your repo's copy of .graphite_repo_config."
-      );
+    if (repoConfig.repoName && repoConfig.owner) {
+      return {
+        repoName: repoConfig.repoName,
+        repoOwner: repoConfig.owner,
+      };
     }
-    return {
-      repoName: repoName,
-      repoOwner: repoOwner,
-    };
+
+    const repoInfo = this.inferRepoGitHubInfo();
+    if (repoInfo !== null) {
+      return {
+        repoName: repoInfo.repoName,
+        repoOwner: repoInfo.repoOwner,
+      };
+    }
+
+    logErrorAndExit(
+      "Could not infer repoName and/or repo owner. Please fill out these fields in your repo's copy of .graphite_repo_config."
+    );
   }
 
   async getDownstackInclusive(topOfStack: Branch): Promise<Branch[]> {
@@ -136,6 +143,54 @@ export default class SubmitCommand extends AbstractCommand<typeof args> {
     downstack.reverse();
 
     return downstack;
+  }
+
+  inferRepoGitHubInfo(): {
+    repoOwner: string;
+    repoName: string;
+  } | null {
+    // This assumes that the remote to use is named 'origin' and that the remote
+    // to fetch from is the same as the remote to push to. If a user runs into
+    // an issue where any of these invariants are not true, they can manually
+    // edit the repo config file to overrule what our CLI tries to intelligently
+    // infer.
+    const url = gpExecSync(
+      {
+        command: `git config --get remote.origin.url`,
+      },
+      (_) => {
+        return Buffer.alloc(0);
+      }
+    )
+      .toString()
+      .trim();
+    if (!url || url.length === 0) {
+      return null;
+    }
+
+    let regex = undefined;
+    if (url.startsWith("git@github.com")) {
+      regex = /git@github.com:([^/]+)\/(.+)?.git/;
+    } else if (url.startsWith("https://")) {
+      regex = /https:\/\/github.com\/([^/]+)\/(.+)?.git/;
+    } else {
+      return null;
+    }
+
+    // e.g. in screenplaydev/graphite-cli we're trying to get the owner
+    // ('screenplaydev') and the repo name ('graphite-cli')
+    const matches = regex.exec(url);
+    const owner = matches?.[1];
+    const name = matches?.[2];
+
+    if (owner === undefined || name === undefined) {
+      return null;
+    }
+
+    return {
+      repoOwner: owner,
+      repoName: name,
+    };
   }
 
   pushBranchesToRemote(branches: Branch[]): void {
