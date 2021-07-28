@@ -1,8 +1,9 @@
-import { execSync } from "child_process";
+import chalk from "chalk";
 import PrintStacksCommand from "../commands/original-commands/print-stacks";
 import { log } from "../lib/log";
 import {
   checkoutBranch,
+  gpExecSync,
   logErrorAndExit,
   rebaseInProgress,
   uncommittedChanges,
@@ -56,9 +57,21 @@ export async function restackBranch(
 
   currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
   checkoutBranch(currentBranch.name);
-  execSync(
-    `git rebase --onto ${parentBranch.name} ${mergeBase} ${currentBranch.name}`,
-    { stdio: "ignore" }
+  gpExecSync(
+    {
+      command: `git rebase --onto ${parentBranch.name} ${mergeBase} ${currentBranch.name}`,
+      options: { stdio: "ignore" },
+    },
+    () => {
+      if (rebaseInProgress()) {
+        log(
+          chalk.yellow(
+            "Please resolve the rebase conflict and then continue with your `stack fix` command."
+          )
+        );
+        process.exit(0);
+      }
+    }
   );
 
   for (const child of await currentBranch.getChildrenFromMeta()) {
