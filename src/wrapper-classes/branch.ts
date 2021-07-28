@@ -199,6 +199,17 @@ export default class Branch {
     return closestMergeBase;
   }
 
+  public static exists(branchName: string): boolean {
+    try {
+      execSync(`git show-ref --quiet refs/heads/${branchName}`, {
+        stdio: "ignore",
+      });
+    } catch {
+      return false;
+    }
+    return true;
+  }
+
   public getMetaPrevRef(): string | undefined {
     return this.getMeta()?.prevRef;
   }
