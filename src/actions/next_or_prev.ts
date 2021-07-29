@@ -36,4 +36,5 @@ export async function nextOrPrevAction(
 
   const branchName = candidates.values().next().value.name;
   execSync(`git checkout "${branchName}"`, { stdio: "ignore" });
+  console.log(branchName);
 }
