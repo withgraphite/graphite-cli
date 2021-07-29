@@ -9,6 +9,8 @@ const args = {
     default: false,
     type: "string",
     alias: "s",
+    describe:
+      "Override the value of the repo's name in the Graphite config. This is expected to match the name of the repo on GitHub and should only be set in cases where Graphite is incorrectly inferring the name.",
   },
 } as const;
 
