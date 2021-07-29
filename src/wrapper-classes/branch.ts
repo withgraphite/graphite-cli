@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { gpExecSync, logErrorAndExit } from "../lib/utils";
+import { getTrunk, gpExecSync, logErrorAndExit } from "../lib/utils";
 import Commit from "./commit";
 
 type TMeta = {
@@ -137,6 +137,9 @@ export default class Branch {
   }
 
   getParentFromMeta(): Branch | undefined {
+    if (this.name === getTrunk().name) {
+      return undefined;
+    }
     const parentName = this.getMeta()?.parentBranchName;
     if (parentName) {
       if (parentName === this.name) {
@@ -307,6 +310,9 @@ export default class Branch {
   }
 
   public getParentsFromGit(): Branch[] {
+    if (this.name === getTrunk().name) {
+      return [];
+    }
     return this.getChildrenOrParents("PARENTS");
   }
 

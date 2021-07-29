@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { execSync } from "child_process";
 import fs from "fs-extra";
 import tmp from "tmp";
 import Branch from "../../../src/wrapper-classes/branch";
@@ -45,5 +46,25 @@ describe("stack regen", function () {
     expect(branch.stackByTracingMetaParents().join(",")).to.equal(
       branch.stackByTracingGitParents().join(",")
     );
+  });
+
+  it("Can regen when trunk branch has parents", () => {
+    repo.createAndCheckoutBranch("prod");
+    repo.createChangeAndCommit("prod", "prod");
+
+    repo.checkoutBranch("main");
+    repo.createChangeAndCommit("2", "2");
+
+    execSync(`git -C ${repo.dir} merge prod`);
+
+    repo.checkoutBranch("main");
+    repo.createChangeAndCommit("3", "3");
+
+    // Main now has a parent branch prod.
+    execCliCommand("stack regen -s", { fromDir: tmpDir.name });
+
+    expect(() =>
+      execCliCommand("stack validate -s", { fromDir: tmpDir.name })
+    ).to.not.throw(Error);
   });
 });
