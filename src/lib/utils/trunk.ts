@@ -43,10 +43,17 @@ function findCommonlyNamedTrunk(): Branch {
     );
   }
 }
+
+let memoizedTrunk: Branch;
 export function getTrunk(): Branch {
+  if (memoizedTrunk) {
+    return memoizedTrunk;
+  }
   const remoteOriginBranch = findRemoteOriginBranch();
   if (remoteOriginBranch) {
-    return remoteOriginBranch;
+    memoizedTrunk = remoteOriginBranch;
+    return memoizedTrunk;
   }
-  return findCommonlyNamedTrunk();
+  memoizedTrunk = findCommonlyNamedTrunk();
+  return memoizedTrunk;
 }
