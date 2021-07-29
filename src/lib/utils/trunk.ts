@@ -37,6 +37,10 @@ function findCommonlyNamedTrunk(): Branch {
   );
   if (potentialTrunks.length === 1) {
     return potentialTrunks[0];
+  } else if (potentialTrunks.length === 0) {
+    throw new Error(
+      `Failed to find either "main" or "master" branch, cannot infer repo trunk.`
+    );
   } else {
     throw new Error(
       `Detected both a "main" and "master" branch, cannot infer repo trunk.`
