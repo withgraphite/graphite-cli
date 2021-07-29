@@ -10,6 +10,27 @@ export default class GitRepo {
     execSync(`git init ${dir} -b main`);
   }
 
+  execCliCommand(command: string): void {
+    execSync(
+      `NODE_ENV=development node ${__dirname}/../../dist/src/index.js ${command}`,
+      {
+        stdio: process.env.DEBUG ? "inherit" : "ignore",
+        cwd: this.dir,
+      }
+    );
+  }
+
+  execCliCommandAndGetOutput(command: string): string {
+    return execSync(
+      `NODE_ENV=development node ${__dirname}/../../dist/src/index.js ${command}`,
+      {
+        cwd: this.dir,
+      }
+    )
+      .toString()
+      .trim();
+  }
+
   createChange(textValue: string, prefix?: string): void {
     const filePath = `${this.dir}/${
       prefix ? prefix + "_" : ""
