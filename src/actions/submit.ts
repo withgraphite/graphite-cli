@@ -13,10 +13,10 @@ import {
   logNewline,
   logSuccess,
   logWarn,
-  repoConfig,
   userConfig,
 } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
+import { getRepoName, getRepoOwner } from "./repo_config";
 import { validate } from "./validate";
 
 type TSubmittedPRInfo = t.UnwrapSchemaMap<
@@ -28,7 +28,8 @@ export async function submitAction(args: {
   fill: boolean;
 }): Promise<void> {
   const cliAuthToken = getCLIAuthToken();
-  const { repoName, repoOwner } = getRepoNameAndOwner();
+  const repoName = getRepoName();
+  const repoOwner = getRepoOwner();
 
   try {
     await validate("FULLSTACK", true);
@@ -75,30 +76,6 @@ function getCLIAuthToken(): string {
   return token;
 }
 
-function getRepoNameAndOwner(): {
-  repoName: string;
-  repoOwner: string;
-} {
-  if (repoConfig.repoName && repoConfig.owner) {
-    return {
-      repoName: repoConfig.repoName,
-      repoOwner: repoConfig.owner,
-    };
-  }
-
-  const repoInfo = inferRepoGitHubInfo();
-  if (repoInfo !== null) {
-    return {
-      repoName: repoInfo.repoName,
-      repoOwner: repoInfo.repoOwner,
-    };
-  }
-
-  logErrorAndExit(
-    "Could not infer repoName and/or repo owner. Please fill out these fields in your repo's copy of .graphite_repo_config."
-  );
-}
-
 async function getDownstackInclusive(topOfStack: Branch): Promise<Branch[]> {
   const downstack: Branch[] = [];
 
@@ -118,54 +95,6 @@ async function getDownstackInclusive(topOfStack: Branch): Promise<Branch[]> {
   downstack.reverse();
 
   return downstack;
-}
-
-function inferRepoGitHubInfo(): {
-  repoOwner: string;
-  repoName: string;
-} | null {
-  // This assumes that the remote to use is named 'origin' and that the remote
-  // to fetch from is the same as the remote to push to. If a user runs into
-  // an issue where any of these invariants are not true, they can manually
-  // edit the repo config file to overrule what our CLI tries to intelligently
-  // infer.
-  const url = gpExecSync(
-    {
-      command: `git config --get remote.origin.url`,
-    },
-    (_) => {
-      return Buffer.alloc(0);
-    }
-  )
-    .toString()
-    .trim();
-  if (!url || url.length === 0) {
-    return null;
-  }
-
-  let regex = undefined;
-  if (url.startsWith("git@github.com")) {
-    regex = /git@github.com:([^/]+)\/(.+)?.git/;
-  } else if (url.startsWith("https://")) {
-    regex = /https:\/\/github.com\/([^/]+)\/(.+)?.git/;
-  } else {
-    return null;
-  }
-
-  // e.g. in screenplaydev/graphite-cli we're trying to get the owner
-  // ('screenplaydev') and the repo name ('graphite-cli')
-  const matches = regex.exec(url);
-  const owner = matches?.[1];
-  const name = matches?.[2];
-
-  if (owner === undefined || name === undefined) {
-    return null;
-  }
-
-  return {
-    repoOwner: owner,
-    repoName: name,
-  };
 }
 
 function pushBranchesToRemote(branches: Branch[]): void {
