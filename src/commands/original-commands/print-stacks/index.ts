@@ -68,10 +68,10 @@ export default class PrintStacksCommand extends AbstractCommand<typeof args> {
         [
           chalk.yellow(`Git derived stack differs from meta derived stack.`),
           `Run "${chalk.green(
-            "restack"
+            "gp stack fix"
           )}" to update the git stack to match the meta stack.`,
           `Alternatively, run "${chalk.green(
-            "fix"
+            "gp stack regen"
           )}" to update the meta-stack to match the git-stack.\n`,
         ].join("\n")
       );
