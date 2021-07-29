@@ -1,7 +1,9 @@
 import { execSync } from "child_process";
+import { gpExecSync } from "../lib/utils";
 
 export default class Commit {
   sha: string;
+
   constructor(sha: string) {
     if (sha.length != 40) {
       throw new Error(
@@ -10,6 +12,7 @@ export default class Commit {
     }
     this.sha = sha;
   }
+
   public parents(): Commit[] {
     try {
       return execSync(`git rev-parse ${this.sha}`)
@@ -20,5 +23,20 @@ export default class Commit {
     } catch (e) {
       return [];
     }
+  }
+
+  public message(): string {
+    const message = gpExecSync(
+      {
+        command: `git log --format=%s -n 1 ${this.sha}`,
+      },
+      (_) => {
+        // just soft-fail if we can't find the commits
+        return Buffer.alloc(0);
+      }
+    )
+      .toString()
+      .trim();
+    return message;
   }
 }

@@ -16,6 +16,7 @@ import {
   userConfig,
 } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
+import Commit from "../wrapper-classes/commit";
 import { getRepoName, getRepoOwner } from "./repo_config";
 import { validate } from "./validate";
 
@@ -131,7 +132,6 @@ async function submitPRsForBranches(args: {
     const parentBranchName = branch.getParentFromMeta()!.name;
 
     const prInfo = branch.getPRInfo();
-
     if (prInfo) {
       branchPRInfo.push({
         action: "update",
@@ -144,10 +144,7 @@ async function submitPRsForBranches(args: {
         action: "create",
         head: branch.name,
         base: parentBranchName,
-        // Default placeholder title.
-        // TODO (nicholasyan): improve this by using the commit message if the
-        // branch only has 1 commit.
-        title: `Merge ${branch.name} into ${parentBranchName}`,
+        title: inferPRTitle(branch),
       });
     }
   });
@@ -172,6 +169,26 @@ async function submitPRsForBranches(args: {
   } catch (error) {
     return null;
   }
+}
+
+function inferPRTitle(branch: Branch) {
+  // Only infer the title from the commit if the branch has just 1 commit.
+  const singleCommitMessage = getSingleCommitMessageOnBranch(branch);
+  if (singleCommitMessage !== null) {
+    return singleCommitMessage;
+  }
+
+  return `Merge ${branch.name} into ${branch.getParentFromMeta()!.name}`;
+}
+
+function getSingleCommitMessageOnBranch(branch: Branch): string | null {
+  const commits = branch.getCommitSHAs();
+  if (commits.length !== 1) {
+    return null;
+  }
+  const commit = new Commit(commits[0]);
+  const commitMessage = commit.message();
+  return commitMessage.length > 0 ? commitMessage : null;
 }
 
 function printSubmittedPRInfo(

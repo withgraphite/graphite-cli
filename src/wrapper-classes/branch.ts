@@ -343,6 +343,30 @@ export default class Branch {
     return this.getMeta()?.prInfo;
   }
 
+  public getCommitSHAs(): string[] {
+    const parents = this.getParentsFromGit();
+    const shas: Set<string> = new Set();
+
+    parents.forEach((parent) => {
+      const commits = gpExecSync(
+        {
+          command: `git rev-list ${parent}..${this.name}`,
+        },
+        (_) => {
+          // just soft-fail if we can't find the commits
+          return Buffer.alloc(0);
+        }
+      )
+        .toString()
+        .trim();
+      commits.split(/[\r\n]+/).forEach((sha) => {
+        shas.add(sha);
+      });
+    });
+
+    return [...shas];
+  }
+
   public branchesWithSameCommit(): Branch[] {
     const curBranchSha = execSync(
       `git show-ref --heads | grep refs/heads/${this.name} -s | awk '{print $1}'`
