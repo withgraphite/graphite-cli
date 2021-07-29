@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import chalk from "chalk";
 import { execSync } from "child_process";
-import { logErrorAndExit } from "../lib/utils";
+import { logErrorAndExit, logInfo } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
 export async function nextOrPrevAction(
@@ -36,5 +36,5 @@ export async function nextOrPrevAction(
 
   const branchName = candidates.values().next().value.name;
   execSync(`git checkout "${branchName}"`, { stdio: "ignore" });
-  console.log(branchName);
+  logInfo(branchName);
 }
