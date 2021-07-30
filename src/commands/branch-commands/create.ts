@@ -22,6 +22,13 @@ const args = {
     type: "boolean",
     alias: "s",
   },
+  verify: {
+    describe: `Run commit hooks`,
+    demandOption: false,
+    default: false,
+    type: "boolean",
+    alias: "s",
+  },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
@@ -35,6 +42,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       silent: argv.silent,
       branchName: argv.name,
       message: argv.message,
+      noVerify: !argv.verify,
     });
   });
 };

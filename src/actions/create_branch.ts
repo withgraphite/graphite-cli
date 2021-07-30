@@ -11,6 +11,7 @@ import Branch from "../wrapper-classes/branch";
 
 export async function createBranchAction(opts: {
   silent: boolean;
+  noVerify: boolean;
   branchName?: string;
   message?: string;
 }): Promise<void> {
@@ -34,7 +35,9 @@ export async function createBranchAction(opts: {
    */
   gpExecSync(
     {
-      command: `git commit -m "${opts.message || "Updates"}"`,
+      command: `git commit -m "${opts.message || "Updates"}" ${
+        opts.noVerify ? "--no-verify" : ""
+      }`,
       options: {
         stdio: "inherit",
       },
