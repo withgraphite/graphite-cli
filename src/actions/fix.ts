@@ -1,5 +1,4 @@
 import chalk from "chalk";
-import PrintStacksCommand from "../commands/original-commands/print-stacks";
 import { log } from "../lib/log";
 import {
   checkoutBranch,
@@ -14,29 +13,39 @@ export async function fixAction(silent: boolean): Promise<void> {
   if (uncommittedChanges()) {
     logErrorAndExit("Cannot fix with uncommitted changes");
   }
-  // Print state before
-  log(`Before fix:`, { silent });
-  !silent && (await new PrintStacksCommand().executeUnprofiled({ silent }));
 
   const originalBranch = Branch.getCurrentBranch();
   if (originalBranch === null) {
     logErrorAndExit(`Not currently on a branch; no target to fix.`);
   }
 
+  const childrenRestackedByBranchName: Record<string, number> = {};
   for (const child of await originalBranch.getChildrenFromMeta()) {
-    await restackBranch(child, silent);
+    const childRestack = await restackBranch(child, silent);
+    childrenRestackedByBranchName[child.name] = childRestack.numberRestacked;
   }
   checkoutBranch(originalBranch.name);
 
-  // Print state after
-  log(`After fix:`, { silent });
-  !silent && (await new PrintStacksCommand().executeUnprofiled({ silent }));
+  log(`Restacked:`, { silent });
+  for (const branchName of Object.keys(childrenRestackedByBranchName)) {
+    const childrenRestacked = childrenRestackedByBranchName[branchName] - 1; // subtracting 1 for branch
+    log(
+      ` - ${branchName} ${
+        childrenRestacked > 0
+          ? `(${childrenRestacked} descendent${
+              childrenRestacked === 1 ? "" : "s"
+            })`
+          : ""
+      }`,
+      { silent }
+    );
+  }
 }
 
 export async function restackBranch(
   currentBranch: Branch,
   silent: boolean
-): Promise<void> {
+): Promise<{ numberRestacked: number }> {
   if (rebaseInProgress()) {
     logErrorAndExit(
       `Interactive rebase in progress, cannot fix (${currentBranch.name}). Complete the rebase and re-run fix command.`
@@ -74,7 +83,11 @@ export async function restackBranch(
     }
   );
 
+  let numberRestacked = 1; // 1 for self
   for (const child of await currentBranch.getChildrenFromMeta()) {
-    await restackBranch(child, silent);
+    const childRestack = await restackBranch(child, silent);
+    numberRestacked += childRestack.numberRestacked;
   }
+
+  return { numberRestacked };
 }
