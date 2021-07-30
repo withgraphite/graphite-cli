@@ -165,12 +165,14 @@ async function submitPRsForBranches(args: {
     );
 
     if (response._response.status !== 200 || response._response.body === null) {
-      return null;
+      logInternalErrorAndExit(
+        `Unexpected server response (${response._response.status}).\n${response}`
+      );
     }
 
     return response;
   } catch (error) {
-    return null;
+    logInternalErrorAndExit(`Failed to submit PRs. \nMessage${error.message}`);
   }
 }
 
