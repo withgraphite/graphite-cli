@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import chalk from "chalk";
 import { execSync } from "child_process";
-import { logErrorAndExit, logInfo } from "../lib/utils";
+import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
+import { logInfo } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
 export async function nextOrPrevAction(
@@ -10,7 +11,9 @@ export async function nextOrPrevAction(
 ): Promise<void> {
   const currentBranch = Branch.getCurrentBranch();
   if (currentBranch === null) {
-    logErrorAndExit(`Not currently on branch, cannot find ${nextOrPrev}.`);
+    throw new PreconditionsFailedError(
+      `Not currently on branch, cannot find ${nextOrPrev}.`
+    );
   }
 
   const candidates =
@@ -19,19 +22,15 @@ export async function nextOrPrevAction(
       : await currentBranch.getParentsFromGit();
 
   if (candidates.length === 0) {
-    if (!silent) {
-      console.log(chalk.yellow(`Found no ${nextOrPrev} branch`));
-    }
-    process.exit(1);
+    throw new ExitFailedError(`Found no ${nextOrPrev} branch`);
   }
   if (candidates.length > 1) {
-    if (!silent) {
-      console.log(chalk.yellow(`Found multiple possibilities:`));
-      for (const candidate of candidates) {
-        console.log(chalk.yellow(` - ${candidate.name}`));
-      }
-    }
-    process.exit(1);
+    throw new PreconditionsFailedError(
+      [
+        chalk.yellow(`Found multiple possibilities:`),
+        ...candidates.map((candidate) => chalk.yellow(` - ${candidate.name}`)),
+      ].join("\n")
+    );
   }
 
   const branchName = candidates.values().next().value.name;

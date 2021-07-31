@@ -1,4 +1,5 @@
-import { gpExecSync, logErrorAndExit } from ".";
+import { gpExecSync } from ".";
+import { ExitFailedError } from "../errors";
 export function uncommittedChanges(): boolean {
   return (
     gpExecSync(
@@ -6,7 +7,9 @@ export function uncommittedChanges(): boolean {
         command: `git status --porcelain=v1 2>/dev/null | wc -l`,
       },
       () => {
-        logErrorAndExit(`Failed to check current dir for uncommitted changes.`);
+        throw new ExitFailedError(
+          `Failed to check current dir for uncommitted changes.`
+        );
       }
     )
       .toString()

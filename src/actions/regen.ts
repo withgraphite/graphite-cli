@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { PreconditionsFailedError } from "../lib/errors";
 import { log } from "../lib/log";
 import { logWarn } from "../lib/utils/splog";
 import { getTrunk } from "../lib/utils/trunk";
@@ -6,11 +7,10 @@ import Branch from "../wrapper-classes/branch";
 
 export async function regenAction(silent: boolean): Promise<void> {
   const branch = Branch.getCurrentBranch();
-  if (branch === null) {
-    logWarn(
+  if (!branch) {
+    throw new PreconditionsFailedError(
       `No current branch. Please checkout a branch in the stack to use regen.`
     );
-    return;
   }
 
   const trunk = getTrunk();

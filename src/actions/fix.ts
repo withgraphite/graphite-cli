@@ -1,9 +1,12 @@
-import chalk from "chalk";
+import {
+  ExitFailedError,
+  PreconditionsFailedError,
+  RebaseConflictError,
+} from "../lib/errors";
 import { log } from "../lib/log";
 import {
   checkoutBranch,
   gpExecSync,
-  logErrorAndExit,
   rebaseInProgress,
   uncommittedChanges,
 } from "../lib/utils";
@@ -11,12 +14,14 @@ import Branch from "../wrapper-classes/branch";
 
 export async function fixAction(silent: boolean): Promise<void> {
   if (uncommittedChanges()) {
-    logErrorAndExit("Cannot fix with uncommitted changes");
+    throw new PreconditionsFailedError("Cannot fix with uncommitted changes");
   }
 
   const originalBranch = Branch.getCurrentBranch();
   if (originalBranch === null) {
-    logErrorAndExit(`Not currently on a branch; no target to fix.`);
+    throw new PreconditionsFailedError(
+      `Not currently on a branch; no target to fix.`
+    );
   }
 
   const childrenRestackedByBranchName: Record<string, number> = {};
@@ -47,19 +52,19 @@ export async function restackBranch(
   silent: boolean
 ): Promise<{ numberRestacked: number }> {
   if (rebaseInProgress()) {
-    logErrorAndExit(
+    throw new RebaseConflictError(
       `Interactive rebase in progress, cannot fix (${currentBranch.name}). Complete the rebase and re-run fix command.`
     );
   }
   const parentBranch = currentBranch.getParentFromMeta();
   if (!parentBranch) {
-    logErrorAndExit(
+    throw new ExitFailedError(
       `Cannot find parent in stack for (${currentBranch.name}), stopping fix`
     );
   }
   const mergeBase = currentBranch.getMetaMergeBase();
   if (!mergeBase) {
-    logErrorAndExit(
+    throw new ExitFailedError(
       `Cannot find a merge base in the stack for (${currentBranch.name}), stopping fix`
     );
   }
@@ -73,12 +78,9 @@ export async function restackBranch(
     },
     () => {
       if (rebaseInProgress()) {
-        log(
-          chalk.yellow(
-            "Please resolve the rebase conflict and then continue with your `stack fix` command."
-          )
+        throw new RebaseConflictError(
+          "Please resolve the rebase conflict and then continue with your `stack fix` command."
         );
-        process.exit(0);
       }
     }
   );

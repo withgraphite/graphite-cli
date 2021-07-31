@@ -3,6 +3,7 @@ import { request } from "@screenplaydev/retyped-routes";
 import chalk from "chalk";
 import yargs from "yargs";
 import { API_SERVER } from "../lib/api";
+import { ExitFailedError } from "../lib/errors";
 import { profiledHandler, userEmail } from "../lib/telemetry";
 
 const args = {
@@ -38,12 +39,9 @@ export const handler = async (argv: argsT): Promise<void> => {
         )
       );
     } else {
-      console.log(
-        chalk.yellow(
-          `Failed to report feedback, network response ${response.status}`
-        )
+      throw new ExitFailedError(
+        `Failed to report feedback, network response ${response.status}`
       );
-      process.exit(1);
     }
   });
 };

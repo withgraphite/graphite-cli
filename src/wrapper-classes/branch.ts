@@ -1,5 +1,6 @@
 import { execSync } from "child_process";
-import { getTrunk, gpExecSync, logErrorAndExit } from "../lib/utils";
+import { ExitFailedError } from "../lib/errors";
+import { getTrunk, gpExecSync } from "../lib/utils";
 import Commit from "./commit";
 
 type TMeta = {
@@ -147,7 +148,7 @@ export default class Branch {
     if (parentName) {
       if (parentName === this.name) {
         this.clearParentMetadata();
-        logErrorAndExit(
+        throw new ExitFailedError(
           `Branch (${this.name}) has itself listed as a parent in the meta. Deleting (${this.name}) parent metadata and exiting.`
         );
       }
@@ -247,10 +248,9 @@ export default class Branch {
     if (gitParents.length == 1) {
       return gitParents[0].getTrunkBranchFromGit();
     } else if (gitParents.length > 1) {
-      console.log(
+      throw new ExitFailedError(
         `Cannot derive trunk from git branch (${this.name}) with two parents`
       );
-      process.exit(1);
     } else {
       return this;
     }

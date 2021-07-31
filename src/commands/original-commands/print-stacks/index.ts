@@ -1,11 +1,9 @@
 import chalk from "chalk";
 import { execSync } from "child_process";
-import yargs from "yargs";
 import AbstractCommand from "../../../lib/abstract_command";
 import Branch from "../../../wrapper-classes/branch";
 
 const args = {} as const;
-type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 function computeDag(truth: "GIT" | "META"): {
   dag: { [name: string]: string[] };
@@ -36,7 +34,7 @@ function computeDag(truth: "GIT" | "META"): {
 }
 export default class PrintStacksCommand extends AbstractCommand<typeof args> {
   static args = args;
-  public async _execute(argv: argsT): Promise<void> {
+  public async _execute(): Promise<void> {
     const gitInfo = computeDag("GIT");
     const metaInfo = computeDag("META");
 

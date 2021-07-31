@@ -1,7 +1,8 @@
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
-import { gpExecSync, logErrorAndExit } from "../lib/utils";
+import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
+import { gpExecSync } from "../lib/utils";
 
 const CONFIG_NAME = ".graphite_repo_config";
 type RepoConfigT = {
@@ -23,7 +24,7 @@ export const CURRENT_REPO_CONFIG_PATH: string = (() => {
     .trim();
 
   if (!repoRootPath || repoRootPath.length === 0) {
-    logErrorAndExit("No .git repository found.");
+    throw new PreconditionsFailedError("No .git repository found.");
   }
 
   return path.join(repoRootPath, CONFIG_NAME);
@@ -49,7 +50,7 @@ export function getRepoOwner(): string {
     return inferredInfo.repoOwner;
   }
 
-  logErrorAndExit(
+  throw new ExitFailedError(
     "Could not determine the owner of this repo (e.g. 'screenplaydev' in the repo 'screenplaydev/graphite-cli'). Please run `gp repo-config owner --set <owner>` to manually set the repo owner."
   );
 }
@@ -69,7 +70,7 @@ export function getRepoName(): string {
     return inferredInfo.repoName;
   }
 
-  logErrorAndExit(
+  throw new ExitFailedError(
     "Could not determine the name of this repo (e.g. 'graphite-cli' in the repo 'screenplaydev/graphite-cli'). Please run `gp repo-config name --set <owner>` to manually set the repo name."
   );
 }

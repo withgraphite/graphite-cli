@@ -4,12 +4,11 @@ import { request } from "@screenplaydev/retyped-routes";
 import chalk from "chalk";
 import PrintStacksCommand from "../commands/original-commands/print-stacks";
 import { API_SERVER } from "../lib/api";
+import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
 import {
   gpExecSync,
   logError,
-  logErrorAndExit,
   logInfo,
-  logInternalErrorAndExit,
   logNewline,
   logSuccess,
   logWarn,
@@ -42,8 +41,7 @@ export async function submitAction(
 
   const currentBranch: Branch | undefined | null = Branch.getCurrentBranch();
   if (currentBranch === undefined || currentBranch === null) {
-    logWarn("No current stack to submit.");
-    return;
+    throw new PreconditionsFailedError("No current stack to submit.");
   }
 
   const stackOfBranches = await getDownstackInclusive(currentBranch);
@@ -61,7 +59,7 @@ export async function submitAction(
     repoName: repoName,
   });
   if (submittedPRInfo === null) {
-    logErrorAndExit("Failed to submit commits. Please try again.");
+    throw new ExitFailedError("Failed to submit commits. Please try again.");
   }
 
   printSubmittedPRInfo(submittedPRInfo.prs);
@@ -71,7 +69,7 @@ export async function submitAction(
 function getCLIAuthToken(): string {
   const token = userConfig.authToken;
   if (!token || token.length === 0) {
-    logErrorAndExit(
+    throw new PreconditionsFailedError(
       "Please authenticate your Graphite CLI by visiting https://app.graphite.dev/activate."
     );
   }
@@ -110,7 +108,7 @@ function pushBranchesToRemote(branches: Branch[]): void {
         command: `git push origin -f ${branch.name}`,
       },
       (_) => {
-        logInternalErrorAndExit(
+        throw new ExitFailedError(
           `Failed to push changes for ${branch.name} to origin. Aborting...`
         );
       }
@@ -165,14 +163,16 @@ async function submitPRsForBranches(args: {
     );
 
     if (response._response.status !== 200 || response._response.body === null) {
-      logInternalErrorAndExit(
+      throw new ExitFailedError(
         `Unexpected server response (${response._response.status}).\n${response}`
       );
     }
 
     return response;
   } catch (error) {
-    logInternalErrorAndExit(`Failed to submit PRs. \nMessage${error.message}`);
+    throw new ExitFailedError(
+      `Failed to submit PRs. \nMessage${error.message}`
+    );
   }
 }
 

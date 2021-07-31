@@ -3,15 +3,9 @@ import { execSync } from "child_process";
 import prompts from "prompts";
 import { ontoAction } from "../actions/onto";
 import { regenAction } from "../actions/regen";
+import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
 import { log } from "../lib/log";
-import {
-  checkoutBranch,
-  gpExecSync,
-  logErrorAndExit,
-  logInternalErrorAndExit,
-  logWarn,
-  uncommittedChanges,
-} from "../lib/utils";
+import { checkoutBranch, gpExecSync, uncommittedChanges } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
 export async function cleanAction(opts: {
@@ -21,12 +15,13 @@ export async function cleanAction(opts: {
   silent: boolean;
 }): Promise<void> {
   if (uncommittedChanges()) {
-    logErrorAndExit("Cannot clean with uncommitted changes");
+    throw new PreconditionsFailedError("Cannot clean with uncommitted changes");
   }
   const oldBranch = Branch.getCurrentBranch();
   if (oldBranch === null) {
-    logWarn("Not currently on a branch; no stack to clean.");
-    return;
+    throw new PreconditionsFailedError(
+      "Not currently on a branch; no stack to clean."
+    );
   }
 
   const oldBranchName = oldBranch.name;
@@ -34,7 +29,7 @@ export async function cleanAction(opts: {
   if (opts.pull) {
     gpExecSync({ command: `git pull` }, () => {
       checkoutBranch(oldBranchName);
-      logInternalErrorAndExit(`Failed to pull trunk ${opts.trunk}`);
+      throw new ExitFailedError(`Failed to pull trunk ${opts.trunk}`);
     });
   }
   const trunkChildren: Branch[] = await new Branch(
@@ -94,7 +89,7 @@ async function deleteBranch(opts: {
       initial: true,
     });
     if (response.value != true) {
-      process.exit(0);
+      return;
     }
   } else {
     log(`Deleting ${opts.branchName}`, opts);
