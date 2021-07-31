@@ -5,6 +5,7 @@ import { ontoAction } from "../actions/onto";
 import { regenAction } from "../actions/regen";
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
 import { log } from "../lib/log";
+import { currentBranchPrecondition } from "../lib/preconditions";
 import { checkoutBranch, gpExecSync, uncommittedChanges } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
@@ -17,12 +18,8 @@ export async function cleanAction(opts: {
   if (uncommittedChanges()) {
     throw new PreconditionsFailedError("Cannot clean with uncommitted changes");
   }
-  const oldBranch = Branch.getCurrentBranch();
-  if (oldBranch === null) {
-    throw new PreconditionsFailedError(
-      "Not currently on a branch; no stack to clean."
-    );
-  }
+
+  const oldBranch = currentBranchPrecondition();
 
   const oldBranchName = oldBranch.name;
   checkoutBranch(opts.trunk);

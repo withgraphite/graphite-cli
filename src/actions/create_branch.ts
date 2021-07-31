@@ -1,4 +1,5 @@
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
+import { currentBranchPrecondition } from "../lib/preconditions";
 import {
   checkoutBranch,
   detectStagedChanges,
@@ -14,12 +15,7 @@ export async function createBranchAction(opts: {
   branchName?: string;
   message?: string;
 }): Promise<void> {
-  const parentBranch = Branch.getCurrentBranch();
-  if (parentBranch === null) {
-    throw new PreconditionsFailedError(
-      `Cannot find current branch. Please ensure you're running this command atop a checked-out branch.`
-    );
-  }
+  const parentBranch = currentBranchPrecondition();
 
   ensureSomeStagedChanges(opts.silent);
 

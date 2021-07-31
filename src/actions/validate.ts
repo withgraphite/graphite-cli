@@ -1,16 +1,12 @@
 import chalk from "chalk";
-import { PreconditionsFailedError, ValidationFailedError } from "../lib/errors";
+import { ValidationFailedError } from "../lib/errors";
 import { log } from "../lib/log";
+import { currentBranchPrecondition } from "../lib/preconditions";
 import Branch from "../wrapper-classes/branch";
 import { TScope } from "./scope";
 
 export async function validate(scope: TScope, silent: boolean): Promise<void> {
-  const branch = Branch.getCurrentBranch();
-  if (!branch) {
-    throw new PreconditionsFailedError(
-      "Not currently on a branch; no stack to validate."
-    );
-  }
+  const branch = currentBranchPrecondition();
 
   switch (scope) {
     case "UPSTACK":

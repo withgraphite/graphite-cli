@@ -5,6 +5,7 @@ import chalk from "chalk";
 import PrintStacksCommand from "../commands/original-commands/print-stacks";
 import { API_SERVER } from "../lib/api";
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
+import { currentBranchPrecondition } from "../lib/preconditions";
 import {
   gpExecSync,
   logError,
@@ -39,10 +40,7 @@ export async function submitAction(
     throw new Error(`Validation failed before submitting.`);
   }
 
-  const currentBranch: Branch | undefined | null = Branch.getCurrentBranch();
-  if (currentBranch === undefined || currentBranch === null) {
-    throw new PreconditionsFailedError("No current stack to submit.");
-  }
+  const currentBranch = currentBranchPrecondition();
 
   const stackOfBranches = await getDownstackInclusive(currentBranch);
   if (stackOfBranches.length === 0) {

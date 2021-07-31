@@ -2,19 +2,14 @@
 import chalk from "chalk";
 import { execSync } from "child_process";
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
+import { currentBranchPrecondition } from "../lib/preconditions";
 import { logInfo } from "../lib/utils";
-import Branch from "../wrapper-classes/branch";
 
 export async function nextOrPrevAction(
   nextOrPrev: "next" | "prev",
   silent: boolean
 ): Promise<void> {
-  const currentBranch = Branch.getCurrentBranch();
-  if (currentBranch === null) {
-    throw new PreconditionsFailedError(
-      `Not currently on branch, cannot find ${nextOrPrev}.`
-    );
-  }
+  const currentBranch = currentBranchPrecondition();
 
   const candidates =
     nextOrPrev === "next"

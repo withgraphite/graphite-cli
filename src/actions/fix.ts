@@ -4,6 +4,7 @@ import {
   RebaseConflictError,
 } from "../lib/errors";
 import { log } from "../lib/log";
+import { currentBranchPrecondition } from "../lib/preconditions";
 import {
   checkoutBranch,
   gpExecSync,
@@ -17,12 +18,7 @@ export async function fixAction(silent: boolean): Promise<void> {
     throw new PreconditionsFailedError("Cannot fix with uncommitted changes");
   }
 
-  const originalBranch = Branch.getCurrentBranch();
-  if (originalBranch === null) {
-    throw new PreconditionsFailedError(
-      `Not currently on a branch; no target to fix.`
-    );
-  }
+  const originalBranch = currentBranchPrecondition();
 
   const childrenRestackedByBranchName: Record<string, number> = {};
   for (const child of await originalBranch.getChildrenFromMeta()) {

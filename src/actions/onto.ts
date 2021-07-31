@@ -10,6 +10,7 @@ import {
   ValidationFailedError,
 } from "../lib/errors";
 import { log } from "../lib/log";
+import { currentBranchPrecondition } from "../lib/preconditions";
 import {
   checkoutBranch,
   gpExecSync,
@@ -26,12 +27,7 @@ export async function ontoAction(onto: string, silent: boolean): Promise<void> {
   log(`Before fix:`, { silent });
   !silent && (await new PrintStacksCommand().executeUnprofiled({ silent }));
 
-  const originalBranch = Branch.getCurrentBranch();
-  if (originalBranch === null) {
-    throw new PreconditionsFailedError(
-      `Not currently on a branch; no target to fix.`
-    );
-  }
+  const originalBranch = currentBranchPrecondition();
 
   await restackOnto(originalBranch, onto, silent);
 
