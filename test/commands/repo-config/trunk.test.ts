@@ -10,9 +10,7 @@ for (const scene of allScenes) {
       scene.repo.createChange("2", "a");
       scene.repo.execCliCommand("branch create 'a' -m '2' -s");
       expect(
-        scene.repo
-          .execCliCommandAndGetOutput("repo-config trunk")
-          .includes("(main)")
+        scene.repo.execCliCommandAndGetOutput("repo trunk").includes("(main)")
       ).to.be.true;
     });
   });
