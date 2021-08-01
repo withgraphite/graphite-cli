@@ -4,6 +4,7 @@ import { request } from "@screenplaydev/retyped-routes";
 import chalk from "chalk";
 import PrintStacksCommand from "../commands/original-commands/print-stacks";
 import { API_SERVER } from "../lib/api";
+import { UserConfig } from "../lib/config";
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import {
@@ -13,7 +14,6 @@ import {
   logNewline,
   logSuccess,
   logWarn,
-  userConfig,
 } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 import Commit from "../wrapper-classes/commit";
@@ -65,7 +65,7 @@ export async function submitAction(
 }
 
 function getCLIAuthToken(): string {
-  const token = userConfig.authToken;
+  const token = UserConfig.config.authToken;
   if (!token || token.length === 0) {
     throw new PreconditionsFailedError(
       "Please authenticate your Graphite CLI by visiting https://app.graphite.dev/activate."

@@ -3,8 +3,22 @@ import fs from "fs-extra";
 import os from "os";
 import path from "path";
 
-const CONFIG_NAME = ".graphite_repo_config";
+const DEPRECATED_CONFIG_NAME = ".graphite_repo_config";
+const CONFIG_NAME = ".graphite_user_config";
+const DEPRECATED_USER_CONFIG_PATH = path.join(
+  os.homedir(),
+  DEPRECATED_CONFIG_NAME
+);
 const USER_CONFIG_PATH = path.join(os.homedir(), CONFIG_NAME);
+
+if (fs.existsSync(DEPRECATED_USER_CONFIG_PATH)) {
+  if (fs.existsSync(USER_CONFIG_PATH)) {
+    fs.removeSync(DEPRECATED_USER_CONFIG_PATH);
+  } else {
+    fs.moveSync(DEPRECATED_USER_CONFIG_PATH, USER_CONFIG_PATH);
+  }
+}
+
 type UserConfigT = {
   branchPrefix?: string;
   authToken?: string;
@@ -21,11 +35,11 @@ export function makeId(length: number): string {
 }
 
 // TODO: validate the shape of this (possibly using retype)
-export let userConfig: UserConfigT = {};
+export let config: UserConfigT = {};
 if (fs.existsSync(USER_CONFIG_PATH)) {
   const userConfigRaw = fs.readFileSync(USER_CONFIG_PATH);
   try {
-    userConfig = JSON.parse(userConfigRaw.toString().trim()) as UserConfigT;
+    config = JSON.parse(userConfigRaw.toString().trim()) as UserConfigT;
   } catch (e) {
     console.log(chalk.yellow(`Warning: Malformed ${USER_CONFIG_PATH}`));
   }
@@ -33,13 +47,13 @@ if (fs.existsSync(USER_CONFIG_PATH)) {
 
 export function setUserAuthToken(authToken: string): void {
   const newConfig = {
-    ...userConfig,
+    ...config,
     authToken: authToken,
   };
   setUserConfig(newConfig);
 }
 
-function setUserConfig(config: UserConfigT): void {
-  fs.writeFileSync(USER_CONFIG_PATH, JSON.stringify(config));
-  userConfig = config;
+function setUserConfig(newConfig: UserConfigT): void {
+  fs.writeFileSync(USER_CONFIG_PATH, JSON.stringify(newConfig));
+  config = newConfig;
 }
