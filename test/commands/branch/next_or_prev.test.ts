@@ -1,36 +1,25 @@
 import { expect } from "chai";
-import fs from "fs-extra";
-import tmp from "tmp";
-import { execCliCommand } from "../../utils/exec_cli_command";
-import GitRepo from "../../utils/git_repo";
+import { allScenes } from "../../scenes";
+import { configureTest } from "../../utils";
 
-describe("next and prev", function () {
-  let tmpDir: tmp.DirResult;
-  let repo: GitRepo;
-  this.beforeEach(() => {
-    tmpDir = tmp.dirSync();
-    repo = new GitRepo(tmpDir.name);
-    repo.createChangeAndCommit("1");
-  });
-  afterEach(() => {
-    fs.emptyDirSync(tmpDir.name);
-    tmpDir.removeCallback();
-  });
-  this.timeout(5000);
+for (const scene of allScenes) {
+  describe(`(${scene}): next and prev`, function () {
+    configureTest(this, scene);
 
-  it("Can move to the next and prev branch", () => {
-    repo.createAndCheckoutBranch("a");
-    repo.createChangeAndCommit("2");
-    repo.createChangeAndCommit("3");
-    repo.createAndCheckoutBranch("b");
-    repo.createChangeAndCommit("4");
-    repo.createChangeAndCommit("5");
-    repo.checkoutBranch("a");
+    it("Can move to the next and prev branch", () => {
+      scene.repo.createAndCheckoutBranch("a");
+      scene.repo.createChangeAndCommit("2");
+      scene.repo.createChangeAndCommit("3");
+      scene.repo.createAndCheckoutBranch("b");
+      scene.repo.createChangeAndCommit("4");
+      scene.repo.createChangeAndCommit("5");
+      scene.repo.checkoutBranch("a");
 
-    expect(repo.currentBranchName()).to.equal("a");
-    execCliCommand(`branch next`, { fromDir: tmpDir.name });
-    expect(repo.currentBranchName()).to.equal("b");
-    execCliCommand(`branch prev`, { fromDir: tmpDir.name });
-    expect(repo.currentBranchName()).to.equal("a");
+      expect(scene.repo.currentBranchName()).to.equal("a");
+      scene.repo.execCliCommand(`branch next`);
+      expect(scene.repo.currentBranchName()).to.equal("b");
+      scene.repo.execCliCommand(`branch prev`);
+      expect(scene.repo.currentBranchName()).to.equal("a");
+    });
   });
-});
+}

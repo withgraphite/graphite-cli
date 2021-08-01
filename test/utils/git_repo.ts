@@ -1,3 +1,4 @@
+import { expect } from "chai";
 import { execSync } from "child_process";
 import fs from "fs-extra";
 import { rebaseInProgress } from "../../src/lib/utils";
@@ -84,5 +85,13 @@ export default class GitRepo {
       .trim()
       .split("\n")
       .filter((line) => line.length > 0);
+  }
+
+  expectCommits(commitMessages: string): void {
+    expect(
+      this.listCurrentBranchCommitMessages()
+        .slice(0, commitMessages.split(",").length)
+        .join(", ")
+    ).to.equal(commitMessages);
   }
 }

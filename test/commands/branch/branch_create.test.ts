@@ -1,46 +1,35 @@
 import { expect } from "chai";
-import fs from "fs-extra";
-import tmp from "tmp";
-import { execCliCommand } from "../../utils/exec_cli_command";
-import GitRepo from "../../utils/git_repo";
+import { allScenes } from "../../scenes";
+import { configureTest } from "../../utils";
 
-describe("branch create", function () {
-  let tmpDir: tmp.DirResult;
-  let repo: GitRepo;
-  this.beforeEach(() => {
-    tmpDir = tmp.dirSync();
-    repo = new GitRepo(tmpDir.name);
-    repo.createChangeAndCommit("1");
+for (const scene of allScenes) {
+  describe(`(${scene}): branch create`, function () {
+    configureTest(this, scene);
+
+    it("Can run branch create", () => {
+      scene.repo.createChange("2");
+
+      scene.repo.execCliCommand(`branch create "a" -s`);
+      expect(scene.repo.currentBranchName()).to.equal("a");
+
+      scene.repo.execCliCommand("branch prev");
+      expect(scene.repo.currentBranchName()).to.equal("main");
+    });
+
+    it("Can rollback changes on a failed commit hook", () => {
+      // Agressive AF commit hook from your angry coworker
+      scene.repo.createPrecommitHook("exit 1");
+      scene.repo.createChange("2");
+      expect(() => {
+        scene.repo.execCliCommand(`branch create "a" -s`);
+      }).to.throw(Error);
+      expect(scene.repo.currentBranchName()).to.equal("main");
+    });
+
+    it("Can create a branch without providing a name", () => {
+      scene.repo.createChange("2");
+      scene.repo.execCliCommand(`branch create -s`);
+      expect(scene.repo.currentBranchName()).to.not.equal("main");
+    });
   });
-  afterEach(() => {
-    fs.emptyDirSync(tmpDir.name);
-    tmpDir.removeCallback();
-  });
-  this.timeout(5000);
-
-  it("Can run branch create", () => {
-    repo.createChange("2");
-
-    execCliCommand(`branch create "a" -s`, { fromDir: tmpDir.name });
-    expect(repo.currentBranchName()).to.equal("a");
-
-    execCliCommand("branch prev", { fromDir: tmpDir.name });
-    expect(repo.currentBranchName()).to.equal("main");
-  });
-
-  it("Can rollback changes on a failed commit hook", () => {
-    // Agressive AF commit hook from your angry coworker
-    repo.createPrecommitHook("exit 1");
-    repo.createChange("2");
-    expect(() => {
-      execCliCommand(`branch create "a" -s`, { fromDir: tmpDir.name });
-    }).to.throw(Error);
-    expect(repo.currentBranchName()).to.equal("main");
-  });
-
-  it("Can create a branch without providing a name", () => {
-    repo.createChange("2");
-    execCliCommand(`branch create -s`, { fromDir: tmpDir.name });
-    expect(repo.currentBranchName()).to.not.equal("main");
-  });
-});
+}

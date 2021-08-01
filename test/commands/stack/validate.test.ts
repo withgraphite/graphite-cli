@@ -1,15 +1,10 @@
 import { expect } from "chai";
 import { allScenes } from "../../scenes";
+import { configureTest } from "../../utils";
 
 for (const scene of allScenes) {
   describe(`(${scene}): stack validate`, function () {
-    this.beforeEach(() => {
-      scene.setup();
-    });
-    this.afterEach(() => {
-      scene.cleanup();
-    });
-    this.timeout(5000);
+    configureTest(this, scene);
 
     it("Can pass validation", () => {
       scene.repo.createChange("2");

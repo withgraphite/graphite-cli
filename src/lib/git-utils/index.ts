@@ -1,4 +1,5 @@
-import { gpExecSync, logInternalErrorAndExit } from "../utils";
+import { ExitFailedError } from "../errors";
+import { gpExecSync } from "../utils";
 
 export function workingTreeClean(): boolean {
   const changes = gpExecSync(
@@ -6,7 +7,7 @@ export function workingTreeClean(): boolean {
       command: `git status --porcelain`,
     },
     (_) => {
-      logInternalErrorAndExit("Failed to determine changes. Aborting...");
+      throw new ExitFailedError("Failed to determine changes. Aborting...");
     }
   )
     .toString()

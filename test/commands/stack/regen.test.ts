@@ -1,16 +1,11 @@
 import { expect } from "chai";
 import Branch from "../../../src/wrapper-classes/branch";
 import { allScenes } from "../../scenes";
+import { configureTest } from "../../utils";
 
 for (const scene of allScenes) {
   describe(`(${scene}): stack regen`, function () {
-    this.beforeEach(() => {
-      scene.setup();
-    });
-    this.afterEach(() => {
-      scene.cleanup();
-    });
-    this.timeout(5000);
+    configureTest(this, scene);
 
     it("Can fix a stack", () => {
       scene.repo.createChange("2", "2");

@@ -1,14 +1,12 @@
 import chalk from "chalk";
+import { ValidationFailedError } from "../lib/errors";
 import { log } from "../lib/log";
-import { logErrorAndExit } from "../lib/utils";
+import { currentBranchPrecondition } from "../lib/preconditions";
 import Branch from "../wrapper-classes/branch";
 import { TScope } from "./scope";
 
 export async function validate(scope: TScope, silent: boolean): Promise<void> {
-  const branch = Branch.getCurrentBranch();
-  if (branch === null) {
-    logErrorAndExit("Not currently on a branch; no stack to validate.");
-  }
+  const branch = currentBranchPrecondition();
 
   switch (scope) {
     case "UPSTACK":
@@ -39,30 +37,30 @@ async function validateBranchDownInclusive(branch: Branch, silent: boolean) {
     metaParent &&
     !metaParentMatchesBranchWithSameHead
   ) {
-    throw new Error(
+    throw new ValidationFailedError(
       `(${branch.name}) has stack parent (${metaParent.name}), but no parent in the git graph.`
     );
   }
   if (gitParents.length === 1 && !metaParent) {
-    throw new Error(
+    throw new ValidationFailedError(
       `(${branch.name}) has git parent (${gitParents[0].name}), but no parent in the stack.`
     );
   }
   if (gitParents.length > 1) {
-    throw new Error(
+    throw new ValidationFailedError(
       `(${branch.name}) has more than one git parent (${gitParents.map(
         (b) => b.name
       )}).`
     );
   }
   if (!metaParent) {
-    throw new Error("Unreachable");
+    throw new ValidationFailedError("Unreachable");
   }
   if (
     !metaParentMatchesBranchWithSameHead &&
     gitParents[0].name !== metaParent.name
   ) {
-    throw new Error(
+    throw new ValidationFailedError(
       `(${branch.name}) has git parent (${gitParents[0].name}) but stack parent (${metaParent.name})`
     );
   }

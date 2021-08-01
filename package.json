@@ -22,7 +22,7 @@
     "lint": "eslint src --quiet --ext .ts --cache",
     "prepublishOnly": "yarn build",
     "cli": "ts-node ./src/index.ts",
-    "test": "yarn ts-mocha \"test/**/*.test.ts\"",
+    "test": "yarn ts-mocha \"test/**/*.test.ts\"  --parallel --jobs 8",
     "test-one": "yarn ts-mocha",
     "deploy": "ts-node ./scripts/deploy.ts",
     "regen-demo": "ts-node ./scripts/demo/index.ts"

@@ -1,10 +1,13 @@
-import chalk from "chalk";
-import PrintStacksCommand from "../commands/original-commands/print-stacks";
+import {
+  ExitFailedError,
+  PreconditionsFailedError,
+  RebaseConflictError,
+} from "../lib/errors";
 import { log } from "../lib/log";
+import { currentBranchPrecondition } from "../lib/preconditions";
 import {
   checkoutBranch,
   gpExecSync,
-  logErrorAndExit,
   rebaseInProgress,
   uncommittedChanges,
 } from "../lib/utils";
@@ -12,45 +15,52 @@ import Branch from "../wrapper-classes/branch";
 
 export async function fixAction(silent: boolean): Promise<void> {
   if (uncommittedChanges()) {
-    logErrorAndExit("Cannot fix with uncommitted changes");
-  }
-  // Print state before
-  log(`Before fix:`, { silent });
-  !silent && (await new PrintStacksCommand().executeUnprofiled({ silent }));
-
-  const originalBranch = Branch.getCurrentBranch();
-  if (originalBranch === null) {
-    logErrorAndExit(`Not currently on a branch; no target to fix.`);
+    throw new PreconditionsFailedError("Cannot fix with uncommitted changes");
   }
 
+  const originalBranch = currentBranchPrecondition();
+
+  const childrenRestackedByBranchName: Record<string, number> = {};
   for (const child of await originalBranch.getChildrenFromMeta()) {
-    await restackBranch(child, silent);
+    const childRestack = await restackBranch(child, silent);
+    childrenRestackedByBranchName[child.name] = childRestack.numberRestacked;
   }
   checkoutBranch(originalBranch.name);
 
-  // Print state after
-  log(`After fix:`, { silent });
-  !silent && (await new PrintStacksCommand().executeUnprofiled({ silent }));
+  log(`Fixed:`, { silent });
+  for (const branchName of Object.keys(childrenRestackedByBranchName)) {
+    const childrenRestacked = childrenRestackedByBranchName[branchName] - 1; // subtracting 1 for branch
+    log(
+      ` - ${branchName} ${
+        childrenRestacked > 0
+          ? `(${childrenRestacked} descendent${
+              childrenRestacked === 1 ? "" : "s"
+            })`
+          : ""
+      }`,
+      { silent }
+    );
+  }
 }
 
 export async function restackBranch(
   currentBranch: Branch,
   silent: boolean
-): Promise<void> {
+): Promise<{ numberRestacked: number }> {
   if (rebaseInProgress()) {
-    logErrorAndExit(
+    throw new RebaseConflictError(
       `Interactive rebase in progress, cannot fix (${currentBranch.name}). Complete the rebase and re-run fix command.`
     );
   }
   const parentBranch = currentBranch.getParentFromMeta();
   if (!parentBranch) {
-    logErrorAndExit(
+    throw new ExitFailedError(
       `Cannot find parent in stack for (${currentBranch.name}), stopping fix`
     );
   }
   const mergeBase = currentBranch.getMetaMergeBase();
   if (!mergeBase) {
-    logErrorAndExit(
+    throw new ExitFailedError(
       `Cannot find a merge base in the stack for (${currentBranch.name}), stopping fix`
     );
   }
@@ -64,17 +74,18 @@ export async function restackBranch(
     },
     () => {
       if (rebaseInProgress()) {
-        log(
-          chalk.yellow(
-            "Please resolve the rebase conflict (via `git rebase --continue`) and then rerun `stack fix` to fix the remainder of the stack."
-          )
+        throw new RebaseConflictError(
+          "Please resolve the rebase conflict (via `git rebase --continue`) and then rerun `stack fix` to fix the remainder of the stack."
         );
-        process.exit(0);
       }
     }
   );
 
+  let numberRestacked = 1; // 1 for self
   for (const child of await currentBranch.getChildrenFromMeta()) {
-    await restackBranch(child, silent);
+    const childRestack = await restackBranch(child, silent);
+    numberRestacked += childRestack.numberRestacked;
   }
+
+  return { numberRestacked };
 }

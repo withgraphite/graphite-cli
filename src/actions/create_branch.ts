@@ -1,9 +1,9 @@
+import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
+import { currentBranchPrecondition } from "../lib/preconditions";
 import {
   checkoutBranch,
   detectStagedChanges,
   gpExecSync,
-  logErrorAndExit,
-  logInternalErrorAndExit,
   makeId,
   userConfig,
 } from "../lib/utils";
@@ -11,15 +11,11 @@ import Branch from "../wrapper-classes/branch";
 
 export async function createBranchAction(opts: {
   silent: boolean;
+  noVerify: boolean;
   branchName?: string;
   message?: string;
 }): Promise<void> {
-  const parentBranch = Branch.getCurrentBranch();
-  if (parentBranch === null) {
-    logErrorAndExit(
-      `Cannot find current branch. Please ensure you're running this command atop a checked-out branch.`
-    );
-  }
+  const parentBranch = currentBranchPrecondition();
 
   ensureSomeStagedChanges(opts.silent);
 
@@ -34,7 +30,9 @@ export async function createBranchAction(opts: {
    */
   gpExecSync(
     {
-      command: `git commit -m "${opts.message || "Updates"}"`,
+      command: `git commit -m "${opts.message || "Updates"}" ${
+        opts.noVerify ? "--no-verify" : ""
+      }`,
       options: {
         stdio: "inherit",
       },
@@ -46,13 +44,13 @@ export async function createBranchAction(opts: {
         command: `git branch -d ${branchName}`,
         options: { stdio: "ignore" },
       });
-      logErrorAndExit("Failed to commit changes, aborting");
+      throw new ExitFailedError("Failed to commit changes, aborting");
     }
   );
 
   const currentBranch = Branch.getCurrentBranch();
   if (currentBranch === null) {
-    logErrorAndExit(
+    throw new ExitFailedError(
       `Created but failed to checkout ${branchName}. Please try again.`
     );
   }
@@ -65,7 +63,10 @@ function ensureSomeStagedChanges(silent: boolean): void {
     if (!silent) {
       gpExecSync({ command: `git status`, options: { stdio: "inherit" } });
     }
-    logErrorAndExit(`Cannot "branch create", no staged changes detected.`);
+
+    throw new PreconditionsFailedError(
+      `Cannot "branch create", no staged changes detected.`
+    );
   }
 }
 
@@ -80,7 +81,7 @@ function checkoutNewBranch(branchName: string, silent: boolean): void {
       options: silent ? { stdio: "ignore" } : {},
     },
     (_) => {
-      logInternalErrorAndExit(`Failed to checkout new branch ${branchName}`);
+      throw new ExitFailedError(`Failed to checkout new branch ${branchName}`);
     }
   );
 }

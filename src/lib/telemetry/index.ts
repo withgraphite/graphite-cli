@@ -8,6 +8,12 @@ import { execSync } from "child_process";
 import fetch from "node-fetch";
 import { version } from "../../../package.json";
 import { API_SERVER } from "../api";
+import {
+  ExitFailedError,
+  PreconditionsFailedError,
+  RebaseConflictError,
+} from "../errors";
+import { logError, logInfo } from "../utils";
 
 export async function profiledHandler(
   name: string,
@@ -45,6 +51,7 @@ export async function checkForUpgrade(): Promise<void> {
           console.log(chalk.yellow(formatMessage(prompt.message)));
         } else {
           console.log(chalk.redBright(formatMessage(prompt.message)));
+          // eslint-disable-next-line no-restricted-syntax
           process.exit(1);
         }
       }
@@ -65,7 +72,7 @@ export function userEmail(): string | undefined {
   }
 }
 
-export async function logCommand(
+async function logCommand(
   commandName: string,
   durationMiliSeconds: number,
   err?: Error
@@ -88,7 +95,7 @@ export async function logCommand(
   }
 }
 
-export async function profile<T>(
+export async function profile(
   command: string,
   handler: () => Promise<void>
 ): Promise<void> {
@@ -98,7 +105,17 @@ export async function profile<T>(
   } catch (err) {
     const end = Date.now();
     await logCommand(command, end - start, err);
-    throw err;
+    if (err instanceof ExitFailedError) {
+      logError(err.message);
+    } else if (err instanceof PreconditionsFailedError) {
+      logInfo(err.message);
+    }
+    if (err instanceof RebaseConflictError) {
+      // eslint-disable-next-line no-restricted-syntax
+      process.exit(0);
+    }
+    // eslint-disable-next-line no-restricted-syntax
+    process.exit(1);
   }
   const end = Date.now();
   void logCommand(command, end - start);

@@ -1,14 +1,14 @@
 import { fixAction } from "../actions/fix";
+import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
 import { workingTreeClean } from "../lib/git-utils";
-import { gpExecSync, logInfo, logInternalErrorAndExit } from "../lib/utils";
+import { gpExecSync } from "../lib/utils";
 
 export async function amendAction(
   silent: boolean,
   message?: string
 ): Promise<void> {
   if (workingTreeClean()) {
-    logInfo("No changes to amend.");
-    return;
+    throw new PreconditionsFailedError("No changes to amend.");
   }
 
   gpExecSync(
@@ -16,7 +16,7 @@ export async function amendAction(
       command: "git add --all",
     },
     () => {
-      logInternalErrorAndExit("Failed to add changes. Aborting...");
+      throw new ExitFailedError("Failed to add changes. Aborting...");
     }
   );
 
@@ -25,7 +25,7 @@ export async function amendAction(
       command: `git commit -m "${message || "Updates"}"`,
     },
     () => {
-      logInternalErrorAndExit("Failed to commit changes. Aborting...");
+      throw new ExitFailedError("Failed to commit changes. Aborting...");
     }
   );
   // Only restack if working tree is now clean.
