@@ -1,37 +1,33 @@
 import { validate } from "../actions/validate";
-import PrintStacksCommand from "../commands/original-commands/print-stacks";
 import {
   ExitFailedError,
   PreconditionsFailedError,
   RebaseConflictError,
   ValidationFailedError,
 } from "../lib/errors";
-import { log } from "../lib/log";
 import {
   branchExistsPrecondition,
   currentBranchPrecondition,
-  uncommittedChangesPrecondition,
 } from "../lib/preconditions";
 import {
   checkoutBranch,
   getTrunk,
   gpExecSync,
   rebaseInProgress,
+  uncommittedChanges,
 } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 import { restackBranch } from "./fix";
 export async function ontoAction(onto: string, silent: boolean): Promise<void> {
-  uncommittedChangesPrecondition();
-  const originalBranch = currentBranchPrecondition();
-  // Print state before
-  log(`Before fix:`, { silent });
-  !silent && (await new PrintStacksCommand().executeUnprofiled({ silent }));
-  await stackOnto(originalBranch, onto, silent);
-  checkoutBranch(originalBranch.name);
+  if (uncommittedChanges()) {
+    throw new PreconditionsFailedError("Cannot fix with uncommitted changes");
+  }
 
-  // Print state after
-  log(`After fix:`, { silent });
-  !silent && (await new PrintStacksCommand().executeUnprofiled({ silent }));
+  const originalBranch = currentBranchPrecondition();
+
+  await stackOnto(originalBranch, onto, silent);
+
+  checkoutBranch(originalBranch.name);
 }
 
 async function stackOnto(currentBranch: Branch, onto: string, silent: boolean) {

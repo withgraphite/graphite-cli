@@ -2,7 +2,6 @@ import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
 import * as t from "@screenplaydev/retype";
 import { request } from "@screenplaydev/retyped-routes";
 import chalk from "chalk";
-import PrintStacksCommand from "../commands/original-commands/print-stacks";
 import { API_SERVER } from "../lib/api";
 import { repoConfig, UserConfig } from "../lib/config";
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
@@ -35,7 +34,6 @@ export async function submitAction(
   try {
     await validate(scope, true);
   } catch {
-    await new PrintStacksCommand().executeUnprofiled({});
     throw new Error(`Validation failed before submitting.`);
   }
 
