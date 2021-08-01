@@ -64,7 +64,7 @@ async function restackOnto(
       if (rebaseInProgress()) {
         log(
           chalk.yellow(
-            "Please resolve the rebase conflict (git rebase --continue) and then rerun `stack onto` to move the remainder of the stack."
+            "Please resolve the rebase conflict (via `git rebase --continue`) and then rerun `stack onto` to move the remainder of the stack."
           )
         );
         process.exit(0);
