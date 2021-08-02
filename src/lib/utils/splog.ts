@@ -9,7 +9,7 @@ export function logWarn(msg: string): void {
 }
 
 export function logInfo(msg: string): void {
-  console.log(chalk.blueBright(`${msg}`));
+  console.log(`${msg}`);
 }
 
 export function logSuccess(msg: string): void {
