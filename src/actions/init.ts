@@ -55,7 +55,11 @@ export async function init(
 }
 
 function logWelcomeMessage(): void {
-  console.log("Welcome to Graphite!");
+  if (!fs.existsSync(repoConfig.path())) {
+    logInfo("Welcome to Graphite!");
+  } else {
+    logInfo(`Regenerating "${repoConfig.path()}"`);
+  }
 }
 
 async function selectIgnoreBranches(
