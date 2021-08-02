@@ -32,6 +32,7 @@ type RepoConfigT = {
   owner?: string;
   name?: string;
   trunk?: string;
+  ignoreBranches?: string[];
 };
 
 class RepoConfig {
@@ -42,7 +43,10 @@ class RepoConfig {
   }
 
   private save(): void {
-    fs.writeFileSync(CURRENT_REPO_CONFIG_PATH, JSON.stringify(this._data));
+    fs.writeFileSync(
+      CURRENT_REPO_CONFIG_PATH,
+      JSON.stringify(this._data, null, 2)
+    );
   }
 
   public getRepoOwner(): string {
@@ -72,6 +76,15 @@ class RepoConfig {
 
   public getTrunk(): string | undefined {
     return this._data.trunk;
+  }
+
+  public setIgnoreBranches(ignoreBranches: string[]): void {
+    this._data.ignoreBranches = ignoreBranches;
+    this.save();
+  }
+
+  public getIgnoreBranches(): string[] {
+    return this._data.ignoreBranches || [];
   }
 
   public setRepoOwner(owner: string): void {
