@@ -9,7 +9,7 @@ for (const scene of [new TrailingProdScene()]) {
 
     it("Can run init in a fresh repo", () => {
       const repoConfigPath = `${scene.repo.dir}/.git/.graphite_repo_config`;
-      expect(fs.existsSync(repoConfigPath)).to.be.false;
+      fs.removeSync(repoConfigPath);
       scene.repo.execCliCommand(
         "repo init --trunk main --ignore-branches prod"
       );

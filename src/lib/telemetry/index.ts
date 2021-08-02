@@ -7,7 +7,9 @@ import chalk from "chalk";
 import { execSync } from "child_process";
 import fetch from "node-fetch";
 import { version } from "../../../package.json";
+import { init } from "../../actions/init";
 import { API_SERVER } from "../api";
+import { repoConfig } from "../config";
 import {
   ConfigError,
   ExitFailedError,
@@ -101,6 +103,14 @@ export async function profile(
   command: string,
   handler: () => Promise<void>
 ): Promise<void> {
+  // Self heal repo config on all commands besides init:
+  if (command !== "init" && !repoConfig.getTrunk()) {
+    logInfo(
+      `No trunk branch specified in "${repoConfig.path()}", please choose now.`
+    );
+    await init();
+  }
+
   const start = Date.now();
   try {
     await handler();

@@ -21,6 +21,10 @@ export abstract class AbstractScene {
     this.tmpDir = tmp.dirSync();
     this.dir = this.tmpDir.name;
     this.repo = new GitRepo(this.dir);
+    fs.writeFileSync(
+      `${this.dir}/.git/.graphite_repo_config`,
+      JSON.stringify({ trunk: "main" }, null, 2)
+    );
     process.chdir(this.dir);
     if (process.env.DEBUG) {
       console.log(`Dir: ${this.dir}`);
