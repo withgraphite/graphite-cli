@@ -69,12 +69,11 @@ function getBranchInfo(branch: Branch, config: TPrintStackConfig): string[] {
   const isCurrentBranch = config.currentBranch?.name === branch.name;
   const prInfo = branch.getPRInfo();
 
-  const dot = isCurrentBranch ? "◉" : "◯";
+  const dot = isCurrentBranch ? chalk.cyan("◉") : "◯";
   const branchName = isCurrentBranch
     ? chalk.cyan(`${branch.name} (current)`)
     : chalk.blueBright(branch.name);
   const pr = prInfo !== undefined ? chalk.yellow(`PR #${prInfo.number}`) : "";
-
   branchInfo.push(`${dot} ${branchName} ${pr}`);
 
   return branchInfo;

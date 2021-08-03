@@ -39,10 +39,10 @@ async function printStacksBehindTrunk(): Promise<void> {
   }
 
   console.log("․");
+  console.log("․");
+  console.log(`․  ${chalk.bold(`Stack(s) below trail ${trunk.name}.`)}`);
   console.log(
-    `․ ${chalk.red(
-      `Stacks below trail ${trunk.name}. To fix, check out the stack and run \`gp stack fix\`.`
-    )}`
+    `․  To fix a stack, check out the stack and run \`gp stack fix\`.`
   );
   console.log("․");
 
