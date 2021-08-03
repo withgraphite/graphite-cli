@@ -39,4 +39,19 @@ export default class Commit {
       .trim();
     return message;
   }
+
+  public timestamp(): number {
+    const time = gpExecSync(
+      {
+        command: `git log -1 --format=%ct -n 1 ${this.sha}`,
+      },
+      (_) => {
+        // just soft-fail if we can't find the commits
+        return Buffer.alloc(0);
+      }
+    )
+      .toString()
+      .trim();
+    return parseInt(time);
+  }
 }

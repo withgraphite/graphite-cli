@@ -381,6 +381,21 @@ export default class Branch {
     return this.getMeta()?.prInfo;
   }
 
+  public getBranchTipSHA(): string {
+    const sha = gpExecSync(
+      {
+        command: `git rev-parse ${this.name}`,
+      },
+      (_) => {
+        // just soft-fail if we can't find the commits
+        return Buffer.alloc(0);
+      }
+    )
+      .toString()
+      .trim();
+    return sha;
+  }
+
   public getCommitSHAs(): string[] {
     const parents = this.getParentsFromGit();
     const shas: Set<string> = new Set();
