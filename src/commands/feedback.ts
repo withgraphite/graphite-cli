@@ -4,7 +4,7 @@ import chalk from "chalk";
 import yargs from "yargs";
 import { API_SERVER } from "../lib/api";
 import { ExitFailedError } from "../lib/errors";
-import { profiledHandler, userEmail } from "../lib/telemetry";
+import { profile, userEmail } from "../lib/telemetry";
 
 const args = {
   message: {
@@ -21,7 +21,7 @@ export const description =
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(argv, async () => {
     const user = userEmail();
     const response = await request.requestWithArgs(
       API_SERVER,

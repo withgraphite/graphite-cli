@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { nextOrPrevAction } from "../../actions/next_or_prev";
-import { profiledHandler } from "../../lib/telemetry";
+import { profile } from "../../lib/telemetry";
 
 const args = {
   silent: {
@@ -20,7 +20,7 @@ export const description =
   "If you're in a stack: Branch A → Branch B (you are here) → Branch C. Takes you to the next branch (Branch C). If there are two descendent branches, errors out and tells you the various branches you could go to.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(argv, async () => {
     await nextOrPrevAction("next", argv.silent);
   });
 };

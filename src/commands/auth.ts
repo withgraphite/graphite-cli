@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { UserConfig } from "../lib/config";
-import { profiledHandler } from "../lib/telemetry";
+import { profile } from "../lib/telemetry";
 import { logSuccess } from "../lib/utils";
 
 const args = {
@@ -19,7 +19,7 @@ export const description =
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(argv, async () => {
     UserConfig.setUserAuthToken(argv.token);
     logSuccess("🔐 Successfully authenticated!");
   });

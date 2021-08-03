@@ -1,7 +1,12 @@
 import { UserConfig } from "../lib/config";
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
 import { currentBranchPrecondition } from "../lib/preconditions";
-import { checkoutBranch, detectStagedChanges, gpExecSync } from "../lib/utils";
+import {
+  checkoutBranch,
+  detectStagedChanges,
+  gpExecSync,
+  makeId,
+} from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
 export async function createBranchAction(opts: {
@@ -66,10 +71,7 @@ function ensureSomeStagedChanges(silent: boolean): void {
 }
 
 function newBranchName(branchName?: string): string {
-  return (
-    branchName ||
-    `${UserConfig.config.branchPrefix || ""}${UserConfig.makeId(6)}`
-  );
+  return branchName || `${UserConfig.config.branchPrefix || ""}${makeId(6)}`;
 }
 
 function checkoutNewBranch(branchName: string, silent: boolean): void {

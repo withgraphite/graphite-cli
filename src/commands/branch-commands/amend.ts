@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { amendAction } from "../../actions/amend";
-import { profiledHandler } from "../../lib/telemetry";
+import { profile } from "../../lib/telemetry";
 
 const args = {
   message: {
@@ -22,7 +22,7 @@ export const description = "Commit staged changes and fix upstack branches.";
 export const builder = args;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(argv, async () => {
     await amendAction(argv.silent, argv.message);
   });
 };

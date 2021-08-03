@@ -11,7 +11,7 @@ export default abstract class AbstractCommand<
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public async execute(argv: yargs.Arguments<yargs.InferredOptionTypes<T>>) {
     await checkForUpgrade();
-    await profile(this.constructor.name, async () => {
+    await profile(argv, async () => {
       await this._execute(argv);
     });
   }

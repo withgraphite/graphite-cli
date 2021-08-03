@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { cleanAction } from "../../actions/clean";
-import { profiledHandler } from "../../lib/telemetry";
+import { profile } from "../../lib/telemetry";
 
 const args = {
   silent: {
@@ -32,7 +32,7 @@ export const description =
   "Delete any branches that have been merged or squashed into the trunk branch, and fix their upstack branches recursively.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(argv, async () => {
     await cleanAction({
       silent: argv.silent,
       pull: argv.pull,

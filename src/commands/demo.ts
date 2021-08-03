@@ -1,6 +1,7 @@
 import { execSync } from "child_process";
 import tmp from "tmp";
-import { profiledHandler } from "../lib/telemetry";
+import yargs from "yargs";
+import { profile } from "../lib/telemetry";
 import { GitRepo } from "../lib/utils";
 
 export const command = "demo";
@@ -9,8 +10,9 @@ export const description = false;
 const args = {} as const;
 export const builder = args;
 
-export const handler = async (): Promise<void> => {
-  return profiledHandler(command, async () => {
+type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
+export const handler = async (argv: argsT): Promise<void> => {
+  return profile(argv, async () => {
     const tmpDir = tmp.dirSync();
     console.log(tmpDir.name);
     const repo = new GitRepo(tmpDir.name);

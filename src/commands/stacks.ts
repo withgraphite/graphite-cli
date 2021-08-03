@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import yargs from "yargs";
-import { profiledHandler } from "../lib/telemetry";
+import { profile } from "../lib/telemetry";
 import { getTrunk } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
@@ -111,7 +111,7 @@ async function printBranchAndChildren(
 }
 
 export const handler = async (args: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(args, async () => {
     const { rootBranches, precomputedChildren } = computeBranchLineage();
     const trunk = getTrunk();
     const current = Branch.getCurrentBranch();

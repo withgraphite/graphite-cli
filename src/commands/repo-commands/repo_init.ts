@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { init } from "../../actions/init";
-import { profiledHandler } from "../../lib/telemetry";
+import { profile } from "../../lib/telemetry";
 
 const args = {
   trunk: {
@@ -25,7 +25,7 @@ export const description =
   "Create or regenerate a `.graphite_repo_config` file.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(argv, async () => {
     await init(argv.trunk, argv["ignore-branches"]);
   });
 };

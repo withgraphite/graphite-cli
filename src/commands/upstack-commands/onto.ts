@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { ontoAction } from "../../actions/onto";
-import { profiledHandler } from "../../lib/telemetry";
+import { profile } from "../../lib/telemetry";
 
 const args = {
   silent: {
@@ -25,7 +25,7 @@ export const description =
 export const builder = args;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(argv, async () => {
     await ontoAction(argv.branch, argv.silent);
   });
 };
