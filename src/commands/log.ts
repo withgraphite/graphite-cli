@@ -19,7 +19,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       printTrunkLog();
       await printStacksBehindTrunk();
     } catch (e) {
-      // Ignore errors (this just means they quit git log)
+      console.log(e);
     }
   });
 };
