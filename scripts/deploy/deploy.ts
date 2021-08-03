@@ -1,7 +1,8 @@
 #! /usr/bin/env ts-node
 
 import { execSync } from "child_process";
-import { version } from "../package.json";
+import { version } from "../../package.json";
+import { build } from "./build";
 
 const VERSION_TAG = `v${version}`;
 const VERSION_BRANCH = `deploy--${VERSION_TAG}`;
@@ -27,9 +28,7 @@ function deploy() {
       `There already exists a tag for ${VERSION_TAG}. Please increment the package version and try again.`
     );
   }
-  execSync(`yarn install --immutable`);
-  execSync(`yarn build`);
-  execSync(`rm -rf ./node_modules`);
+  build();
   execSync(`git checkout -b ${VERSION_BRANCH}`);
   execSync(`git add -f ./dist`);
   execSync(`git commit -m "${VERSION_TAG}" --no-verify`);
