@@ -22,8 +22,10 @@ if (fs.existsSync(DEPRECATED_USER_CONFIG_PATH)) {
 type UserConfigT = {
   branchPrefix?: string;
   authToken?: string;
-  message?: string;
+  message?: messageT;
 };
+
+type messageT = { contents: string; cliVersion: string };
 
 class UserConfig {
   _data: UserConfigT;
@@ -50,12 +52,12 @@ class UserConfig {
     return this._data.branchPrefix;
   }
 
-  public setMessage(message: string | undefined): void {
+  public setMessage(message: messageT | undefined): void {
     this._data.message = message;
     this.save();
   }
 
-  public getMessage(): string | undefined {
+  public getMessage(): messageT | undefined {
     return this._data.message;
   }
 
