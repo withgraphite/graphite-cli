@@ -1,6 +1,7 @@
 import { execSync } from "child_process";
 import { repoConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
+import { tracer } from "../lib/telemetry";
 import { getTrunk, gpExecSync } from "../lib/utils";
 import Commit from "./commit";
 
@@ -349,26 +350,41 @@ export default class Branch {
   }
 
   private getChildrenOrParents(opt: "CHILDREN" | "PARENTS"): Branch[] {
-    const revListOutput = execSync(
-      `git rev-list ${opt === "CHILDREN" ? "--children" : "--parents"} --all`,
+    return tracer.spanSync(
       {
-        maxBuffer: 1024 * 1024 * 1024,
+        name: "function",
+        resource: "branch.getChildrenOrParents",
+        meta: { direction: opt },
+      },
+      () => {
+        const revListOutput = execSync(
+          `git rev-list ${
+            opt === "CHILDREN" ? "--children" : "--parents"
+          } --all`,
+          {
+            maxBuffer: 1024 * 1024 * 1024,
+          }
+        );
+        const gitTree = gitTreeFromRevListOutput(
+          revListOutput.toString().trim()
+        );
+
+        const showRefOutput = execSync("git show-ref --heads", {
+          maxBuffer: 1024 * 1024 * 1024,
+        });
+        const branchList = branchListFromShowRefOutput(
+          showRefOutput.toString().trim()
+        );
+
+        const headSha = execSync(`git rev-parse ${this.name}`)
+          .toString()
+          .trim();
+
+        return Array.from(
+          traverseGitTreeFromCommitUntilBranch(headSha, gitTree, branchList, 0)
+        ).map((name) => new Branch(name));
       }
     );
-    const gitTree = gitTreeFromRevListOutput(revListOutput.toString().trim());
-
-    const showRefOutput = execSync("git show-ref --heads", {
-      maxBuffer: 1024 * 1024 * 1024,
-    });
-    const branchList = branchListFromShowRefOutput(
-      showRefOutput.toString().trim()
-    );
-
-    const headSha = execSync(`git rev-parse ${this.name}`).toString().trim();
-
-    return Array.from(
-      traverseGitTreeFromCommitUntilBranch(headSha, gitTree, branchList, 0)
-    ).map((name) => new Branch(name));
   }
 
   public setPRInfo(prInfo: { number: number; url: string }): void {
