@@ -1,6 +1,6 @@
 import Branch from "../../wrapper-classes/branch";
 import { PreconditionsFailedError } from "../errors";
-import { gpExecSync, uncommittedChanges } from "../utils";
+import { detectStagedChanges, gpExecSync, uncommittedChanges } from "../utils";
 
 function currentBranchPrecondition(): Branch {
   const branch = Branch.getCurrentBranch();
@@ -28,6 +28,13 @@ function uncommittedChangesPrecondition(): void {
   }
 }
 
+function ensureSomeStagedChangesPrecondition(): void {
+  if (!detectStagedChanges()) {
+    gpExecSync({ command: `git status`, options: { stdio: "ignore" } });
+    throw new PreconditionsFailedError(`Cannot run without staged changes.`);
+  }
+}
+
 function currentGitRepoPrecondition(): string {
   const repoRootPath = gpExecSync(
     {
@@ -50,4 +57,5 @@ export {
   branchExistsPrecondition,
   uncommittedChangesPrecondition,
   currentGitRepoPrecondition,
+  ensureSomeStagedChangesPrecondition,
 };

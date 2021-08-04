@@ -1,12 +1,10 @@
 import { userConfig } from "../lib/config";
-import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
-import { currentBranchPrecondition } from "../lib/preconditions";
+import { ExitFailedError } from "../lib/errors";
 import {
-  checkoutBranch,
-  detectStagedChanges,
-  gpExecSync,
-  makeId,
-} from "../lib/utils";
+  currentBranchPrecondition,
+  ensureSomeStagedChangesPrecondition,
+} from "../lib/preconditions";
+import { checkoutBranch, gpExecSync, makeId } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
 export async function createBranchAction(opts: {
@@ -17,7 +15,7 @@ export async function createBranchAction(opts: {
 }): Promise<void> {
   const parentBranch = currentBranchPrecondition();
 
-  ensureSomeStagedChanges(opts.silent);
+  ensureSomeStagedChangesPrecondition();
 
   const branchName = newBranchName(opts.branchName);
   checkoutNewBranch(branchName, opts.silent);
@@ -56,18 +54,6 @@ export async function createBranchAction(opts: {
   }
 
   currentBranch.setParentBranchName(parentBranch.name);
-}
-
-function ensureSomeStagedChanges(silent: boolean): void {
-  if (!detectStagedChanges()) {
-    if (!silent) {
-      gpExecSync({ command: `git status`, options: { stdio: "inherit" } });
-    }
-
-    throw new PreconditionsFailedError(
-      `Cannot "branch create", no staged changes detected.`
-    );
-  }
 }
 
 function newBranchName(branchName?: string): string {
