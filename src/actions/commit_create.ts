@@ -8,6 +8,7 @@ export async function commitCreateAction(opts: {
   addAll: boolean;
   message: string;
   silent: boolean;
+  noVerify: boolean;
 }): Promise<void> {
   if (opts.addAll) {
     gpExecSync(
@@ -24,7 +25,11 @@ export async function commitCreateAction(opts: {
 
   gpExecSync(
     {
-      command: `git commit -m "${opts.message}"`,
+      command: [
+        "git commit",
+        `-m "${opts.message}"`,
+        ...[opts.noVerify ? ["--no-verify"] : []],
+      ].join(" "),
     },
     () => {
       throw new ExitFailedError("Failed to commit changes. Aborting...");

@@ -16,6 +16,12 @@ const args = {
     describe: "The message for the new commit",
     required: true,
   },
+  verify: {
+    describe: `Run commit hooks`,
+    demandOption: false,
+    default: true,
+    type: "boolean",
+  },
   silent: {
     describe: `silence output from the command`,
     demandOption: false,
@@ -36,6 +42,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       message: argv.message,
       silent: argv.silent,
       addAll: argv.all,
+      noVerify: !argv.verify,
     });
   });
 };

@@ -22,6 +22,12 @@ const args = {
     demandOption: false,
     default: true,
   },
+  verify: {
+    describe: `Run commit hooks`,
+    demandOption: false,
+    default: true,
+    type: "boolean",
+  },
   silent: {
     describe: `silence output from the command`,
     demandOption: false,
@@ -43,6 +49,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       noEdit: !argv.edit,
       silent: argv.silent,
       addAll: argv.all,
+      noVerify: !argv.verify,
     });
   });
 };

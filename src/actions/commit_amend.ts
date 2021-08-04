@@ -7,6 +7,7 @@ export async function commitAmendAction(opts: {
   addAll: boolean;
   message?: string;
   noEdit: boolean;
+  noVerify: boolean;
   silent: boolean;
 }): Promise<void> {
   if (opts.addAll) {
@@ -22,9 +23,17 @@ export async function commitAmendAction(opts: {
 
   gpExecSync(
     {
-      command: `git commit --amend ${
-        opts.noEdit ? "--no-edit" : opts.message ? `-m ${opts.message}` : ""
-      }`,
+      command: [
+        `git commit --amend`,
+        ...[
+          opts.noEdit
+            ? ["--no-edit"]
+            : opts.message
+            ? [`-m ${opts.message}`]
+            : [],
+        ],
+        ...[opts.noVerify ? ["--no-verify"] : []],
+      ].join(" "),
     },
     () => {
       throw new ExitFailedError("Failed to amend changes. Aborting...");
