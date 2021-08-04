@@ -7,5 +7,5 @@ export function configureTest(suite: Mocha.Suite, scene: AbstractScene): void {
   suite.afterEach(() => {
     scene.cleanup();
   });
-  suite.timeout(10000);
+  suite.timeout(15000);
 }
