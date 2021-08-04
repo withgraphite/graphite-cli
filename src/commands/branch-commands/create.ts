@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { createBranchAction } from "../../actions/create_branch";
-import { profiledHandler } from "../../lib/telemetry";
+import { profile } from "../../lib/telemetry";
 
 const args = {
   name: {
@@ -37,7 +37,7 @@ export const description =
   "Creates a new branch stacked off of the current branch and commit staged changes.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(argv, async () => {
     await createBranchAction({
       silent: argv.silent,
       branchName: argv.name,

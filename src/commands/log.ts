@@ -1,17 +1,21 @@
 import chalk from "chalk";
 import { printStack } from "../actions/print_stack";
-import { profiledHandler } from "../lib/telemetry";
+import { profile } from "../lib/telemetry";
 import { getTrunk } from "../lib/utils/trunk";
 import Branch from "../wrapper-classes/branch";
+import { execSync } from "child_process";
+import yargs from "yargs";
 
 const args = {} as const;
 
 export const command = "log";
 export const description = "Log all stacks";
 export const builder = args;
+export const aliases = ["l"];
 
-export const handler = async (): Promise<void> => {
-  return profiledHandler(command, async () => {
+type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
+export const handler = async (argv: argsT): Promise<void> => {
+  return profile(argv, async () => {
     try {
       printTrunkLog();
       await printStacksBehindTrunk();

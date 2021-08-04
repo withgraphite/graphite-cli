@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { allScenes } from "../../scenes";
-import { configureTest } from "../../utils";
+import { configureTest, expectCommits } from "../../utils";
 
 for (const scene of allScenes) {
   describe(`(${scene}): stack fix`, function () {
@@ -61,6 +61,21 @@ for (const scene of allScenes) {
       expect(
         scene.repo.listCurrentBranchCommitMessages().slice(0, 4).join(", ")
       ).to.equal("3, 2, 1.5, 1");
+    });
+
+    it("Can fix one specific stack", () => {
+      scene.repo.createChange("a", "a");
+      scene.repo.execCliCommand("branch create 'a' -m 'a' -s");
+
+      scene.repo.checkoutBranch("main");
+      scene.repo.createChangeAndCommit("1.5");
+
+      scene.repo.checkoutBranch("a");
+
+      scene.repo.execCliCommand("stack fix -s");
+
+      expect(scene.repo.currentBranchName()).to.eq("a");
+      expectCommits(scene.repo, "a, 1.5, 1");
     });
   });
 }

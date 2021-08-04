@@ -22,38 +22,62 @@ if (fs.existsSync(DEPRECATED_USER_CONFIG_PATH)) {
 type UserConfigT = {
   branchPrefix?: string;
   authToken?: string;
+  message?: string;
 };
 
-export function makeId(length: number): string {
-  let result = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+class UserConfig {
+  _data: UserConfigT;
+
+  constructor(data: UserConfigT) {
+    this._data = data;
   }
-  return result;
-}
 
-// TODO: validate the shape of this (possibly using retype)
-export let config: UserConfigT = {};
-if (fs.existsSync(USER_CONFIG_PATH)) {
-  const userConfigRaw = fs.readFileSync(USER_CONFIG_PATH);
-  try {
-    config = JSON.parse(userConfigRaw.toString().trim()) as UserConfigT;
-  } catch (e) {
-    console.log(chalk.yellow(`Warning: Malformed ${USER_CONFIG_PATH}`));
+  public setAuthToken(authToken: string): void {
+    this._data.authToken = authToken;
+    this.save();
+  }
+
+  public getAuthToken(): string | undefined {
+    return this._data.authToken;
+  }
+
+  public setBranchPrefix(branchPrefix: string): void {
+    this._data.branchPrefix = branchPrefix;
+    this.save();
+  }
+
+  public getBranchPrefix(): string | undefined {
+    return this._data.branchPrefix;
+  }
+
+  public setMessage(message: string | undefined): void {
+    this._data.message = message;
+    this.save();
+  }
+
+  public getMessage(): string | undefined {
+    return this._data.message;
+  }
+
+  private save(): void {
+    fs.writeFileSync(USER_CONFIG_PATH, JSON.stringify(this._data));
   }
 }
 
-export function setUserAuthToken(authToken: string): void {
-  const newConfig = {
-    ...config,
-    authToken: authToken,
-  };
-  setUserConfig(newConfig);
+function readUserConfig(): UserConfig {
+  if (fs.existsSync(USER_CONFIG_PATH)) {
+    const userConfigRaw = fs.readFileSync(USER_CONFIG_PATH);
+    try {
+      const parsedConfig = JSON.parse(
+        userConfigRaw.toString().trim()
+      ) as UserConfigT;
+      return new UserConfig(parsedConfig);
+    } catch (e) {
+      console.log(chalk.yellow(`Warning: Malformed ${USER_CONFIG_PATH}`));
+    }
+  }
+  return new UserConfig({});
 }
 
-function setUserConfig(newConfig: UserConfigT): void {
-  fs.writeFileSync(USER_CONFIG_PATH, JSON.stringify(newConfig));
-  config = newConfig;
-}
+const userConfigSingleton = readUserConfig();
+export default userConfigSingleton;

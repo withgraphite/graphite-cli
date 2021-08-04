@@ -1,13 +1,13 @@
 {
   "name": "graphite-cli",
-  "version": "0.6.0",
+  "version": "0.6.3",
   "license": "None",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/screenplaydev/screenplay-cli",
   "private": true,
   "dependencies": {
-    "@screenplaydev/graphite-cli-routes": "^0.2.0",
+    "@screenplaydev/graphite-cli-routes": "^0.3.0",
     "@screenplaydev/retype": "^0.2.0",
     "@screenplaydev/retyped-routes": "^0.1.0",
     "chalk": "^4.1.0",
@@ -24,7 +24,8 @@
     "cli": "ts-node ./src/index.ts",
     "test": "yarn ts-mocha \"test/**/*.test.ts\"  --parallel --jobs 8",
     "test-one": "yarn ts-mocha",
-    "deploy": "ts-node ./scripts/deploy.ts",
+    "deploy": "ts-node ./scripts/deploys/deploy.ts",
+    "deploy-test": "ts-node ./scripts/deploy/deploy-test.ts",
     "regen-demo": "ts-node ./scripts/demo/index.ts"
   },
   "files": [

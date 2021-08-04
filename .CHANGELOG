@@ -1,8 +1,18 @@
+## 0.6.3 2020-08-02
+- Better telemetry for measuring cli performance.
+- `gp l` alias for log command.
+
+## 0.6.2 2020-08-02
+- `stack fix` now works for a individual stack. (Upstack inclusive for now)
+
+## 0.6.1 2020-08-02
+- Fix homebrew release to not include a dev dependency on "chai".
+
 ## 0.6.0 2020-08-02
 - Support `--no-verify` flag when running `branch create` to skip precommit hooks.
 - Validation passes when a branch points to the same commit as trunk HEAD.
 - Add `repo init` command.
-- Self heal `.graphite_repo_init` file.
+- Self heal `.graphite_repo_config` file.
 - Always track trunk branch and ignored branches.
 - Update `stack regen` to always set stack foundations to trunk.
 - Update `stack regen` such that, when from from trunk, regenerates all stacks.

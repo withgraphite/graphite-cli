@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import fs from "fs-extra";
 import tmp from "tmp";
-import GitRepo from "../utils/git_repo";
+import { GitRepo } from "../../src/lib/utils";
 
 export abstract class AbstractScene {
   tmpDir: tmp.DirResult;

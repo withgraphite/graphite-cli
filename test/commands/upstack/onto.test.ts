@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { allScenes } from "../../scenes";
-import { configureTest } from "../../utils";
+import { configureTest, expectCommits } from "../../utils";
 
 for (const scene of allScenes) {
   describe(`(${scene}): upstack onto`, function () {
@@ -14,7 +14,7 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand("branch create 'b' -m '3' -s");
 
       scene.repo.execCliCommand("upstack onto main -s");
-      scene.repo.expectCommits("3, 1");
+      expectCommits(scene.repo, "3, 1");
       expect(() => scene.repo.execCliCommand("validate -s")).not.to.throw;
     });
 
@@ -47,7 +47,7 @@ for (const scene of allScenes) {
       expect(() => {
         scene.repo.execCliCommand("upstack onto main");
       }).to.not.throw();
-      scene.repo.expectCommits("a3, a2, a1, b, 1");
+      expectCommits(scene.repo, "a3, a2, a1, b, 1");
       scene.repo.checkoutBranch("a");
 
       // Prove that we have meta now.

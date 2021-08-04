@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import tmp from "tmp";
 import yargs from "yargs";
+import { fetchUpgradePromptInBackground } from "./lib/telemetry";
 
+fetchUpgradePromptInBackground();
 // https://www.npmjs.com/package/tmp#graceful-cleanup
 tmp.setGracefulCleanup();
 

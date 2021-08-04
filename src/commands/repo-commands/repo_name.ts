@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { repoConfig } from "../../lib/config";
-import { profiledHandler } from "../../lib/telemetry";
+import { profile } from "../../lib/telemetry";
 import { logInfo } from "../../lib/utils";
 
 const args = {
@@ -21,7 +21,7 @@ export const description =
   "Graphite's conception of the current repo's name. e.g. in 'screenplaydev/graphite-cli', this is 'graphite-cli'.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(argv, async () => {
     if (argv.set) {
       repoConfig.setRepoName(argv.set);
     } else {

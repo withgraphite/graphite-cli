@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import Branch from "../../../src/wrapper-classes/branch";
-import { allScenes } from "../../scenes";
+import { TrailingProdScene } from "../../scenes";
 import { configureTest } from "../../utils";
 
-for (const scene of allScenes) {
+for (const scene of [new TrailingProdScene()]) {
   describe(`(${scene}): stack regen`, function () {
     configureTest(this, scene);
 

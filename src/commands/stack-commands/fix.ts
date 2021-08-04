@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { fixAction } from "../../actions/fix";
-import { profiledHandler } from "../../lib/telemetry";
+import { profile } from "../../lib/telemetry";
 
 export const command = "fix";
 export const description =
@@ -19,7 +19,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(argv, async () => {
     await fixAction(argv.silent);
   });
 };

@@ -1,4 +1,4 @@
 import { configureTest } from "./configure_test";
-import GitRepo from "./git_repo";
+import { expectCommits } from "./expect_commits";
 
-export { GitRepo, configureTest };
+export { configureTest, expectCommits };

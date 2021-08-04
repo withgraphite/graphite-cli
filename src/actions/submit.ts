@@ -3,7 +3,7 @@ import * as t from "@screenplaydev/retype";
 import { request } from "@screenplaydev/retyped-routes";
 import chalk from "chalk";
 import { API_SERVER } from "../lib/api";
-import { repoConfig, UserConfig } from "../lib/config";
+import { repoConfig, userConfig } from "../lib/config";
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import {
@@ -62,7 +62,7 @@ export async function submitAction(
 }
 
 function getCLIAuthToken(): string {
-  const token = UserConfig.config.authToken;
+  const token = userConfig.getAuthToken();
   if (!token || token.length === 0) {
     throw new PreconditionsFailedError(
       "Please authenticate your Graphite CLI by visiting https://app.graphite.dev/activate."

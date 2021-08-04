@@ -1,4 +1,4 @@
-import GitRepo from "../../test/utils/git_repo";
+import { GitRepo } from "../../src/lib/utils";
 import AbstractDemo from "./abstract_demo";
 
 export default class FullDemo extends AbstractDemo {

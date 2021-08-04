@@ -3,11 +3,12 @@ import {
   PreconditionsFailedError,
   RebaseConflictError,
 } from "../lib/errors";
-import { log } from "../lib/log";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import {
   checkoutBranch,
+  getTrunk,
   gpExecSync,
+  logInfo,
   rebaseInProgress,
   uncommittedChanges,
 } from "../lib/utils";
@@ -17,36 +18,22 @@ export async function fixAction(silent: boolean): Promise<void> {
   if (uncommittedChanges()) {
     throw new PreconditionsFailedError("Cannot fix with uncommitted changes");
   }
-
-  const originalBranch = currentBranchPrecondition();
-
-  const childrenRestackedByBranchName: Record<string, number> = {};
-  for (const child of await originalBranch.getChildrenFromMeta()) {
-    const childRestack = await restackBranch(child, silent);
-    childrenRestackedByBranchName[child.name] = childRestack.numberRestacked;
+  const currentBranch = currentBranchPrecondition();
+  if (currentBranch.name == getTrunk().name) {
+    // Dont rebase main
+    for (const child of await currentBranch.getChildrenFromMeta()) {
+      await restackBranch(child, silent);
+    }
+  } else {
+    await restackBranch(currentBranch, silent);
   }
-  checkoutBranch(originalBranch.name);
-
-  log(`Fixed:`, { silent });
-  for (const branchName of Object.keys(childrenRestackedByBranchName)) {
-    const childrenRestacked = childrenRestackedByBranchName[branchName] - 1; // subtracting 1 for branch
-    log(
-      ` - ${branchName} ${
-        childrenRestacked > 0
-          ? `(${childrenRestacked} descendent${
-              childrenRestacked === 1 ? "" : "s"
-            })`
-          : ""
-      }`,
-      { silent }
-    );
-  }
+  checkoutBranch(currentBranch.name);
 }
 
 export async function restackBranch(
   currentBranch: Branch,
   silent: boolean
-): Promise<{ numberRestacked: number }> {
+): Promise<void> {
   if (rebaseInProgress()) {
     throw new RebaseConflictError(
       `Interactive rebase in progress, cannot fix (${currentBranch.name}). Complete the rebase and re-run fix command.`
@@ -65,27 +52,30 @@ export async function restackBranch(
     );
   }
 
-  currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
-  checkoutBranch(currentBranch.name);
-  gpExecSync(
-    {
-      command: `git rebase --onto ${parentBranch.name} ${mergeBase} ${currentBranch.name}`,
-      options: { stdio: "ignore" },
-    },
-    () => {
-      if (rebaseInProgress()) {
-        throw new RebaseConflictError(
-          "Please resolve the rebase conflict (via `git rebase --continue`) and then rerun `stack fix` to fix the remainder of the stack."
-        );
+  if (parentBranch.ref() === mergeBase) {
+    logInfo(
+      `No fix needed for (${currentBranch.name}) on (${parentBranch.name})`
+    );
+  } else {
+    logInfo(`Fixing (${currentBranch.name}) on (${parentBranch.name})`);
+    checkoutBranch(currentBranch.name);
+    currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
+    gpExecSync(
+      {
+        command: `git rebase --onto ${parentBranch.name} ${mergeBase} ${currentBranch.name}`,
+        options: { stdio: "ignore" },
+      },
+      () => {
+        if (rebaseInProgress()) {
+          throw new RebaseConflictError(
+            "Resolve the conflict (via `git rebase --continue`) and then rerun `gp stack fix` to fix the remaining stack."
+          );
+        }
       }
-    }
-  );
-
-  let numberRestacked = 1; // 1 for self
-  for (const child of await currentBranch.getChildrenFromMeta()) {
-    const childRestack = await restackBranch(child, silent);
-    numberRestacked += childRestack.numberRestacked;
+    );
   }
 
-  return { numberRestacked };
+  for (const child of await currentBranch.getChildrenFromMeta()) {
+    await restackBranch(child, silent);
+  }
 }

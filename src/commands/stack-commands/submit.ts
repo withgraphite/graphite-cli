@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { submitAction } from "../../actions/submit";
-import { profiledHandler } from "../../lib/telemetry";
+import { profile } from "../../lib/telemetry";
 
 export const command = "submit";
 export const description =
@@ -11,7 +11,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  await profiledHandler(command, async () => {
+  await profile(argv, async () => {
     await submitAction("FULLSTACK", {});
   });
 };

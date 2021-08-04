@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { regenAction } from "../../actions/regen";
-import { profiledHandler } from "../../lib/telemetry";
+import { profile } from "../../lib/telemetry";
 
 const args = {
   silent: {
@@ -18,7 +18,7 @@ export const description =
   "Recreate the current stack by tracing git branches from trunk through to leave branches.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profiledHandler(command, async () => {
+  return profile(argv, async () => {
     await regenAction(argv.silent);
   });
 };
