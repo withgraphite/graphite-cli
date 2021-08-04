@@ -3,14 +3,15 @@ import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
 import { request } from "@screenplaydev/retyped-routes";
 import { version } from "../../../package.json";
 import { API_SERVER } from "../api";
-import { makeId } from "../utils";
+
+type spanNameT = "function" | "execSync" | "command";
 
 type spanT = {
   duration: number;
   error: number;
   meta?: Record<string, string>;
   metrics: Record<string, number>;
-  name: string;
+  name: spanNameT;
   parent_id?: number;
   resource: string;
   service: "graphite-cli";
@@ -38,7 +39,7 @@ function currentNanoSeconds(): number {
 }
 
 export class Span {
-  name: string;
+  name: spanNameT;
   parentId?: number;
   resource: string;
   spanId: number;
@@ -49,11 +50,11 @@ export class Span {
 
   constructor(opts: {
     resource: string;
-    name?: string;
+    name: spanNameT;
     parentId?: number;
     meta?: Record<string, string>;
   }) {
-    this.name = opts.name || makeId(10);
+    this.name = opts.name;
     this.parentId = opts.parentId;
     this.resource = opts.resource;
     this.meta = opts.meta;
@@ -92,7 +93,7 @@ class Tracer {
 
   public startSpan(opts: {
     resource: string;
-    name?: string;
+    name: spanNameT;
     meta?: Record<string, string>;
   }) {
     const span = new Span({
@@ -106,7 +107,7 @@ class Tracer {
   public spanSync<T>(
     opts: {
       resource: string;
-      name?: string;
+      name: spanNameT;
       meta?: Record<string, string>;
     },
     handler: () => T
@@ -128,7 +129,7 @@ class Tracer {
   public async span<T>(
     opts: {
       resource: string;
-      name?: string;
+      name: spanNameT;
       meta?: Record<string, string>;
     },
     handler: () => Promise<T>
