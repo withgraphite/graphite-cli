@@ -1,7 +1,9 @@
 import chalk from "chalk";
+import prompts from "prompts";
 import yargs from "yargs";
+import { ExitFailedError } from "../lib/errors";
 import { profile } from "../lib/telemetry";
-import { getTrunk } from "../lib/utils";
+import { getTrunk, gpExecSync } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
 const args = {
@@ -11,6 +13,13 @@ const args = {
     default: false,
     type: "boolean",
     alias: "a",
+  },
+  interactive: {
+    describe: `Interactively checkout a different stacked branch`,
+    demandOption: false,
+    default: true,
+    type: "boolean",
+    alias: "i",
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -53,14 +62,16 @@ function computeBranchLineage() {
   return { rootBranches, precomputedChildren };
 }
 
-async function printBranchAndChildren(
+type promptOptionT = { title: string; value: string };
+
+async function computeChoices(
   branch: TBranchWithMetadata,
   precomputedChildren: Record<string, TBranchWithMetadata[]>,
   trunk: Branch,
   current: Branch | null,
   showAll: boolean,
   indent = 0
-): Promise<void> {
+): Promise<promptOptionT[]> {
   const children =
     branch.branch.name in precomputedChildren
       ? precomputedChildren[branch.branch.name]
@@ -73,15 +84,13 @@ async function printBranchAndChildren(
     !(current && branch.branch.name === current.name) &&
     !showAll
   ) {
-    return;
+    return [];
   }
 
-  for (let i = 0; i < indent; i++) {
-    process.stdout.write("  ");
-  }
-
-  console.log(
-    `${chalk.gray("↳")} ${
+  let choices: promptOptionT[] = [];
+  choices.push({
+    value: branch.branch.name,
+    title: `${"  ".repeat(indent)}${chalk.gray("↳")} ${
       current && branch.branch.name === current.name
         ? chalk.cyan(branch.branch.name)
         : chalk.blueBright(branch.branch.name)
@@ -95,35 +104,78 @@ async function printBranchAndChildren(
         NEEDS_RESTACK: `, ${chalk.yellow("`stack fix` required")}`,
         NEEDS_REGEN: `, ${chalk.yellow("untracked")}`,
       }[branch.status]
-    })`
-  );
+    })`,
+  });
 
   for (const child of children) {
-    await printBranchAndChildren(
-      child,
-      precomputedChildren,
-      trunk,
-      current,
-      showAll,
-      indent + 1
+    choices = choices.concat(
+      await computeChoices(
+        child,
+        precomputedChildren,
+        trunk,
+        current,
+        showAll,
+        indent + 1
+      )
     );
+  }
+  return choices;
+}
+
+async function promptBranches(choices: promptOptionT[]): Promise<void> {
+  const currentBranch = Branch.getCurrentBranch();
+  let currentBranchIndex: undefined | number = undefined;
+
+  if (currentBranch) {
+    currentBranchIndex = choices
+      .map((c) => c.value)
+      .indexOf(currentBranch.name);
+  }
+
+  const chosenBranch = (
+    await prompts({
+      type: "select",
+      name: "branch",
+      message: `Checkout a branch`,
+      choices: choices,
+      ...(currentBranchIndex ? { initial: currentBranchIndex } : {}),
+    })
+  ).branch;
+
+  if (chosenBranch && chosenBranch !== currentBranch?.name) {
+    gpExecSync({ command: `git checkout ${chosenBranch}` }, (err) => {
+      throw new ExitFailedError(`Failed to checkout ${chosenBranch}: ${err}`);
+    });
+  }
+}
+
+async function promptBranchesAndChildren(
+  all: boolean,
+  interactive: boolean
+): Promise<void> {
+  const { rootBranches, precomputedChildren } = computeBranchLineage();
+  const trunk = getTrunk();
+  const current = Branch.getCurrentBranch();
+  let choices: promptOptionT[] = [];
+
+  for (const branch of rootBranches) {
+    choices = choices.concat(
+      await computeChoices(branch, precomputedChildren, trunk, current, all)
+    );
+  }
+
+  if (interactive) {
+    await promptBranches(choices);
+  } else {
+    choices.forEach((choice) => {
+      console.log(choice.title);
+    });
+    return;
   }
 }
 
 export const handler = async (args: argsT): Promise<void> => {
   return profile(args, async () => {
-    const { rootBranches, precomputedChildren } = computeBranchLineage();
-    const trunk = getTrunk();
-    const current = Branch.getCurrentBranch();
-
-    for (const branch of rootBranches) {
-      await printBranchAndChildren(
-        branch,
-        precomputedChildren,
-        trunk,
-        current,
-        args.all
-      );
-    }
+    await promptBranchesAndChildren(args.all, args.interactive);
   });
 };
