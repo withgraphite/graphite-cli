@@ -12,16 +12,16 @@ for (const scene of allScenes) {
 
     it("Can validate upstack", async () => {
       scene.repo.createChange("a");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
 
       scene.repo.createAndCheckoutBranch("b");
       scene.repo.createChangeAndCommit("1");
 
       scene.repo.createChange("c");
-      scene.repo.execCliCommand(`branch create "c" -s`);
+      scene.repo.execCliCommand(`branch create "c" -m "c" -s`);
 
       scene.repo.createChange("d");
-      scene.repo.execCliCommand(`branch create "d" -s`);
+      scene.repo.execCliCommand(`branch create "d" -m "d" -s`);
 
       scene.repo.checkoutBranch("a");
       await expect(validate("UPSTACK", true)).to.eventually.be.rejectedWith(
@@ -46,16 +46,16 @@ for (const scene of allScenes) {
 
     it("Can validate downstack", async () => {
       scene.repo.createChange("a");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
 
       scene.repo.createAndCheckoutBranch("b");
       scene.repo.createChangeAndCommit("1");
 
       scene.repo.createChange("c");
-      scene.repo.execCliCommand(`branch create "c" -s`);
+      scene.repo.execCliCommand(`branch create "c" -m "c" -s`);
 
       scene.repo.createChange("d");
-      scene.repo.execCliCommand(`branch create "d" -s`);
+      scene.repo.execCliCommand(`branch create "d" -m "d" -s`);
 
       scene.repo.checkoutBranch("a");
       await expect(
@@ -80,13 +80,13 @@ for (const scene of allScenes) {
 
     it("Can validate fullstack", async () => {
       scene.repo.createChange("a");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
       await expect(
         validate("FULLSTACK", true)
       ).to.not.eventually.be.rejectedWith(Error);
 
       scene.repo.createChange("b");
-      scene.repo.execCliCommand(`branch create "b" -s`);
+      scene.repo.execCliCommand(`branch create "b" -m "b" -s`);
       await expect(
         validate("FULLSTACK", true)
       ).to.not.eventually.be.rejectedWith(Error);

@@ -8,7 +8,7 @@ for (const scene of allScenes) {
 
     it("Can list parent in a stack", () => {
       scene.repo.createChange("a");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
       expect(scene.repo.execCliCommandAndGetOutput(`branch parent`)).to.eq(
         "main"
       );

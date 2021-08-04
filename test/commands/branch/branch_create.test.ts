@@ -7,8 +7,6 @@ for (const scene of allScenes) {
     configureTest(this, scene);
 
     it("Can run branch create", () => {
-      scene.repo.createChange("2");
-
       scene.repo.execCliCommand(`branch create "a" -s`);
       expect(scene.repo.currentBranchName()).to.equal("a");
 
@@ -21,15 +19,16 @@ for (const scene of allScenes) {
       scene.repo.createPrecommitHook("exit 1");
       scene.repo.createChange("2");
       expect(() => {
-        scene.repo.execCliCommand(`branch create "a" -s`);
+        scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
       }).to.throw(Error);
       expect(scene.repo.currentBranchName()).to.equal("main");
     });
 
     it("Can create a branch without providing a name", () => {
       scene.repo.createChange("2");
-      scene.repo.execCliCommand(`branch create -s`);
-      expect(scene.repo.currentBranchName()).to.not.equal("main");
+      scene.repo.execCliCommand(`branch create -m "feat(test): info" -s`);
+      expect(scene.repo.currentBranchName().includes("feat_test_info")).to.be
+        .true;
     });
   });
 }

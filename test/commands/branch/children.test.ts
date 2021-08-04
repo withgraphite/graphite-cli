@@ -8,10 +8,10 @@ for (const scene of allScenes) {
 
     it("Can list children in a stack", () => {
       scene.repo.createChange("a");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
       scene.repo.checkoutBranch("main");
       scene.repo.createChange("b");
-      scene.repo.execCliCommand(`branch create "b" -s`);
+      scene.repo.execCliCommand(`branch create "b" -m "b" -s`);
       scene.repo.checkoutBranch("main");
       expect(scene.repo.execCliCommandAndGetOutput(`branch children`)).to.eq(
         `a\nb`

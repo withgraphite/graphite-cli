@@ -42,7 +42,7 @@ for (const scene of allScenes) {
 
     it("Can delete a single merged branch", async () => {
       scene.repo.createChange("2", "a");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
 
       expectBranches(scene.repo, "a, main");
 

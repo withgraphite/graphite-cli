@@ -8,9 +8,9 @@ for (const scene of allScenes) {
 
     it("Can pass validation", () => {
       scene.repo.createChange("2");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
       scene.repo.createChange("3");
-      scene.repo.execCliCommand(`branch create "b" -s`);
+      scene.repo.execCliCommand(`branch create "b" -m "b" -s`);
 
       // Expect this command not to fail.
       scene.repo.execCliCommand("stack validate -s");

@@ -1,3 +1,4 @@
+import { execSync } from "child_process";
 import { ExitFailedError } from "../lib/errors";
 import { workingTreeClean } from "../lib/git-utils";
 import { gpExecSync, logWarn } from "../lib/utils";
@@ -21,9 +22,9 @@ export async function commitAmendAction(opts: {
     );
   }
 
-  gpExecSync(
-    {
-      command: [
+  try {
+    execSync(
+      [
         `git commit --amend`,
         ...[
           opts.noEdit
@@ -34,11 +35,11 @@ export async function commitAmendAction(opts: {
         ],
         ...[opts.noVerify ? ["--no-verify"] : []],
       ].join(" "),
-    },
-    () => {
-      throw new ExitFailedError("Failed to amend changes. Aborting...");
-    }
-  );
+      { stdio: "inherit" }
+    );
+  } catch {
+    throw new ExitFailedError("Failed to amend changes. Aborting...");
+  }
   // Only restack if working tree is now clean.
   if (workingTreeClean()) {
     await fixAction(opts.silent);

@@ -8,7 +8,7 @@ for (const scene of allScenes) {
 
     it("Can move to the next and prev branch", () => {
       scene.repo.createChange("a", "a");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
       scene.repo.checkoutBranch("main");
 
       scene.repo.execCliCommand(`branch next`);

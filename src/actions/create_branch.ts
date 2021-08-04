@@ -4,20 +4,22 @@ import {
   currentBranchPrecondition,
   ensureSomeStagedChangesPrecondition,
 } from "../lib/preconditions";
-import { checkoutBranch, gpExecSync, makeId } from "../lib/utils";
+import { checkoutBranch, gpExecSync } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
 export async function createBranchAction(opts: {
   silent: boolean;
   noVerify: boolean;
   branchName?: string;
-  message?: string;
+  commitMessage?: string;
 }): Promise<void> {
   const parentBranch = currentBranchPrecondition();
 
-  ensureSomeStagedChangesPrecondition();
+  if (opts.commitMessage) {
+    ensureSomeStagedChangesPrecondition();
+  }
 
-  const branchName = newBranchName(opts.branchName);
+  const branchName = newBranchName(opts.branchName, opts.commitMessage);
   checkoutNewBranch(branchName, opts.silent);
 
   /**
@@ -26,38 +28,61 @@ export async function createBranchAction(opts: {
    * and check out the new branch and these types of error point to
    * larger failure outside of our control.
    */
-  gpExecSync(
-    {
-      command: `git commit -m "${opts.message || "Updates"}" ${
-        opts.noVerify ? "--no-verify" : ""
-      }`,
-      options: {
-        stdio: "inherit",
+  if (opts.commitMessage) {
+    gpExecSync(
+      {
+        command: `git commit -m "${opts.commitMessage}" ${
+          opts.noVerify ? "--no-verify" : ""
+        }`,
+        options: {
+          stdio: "inherit",
+        },
       },
-    },
-    () => {
-      // Commit failed, usually due to precommit hooks. Rollback the branch.
-      checkoutBranch(parentBranch.name);
-      gpExecSync({
-        command: `git branch -d ${branchName}`,
-        options: { stdio: "ignore" },
-      });
-      throw new ExitFailedError("Failed to commit changes, aborting");
-    }
-  );
-
-  const currentBranch = Branch.getCurrentBranch();
-  if (currentBranch === null) {
-    throw new ExitFailedError(
-      `Created but failed to checkout ${branchName}. Please try again.`
+      () => {
+        // Commit failed, usually due to precommit hooks. Rollback the branch.
+        checkoutBranch(parentBranch.name);
+        gpExecSync({
+          command: `git branch -d ${branchName}`,
+          options: { stdio: "ignore" },
+        });
+        throw new ExitFailedError("Failed to commit changes, aborting");
+      }
     );
   }
 
-  currentBranch.setParentBranchName(parentBranch.name);
+  new Branch(branchName).setParentBranchName(parentBranch.name);
 }
 
-function newBranchName(branchName?: string): string {
-  return branchName || `${userConfig.getBranchPrefix() || ""}${makeId(6)}`;
+function newBranchName(branchName?: string, commitMessage?: string): string {
+  if (!branchName && !commitMessage) {
+    throw new ExitFailedError(
+      `Must specify at least a branch name or commit message`
+    );
+  } else if (branchName) {
+    return branchName;
+  }
+
+  const date = new Date();
+
+  const MAX_BRANCH_NAME_LENGTH = 40;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  let branchMessage = commitMessage!
+    .split("")
+    .map((c) => {
+      if (ALLOWED_BRANCH_CHARACTERS.includes(c)) {
+        return c;
+      }
+      return "_"; // Replace all disallowed characters with _
+    })
+    .join("")
+    .replace(/_+/g, "_");
+
+  if (branchMessage.length <= MAX_BRANCH_NAME_LENGTH - 6) {
+    branchMessage += `_${date.getMonth()}_${date.getDate()}`; // Condence underscores
+  }
+
+  const newBranchName = `${userConfig.getBranchPrefix() || ""}${branchMessage}`;
+  return newBranchName.slice(0, MAX_BRANCH_NAME_LENGTH);
 }
 
 function checkoutNewBranch(branchName: string, silent: boolean): void {
@@ -71,3 +96,60 @@ function checkoutNewBranch(branchName: string, silent: boolean): void {
     }
   );
 }
+
+const ALLOWED_BRANCH_CHARACTERS = [
+  "_",
+  "-",
+  "a",
+  "b",
+  "c",
+  "d",
+  "e",
+  "f",
+  "g",
+  "h",
+  "i",
+  "j",
+  "k",
+  "l",
+  "m",
+  "n",
+  "o",
+  "p",
+  "q",
+  "r",
+  "s",
+  "t",
+  "u",
+  "v",
+  "w",
+  "x",
+  "y",
+  "z",
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+];

@@ -9,7 +9,7 @@ for (const scene of [new TrailingProdScene()]) {
 
     it("Can regen a stack from scratch", () => {
       scene.repo.createChange("2", "2");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
 
       scene.repo.createChangeAndCommit("3");
       scene.repo.createAndCheckoutBranch("b");
@@ -39,7 +39,7 @@ for (const scene of [new TrailingProdScene()]) {
       );
 
       scene.repo.createChange("a");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
       scene.repo.createAndCheckoutBranch("b");
       scene.repo.createChangeAndCommit("b");
 
