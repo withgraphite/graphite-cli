@@ -40,7 +40,7 @@ export default class Commit {
     return message;
   }
 
-  public timestamp(): number {
+  public timestampInSeconds(): number {
     const time = gpExecSync(
       {
         command: `git log -1 --format=%ct -n 1 ${this.sha}`,

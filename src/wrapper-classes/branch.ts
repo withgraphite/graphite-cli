@@ -2,6 +2,7 @@ import { execSync } from "child_process";
 import { repoConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import { getTrunk, gpExecSync } from "../lib/utils";
+import { getReadableTimeBeforeNow } from "../lib/utils/time";
 import Commit from "./commit";
 
 type TMeta = {
@@ -186,7 +187,15 @@ export default class Branch {
   }
 
   public ref(): string {
-    return execSync(`git show-ref refs/heads/${this.name} -s`)
+    return gpExecSync(
+      {
+        command: `git show-ref refs/heads/${this.name} -s`,
+      },
+      (_) => {
+        // just soft-fail if we can't find the commits
+        return Buffer.alloc(0);
+      }
+    )
       .toString()
       .trim();
   }
@@ -381,21 +390,6 @@ export default class Branch {
     return this.getMeta()?.prInfo;
   }
 
-  public getBranchTipSHA(): string {
-    const sha = gpExecSync(
-      {
-        command: `git rev-parse ${this.name}`,
-      },
-      (_) => {
-        // just soft-fail if we can't find the commits
-        return Buffer.alloc(0);
-      }
-    )
-      .toString()
-      .trim();
-    return sha;
-  }
-
   public getCommitSHAs(): string[] {
     const parents = this.getParentsFromGit();
     const shas: Set<string> = new Set();
@@ -435,5 +429,13 @@ export default class Branch {
       .map((refName) => refName.replace("refs/heads/", ""))
       .map((name) => new Branch(name));
     return matchingBranches;
+  }
+
+  public lastUpdated(): number {
+    return new Commit(this.ref()).timestampInSeconds();
+  }
+
+  public lastUpdatedReadable(): string {
+    return getReadableTimeBeforeNow(this.lastUpdated());
   }
 }
