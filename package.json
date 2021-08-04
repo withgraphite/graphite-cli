@@ -24,7 +24,7 @@
     "cli": "ts-node ./src/index.ts",
     "test": "yarn ts-mocha \"test/**/*.test.ts\"  --parallel --jobs 8",
     "test-one": "yarn ts-mocha",
-    "deploy": "ts-node ./scripts/deploys/deploy.ts",
+    "deploy": "ts-node ./scripts/deploy/deploy.ts",
     "deploy-test": "ts-node ./scripts/deploy/deploy-test.ts",
     "regen-demo": "ts-node ./scripts/demo/index.ts"
   },
