@@ -6,7 +6,7 @@ const SECONDS_IN_WEEK = 7 * SECONDS_IN_DAY;
 const SECONDS_IN_MONTH = 30 * SECONDS_IN_WEEK;
 const SECONDS_IN_YEAR = 12 * SECONDS_IN_MONTH;
 
-export function getReadableTimeBeforeNow(earlierTimeInSeconds: number) {
+export function getReadableTimeBeforeNow(earlierTimeInSeconds: number): string {
   const nowInSeconds = Date.now() / MILLISECONDS_IN_SECONDS;
   return `${getReadableTimeDiff(earlierTimeInSeconds, nowInSeconds)} ago`;
 }
@@ -14,7 +14,7 @@ export function getReadableTimeBeforeNow(earlierTimeInSeconds: number) {
 function getReadableTimeDiff(
   earlierTimeInSeconds: number,
   laterTimeInSeconds: number
-) {
+): string {
   const diff = laterTimeInSeconds - earlierTimeInSeconds;
   if (diff < SECONDS_IN_MINUTE) {
     return "< 1 min";
