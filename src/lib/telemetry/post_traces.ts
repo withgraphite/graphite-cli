@@ -80,11 +80,15 @@ async function postTelemetry(): Promise<void> {
     } catch (err) {
       return;
     }
+    // Cleanup despite it being a temp file.
+    fs.readFileSync(tracesPath);
   }
 
   const oldTelemetryFilePath = process.argv[3];
   if (oldTelemetryFilePath && fs.existsSync(oldTelemetryFilePath)) {
     await logCommand(oldTelemetryFilePath);
+    // Cleanup despite it being a temp file.
+    fs.removeSync(oldTelemetryFilePath);
   }
 }
 
