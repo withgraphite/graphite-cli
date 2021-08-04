@@ -1,45 +1,75 @@
 #!/usr/bin/env node
 import chalk from "chalk";
 import { execSync } from "child_process";
-import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
+import prompts from "prompts";
+import { ExitFailedError } from "../lib/errors";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import { logInfo } from "../lib/utils";
+import Branch from "../wrapper-classes/branch";
 
-export async function nextOrPrevAction(
-  nextOrPrev: "next" | "prev",
-  silent: boolean
-): Promise<void> {
-  const currentBranch = currentBranchPrecondition();
+function getPrevBranch(currentBranch: Branch): string | undefined {
+  const branch = currentBranch.getParentFromMeta();
+  return branch?.name;
+}
 
-  const candidates =
-    nextOrPrev === "next"
-      ? await currentBranch.getChildrenFromMeta()
-      : currentBranch.getParentFromMeta();
+async function getNextBranch(
+  currentBranch: Branch,
+  interactive: boolean
+): Promise<string | undefined> {
+  const candidates = await currentBranch.getChildrenFromMeta();
 
-  let branch;
-
-  if (candidates instanceof Array) {
-    if (candidates.length === 0) {
-      throw new ExitFailedError(`Found no ${nextOrPrev} branch`);
-    }
-    if (candidates.length > 1) {
-      throw new PreconditionsFailedError(
-        [
-          chalk.yellow(`Found multiple possibilities:`),
-          ...candidates.map((candidate) =>
-            chalk.yellow(` - ${candidate.name}`)
-          ),
-        ].join("\n")
+  if (candidates.length === 0) {
+    return;
+  }
+  if (candidates.length > 1) {
+    if (interactive) {
+      return (
+        await prompts({
+          type: "select",
+          name: "branch",
+          message: "Select a branch to checkout",
+          choices: candidates.map((b) => {
+            return { title: b.name, value: b.name };
+          }),
+        })
+      ).branch;
+    } else {
+      throw new ExitFailedError(
+        `Cannot get next branch, multiple choices available: [${candidates.join(
+          ", "
+        )}]`
       );
     }
-    branch = candidates[0];
-  } else if (!candidates) {
-    throw new ExitFailedError(`Found no ${nextOrPrev} branch`);
   } else {
-    branch = candidates;
+    return candidates[0].name;
   }
+}
 
-  const branchName = branch;
-  execSync(`git checkout "${branchName.name}"`, { stdio: "ignore" });
-  logInfo(branchName.name);
+export async function nextOrPrevAction(opts: {
+  nextOrPrev: "next" | "prev";
+  numSteps: number;
+  silent: boolean;
+  interactive: boolean;
+}): Promise<void> {
+  // Support stepping over n branches.
+  for (let i = 0; i < opts.numSteps; i++) {
+    const currentBranch = currentBranchPrecondition();
+    const branch =
+      opts.nextOrPrev === "next"
+        ? await getNextBranch(currentBranch, opts.interactive)
+        : getPrevBranch(currentBranch);
+
+    // Print indented branch names to show traversal.
+    if (branch && branch !== currentBranch.name) {
+      execSync(`git checkout "${branch}"`, { stdio: "ignore" });
+      const indent = opts.nextOrPrev === "next" ? i : opts.numSteps - i - 1;
+      logInfo(
+        `${"  ".repeat(indent)}↳(${
+          i === opts.numSteps - 1 ? chalk.cyan(branch) : branch
+        })`
+      );
+    } else {
+      return;
+    }
+  }
 }

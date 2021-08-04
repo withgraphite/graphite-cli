@@ -11,11 +11,12 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch create "a" -s`);
       scene.repo.checkoutBranch("main");
 
-      scene.repo.execCliCommand(`branch next`);
+      scene.repo.execCliCommand(`branch next --no-interactive`);
       expect(scene.repo.currentBranchName()).to.equal("a");
-      scene.repo.execCliCommand(`branch prev`);
+      scene.repo.execCliCommand(`branch prev --no-interactive`);
       expect(scene.repo.currentBranchName()).to.equal("main");
-      expect(() => scene.repo.execCliCommand(`branch prev`)).to.throw(Error);
+      scene.repo.execCliCommand(`branch prev --no-interactive`);
+      expect(scene.repo.currentBranchName()).to.equal("main");
     });
   });
 }

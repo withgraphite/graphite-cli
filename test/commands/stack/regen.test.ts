@@ -53,13 +53,13 @@ for (const scene of [new TrailingProdScene()]) {
       scene.repo.execCliCommand("stack regen");
 
       scene.repo.checkoutBranch("b");
-      scene.repo.execCliCommand(`branch prev`);
+      scene.repo.execCliCommand(`branch prev --no-interactive`);
       expect(scene.repo.currentBranchName()).to.eq("a");
-      scene.repo.execCliCommand(`branch prev`);
+      scene.repo.execCliCommand(`branch prev --no-interactive`);
       expect(scene.repo.currentBranchName()).to.eq("main");
 
       scene.repo.checkoutBranch("c");
-      scene.repo.execCliCommand(`branch prev`);
+      scene.repo.execCliCommand(`branch prev --no-interactive`);
       expect(scene.repo.currentBranchName()).to.eq("main");
     });
 
@@ -67,7 +67,7 @@ for (const scene of [new TrailingProdScene()]) {
       scene.repo.createAndCheckoutBranch("a");
       scene.repo.execCliCommand("stack regen -s");
       expect(scene.repo.currentBranchName()).to.eq("a");
-      scene.repo.execCliCommand(`branch prev`);
+      scene.repo.execCliCommand(`branch prev --no-interactive`);
       expect(scene.repo.currentBranchName()).to.eq("main");
     });
 
@@ -80,7 +80,7 @@ for (const scene of [new TrailingProdScene()]) {
       scene.repo.checkoutBranch("a");
       scene.repo.execCliCommand("stack regen -s");
 
-      scene.repo.execCliCommand(`branch prev`);
+      scene.repo.execCliCommand(`branch prev --no-interactive`);
       expect(scene.repo.currentBranchName()).to.eq("main");
     });
   });

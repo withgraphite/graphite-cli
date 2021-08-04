@@ -51,7 +51,7 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch("a");
 
       // Prove that we have meta now.
-      scene.repo.execCliCommand("branch prev");
+      scene.repo.execCliCommand("branch prev --no-interactive");
       expect(scene.repo.currentBranchName()).to.eq("main");
     });
   });
