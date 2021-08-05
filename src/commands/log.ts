@@ -1,11 +1,20 @@
 import chalk from "chalk";
+import { execSync } from "child_process";
 import yargs from "yargs";
 import { printStack } from "../actions/print_stack";
 import { profile } from "../lib/telemetry";
 import { getTrunk } from "../lib/utils/trunk";
 import Branch from "../wrapper-classes/branch";
 
-const args = {} as const;
+const args = {
+  commits: {
+    describe: `Show commits in the log output`,
+    demandOption: false,
+    default: false,
+    type: "boolean",
+    alias: "c",
+  },
+} as const;
 
 export const command = "log";
 export const description = "Log all stacks";
@@ -15,11 +24,24 @@ export const aliases = ["l"];
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
-    try {
-      printTrunkLog();
-      await printStacksBehindTrunk();
-    } catch (e) {
-      console.log(e);
+    if (argv.commits) {
+      // If this flag is passed, print the old logging style:
+      try {
+        execSync(
+          `git log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all`,
+          { stdio: "inherit" }
+        );
+      } catch (e) {
+        // Ignore errors (this just means they quit git log)
+      }
+    } else {
+      // Use our custom logging of branches and stacks:
+      try {
+        printTrunkLog();
+        await printStacksBehindTrunk();
+      } catch (e) {
+        console.log(e);
+      }
     }
   });
 };
