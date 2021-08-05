@@ -4,7 +4,11 @@ import { request } from "@screenplaydev/retyped-routes";
 import chalk from "chalk";
 import { API_SERVER } from "../lib/api";
 import { repoConfig, userConfig } from "../lib/config";
-import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
+import {
+  ExitFailedError,
+  PreconditionsFailedError,
+  ValidationFailedError,
+} from "../lib/errors";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import {
   gpExecSync,
@@ -34,7 +38,7 @@ export async function submitAction(
   try {
     await validate(scope, true);
   } catch {
-    throw new Error(`Validation failed before submitting.`);
+    throw new ValidationFailedError(`Validation failed before submitting.`);
   }
 
   const currentBranch = currentBranchPrecondition();

@@ -13,7 +13,13 @@ import {
   RebaseConflictError,
   ValidationFailedError,
 } from "../errors";
-import { logError, logInfo, logWarn, parseArgs } from "../utils";
+import {
+  logError,
+  logInfo,
+  logWarn,
+  parseArgs,
+  VALIDATION_HELPER_MESSAGE,
+} from "../utils";
 import { getNumBranches, getNumCommitObjects, getUserEmail } from "./context";
 import tracer from "./tracer";
 
@@ -61,6 +67,7 @@ export async function profile(
             return; // Dont throw error here.
           } else if (err instanceof ValidationFailedError) {
             logError(`Validation: ${err.message}`);
+            logInfo(VALIDATION_HELPER_MESSAGE);
           } else if (err instanceof ConfigError) {
             logError(`Bad Config: ${err.message}`);
           }

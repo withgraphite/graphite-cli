@@ -9,6 +9,7 @@ import { firstSemverIsNewer } from "./semver_compare";
 import { logError, logInfo, logNewline, logSuccess, logWarn } from "./splog";
 import { getTrunk } from "./trunk";
 import { uncommittedChanges } from "./uncommitted_changes";
+import { VALIDATION_HELPER_MESSAGE } from "./validation_helper_message";
 
 export {
   gpExecSync,
@@ -26,4 +27,5 @@ export {
   parseArgs,
   makeId,
   firstSemverIsNewer,
+  VALIDATION_HELPER_MESSAGE,
 };

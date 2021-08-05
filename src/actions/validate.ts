@@ -82,10 +82,10 @@ async function validateBranchUpInclusive(branch: Branch, silent: boolean) {
     (gitChild) => !metaChildren!.map((b) => b.name).includes(gitChild.name)
   );
   if (gitChildrenMissingInMeta.length > 0) {
-    throw new Error(
-      `Child branches [${gitChildrenMissingInMeta
-        .map((b) => `(${b.name})`)
-        .join(", ")}] not found in the stack.`
+    throw new ValidationFailedError(
+      `Child branches of (${branch.name}) \n${gitChildrenMissingInMeta
+        .map((b) => `-> (${b.name})`)
+        .join("\n")}\n not found in the stack.`
     );
   }
   const gitChildrenAndEquals = gitChildren.concat(
@@ -95,10 +95,10 @@ async function validateBranchUpInclusive(branch: Branch, silent: boolean) {
     (metaChild) => !gitChildrenAndEquals!.find((b) => b.name === metaChild.name)
   );
   if (metaChildrenMissingInGit.length > 0) {
-    throw new Error(
-      `Stack children [${metaChildrenMissingInGit
-        .map((b) => `(${b.name})`)
-        .join(", ")}] not found as git child branchs.`
+    throw new ValidationFailedError(
+      `Stack children:\n${metaChildrenMissingInGit
+        .map((b) => `-> (${b.name})`)
+        .join("\n")}\n not found as git child branchs of (${branch.name}).`
     );
   }
   log(`✅ ${chalk.green(`(${branch.name}) validated`)}`, { silent });

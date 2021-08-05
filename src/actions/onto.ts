@@ -81,7 +81,7 @@ async function validateStack(silent: boolean) {
     await validate("UPSTACK", silent);
   } catch {
     throw new ValidationFailedError(
-      `Cannot stack "onto", git branches must match stack. Consider running "fix" or "regen" first.`
+      `Cannot stack "onto", git branches must match stack.`
     );
   }
 }
