@@ -21,6 +21,6 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
     userConfig.setAuthToken(argv.token);
-    logSuccess("🔐 Successfully authenticated!");
+    logSuccess(`🔐 Saved auth token to "${userConfig.path()}"`);
   });
 };

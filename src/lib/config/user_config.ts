@@ -64,6 +64,10 @@ class UserConfig {
   private save(): void {
     fs.writeFileSync(USER_CONFIG_PATH, JSON.stringify(this._data));
   }
+
+  public path(): string {
+    return USER_CONFIG_PATH;
+  }
 }
 
 function readUserConfig(): UserConfig {
