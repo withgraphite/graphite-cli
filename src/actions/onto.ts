@@ -13,6 +13,7 @@ import {
   checkoutBranch,
   getTrunk,
   gpExecSync,
+  logInfo,
   rebaseInProgress,
   uncommittedChanges,
 } from "../lib/utils";
@@ -33,7 +34,7 @@ export async function ontoAction(onto: string, silent: boolean): Promise<void> {
 async function stackOnto(currentBranch: Branch, onto: string, silent: boolean) {
   branchExistsPrecondition(onto);
   checkBranchCanBeMoved(currentBranch, onto);
-  await validateStack(silent);
+  await validateStack(true);
   const parent = await getParentForRebaseOnto(currentBranch, onto);
   // Save the old ref from before rebasing so that children can find their bases.
   currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
@@ -62,6 +63,7 @@ async function stackOnto(currentBranch: Branch, onto: string, silent: boolean) {
   for (const child of await currentBranch.getChildrenFromMeta()) {
     await restackBranch(child, silent);
   }
+  logInfo(`Successfully moved (${currentBranch.name}) onto (${onto})`);
 }
 
 function getParentForRebaseOnto(branch: Branch, onto: string): Branch {
