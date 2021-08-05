@@ -272,19 +272,6 @@ export default class Branch {
     this.writeMeta(meta);
   }
 
-  public getTrunkBranchFromGit(): Branch {
-    const gitParents = this.getParentsFromGit();
-    if (gitParents.length == 1) {
-      return gitParents[0].getTrunkBranchFromGit();
-    } else if (gitParents.length > 1) {
-      throw new ExitFailedError(
-        `Cannot derive trunk from git branch (${this.name}) with two parents`
-      );
-    } else {
-      return this;
-    }
-  }
-
   static async branchWithName(name: string): Promise<Branch> {
     const branch = Branch.allBranches().find((b) => b.name === name);
     if (!branch) {
