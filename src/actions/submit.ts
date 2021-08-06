@@ -169,17 +169,23 @@ async function submitPRsForBranches(args: {
       }
     );
 
-    if (response._response.status !== 200 || response._response.body === null) {
-      throw new ExitFailedError(
-        `Unexpected server response (${response._response.status}).\n${response}`
+    if (response._response.status === 200 && response._response.body !== null) {
+      return response;
+    }
+
+    if (response._response.status === 401) {
+      throw new PreconditionsFailedError(
+        "invalid/expired Graphite auth token.\n\nPlease obtain a new auth token by visiting https://app.graphite.dev/activate."
       );
     }
 
-    return response;
-  } catch (error) {
     throw new ExitFailedError(
-      `Failed to submit PRs. \nMessage${error.message}`
+      `unexpected server response (${
+        response._response.status
+      }).\n\nResponse: ${JSON.stringify(response)}`
     );
+  } catch (error) {
+    throw new ExitFailedError(`Failed to submit PRs: ${error.message}`);
   }
 }
 
