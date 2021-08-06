@@ -14,7 +14,19 @@ export class Stack {
   }
 
   public toString(): string {
-    return JSON.stringify(nodeToDictionary(this.source), null, 2);
+    const indentMultilineString = (lines: string) =>
+      lines
+        .split("\n")
+        .map((l) => "  " + l)
+        .join("\n");
+
+    return [`↳ (${this.source.branch.name})`]
+      .concat(
+        this.source.children
+          .map((c) => new Stack(c).toString())
+          .map(indentMultilineString)
+      )
+      .join("\n");
   }
 
   public toDictionary(): Record<string, any> {

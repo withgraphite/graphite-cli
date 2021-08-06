@@ -18,9 +18,7 @@ for (const scene of allScenes) {
       scene.repo.createChange("4", "c");
       scene.repo.execCliCommand("branch create 'c' -m '4' -s");
 
-      expect(
-        scene.repo.listCurrentBranchCommitMessages().slice(0, 6).join(", ")
-      ).to.equal("4, 3.5, 3, 2.5, 2, 1");
+      expectCommits(scene.repo, "4, 3.5, 3, 2.5, 2, 1");
 
       scene.repo.checkoutBranch("main");
       scene.repo.createChangeAndCommit("1.5", "main");
@@ -28,14 +26,12 @@ for (const scene of allScenes) {
         scene.repo.listCurrentBranchCommitMessages().slice(0, 2).join(", ")
       ).to.equal("1.5, 1");
 
-      scene.repo.execCliCommand("stack fix -s");
+      scene.repo.execCliCommand("stack fix --rebase -s");
 
       expect(scene.repo.currentBranchName()).to.equal("main");
 
       scene.repo.checkoutBranch("c");
-      expect(
-        scene.repo.listCurrentBranchCommitMessages().slice(0, 7).join(", ")
-      ).to.equal("4, 3.5, 3, 2.5, 2, 1.5, 1");
+      expectCommits(scene.repo, "4, 3.5, 3, 2.5, 2, 1.5, 1");
     });
 
     it("Can handle merge conflicts, leveraging prevRef metadata", () => {
@@ -48,13 +44,13 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch("main");
       scene.repo.createChangeAndCommit("1.5");
 
-      scene.repo.execCliCommand("stack fix -s");
+      scene.repo.execCliCommand("stack fix --rebase -s");
       scene.repo.finishInteractiveRebase();
 
       expect(scene.repo.rebaseInProgress()).to.eq(false);
       expect(scene.repo.currentBranchName()).to.eq("a");
 
-      scene.repo.execCliCommand("stack fix -s");
+      scene.repo.execCliCommand("stack fix --rebase -s");
       scene.repo.finishInteractiveRebase();
 
       expect(scene.repo.currentBranchName()).to.eq("b");
@@ -68,11 +64,11 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand("branch create 'a' -m 'a' -s");
 
       scene.repo.checkoutBranch("main");
-      scene.repo.createChangeAndCommit("1.5");
+      scene.repo.createChangeAndCommit("1.5", "1.5");
 
       scene.repo.checkoutBranch("a");
 
-      scene.repo.execCliCommand("stack fix -s");
+      scene.repo.execCliCommand("stack fix --rebase -s");
 
       expect(scene.repo.currentBranchName()).to.eq("a");
       expectCommits(scene.repo, "a, 1.5, 1");

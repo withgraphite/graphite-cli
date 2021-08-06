@@ -23,7 +23,7 @@ for (const scene of [new TrailingProdScene()]) {
 
       scene.repo.checkoutBranch("a");
 
-      scene.repo.execCliCommand("stack regen -s");
+      scene.repo.execCliCommand("stack fix --regen -s");
 
       scene.repo.checkoutBranch("b");
 
@@ -65,7 +65,7 @@ for (const scene of [new TrailingProdScene()]) {
 
     it("Can gen a stack where the branch matches main HEAD", () => {
       scene.repo.createAndCheckoutBranch("a");
-      scene.repo.execCliCommand("stack regen -s");
+      scene.repo.execCliCommand("stack fix --regen -s");
       expect(scene.repo.currentBranchName()).to.eq("a");
       scene.repo.execCliCommand(`branch prev --no-interactive`);
       expect(scene.repo.currentBranchName()).to.eq("main");
@@ -78,7 +78,7 @@ for (const scene of [new TrailingProdScene()]) {
       scene.repo.createChangeAndCommit("2");
 
       scene.repo.checkoutBranch("a");
-      scene.repo.execCliCommand("stack regen -s");
+      scene.repo.execCliCommand("stack fix --regen -s");
 
       scene.repo.execCliCommand(`branch prev --no-interactive`);
       expect(scene.repo.currentBranchName()).to.eq("main");

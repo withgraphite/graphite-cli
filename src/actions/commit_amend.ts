@@ -42,7 +42,7 @@ export async function commitAmendAction(opts: {
   }
   // Only restack if working tree is now clean.
   if (workingTreeClean()) {
-    await fixAction(opts.silent);
+    await fixAction({ silent: opts.silent, action: "rebase" });
   } else {
     logWarn(
       "Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gp stack fix`"
