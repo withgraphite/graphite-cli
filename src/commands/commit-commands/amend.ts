@@ -40,7 +40,8 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "amend";
-export const description = "Create a new commit and fix upstack branches.";
+export const description =
+  "Amend the most recent commit and fix upstack branches.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
