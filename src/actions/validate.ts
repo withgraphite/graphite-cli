@@ -69,7 +69,7 @@ async function validateBranchDownInclusive(branch: Branch, silent: boolean) {
 }
 
 async function validateBranchUpInclusive(branch: Branch, silent: boolean) {
-  const metaChildren = await branch.getChildrenFromMeta();
+  const metaChildren = branch.getChildrenFromMeta();
   const gitChildren = branch.getChildrenFromGit();
   const hasGitChildren = gitChildren && gitChildren.length > 0;
   const hasMetaChildren = metaChildren.length > 0;

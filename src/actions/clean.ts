@@ -34,13 +34,13 @@ export async function cleanAction(opts: {
       throw new ExitFailedError(`Failed to pull trunk ${trunk}`);
     });
   }
-  const trunkChildren: Branch[] = await new Branch(trunk).getChildrenFromMeta();
+  const trunkChildren: Branch[] = new Branch(trunk).getChildrenFromMeta();
   do {
     const branch = trunkChildren.pop();
     if (!branch) {
       break;
     }
-    const children = await branch.getChildrenFromMeta();
+    const children = branch.getChildrenFromMeta();
     if (!shouldDeleteBranch(branch.name)) {
       continue;
     }

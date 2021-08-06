@@ -22,7 +22,7 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
     const branch = currentBranchPrecondition();
 
-    const children = await branch.getChildrenFromMeta();
+    const children = branch.getChildrenFromMeta();
     if (children.length === 0) {
       log(`(${branch}) has no stacked child branches`, argv);
     } else {

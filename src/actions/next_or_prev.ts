@@ -16,7 +16,7 @@ async function getNextBranch(
   currentBranch: Branch,
   interactive: boolean
 ): Promise<string | undefined> {
-  const candidates = await currentBranch.getChildrenFromMeta();
+  const candidates = currentBranch.getChildrenFromMeta();
 
   if (candidates.length === 0) {
     return;

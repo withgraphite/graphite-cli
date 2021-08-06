@@ -60,7 +60,7 @@ async function stackOnto(currentBranch: Branch, onto: string, silent: boolean) {
   // set current branch's parent only if the rebase succeeds.
   currentBranch.setParentBranchName(onto);
   // Now perform a fix starting from the onto branch:
-  for (const child of await currentBranch.getChildrenFromMeta()) {
+  for (const child of currentBranch.getChildrenFromMeta()) {
     await restackBranch(child, silent);
   }
   logInfo(`Successfully moved (${currentBranch.name}) onto (${onto})`);

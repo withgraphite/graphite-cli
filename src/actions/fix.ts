@@ -22,7 +22,7 @@ export async function fixAction(silent: boolean): Promise<void> {
   const currentBranch = currentBranchPrecondition();
   if (currentBranch.name == getTrunk().name) {
     // Dont rebase main
-    for (const child of await currentBranch.getChildrenFromMeta()) {
+    for (const child of currentBranch.getChildrenFromMeta()) {
       await restackBranch(child, silent);
     }
   } else {
@@ -78,7 +78,7 @@ export async function restackBranch(
     );
   }
 
-  for (const child of await currentBranch.getChildrenFromMeta()) {
+  for (const child of currentBranch.getChildrenFromMeta()) {
     await restackBranch(child, silent);
   }
 }

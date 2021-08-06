@@ -170,7 +170,7 @@ export default class Branch {
       .map((name) => new Branch(name));
   }
 
-  async getChildrenFromMeta(): Promise<Branch[]> {
+  public getChildrenFromMeta(): Branch[] {
     const children = Branch.allBranches().filter(
       (b) => b.getMeta()?.parentBranchName === this.name
     );
