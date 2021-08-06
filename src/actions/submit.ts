@@ -42,17 +42,12 @@ export async function submitAction(
   }
 
   const currentBranch = currentBranchPrecondition();
+  const branchesToSubmit = await getBranchesToSubmit(currentBranch);
 
-  const stackOfBranches = await getDownstackInclusive(currentBranch);
-  if (stackOfBranches.length === 0) {
-    logWarn("No downstack branches found.");
-    return;
-  }
-
-  pushBranchesToRemote(stackOfBranches);
+  pushBranchesToRemote(branchesToSubmit);
 
   const submittedPRInfo = await submitPRsForBranches({
-    branches: stackOfBranches,
+    branches: branchesToSubmit,
     cliAuthToken: cliAuthToken,
     repoOwner: repoOwner,
     repoName: repoName,
@@ -73,6 +68,19 @@ function getCLIAuthToken(): string {
     );
   }
   return token;
+}
+
+async function getBranchesToSubmit(currentBranch: Branch): Promise<Branch[]> {
+  const stackOfBranches = await getDownstackInclusive(currentBranch);
+
+  if (stackOfBranches.length === 0) {
+    logWarn("No downstack branches found.");
+    return [];
+  }
+
+  return stackOfBranches.filter((branch) => {
+    return branch.getCommitSHAs().length > 0;
+  });
 }
 
 async function getDownstackInclusive(topOfStack: Branch): Promise<Branch[]> {

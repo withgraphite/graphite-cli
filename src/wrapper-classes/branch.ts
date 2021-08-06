@@ -394,24 +394,31 @@ export default class Branch {
   }
 
   public getCommitSHAs(): string[] {
-    const parents = this.getParentsFromGit();
+    // We rely on meta here as the source of truth to handle the case where
+    // the user has just created a new branch, but hasn't added any commits
+    // - so both branch tips point to the same commit. Graphite knows that
+    // this is a parent-child relationship, but git does not.
+    const parent = this.getParentFromMeta();
     const shas: Set<string> = new Set();
 
-    parents.forEach((parent) => {
-      const commits = gpExecSync(
-        {
-          command: `git rev-list ${parent}..${this.name}`,
-        },
-        (_) => {
-          // just soft-fail if we can't find the commits
-          return Buffer.alloc(0);
-        }
-      )
-        .toString()
-        .trim();
-      commits.split(/[\r\n]+/).forEach((sha) => {
-        shas.add(sha);
-      });
+    const commits = gpExecSync(
+      {
+        command: `git rev-list ${parent}..${this.name}`,
+      },
+      (_) => {
+        // just soft-fail if we can't find the commits
+        return Buffer.alloc(0);
+      }
+    )
+      .toString()
+      .trim();
+
+    if (commits.length === 0) {
+      return [];
+    }
+
+    commits.split(/[\r\n]+/).forEach((sha) => {
+      shas.add(sha);
     });
 
     return [...shas];
