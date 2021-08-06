@@ -6,16 +6,16 @@ import cp from "child_process";
 import { getUserEmail, SHOULD_REPORT_TELEMETRY } from ".";
 import { version } from "../../../package.json";
 import { API_SERVER } from "../api";
-import { userConfig } from "../config";
+import { messageConfig } from "../config";
 
 function printAndClearOldMessage(): void {
-  const oldMessage = userConfig.getMessage();
+  const oldMessage = messageConfig.getMessage();
   // "Since we fetch the message asynchronously and display it when the user runs their next Graphite command,
   // double-check before showing the message if the CLI is still an old version
   // (i.e. the user hasn't updated the CLI in the meantime)."
   if (oldMessage && version == oldMessage.cliVersion) {
     console.log(chalk.yellow(oldMessage.contents) + "\n\n");
-    userConfig.setMessage(undefined);
+    messageConfig.setMessage(undefined);
   }
 }
 export function fetchUpgradePromptInBackground(): void {
@@ -44,12 +44,12 @@ async function fetchUpgradePrompt(): Promise<void> {
 
     if (response._response.status == 200) {
       if (response.prompt) {
-        userConfig.setMessage({
+        messageConfig.setMessage({
           contents: response.prompt.message,
           cliVersion: version,
         });
       } else {
-        userConfig.setMessage(undefined);
+        messageConfig.setMessage(undefined);
       }
     }
   } catch (err) {
