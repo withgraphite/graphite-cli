@@ -9,23 +9,14 @@ export abstract class AbstractStackBuilder {
     return baseBranches.map(this.fullStackFromBranch);
   }
 
-  public fullStackFromBranch = (branch: Branch): Stack => {
-    const base = this.getStackBaseBranch(branch);
-    return this.downstackFromBranch(base);
-  };
+  public abstract fullStackFromBranch(branch: Branch): Stack;
 
-  public downstackFromBranch(branch: Branch): Stack {
-    const trunkNode: stackNodeT = {
-      branch: getTrunk(),
+  public upstackInclusiveFromBranch(branch: Branch): Stack {
+    const sourceNode: stackNodeT = {
+      branch,
       parents: [],
       children: [],
     };
-    const sourceNode: stackNodeT = {
-      branch,
-      parents: [trunkNode],
-      children: [],
-    };
-    trunkNode.children.push(sourceNode);
 
     let nodes: stackNodeT[] = [sourceNode];
     do {
@@ -41,7 +32,7 @@ export abstract class AbstractStackBuilder {
       nodes = nodes.concat(curNode.children);
     } while (nodes.length > 0);
 
-    return new Stack(trunkNode);
+    return new Stack(sourceNode);
   }
 
   protected allStackBaseNames(): Branch[] {

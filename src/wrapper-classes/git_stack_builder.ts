@@ -1,8 +1,29 @@
-import { AbstractStackBuilder } from ".";
+import { AbstractStackBuilder, Stack, stackNodeT } from ".";
 import { getTrunk, gpExecSync } from "../lib/utils";
 import Branch from "./branch";
 
 export class GitStackBuilder extends AbstractStackBuilder {
+  public fullStackFromBranch = (branch: Branch): Stack => {
+    const base = this.getStackBaseBranch(branch);
+    const stack = this.upstackInclusiveFromBranch(base);
+
+    const parents = branch.getParentsFromGit();
+
+    // If the parent isnt trunk, just return.
+    if (parents[0]?.name !== getTrunk().name) {
+      return stack;
+    }
+
+    const trunkNode: stackNodeT = {
+      branch: getTrunk(),
+      parents: [],
+      children: [stack.source],
+    };
+    stack.source.parents = [trunkNode];
+    stack.source = trunkNode;
+    return stack;
+  };
+
   protected getStackBaseBranch(branch: Branch): Branch {
     const trunkMergeBase = gpExecSync({
       command: `git merge-base ${getTrunk()} ${branch.name}`,
