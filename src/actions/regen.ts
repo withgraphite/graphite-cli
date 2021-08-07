@@ -16,27 +16,7 @@ export async function regenAction(silent: boolean): Promise<void> {
   }
 
   const baseBranch = getStackBaseBranch(branch);
-
-  printBranchNameStack(
-    `(Original git infered stack)`,
-    baseBranch.stackByTracingGitParents(),
-    silent
-  );
-  printBranchNameStack(
-    `(Original graphite recorded stack)`,
-    baseBranch.stackByTracingMetaParents(),
-    silent
-  );
-
-  // TODO (nicholasyan): this is a short-term band-aid. We need to handle
-  // multiple parents in the long-term.
   await recursiveRegen(baseBranch, trunk, silent);
-
-  printBranchNameStack(
-    `(New graphite stack)`,
-    baseBranch.stackByTracingMetaParents(),
-    silent
-  );
 }
 
 function regenAllStacks(silent: boolean): void {
@@ -108,15 +88,4 @@ function recursiveRegen(
   gitChildren.forEach((child) => {
     recursiveRegen(child, currentBranch, silent);
   });
-}
-
-function printBranchNameStack(
-  message: string,
-  names: string[],
-  silent: boolean
-) {
-  log(
-    `[${names.map((name) => `(${chalk.green(name)})`).join("->")}] ${message}`,
-    { silent }
-  );
 }
