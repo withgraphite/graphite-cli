@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import prompts from "prompts";
 import yargs from "yargs";
-import { ExitFailedError } from "../lib/errors";
+import { ExitCancelledError, ExitFailedError } from "../lib/errors";
 import { profile } from "../lib/telemetry";
 import { getTrunk, gpExecSync } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
@@ -141,6 +141,10 @@ async function promptBranches(choices: promptOptionT[]): Promise<void> {
       ...(currentBranchIndex ? { initial: currentBranchIndex } : {}),
     })
   ).branch;
+
+  if (!chosenBranch) {
+    throw new ExitCancelledError("No branch selected");
+  }
 
   if (chosenBranch && chosenBranch !== currentBranch?.name) {
     gpExecSync({ command: `git checkout ${chosenBranch}` }, (err) => {

@@ -8,6 +8,7 @@ import { init } from "../../actions/init";
 import { repoConfig } from "../config";
 import {
   ConfigError,
+  ExitCancelledError,
   ExitFailedError,
   PreconditionsFailedError,
   RebaseConflictError,
@@ -70,6 +71,9 @@ export async function profile(
             logInfo(VALIDATION_HELPER_MESSAGE);
           } else if (err instanceof ConfigError) {
             logError(`Bad Config: ${err.message}`);
+          } else if (err instanceof ExitCancelledError) {
+            logWarn(`Cancelled: ${err.message}`);
+            return; // Dont throw error here.
           }
           throw err;
         }

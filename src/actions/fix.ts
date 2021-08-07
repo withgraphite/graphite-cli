@@ -1,6 +1,10 @@
 import chalk from "chalk";
 import prompts from "prompts";
-import { ExitFailedError, RebaseConflictError } from "../lib/errors";
+import {
+  ExitCancelledError,
+  ExitFailedError,
+  RebaseConflictError,
+} from "../lib/errors";
 import {
   currentBranchPrecondition,
   uncommittedChangesPrecondition,
@@ -50,6 +54,10 @@ async function promptStacks(opts: {
       };
     }),
   });
+
+  if (!response.value) {
+    throw new ExitCancelledError("No changes made");
+  }
 
   return response.value;
 }

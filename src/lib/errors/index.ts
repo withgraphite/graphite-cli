@@ -1,5 +1,12 @@
 class ExitError extends Error {}
 
+class ExitCancelledError extends ExitError {
+  constructor(message: string) {
+    super(message);
+    this.name = "ExitCancelled";
+  }
+}
+
 class ExitFailedError extends ExitError {
   constructor(message: string) {
     super(message);
@@ -42,4 +49,5 @@ export {
   RebaseConflictError,
   ValidationFailedError,
   ConfigError,
+  ExitCancelledError,
 };
