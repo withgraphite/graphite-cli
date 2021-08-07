@@ -7,7 +7,6 @@ import { fixAction } from "./fix";
 export async function commitCreateAction(opts: {
   addAll: boolean;
   message: string;
-  silent: boolean;
   noVerify: boolean;
 }): Promise<void> {
   if (opts.addAll) {
@@ -37,7 +36,7 @@ export async function commitCreateAction(opts: {
   );
   // Only restack if working tree is now clean.
   if (workingTreeClean()) {
-    await fixAction({ silent: opts.silent, action: "rebase" });
+    await fixAction({ action: "rebase" });
   } else {
     logWarn(
       "Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gp stack fix`"

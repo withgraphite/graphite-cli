@@ -45,15 +45,15 @@ for (const scene of allScenes) {
 
     it("Can print stacks from meta", () => {
       scene.repo.createChange("a");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       scene.repo.createChange("b");
-      scene.repo.execCliCommand(`branch create "b" -m "b" -s`);
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
 
       scene.repo.checkoutBranch("main");
 
       scene.repo.createChange("d");
-      scene.repo.execCliCommand(`branch create "d" -m "d" -s`);
+      scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
       const metaStacks = new MetaStackBuilder().allStacksFromTrunk();
       const gitStacks = new GitStackBuilder().allStacksFromTrunk();
@@ -70,15 +70,15 @@ for (const scene of allScenes) {
 
     it("Can get full stack from a branch", () => {
       scene.repo.createChange("a");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       scene.repo.createChange("b");
-      scene.repo.execCliCommand(`branch create "b" -m "b" -s`);
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
 
       scene.repo.checkoutBranch("main");
 
       scene.repo.createChange("d");
-      scene.repo.execCliCommand(`branch create "d" -m "d" -s`);
+      scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
         new Branch("a")
@@ -94,15 +94,15 @@ for (const scene of allScenes) {
 
     it("Can get full stack from trunk", () => {
       scene.repo.createChange("a");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       scene.repo.createChange("b");
-      scene.repo.execCliCommand(`branch create "b" -m "b" -s`);
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
 
       scene.repo.checkoutBranch("main");
 
       scene.repo.createChange("d");
-      scene.repo.execCliCommand(`branch create "d" -m "d" -s`);
+      scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
         new Branch("main")
@@ -118,7 +118,7 @@ for (const scene of allScenes) {
 
     it("Can find different git and meta stacks", () => {
       scene.repo.createChange("a");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       scene.repo.checkoutBranch("main");
       scene.repo.createChangeAndCommit("b");

@@ -10,13 +10,6 @@ const args = {
     optional: true,
     describe: "The name of the new branch",
   },
-  silent: {
-    describe: `silence output from the command`,
-    demandOption: false,
-    default: false,
-    type: "boolean",
-    alias: "s",
-  },
   "commit-message": {
     describe: `commit staged changes on the new branch with this message`,
     demandOption: false,
@@ -40,7 +33,6 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
     await createBranchAction({
-      silent: argv.silent,
       branchName: argv.name,
       noVerify: !argv.verify,
       commitMessage: argv["commit-message"],

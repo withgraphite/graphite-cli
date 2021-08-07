@@ -12,6 +12,6 @@ export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
   await profile(argv, async () => {
-    await submitAction("FULLSTACK", {});
+    await submitAction("FULLSTACK");
   });
 };

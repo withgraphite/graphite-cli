@@ -2,6 +2,10 @@
 import tmp from "tmp";
 import yargs from "yargs";
 import {
+  globalArgumentsOptions,
+  processGlobalArgumentsMiddleware,
+} from "./lib/global-arguments";
+import {
   fetchUpgradePromptInBackground,
   postTelemetryInBackground,
 } from "./lib/telemetry";
@@ -30,5 +34,7 @@ yargs
   .commandDir("commands")
   .help()
   .usage(["This CLI helps you manage stacked branches."].join("\n"))
+  .options(globalArgumentsOptions)
+  .middleware(processGlobalArgumentsMiddleware)
   .strict()
   .demandCommand().argv;

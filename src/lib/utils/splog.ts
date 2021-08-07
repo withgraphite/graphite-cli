@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { globalArgs } from "../global-arguments";
 
 export function logError(msg: string): void {
   console.log(chalk.redBright(`ERROR: ${msg}`));
@@ -9,13 +10,19 @@ export function logWarn(msg: string): void {
 }
 
 export function logInfo(msg: string): void {
-  console.log(`${msg}`);
+  if (!globalArgs.quiet) {
+    console.log(`${msg}`);
+  }
 }
 
 export function logSuccess(msg: string): void {
-  console.log(chalk.green(`${msg}`));
+  if (!globalArgs.quiet) {
+    console.log(chalk.green(`${msg}`));
+  }
 }
 
 export function logNewline(): void {
-  console.log("");
+  if (!globalArgs.quiet) {
+    console.log("");
+  }
 }

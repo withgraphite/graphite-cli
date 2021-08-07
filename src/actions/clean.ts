@@ -3,12 +3,12 @@ import { execSync } from "child_process";
 import prompts from "prompts";
 import { ontoAction } from "../actions/onto";
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
-import { log } from "../lib/log";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import {
   checkoutBranch,
   getTrunk,
   gpExecSync,
+  logInfo,
   uncommittedChanges,
 } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
@@ -16,7 +16,6 @@ import Branch from "../wrapper-classes/branch";
 export async function cleanAction(opts: {
   pull: boolean;
   force: boolean;
-  silent: boolean;
 }): Promise<void> {
   if (uncommittedChanges()) {
     throw new PreconditionsFailedError("Cannot clean with uncommitted changes");
@@ -45,8 +44,8 @@ export async function cleanAction(opts: {
     }
     for (const child of children) {
       checkoutBranch(child.name);
-      log(`upstacking (${child.name}) onto (${trunk})`);
-      await ontoAction(trunk, true);
+      logInfo(`upstacking (${child.name}) onto (${trunk})`);
+      await ontoAction(trunk);
       trunkChildren.push(child);
     }
     checkoutBranch(trunk);
@@ -75,11 +74,7 @@ function shouldDeleteBranch(branchName: string): boolean {
   return false;
 }
 
-async function deleteBranch(opts: {
-  branchName: string;
-  force: boolean;
-  silent: boolean;
-}) {
+async function deleteBranch(opts: { branchName: string; force: boolean }) {
   if (!opts.force) {
     const response = await prompts({
       type: "confirm",
@@ -93,7 +88,7 @@ async function deleteBranch(opts: {
       return;
     }
   } else {
-    log(`Deleting (${chalk.red(opts.branchName)})`, opts);
+    logInfo(`Deleting (${chalk.red(opts.branchName)})`);
   }
   execSync(`git branch -D ${opts.branchName}`);
 }

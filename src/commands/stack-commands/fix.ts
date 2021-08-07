@@ -8,13 +8,6 @@ export const description =
   "Rebase any upstack branches onto the latest commit (HEAD) of the current branch.";
 
 const args = {
-  silent: {
-    describe: `silence output from the command`,
-    demandOption: false,
-    default: false,
-    type: "boolean",
-    alias: "s",
-  },
   rebase: {
     describe: `Fix stack by recursively rebasing branches onto their parents as defined by Graphite stack metadata.`,
     demandOption: false,
@@ -40,7 +33,6 @@ export const handler = async (argv: argsT): Promise<void> => {
       );
     }
     await fixAction({
-      silent: argv.silent,
       action: argv.rebase ? "rebase" : argv.regen ? "regen" : undefined,
     });
   });

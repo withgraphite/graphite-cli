@@ -1,7 +1,6 @@
 import chalk from "chalk";
 import prompts from "prompts";
 import { ExitFailedError, RebaseConflictError } from "../lib/errors";
-import { log } from "../lib/log";
 import {
   currentBranchPrecondition,
   uncommittedChangesPrecondition,
@@ -57,7 +56,6 @@ async function promptStacks(opts: {
 
 export async function fixAction(opts: {
   action: "regen" | "rebase" | undefined;
-  silent: boolean;
 }): Promise<void> {
   const currentBranch = currentBranchPrecondition();
   uncommittedChangesPrecondition();
@@ -77,22 +75,19 @@ export async function fixAction(opts: {
     await regen(currentBranch);
   } else {
     for (const child of metaStack.source.children) {
-      await restackNode(child, opts.silent);
+      await restackNode(child);
     }
   }
   checkoutBranch(currentBranch.name);
 }
 
-export async function restackBranch(
-  branch: Branch,
-  silent: boolean
-): Promise<void> {
+export async function restackBranch(branch: Branch): Promise<void> {
   const metaStack =
     new MetaStackBuilder().upstackInclusiveFromBranchWithParents(branch);
-  await restackNode(metaStack.source, silent);
+  await restackNode(metaStack.source);
 }
 
-async function restackNode(node: stackNodeT, silent: boolean): Promise<void> {
+async function restackNode(node: stackNodeT): Promise<void> {
   if (rebaseInProgress()) {
     throw new RebaseConflictError(
       `Interactive rebase in progress, cannot fix (${node.branch.name}). Complete the rebase and re-run fix command.`
@@ -137,7 +132,7 @@ async function restackNode(node: stackNodeT, silent: boolean): Promise<void> {
   }
 
   for (const child of node.children) {
-    await restackNode(child, silent);
+    await restackNode(child);
   }
 }
 
@@ -154,9 +149,9 @@ async function regen(branch: Branch): Promise<void> {
 
 function regenAllStacks(): void {
   const allGitStacks = new GitStackBuilder().allStacksFromTrunk();
-  log(`Computing regenerating ${allGitStacks.length} stacks...`);
+  logInfo(`Computing regenerating ${allGitStacks.length} stacks...`);
   allGitStacks.forEach((stack) => {
-    log(`\nRegenerating:\n${stack.toString()}`);
+    logInfo(`\nRegenerating:\n${stack.toString()}`);
     recursiveRegen(stack.source);
   });
 }
@@ -171,16 +166,14 @@ function recursiveRegen(node: stackNodeT) {
     const oldParent = branch.getParentFromMeta();
     const newParent = node.parents[0]?.branch || getTrunk(); // TODO: Deal with regen if there are multi parents
     if (oldParent && oldParent.name === newParent.name) {
-      log(
-        `-> No change for (${branch.name}) with branch parent (${oldParent.name})`,
-        { silent: false }
+      logInfo(
+        `-> No change for (${branch.name}) with branch parent (${oldParent.name})`
       );
     } else {
-      log(
+      logInfo(
         `-> Updating (${branch.name}) branch parent from (${
           oldParent?.name
-        }) to (${chalk.green(newParent.name)})`,
-        { silent: false }
+        }) to (${chalk.green(newParent.name)})`
       );
       branch.setParentBranchName(newParent.name);
     }

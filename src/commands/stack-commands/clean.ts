@@ -3,13 +3,6 @@ import { cleanAction } from "../../actions/clean";
 import { profile } from "../../lib/telemetry";
 
 const args = {
-  silent: {
-    describe: `silence output from the command`,
-    demandOption: false,
-    default: false,
-    type: "boolean",
-    alias: "s",
-  },
   force: {
     describe: `Don't prompt on each branch to confirm deletion.`,
     demandOption: false,
@@ -34,7 +27,6 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
     await cleanAction({
-      silent: argv.silent,
       pull: argv.pull,
       force: argv.force,
     });

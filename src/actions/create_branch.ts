@@ -8,7 +8,6 @@ import { checkoutBranch, gpExecSync } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
 export async function createBranchAction(opts: {
-  silent: boolean;
   noVerify: boolean;
   branchName?: string;
   commitMessage?: string;
@@ -20,7 +19,7 @@ export async function createBranchAction(opts: {
   }
 
   const branchName = newBranchName(opts.branchName, opts.commitMessage);
-  checkoutNewBranch(branchName, opts.silent);
+  checkoutNewBranch(branchName);
 
   /**
    * Here, we silence errors and ignore them. This
@@ -89,13 +88,12 @@ function newBranchName(branchName?: string, commitMessage?: string): string {
   return newBranchName.slice(0, MAX_BRANCH_NAME_LENGTH);
 }
 
-function checkoutNewBranch(branchName: string, silent: boolean): void {
+function checkoutNewBranch(branchName: string): void {
   gpExecSync(
     {
       command: `git checkout -b "${branchName}"`,
-      options: silent ? { stdio: "ignore" } : {},
     },
-    (_) => {
+    () => {
       throw new ExitFailedError(`Failed to checkout new branch ${branchName}`);
     }
   );

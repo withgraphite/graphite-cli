@@ -1,29 +1,29 @@
 import chalk from "chalk";
 import { ValidationFailedError } from "../lib/errors";
-import { log } from "../lib/log";
 import { currentBranchPrecondition } from "../lib/preconditions";
+import { logInfo } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 import { TScope } from "./scope";
 
-export async function validate(scope: TScope, silent: boolean): Promise<void> {
+export async function validate(scope: TScope): Promise<void> {
   const branch = currentBranchPrecondition();
 
   switch (scope) {
     case "UPSTACK":
-      await validateBranchUpInclusive(branch, silent);
+      await validateBranchUpInclusive(branch);
       break;
     case "DOWNSTACK":
-      await validateBranchDownInclusive(branch, silent);
+      await validateBranchDownInclusive(branch);
       break;
     case "FULLSTACK":
-      await validateBranchDownInclusive(branch, silent);
-      await validateBranchUpInclusive(branch, silent);
+      await validateBranchDownInclusive(branch);
+      await validateBranchUpInclusive(branch);
       break;
   }
-  log(`Current stack is valid`, { silent: silent });
+  logInfo(`Current stack is valid`);
 }
 
-async function validateBranchDownInclusive(branch: Branch, silent: boolean) {
+async function validateBranchDownInclusive(branch: Branch) {
   const metaParent = await branch.getParentFromMeta();
   const gitParents = branch.getParentsFromGit();
   const metaParentMatchesBranchWithSameHead =
@@ -64,18 +64,18 @@ async function validateBranchDownInclusive(branch: Branch, silent: boolean) {
       `(${branch.name}) has git parent (${gitParents[0].name}) but stack parent (${metaParent.name})`
     );
   }
-  await validateBranchDownInclusive(metaParent, silent);
+  await validateBranchDownInclusive(metaParent);
   return;
 }
 
-async function validateBranchUpInclusive(branch: Branch, silent: boolean) {
+async function validateBranchUpInclusive(branch: Branch) {
   const metaChildren = branch.getChildrenFromMeta();
   const gitChildren = branch.getChildrenFromGit();
   const hasGitChildren = gitChildren && gitChildren.length > 0;
   const hasMetaChildren = metaChildren.length > 0;
   if (!hasGitChildren && !hasMetaChildren) {
     // Assume to be a trunk branch and implicately valid.
-    log(`✅ ${chalk.green(`(${branch.name}) validated`)}`, { silent });
+    logInfo(`✅ ${chalk.green(`(${branch.name}) validated`)}`);
     return;
   }
   const gitChildrenMissingInMeta = gitChildren!.filter(
@@ -101,8 +101,8 @@ async function validateBranchUpInclusive(branch: Branch, silent: boolean) {
         .join("\n")}\n not found as git child branchs of (${branch.name}).`
     );
   }
-  log(`✅ ${chalk.green(`(${branch.name}) validated`)}`, { silent });
+  logInfo(`✅ ${chalk.green(`(${branch.name}) validated`)}`);
   for (const child of metaChildren!) {
-    await validateBranchUpInclusive(child, silent);
+    await validateBranchUpInclusive(child);
   }
 }

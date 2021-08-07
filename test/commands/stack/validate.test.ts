@@ -8,12 +8,12 @@ for (const scene of allScenes) {
 
     it("Can pass validation", () => {
       scene.repo.createChange("2");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       scene.repo.createChange("3");
-      scene.repo.execCliCommand(`branch create "b" -m "b" -s`);
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
 
       // Expect this command not to fail.
-      scene.repo.execCliCommand("stack validate -s");
+      scene.repo.execCliCommand("stack validate -q");
     });
 
     it("Can fail validation", () => {
@@ -24,7 +24,7 @@ for (const scene of allScenes) {
 
       // Expect this command to fail for having no meta.
       expect(() => {
-        scene.repo.execCliCommand("stack validate -s");
+        scene.repo.execCliCommand("stack validate -q");
       }).to.throw(Error);
     });
 
@@ -33,13 +33,13 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand("upstack onto main");
 
       expect(() => {
-        scene.repo.execCliCommand("stack validate -s");
+        scene.repo.execCliCommand("stack validate -q");
       }).to.not.throw(Error);
 
       scene.repo.checkoutBranch("main");
 
       expect(() => {
-        scene.repo.execCliCommand("stack validate -s");
+        scene.repo.execCliCommand("stack validate -q");
       }).to.not.throw(Error);
     });
   });

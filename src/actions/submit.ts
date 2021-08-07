@@ -27,16 +27,13 @@ type TSubmittedPRInfo = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.submitPullRequests.response
 >;
 
-export async function submitAction(
-  scope: TScope,
-  args: Record<string, unknown>
-): Promise<void> {
+export async function submitAction(scope: TScope): Promise<void> {
   const cliAuthToken = getCLIAuthToken();
   const repoName = repoConfig.getRepoName();
   const repoOwner = repoConfig.getRepoOwner();
 
   try {
-    await validate(scope, true);
+    await validate(scope);
   } catch {
     throw new ValidationFailedError(`Validation failed before submitting.`);
   }

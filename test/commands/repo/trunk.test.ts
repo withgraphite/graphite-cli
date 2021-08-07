@@ -8,7 +8,7 @@ for (const scene of allScenes) {
 
     it("Can infer main trunk", () => {
       scene.repo.createChange("2", "a");
-      scene.repo.execCliCommand("branch create 'a' -m '2' -s");
+      scene.repo.execCliCommand("branch create 'a' -m '2' -q");
       expect(
         scene.repo.execCliCommandAndGetOutput("repo trunk").includes("(main)")
       ).to.be.true;

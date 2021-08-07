@@ -48,7 +48,6 @@ async function getNextBranch(
 export async function nextOrPrevAction(opts: {
   nextOrPrev: "next" | "prev";
   numSteps: number;
-  silent: boolean;
   interactive: boolean;
 }): Promise<void> {
   // Support stepping over n branches.

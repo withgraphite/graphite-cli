@@ -19,22 +19,22 @@ import {
 } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 import { restackBranch } from "./fix";
-export async function ontoAction(onto: string, silent: boolean): Promise<void> {
+export async function ontoAction(onto: string): Promise<void> {
   if (uncommittedChanges()) {
     throw new PreconditionsFailedError("Cannot fix with uncommitted changes");
   }
 
   const originalBranch = currentBranchPrecondition();
 
-  await stackOnto(originalBranch, onto, silent);
+  await stackOnto(originalBranch, onto);
 
   checkoutBranch(originalBranch.name);
 }
 
-async function stackOnto(currentBranch: Branch, onto: string, silent: boolean) {
+async function stackOnto(currentBranch: Branch, onto: string) {
   branchExistsPrecondition(onto);
   checkBranchCanBeMoved(currentBranch, onto);
-  await validateStack(true);
+  await validateStack();
   const parent = await getParentForRebaseOnto(currentBranch, onto);
   // Save the old ref from before rebasing so that children can find their bases.
   currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
@@ -62,7 +62,7 @@ async function stackOnto(currentBranch: Branch, onto: string, silent: boolean) {
   currentBranch.setParentBranchName(onto);
 
   // Now perform a fix starting from the onto branch:
-  await restackBranch(currentBranch, silent);
+  await restackBranch(currentBranch);
   logInfo(`Successfully moved (${currentBranch.name}) onto (${onto})`);
 }
 
@@ -76,9 +76,9 @@ function getParentForRebaseOnto(branch: Branch, onto: string): Branch {
   return new Branch(onto);
 }
 
-async function validateStack(silent: boolean) {
+async function validateStack() {
   try {
-    await validate("UPSTACK", silent);
+    await validate("UPSTACK");
   } catch {
     throw new ValidationFailedError(
       `Cannot stack "onto", git branches must match stack.`

@@ -10,15 +10,15 @@ for (const scene of allScenes) {
 
     it("Can fix a stack of three branches", () => {
       scene.repo.createChange("2", "a");
-      scene.repo.execCliCommand("branch create 'a' -m '2' -s");
+      scene.repo.execCliCommand("branch create 'a' -m '2' -q");
       scene.repo.createChangeAndCommit("2.5", "a.5");
 
       scene.repo.createChange("3", "b");
-      scene.repo.execCliCommand("branch create 'b' -m '3' -s");
+      scene.repo.execCliCommand("branch create 'b' -m '3' -q");
       scene.repo.createChangeAndCommit("3.5", "b.5");
 
       scene.repo.createChange("4", "c");
-      scene.repo.execCliCommand("branch create 'c' -m '4' -s");
+      scene.repo.execCliCommand("branch create 'c' -m '4' -q");
 
       expectCommits(scene.repo, "4, 3.5, 3, 2.5, 2, 1");
 
@@ -28,7 +28,7 @@ for (const scene of allScenes) {
         scene.repo.listCurrentBranchCommitMessages().slice(0, 2).join(", ")
       ).to.equal("1.5, 1");
 
-      scene.repo.execCliCommand("stack fix --rebase -s");
+      scene.repo.execCliCommand("stack fix --rebase -q");
 
       expect(scene.repo.currentBranchName()).to.equal("main");
 
@@ -38,21 +38,21 @@ for (const scene of allScenes) {
 
     it("Can handle merge conflicts, leveraging prevRef metadata", () => {
       scene.repo.createChange("2");
-      scene.repo.execCliCommand("branch create 'a' -m '2' -s");
+      scene.repo.execCliCommand("branch create 'a' -m '2' -q");
 
       scene.repo.createChange("3");
-      scene.repo.execCliCommand("branch create 'b' -m '3' -s");
+      scene.repo.execCliCommand("branch create 'b' -m '3' -q");
 
       scene.repo.checkoutBranch("main");
       scene.repo.createChangeAndCommit("1.5");
 
-      scene.repo.execCliCommand("stack fix --rebase -s");
+      scene.repo.execCliCommand("stack fix --rebase -q");
       scene.repo.finishInteractiveRebase();
 
       expect(scene.repo.rebaseInProgress()).to.eq(false);
       expect(scene.repo.currentBranchName()).to.eq("a");
 
-      scene.repo.execCliCommand("stack fix --rebase -s");
+      scene.repo.execCliCommand("stack fix --rebase -q");
       scene.repo.finishInteractiveRebase();
 
       expect(scene.repo.currentBranchName()).to.eq("b");
@@ -63,17 +63,17 @@ for (const scene of allScenes) {
 
     it("Can fix one specific stack", () => {
       scene.repo.createChange("a", "a");
-      scene.repo.execCliCommand("branch create 'a' -m 'a' -s");
+      scene.repo.execCliCommand("branch create 'a' -m 'a' -q");
 
       scene.repo.createChange("b", "b");
-      scene.repo.execCliCommand("branch create 'b' -m 'b' -s");
+      scene.repo.execCliCommand("branch create 'b' -m 'b' -q");
 
       scene.repo.checkoutBranch("main");
       scene.repo.createChangeAndCommit("1.5", "1.5");
 
       scene.repo.checkoutBranch("b");
 
-      scene.repo.execCliCommand("stack fix --rebase -s");
+      scene.repo.execCliCommand("stack fix --rebase -q");
 
       expect(scene.repo.currentBranchName()).to.eq("b");
       expectCommits(scene.repo, "b, a, 1.5, 1");
@@ -83,7 +83,7 @@ for (const scene of allScenes) {
 
     it("Can regen a stack from scratch", () => {
       scene.repo.createChange("2", "2");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       scene.repo.createChangeAndCommit("3");
       scene.repo.createAndCheckoutBranch("b");
@@ -97,7 +97,7 @@ for (const scene of allScenes) {
 
       scene.repo.checkoutBranch("a");
 
-      scene.repo.execCliCommand("stack fix --regen -s");
+      scene.repo.execCliCommand("stack fix --regen -q");
 
       scene.repo.checkoutBranch("b");
 
@@ -117,7 +117,7 @@ for (const scene of allScenes) {
       }
 
       scene.repo.createChange("a");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       scene.repo.createAndCheckoutBranch("b");
       scene.repo.createChangeAndCommit("b");
 
@@ -128,7 +128,7 @@ for (const scene of allScenes) {
       scene.repo.createChangeAndCommit("c");
 
       scene.repo.checkoutBranch("main");
-      scene.repo.execCliCommand("stack fix --regen -s");
+      scene.repo.execCliCommand("stack fix --regen -q");
 
       scene.repo.checkoutBranch("b");
       scene.repo.execCliCommand(`branch prev --no-interactive`);
@@ -143,7 +143,7 @@ for (const scene of allScenes) {
 
     it("Can gen a stack where the branch matches main HEAD", () => {
       scene.repo.createAndCheckoutBranch("a");
-      scene.repo.execCliCommand("stack fix --regen -s");
+      scene.repo.execCliCommand("stack fix --regen -q");
       expect(scene.repo.currentBranchName()).to.eq("a");
       scene.repo.execCliCommand(`branch prev --no-interactive`);
       expect(scene.repo.currentBranchName()).to.eq("main");
@@ -156,7 +156,7 @@ for (const scene of allScenes) {
       scene.repo.createChangeAndCommit("2");
 
       scene.repo.checkoutBranch("a");
-      scene.repo.execCliCommand("stack fix --regen -s");
+      scene.repo.execCliCommand("stack fix --regen -q");
 
       scene.repo.execCliCommand(`branch prev --no-interactive`);
       expect(scene.repo.currentBranchName()).to.eq("main");

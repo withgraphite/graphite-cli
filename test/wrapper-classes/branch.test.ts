@@ -9,7 +9,7 @@ for (const scene of allScenes) {
 
     it("Can list git parent for a branch", () => {
       scene.repo.createChange("2");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -q`);
 
       const branch = new Branch("a");
       expect(branch.getParentsFromGit()[0].name).to.equal("main");
@@ -17,7 +17,7 @@ for (const scene of allScenes) {
 
     it("Can list parent based on meta for a branch", () => {
       scene.repo.createChange("2");
-      scene.repo.execCliCommand(`branch create "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -q`);
 
       const branch = new Branch("a");
       expect(branch.getParentFromMeta()).is.not.undefined;

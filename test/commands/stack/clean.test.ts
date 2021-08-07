@@ -42,33 +42,33 @@ for (const scene of allScenes) {
 
     it("Can delete a single merged branch", async () => {
       scene.repo.createChange("2", "a");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       expectBranches(scene.repo, "a, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash");
-      scene.repo.execCliCommand(`stack clean -sf`);
+      scene.repo.execCliCommand(`stack clean -qf`);
 
       expectBranches(scene.repo, "main");
     });
 
     it("Can noop clean if there are no stacks", () => {
-      expect(() => scene.repo.execCliCommand(`stack clean -sf`)).to.not.throw(
+      expect(() => scene.repo.execCliCommand(`stack clean -qf`)).to.not.throw(
         Error
       );
     });
 
     it("Can delete the foundation of a double stack", async () => {
       scene.repo.createChange("2", "a");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       scene.repo.createChange("3", "b");
-      scene.repo.execCliCommand(`branch create "b" -m "b" -s`);
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
 
       expectBranches(scene.repo, "a, b, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash");
-      scene.repo.execCliCommand(`stack clean -sf`);
+      scene.repo.execCliCommand(`stack clean -qf`);
 
       expectBranches(scene.repo, "b, main");
       expectCommits(scene.repo, "squash, 1");
@@ -79,19 +79,19 @@ for (const scene of allScenes) {
 
     it("Can delete two branches off a three-stack", async () => {
       scene.repo.createChange("2", "a");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       scene.repo.createChange("3", "b");
-      scene.repo.execCliCommand(`branch create "b" -m "b" -s`);
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
 
       scene.repo.createChange("4", "c");
-      scene.repo.execCliCommand(`branch create "c" -m "c" -s`);
+      scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
 
       expectBranches(scene.repo, "a, b, c, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash_a");
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
-      scene.repo.execCliCommand(`stack clean -sf`);
+      scene.repo.execCliCommand(`stack clean -qf`);
 
       expectBranches(scene.repo, "c, main");
       expectCommits(scene.repo, "squash_b, squash_a, 1");
@@ -99,20 +99,20 @@ for (const scene of allScenes) {
 
     it("Can delete two branches, while syncing inbetween, off a three-stack", async () => {
       scene.repo.createChange("2", "a");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       scene.repo.createChange("3", "b");
-      scene.repo.execCliCommand(`branch create "b" -m "b" -s`);
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
 
       scene.repo.createChange("4", "c");
-      scene.repo.execCliCommand(`branch create "c" -m "c" -s`);
+      scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
 
       expectBranches(scene.repo, "a, b, c, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash_a");
-      scene.repo.execCliCommand(`stack clean -sf`);
+      scene.repo.execCliCommand(`stack clean -qf`);
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
-      scene.repo.execCliCommand(`stack clean -sf`);
+      scene.repo.execCliCommand(`stack clean -qf`);
 
       expectBranches(scene.repo, "c, main");
       expectCommits(scene.repo, "squash_b, squash_a, 1");
@@ -120,29 +120,29 @@ for (const scene of allScenes) {
 
     xit("Can detect dead branches off multiple stacks", async () => {
       scene.repo.createChange("2", "a");
-      scene.repo.execCliCommand(`branch create "a" -m "a" -s`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       scene.repo.createChange("3", "b");
-      scene.repo.execCliCommand(`branch create "b" -m "b" -s`);
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
 
       scene.repo.createChange("4", "c");
-      scene.repo.execCliCommand(`branch create "c" -m "c" -s`);
+      scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
 
       expectBranches(scene.repo, "a, b, c, main");
 
       scene.repo.checkoutBranch("main");
 
       scene.repo.createChange("5", "d");
-      scene.repo.execCliCommand(`branch create "d" -m "d" -s`);
+      scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
       scene.repo.createChange("6", "e");
-      scene.repo.execCliCommand(`branch create "e" -m "e" -s`);
+      scene.repo.execCliCommand(`branch create "e" -m "e" -q`);
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash_a");
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
       fakeGitSquashAndMerge(scene.repo, "d", "squash_d");
 
-      scene.repo.execCliCommand(`stack clean -sf`);
+      scene.repo.execCliCommand(`stack clean -qf`);
 
       expectBranches(scene.repo, "c, e, main");
       scene.repo.checkoutBranch("main");

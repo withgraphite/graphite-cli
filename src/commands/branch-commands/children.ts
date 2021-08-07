@@ -1,17 +1,9 @@
 import yargs from "yargs";
-import { log } from "../../lib/log";
 import { currentBranchPrecondition } from "../../lib/preconditions";
 import { profile } from "../../lib/telemetry";
+import { logInfo } from "../../lib/utils";
 
-const args = {
-  silent: {
-    describe: `silence output from the command`,
-    demandOption: false,
-    default: false,
-    type: "boolean",
-    alias: "s",
-  },
-} as const;
+const args = {} as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "children";
@@ -24,7 +16,7 @@ export const handler = async (argv: argsT): Promise<void> => {
 
     const children = branch.getChildrenFromMeta();
     if (children.length === 0) {
-      log(`(${branch}) has no stacked child branches`, argv);
+      logInfo(`(${branch}) has no stacked child branches`);
     } else {
       children.forEach((child) => console.log(child.name));
     }

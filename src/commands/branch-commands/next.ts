@@ -3,13 +3,6 @@ import { nextOrPrevAction } from "../../actions/next_or_prev";
 import { profile } from "../../lib/telemetry";
 
 const args = {
-  silent: {
-    describe: `silence output from the command`,
-    demandOption: false,
-    default: false,
-    type: "boolean",
-    alias: "s",
-  },
   steps: {
     describe: `number of branches to traverse`,
     demandOption: false,
@@ -37,7 +30,6 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
     await nextOrPrevAction({
       nextOrPrev: "next",
-      silent: argv.silent,
       numSteps: argv.steps,
       interactive: argv.interactive,
     });
