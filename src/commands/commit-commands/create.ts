@@ -16,12 +16,6 @@ const args = {
     describe: "The message for the new commit",
     required: true,
   },
-  verify: {
-    describe: `Run commit hooks`,
-    demandOption: false,
-    default: true,
-    type: "boolean",
-  },
 } as const;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -34,7 +28,6 @@ export const handler = async (argv: argsT): Promise<void> => {
     await commitCreateAction({
       message: argv.message,
       addAll: argv.all,
-      noVerify: !argv.verify,
     });
   });
 };

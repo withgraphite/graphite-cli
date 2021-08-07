@@ -1,6 +1,7 @@
 import { execSync } from "child_process";
 import { ExitFailedError } from "../lib/errors";
 import { workingTreeClean } from "../lib/git-utils";
+import { globalArgs } from "../lib/global-arguments";
 import { gpExecSync, logWarn } from "../lib/utils";
 import { fixAction } from "./fix";
 
@@ -8,7 +9,6 @@ export async function commitAmendAction(opts: {
   addAll: boolean;
   message?: string;
   noEdit: boolean;
-  noVerify: boolean;
 }): Promise<void> {
   if (opts.addAll) {
     gpExecSync(
@@ -32,7 +32,7 @@ export async function commitAmendAction(opts: {
             ? [`-m ${opts.message}`]
             : [],
         ],
-        ...[opts.noVerify ? ["--no-verify"] : []],
+        ...[globalArgs.noVerify ? ["--no-verify"] : []],
       ].join(" "),
       { stdio: "inherit" }
     );

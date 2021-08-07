@@ -11,9 +11,9 @@ type argsT = yargs.Arguments<
 
 function processGlobalArgumentsMiddleware(argv: argsT): void {
   globalArgs.quiet = argv.quiet;
-  globalArgs.verify = argv.verify;
+  globalArgs.noVerify = !argv.verify;
 }
 
-const globalArgs = { quiet: false, verify: false };
+const globalArgs = { quiet: false, noVerify: false };
 
 export { globalArgumentsOptions, processGlobalArgumentsMiddleware, globalArgs };

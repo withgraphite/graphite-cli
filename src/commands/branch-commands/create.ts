@@ -16,12 +16,6 @@ const args = {
     type: "string",
     alias: "m",
   },
-  verify: {
-    describe: `Run commit hooks`,
-    demandOption: false,
-    default: true,
-    type: "boolean",
-  },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
@@ -34,7 +28,6 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
     await createBranchAction({
       branchName: argv.name,
-      noVerify: !argv.verify,
       commitMessage: argv["commit-message"],
     });
   });

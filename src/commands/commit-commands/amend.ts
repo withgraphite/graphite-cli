@@ -22,12 +22,6 @@ const args = {
     demandOption: false,
     default: true,
   },
-  verify: {
-    describe: `Run commit hooks`,
-    demandOption: false,
-    default: true,
-    type: "boolean",
-  },
 } as const;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -42,7 +36,6 @@ export const handler = async (argv: argsT): Promise<void> => {
       message: argv.message,
       noEdit: !argv.edit,
       addAll: argv.all,
-      noVerify: !argv.verify,
     });
   });
 };

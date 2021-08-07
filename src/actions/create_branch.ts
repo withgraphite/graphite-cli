@@ -1,5 +1,6 @@
 import { userConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
+import { globalArgs } from "../lib/global-arguments";
 import {
   currentBranchPrecondition,
   ensureSomeStagedChangesPrecondition,
@@ -8,7 +9,6 @@ import { checkoutBranch, gpExecSync } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
 export async function createBranchAction(opts: {
-  noVerify: boolean;
   branchName?: string;
   commitMessage?: string;
 }): Promise<void> {
@@ -31,7 +31,7 @@ export async function createBranchAction(opts: {
     gpExecSync(
       {
         command: `git commit -m "${opts.commitMessage}" ${
-          opts.noVerify ? "--no-verify" : ""
+          globalArgs.noVerify ? "--no-verify" : ""
         }`,
         options: {
           stdio: "inherit",

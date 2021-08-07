@@ -1,5 +1,6 @@
 import { ExitFailedError } from "../lib/errors";
 import { workingTreeClean } from "../lib/git-utils";
+import { globalArgs } from "../lib/global-arguments";
 import { ensureSomeStagedChangesPrecondition } from "../lib/preconditions";
 import { gpExecSync, logWarn } from "../lib/utils";
 import { fixAction } from "./fix";
@@ -7,7 +8,6 @@ import { fixAction } from "./fix";
 export async function commitCreateAction(opts: {
   addAll: boolean;
   message: string;
-  noVerify: boolean;
 }): Promise<void> {
   if (opts.addAll) {
     gpExecSync(
@@ -27,7 +27,7 @@ export async function commitCreateAction(opts: {
       command: [
         "git commit",
         `-m "${opts.message}"`,
-        ...[opts.noVerify ? ["--no-verify"] : []],
+        ...[globalArgs.noVerify ? ["--no-verify"] : []],
       ].join(" "),
     },
     () => {
