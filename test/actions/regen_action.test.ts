@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { regenAction } from "../../src/actions/regen";
+import { regenAction } from "../../src/actions/fix";
 import Branch from "../../src/wrapper-classes/branch";
 import { allScenes } from "../scenes";
 import { configureTest } from "../utils";

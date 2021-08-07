@@ -1,8 +1,8 @@
 import chalk from "chalk";
 import { execSync } from "child_process";
 import prompts from "prompts";
+import { regenAction } from "../actions/fix";
 import { ontoAction } from "../actions/onto";
-import { regenAction } from "../actions/regen";
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
 import { log } from "../lib/log";
 import { currentBranchPrecondition } from "../lib/preconditions";
