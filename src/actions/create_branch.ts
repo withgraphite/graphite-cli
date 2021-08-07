@@ -78,7 +78,11 @@ function newBranchName(branchName?: string, commitMessage?: string): string {
     .replace(/_+/g, "_");
 
   if (branchMessage.length <= MAX_BRANCH_NAME_LENGTH - 6) {
-    branchMessage += `_${date.getMonth() + 1}_${date.getDate()}`; // Condence underscores
+    // prepend date if there's room.
+    branchMessage =
+      `${("0" + (date.getMonth() + 1)).slice(-2)}-${(
+        "0" + date.getDate()
+      ).slice(-2)}-` + branchMessage; // Condence underscores
   }
 
   const newBranchName = `${userConfig.getBranchPrefix() || ""}${branchMessage}`;
