@@ -63,15 +63,18 @@ for (const scene of allScenes) {
       scene.repo.createChange("a", "a");
       scene.repo.execCliCommand("branch create 'a' -m 'a' -s");
 
+      scene.repo.createChange("b", "b");
+      scene.repo.execCliCommand("branch create 'b' -m 'b' -s");
+
       scene.repo.checkoutBranch("main");
       scene.repo.createChangeAndCommit("1.5", "1.5");
 
-      scene.repo.checkoutBranch("a");
+      scene.repo.checkoutBranch("b");
 
       scene.repo.execCliCommand("stack fix --rebase -s");
 
-      expect(scene.repo.currentBranchName()).to.eq("a");
-      expectCommits(scene.repo, "a, 1.5, 1");
+      expect(scene.repo.currentBranchName()).to.eq("b");
+      expectCommits(scene.repo, "b, a, 1.5, 1");
     });
   });
 }

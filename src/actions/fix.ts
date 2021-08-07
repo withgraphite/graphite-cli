@@ -1,18 +1,16 @@
 import chalk from "chalk";
 import prompts from "prompts";
 import { regenAction } from "../actions/regen";
+import { ExitFailedError, RebaseConflictError } from "../lib/errors";
 import {
-  ExitFailedError,
-  PreconditionsFailedError,
-  RebaseConflictError,
-} from "../lib/errors";
-import { currentBranchPrecondition } from "../lib/preconditions";
+  currentBranchPrecondition,
+  uncommittedChangesPrecondition,
+} from "../lib/preconditions";
 import {
   checkoutBranch,
   gpExecSync,
   logInfo,
   rebaseInProgress,
-  uncommittedChanges,
 } from "../lib/utils";
 import {
   Branch,
@@ -61,17 +59,15 @@ export async function fixAction(opts: {
   silent: boolean;
 }): Promise<void> {
   const currentBranch = currentBranchPrecondition();
+  uncommittedChangesPrecondition();
 
   const metaStack = new MetaStackBuilder().fullStackFromBranch(currentBranch);
   const gitStack = new GitStackBuilder().fullStackFromBranch(currentBranch);
 
+  // Consider noop
   if (metaStack.equals(gitStack)) {
     logInfo(`No fix needed`);
     return;
-  }
-
-  if (uncommittedChanges()) {
-    throw new PreconditionsFailedError("Cannot fix with uncommitted changes");
   }
 
   const action = opts.action || (await promptStacks({ gitStack, metaStack }));
@@ -79,9 +75,7 @@ export async function fixAction(opts: {
   if (action === "regen") {
     await regenAction(opts.silent);
   } else {
-    console.log(`restacking ${metaStack.toString()}`);
     for (const child of metaStack.source.children) {
-      console.log(`restacking child ${child.branch.name}`);
       await restackNode(child, opts.silent);
     }
   }
@@ -92,8 +86,8 @@ export async function restackBranch(
   branch: Branch,
   silent: boolean
 ): Promise<void> {
-  const metaStack = new MetaStackBuilder().upstackInclusiveFromBranch(branch);
-  console.log(`restacking child ${branch.name}`);
+  const metaStack =
+    new MetaStackBuilder().upstackInclusiveFromBranchWithParents(branch);
   await restackNode(metaStack.source, silent);
 }
 

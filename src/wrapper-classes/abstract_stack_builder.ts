@@ -11,7 +11,26 @@ export abstract class AbstractStackBuilder {
 
   public abstract fullStackFromBranch(branch: Branch): Stack;
 
-  public upstackInclusiveFromBranch(branch: Branch): Stack {
+  public upstackInclusiveFromBranchWithParents(branch: Branch): Stack {
+    const stack = this.fullStackFromBranch(branch);
+
+    // Traverse to find the source node and set;
+    let possibleSourceNodes = [stack.source];
+    while (possibleSourceNodes.length > 0) {
+      const node = possibleSourceNodes.pop();
+      if (!node) {
+        throw new Error("Stack missing source node, shouldnt happen");
+      }
+      if (node.branch.name === branch.name) {
+        stack.source = node;
+        break;
+      }
+      possibleSourceNodes = possibleSourceNodes.concat(node.children);
+    }
+    return stack;
+  }
+
+  public upstackInclusiveFromBranchWithoutParents(branch: Branch): Stack {
     const sourceNode: stackNodeT = {
       branch,
       parents: [],
@@ -50,4 +69,5 @@ export abstract class AbstractStackBuilder {
 
   protected abstract getStackBaseBranch(branch: Branch): Branch;
   protected abstract getChildrenForBranch(branch: Branch): Branch[];
+  protected abstract getParentsForBranch(branch: Branch): Branch[];
 }

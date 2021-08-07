@@ -50,7 +50,7 @@ for (const scene of [new TrailingProdScene()]) {
       scene.repo.createChangeAndCommit("c");
 
       scene.repo.checkoutBranch("main");
-      scene.repo.execCliCommand("stack regen");
+      scene.repo.execCliCommand("stack fix --regen -s");
 
       scene.repo.checkoutBranch("b");
       scene.repo.execCliCommand(`branch prev --no-interactive`);
