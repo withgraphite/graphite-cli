@@ -32,6 +32,7 @@ const args = {
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
+export const aliases = ["c"];
 export const command = "create [name]";
 export const description =
   "Creates a new branch stacked off of the current branch and commit staged changes. If no branch name is specified but a commit message is passed, create a branch name from the message.";
