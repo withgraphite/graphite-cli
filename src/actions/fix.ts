@@ -21,7 +21,7 @@ import {
   GitStackBuilder,
   MetaStackBuilder,
   Stack,
-  stackNodeT,
+  StackNode,
 } from "../wrapper-classes";
 
 async function promptStacks(opts: {
@@ -95,7 +95,7 @@ export async function restackBranch(branch: Branch): Promise<void> {
   await restackNode(metaStack.source);
 }
 
-async function restackNode(node: stackNodeT): Promise<void> {
+async function restackNode(node: StackNode): Promise<void> {
   if (rebaseInProgress()) {
     throw new RebaseConflictError(
       `Interactive rebase in progress, cannot fix (${node.branch.name}). Complete the rebase and re-run fix command.`
@@ -164,7 +164,7 @@ function regenAllStacks(): void {
   });
 }
 
-function recursiveRegen(node: stackNodeT) {
+function recursiveRegen(node: StackNode) {
   // The only time we expect newParent to be undefined is if we're fixing
   // the base branch which is behind trunk.
   const branch = node.branch;

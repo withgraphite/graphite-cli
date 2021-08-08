@@ -3,7 +3,8 @@ import Branch from "./branch";
 import Commit from "./commit";
 import { GitStackBuilder } from "./git_stack_builder";
 import { MetaStackBuilder } from "./meta_stack_builder";
-import { Stack, stackNodeT } from "./stack";
+import { Stack } from "./stack";
+import { StackNode } from "./stack_node";
 
 export {
   Stack,
@@ -12,5 +13,5 @@ export {
   MetaStackBuilder,
   Branch,
   Commit,
+  StackNode,
 };
-export type { stackNodeT };

@@ -1,4 +1,4 @@
-import { AbstractStackBuilder, Stack, stackNodeT } from ".";
+import { AbstractStackBuilder, Stack, StackNode } from ".";
 import { getTrunk, gpExecSync } from "../lib/utils";
 import Branch from "./branch";
 
@@ -14,11 +14,11 @@ export class GitStackBuilder extends AbstractStackBuilder {
       return stack;
     }
 
-    const trunkNode: stackNodeT = {
+    const trunkNode: StackNode = new StackNode({
       branch: getTrunk(),
       parents: [],
       children: [stack.source],
-    };
+    });
     stack.source.parents = [trunkNode];
     stack.source = trunkNode;
     return stack;

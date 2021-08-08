@@ -1,4 +1,4 @@
-import { AbstractStackBuilder, Stack, stackNodeT } from ".";
+import { AbstractStackBuilder, Stack, StackNode } from ".";
 import { getTrunk } from "../lib/utils";
 import Branch from "./branch";
 
@@ -25,11 +25,11 @@ export class MetaStackBuilder extends AbstractStackBuilder {
     // If the parent is trunk (the only possibility because this is a off trunk)
     const parent = base.getParentFromMeta();
     if (parent && parent.name == getTrunk().name) {
-      const trunkNode: stackNodeT = {
+      const trunkNode: StackNode = new StackNode({
         branch: getTrunk(),
         parents: [],
         children: [stack.source],
-      };
+      });
       stack.source.parents = [trunkNode];
       stack.source = trunkNode;
     } else {

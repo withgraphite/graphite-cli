@@ -1,4 +1,4 @@
-import { Stack, stackNodeT } from ".";
+import { Stack, StackNode } from ".";
 import { repoConfig } from "../lib/config";
 import { getTrunk } from "../lib/utils";
 import Branch from "./branch";
@@ -31,13 +31,13 @@ export abstract class AbstractStackBuilder {
   }
 
   public upstackInclusiveFromBranchWithoutParents(branch: Branch): Stack {
-    const sourceNode: stackNodeT = {
+    const sourceNode: StackNode = new StackNode({
       branch,
       parents: [],
       children: [],
-    };
+    });
 
-    let nodes: stackNodeT[] = [sourceNode];
+    let nodes: StackNode[] = [sourceNode];
     do {
       const curNode = nodes.pop();
       if (!curNode) {
@@ -45,7 +45,11 @@ export abstract class AbstractStackBuilder {
       }
       curNode.children = this.getChildrenForBranch(curNode.branch).map(
         (child) => {
-          return { branch: child, parents: [curNode], children: [] };
+          return new StackNode({
+            branch: child,
+            parents: [curNode],
+            children: [],
+          });
         }
       );
       nodes = nodes.concat(curNode.children);
