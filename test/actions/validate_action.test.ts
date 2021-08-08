@@ -1,10 +1,7 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import { expect } from "chai";
 import { validate } from "../../src/actions/validate";
 import { allScenes } from "../scenes";
 import { configureTest } from "../utils";
-
-chai.use(chaiAsPromised);
 
 for (const scene of allScenes) {
   describe(`(${scene}): validate action`, function () {
@@ -24,22 +21,16 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
       scene.repo.checkoutBranch("a");
-      await expect(validate("UPSTACK")).to.eventually.be.rejectedWith(Error);
+      expect(() => validate("UPSTACK")).to.throw(Error);
 
       scene.repo.checkoutBranch("b");
-      await expect(validate("UPSTACK")).to.not.eventually.be.rejectedWith(
-        Error
-      );
+      expect(() => validate("UPSTACK")).to.not.throw(Error);
 
       scene.repo.checkoutBranch("c");
-      await expect(validate("UPSTACK")).to.not.eventually.be.rejectedWith(
-        Error
-      );
+      expect(() => validate("UPSTACK")).to.not.throw(Error);
 
       scene.repo.checkoutBranch("d");
-      await expect(validate("UPSTACK")).to.not.eventually.be.rejectedWith(
-        Error
-      );
+      expect(() => validate("UPSTACK")).to.not.throw(Error);
     });
 
     it("Can validate downstack", async () => {
@@ -56,36 +47,30 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
       scene.repo.checkoutBranch("a");
-      await expect(validate("DOWNSTACK")).to.not.eventually.be.rejectedWith(
-        Error
-      );
+      expect(() => validate("DOWNSTACK")).to.not.throw(Error);
 
       scene.repo.checkoutBranch("b");
-      await expect(validate("DOWNSTACK")).to.eventually.be.rejectedWith(Error);
+      expect(() => validate("DOWNSTACK")).to.throw(Error);
 
       scene.repo.checkoutBranch("c");
-      await expect(validate("DOWNSTACK")).to.eventually.be.rejectedWith(Error);
+      expect(() => validate("DOWNSTACK")).to.throw(Error);
 
       scene.repo.checkoutBranch("d");
-      await expect(validate("DOWNSTACK")).to.eventually.be.rejectedWith(Error);
+      expect(() => validate("DOWNSTACK")).to.throw(Error);
     });
 
     it("Can validate fullstack", async () => {
       scene.repo.createChange("a");
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
-      await expect(validate("FULLSTACK")).to.not.eventually.be.rejectedWith(
-        Error
-      );
+      expect(() => validate("FULLSTACK")).to.not.throw(Error);
 
       scene.repo.createChange("b");
       scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
-      await expect(validate("FULLSTACK")).to.not.eventually.be.rejectedWith(
-        Error
-      );
+      expect(() => validate("FULLSTACK")).to.not.throw(Error);
 
       scene.repo.createAndCheckoutBranch("c");
       scene.repo.createChangeAndCommit("c");
-      await expect(validate("FULLSTACK")).to.eventually.be.rejectedWith(Error);
+      expect(() => validate("FULLSTACK")).to.throw(Error);
     });
   });
 }

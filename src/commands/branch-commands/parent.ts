@@ -33,7 +33,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         console.log(parent.name);
       } else {
         logInfo(
-          `Current branch (${branch}) has no Graphite parent set. Consider running \`gp branch parent --set <parent>\`, \`gp stack regen\`, or \`gp upstack onto <parent>\` to set a Graphite parent branch.`
+          `Current branch (${branch}) has no Graphite parent set. Consider running \`gp branch parent --set <parent>\`, \`gp stack fix\`, or \`gp upstack onto <parent>\` to set a Graphite parent branch.`
         );
       }
     }

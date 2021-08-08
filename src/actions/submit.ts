@@ -33,7 +33,7 @@ export async function submitAction(scope: TScope): Promise<void> {
   const repoOwner = repoConfig.getRepoOwner();
 
   try {
-    await validate(scope);
+    validate(scope);
   } catch {
     throw new ValidationFailedError(`Validation failed before submitting.`);
   }

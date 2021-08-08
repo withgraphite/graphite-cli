@@ -34,7 +34,7 @@ export async function ontoAction(onto: string): Promise<void> {
 async function stackOnto(currentBranch: Branch, onto: string) {
   branchExistsPrecondition(onto);
   checkBranchCanBeMoved(currentBranch, onto);
-  await validateStack();
+  validateStack();
   const parent = await getParentForRebaseOnto(currentBranch, onto);
   // Save the old ref from before rebasing so that children can find their bases.
   currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
@@ -76,9 +76,9 @@ function getParentForRebaseOnto(branch: Branch, onto: string): Branch {
   return new Branch(onto);
 }
 
-async function validateStack() {
+function validateStack() {
   try {
-    await validate("UPSTACK");
+    validate("UPSTACK");
   } catch {
     throw new ValidationFailedError(
       `Cannot stack "onto", git branches must match stack.`

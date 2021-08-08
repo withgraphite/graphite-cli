@@ -10,9 +10,6 @@ export const VALIDATION_HELPER_MESSAGE = [
     "gp upstack onto <parent-branch>"
   )}' to move a specific branch (and it's stacked children) onto another branch`,
   `-> '${chalk.yellow(
-    "gp stack regen"
-  )}' to regenerate Graphite's stack metadata based on your git branch relations`,
-  `-> '${chalk.yellow(
     "gp branch parent --set <parent-branch>"
   )}' to manually set the parent of a branch`,
 ].join("\n");

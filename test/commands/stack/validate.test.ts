@@ -28,7 +28,7 @@ for (const scene of allScenes) {
       }).to.throw(Error);
     });
 
-    it("Can pass validation if child branch points to same commit as parent", () => {
+    xit("Can pass validation if child branch points to same commit as parent", () => {
       scene.repo.createAndCheckoutBranch("a");
       scene.repo.execCliCommand("upstack onto main");
 
