@@ -28,7 +28,15 @@ export class Stack {
   }
 
   public equals(other: Stack): boolean {
-    return this.source.equals(other.source);
+    return this.base().equals(other.base());
+  }
+
+  private base(): StackNode {
+    let base = this.source;
+    while (base.parents.length > 0) {
+      base = base.parents[0];
+    }
+    return base;
   }
 
   static fromMap(map: Record<string, any>): Stack {
