@@ -7,9 +7,12 @@ export class GitStackBuilder extends AbstractStackBuilder {
     const stack = this.upstackInclusiveFromBranchWithoutParents(base);
 
     const parents = base.getParentsFromGit();
+    const parentsIncludeTrunk = parents
+      .map((parent) => parent.name)
+      .includes(getTrunk().name);
 
-    // If the parent isnt trunk, just return.
-    if (parents[0]?.name !== getTrunk().name) {
+    // If the parents don't include trunk, just return.
+    if (!parentsIncludeTrunk) {
       return stack;
     }
 
