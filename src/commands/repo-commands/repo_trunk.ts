@@ -7,7 +7,7 @@ const args = {} as const;
 
 export const command = "trunk";
 export const description =
-  "The trunk branch of the current repo, to use as the base of all stacks.";
+  "The trunk branch of the current repo. Graphite uses the trunk branch as the base of all stacks.";
 export const builder = args;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;

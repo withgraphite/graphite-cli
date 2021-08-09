@@ -20,7 +20,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "parent";
 export const description =
-  "Show the parent of your current branch, as recorded in Graphite's stacks. Parent information is stored under `.git/refs/branch-metadata`.";
+  "Show the parent branch of your current branch (i.e. directly below the current branch in the stack) as tracked by Graphite. Branch location metadata is stored under `.git/refs/branch-metadata`.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
@@ -33,7 +33,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         console.log(parent.name);
       } else {
         logInfo(
-          `Current branch (${branch}) has no Graphite parent set. Consider running \`gp branch parent --set <parent>\`, \`gp stack fix\`, or \`gp upstack onto <parent>\` to set a Graphite parent branch.`
+          `Current branch (${branch}) has no parent branch set in Graphite. Consider running \`gp branch parent --set <parent>\`, \`gp stack fix\`, or \`gp upstack onto <parent>\` to set a parent branch in Graphite.`
         );
       }
     }

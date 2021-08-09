@@ -7,7 +7,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "validate";
 export const description =
-  "Validates that the current stack matches git's chain of branches.";
+  "Validate that Graphite's stack metadata for the current stack matches git's record of branch relationships.";
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {

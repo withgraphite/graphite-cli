@@ -4,7 +4,7 @@ import { profile } from "../../lib/telemetry";
 
 const args = {
   branch: {
-    describe: `A branch to rebase the current stack onto`,
+    describe: `The branch to rebase the current stack onto.`,
     demandOption: true,
     optional: false,
     positional: true,
@@ -14,7 +14,7 @@ const args = {
 
 export const command = "onto <branch>";
 export const description =
-  "Rebase any upstack branches onto the latest commit (HEAD) of the current branch.";
+  "Rebase all upstack branches onto the latest commit (HEAD) of the target branch.";
 export const builder = args;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {

@@ -33,7 +33,11 @@ process.on("uncaughtException", (err) => {
 yargs
   .commandDir("commands")
   .help()
-  .usage(["This CLI helps you manage stacked branches."].join("\n"))
+  .usage(
+    [
+      "Graphite is a command line tool that makes working with stacked changes fast & intuitive.",
+    ].join("\n")
+  )
   .options(globalArgumentsOptions)
   .middleware(processGlobalArgumentsMiddleware)
   .strict()

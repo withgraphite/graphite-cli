@@ -4,7 +4,7 @@ import { profile } from "../../lib/telemetry";
 
 const args = {
   all: {
-    describe: `stage all changes before committing`,
+    describe: `Stage all changes before committing.`,
     demandOption: false,
     default: false,
     type: "boolean",
@@ -13,12 +13,12 @@ const args = {
   message: {
     type: "string",
     alias: "m",
-    describe: "A new message for the commit",
+    describe: "The updated message for the commit.",
     demandOption: false,
   },
   edit: {
     type: "boolean",
-    describe: "Modify the existing commit message",
+    describe: "Modify the existing commit message.",
     demandOption: false,
     default: true,
   },

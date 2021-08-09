@@ -4,14 +4,14 @@ import { profile } from "../../lib/telemetry";
 
 const args = {
   force: {
-    describe: `Don't prompt on each branch to confirm deletion.`,
+    describe: `Don't prompt you to confirm when a branch will be deleted.`,
     demandOption: false,
     default: false,
     type: "boolean",
     alias: "f",
   },
   pull: {
-    describe: `Pull the trunk branch before comparison.`,
+    describe: `Pull the trunk branch from remote before searching for stale branches.`,
     demandOption: false,
     default: false,
     type: "boolean",

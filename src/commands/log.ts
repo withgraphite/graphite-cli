@@ -8,7 +8,7 @@ import Branch from "../wrapper-classes/branch";
 
 const args = {
   commits: {
-    describe: `Show commits in the log output`,
+    describe: `Show commits in the log output.`,
     demandOption: false,
     default: false,
     type: "boolean",
@@ -17,7 +17,7 @@ const args = {
 } as const;
 
 export const command = "log";
-export const description = "Log all stacks";
+export const description = "Log all stacks tracked by Graphite.";
 export const builder = args;
 export const aliases = ["l"];
 

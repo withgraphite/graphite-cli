@@ -4,7 +4,7 @@ import { profile } from "../../lib/telemetry";
 
 export const command = "submit";
 export const description =
-  "Experimental: Idempotently force pushes all branches in stack and creates/updates PR's for each.";
+  "Idempotently force push all branches in the current stack to GitHub, creating or updating distinct pull requests for each.";
 
 const args = {} as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;

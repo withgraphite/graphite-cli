@@ -8,14 +8,15 @@ import Branch from "../wrapper-classes/branch";
 
 const args = {
   all: {
-    describe: `Show all branches`,
+    describe: `Show all branches.`,
     demandOption: false,
     default: false,
     type: "boolean",
     alias: "a",
   },
   interactive: {
-    describe: `Interactively checkout a different stacked branch`,
+    describe:
+      "Whether or not to show the interactive branch picker (set to false when using `gp stacks` as part of a shell script).",
     demandOption: false,
     default: true,
     type: "boolean",
@@ -25,7 +26,7 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "stacks";
-export const description = "Print stacks";
+export const description = "Print stacks.";
 export const builder = args;
 
 type TBranchWithMetadata = {

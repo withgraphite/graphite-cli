@@ -10,7 +10,7 @@ const args = {
     type: "string",
     alias: "s",
     describe:
-      "Override the value of the repo's name in the Graphite config. This is expected to match the name of the repo on GitHub and should only be set in cases where Graphite is incorrectly inferring the name.",
+      "Override the value of the repo's name in the Graphite config. This is expected to match the name of the repo on GitHub and should only be set in cases where Graphite is incorrectly inferring the repo name.",
   },
 } as const;
 
@@ -18,7 +18,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "name";
 export const description =
-  "Graphite's conception of the current repo's name. e.g. in 'screenplaydev/graphite-cli', this is 'graphite-cli'.";
+  "The current repo's name stored in Graphite. e.g. in 'screenplaydev/graphite-cli', this is 'graphite-cli'.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {

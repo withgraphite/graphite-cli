@@ -5,17 +5,17 @@ import { profile } from "../../lib/telemetry";
 
 export const command = "fix";
 export const description =
-  "Fix stack by recursively rebasing branches onto their parents, or by regenerate Graphite stack metadata by walking the Git commit tree and finding branch parents.";
+  "Fix your stack of changes, either by recursively rebasing branches onto their parents, or by regenerating Graphite's stack metadata from the branch relationships in the git commit tree.";
 
 const args = {
   rebase: {
-    describe: `Fix stack by recursively rebasing branches onto their parents as defined by Graphite stack metadata.`,
+    describe: `Fix your stack by recursively rebasing branches onto their parents, as recorded in Graphite's stack metadata.`,
     demandOption: false,
     default: false,
     type: "boolean",
   },
   regen: {
-    describe: `Regenerate Graphite stack metadata by walking the Git commit tree and finding branch parents.`,
+    describe: `Regenerate Graphite's stack metadata from the branch relationships in the git commit tree, overwriting the previous Graphite stack metadata.`,
     demandOption: false,
     default: false,
     type: "boolean",
@@ -29,7 +29,7 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
     if (argv.rebase && argv.regen) {
       throw new ExitFailedError(
-        'Please specify either "--rebase" or "--regen" flag, not both'
+        'Please specify either the "--rebase" or "--regen" method, not both'
       );
     }
     await fixAction({

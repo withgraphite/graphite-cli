@@ -10,7 +10,8 @@ const args = {
   message: {
     type: "string",
     postitional: true,
-    describe: "Postive or constructive. Jokes are chill too.",
+    describe:
+      "Postive or constructive feedback for the Graphite team! Jokes are chill too.",
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
