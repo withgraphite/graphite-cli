@@ -10,8 +10,10 @@ import {
   ConfigError,
   ExitCancelledError,
   ExitFailedError,
+  MultiParentError,
   PreconditionsFailedError,
   RebaseConflictError,
+  SiblingBranchError,
   ValidationFailedError,
 } from "../errors";
 import {
@@ -59,23 +61,36 @@ export async function profile(
         try {
           await handler();
         } catch (err) {
-          if (err instanceof ExitFailedError) {
-            logError(err.message);
-          } else if (err instanceof PreconditionsFailedError) {
-            logInfo(err.message);
-          } else if (err instanceof RebaseConflictError) {
-            logWarn(`Rebase conflict: ${err.message}`);
-            return; // Dont throw error here.
-          } else if (err instanceof ValidationFailedError) {
-            logError(`Validation: ${err.message}`);
-            logInfo(VALIDATION_HELPER_MESSAGE);
-          } else if (err instanceof ConfigError) {
-            logError(`Bad Config: ${err.message}`);
-          } else if (err instanceof ExitCancelledError) {
-            logWarn(`Cancelled: ${err.message}`);
-            return; // Dont throw error here.
+          switch (err.constructor) {
+            case ExitFailedError:
+              logError(err.message);
+              throw err;
+            case PreconditionsFailedError:
+              logInfo(err.message);
+              throw err;
+            case RebaseConflictError:
+              logWarn(`Rebase conflict: ${err.message}`);
+              return;
+            case ValidationFailedError:
+              logError(`Validation: ${err.message}`);
+              logInfo(VALIDATION_HELPER_MESSAGE);
+              throw err;
+            case ConfigError:
+              logError(`Bad Config: ${err.message}`);
+              throw err;
+            case ExitCancelledError:
+              logWarn(`Cancelled: ${err.message}`);
+              return;
+            case SiblingBranchError:
+              logError(err.message);
+              throw err;
+            case MultiParentError:
+              logError(err.message);
+              throw err;
+            default:
+              logError(err.message);
+              throw err;
           }
-          throw err;
         }
       }
     );

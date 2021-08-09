@@ -1,4 +1,5 @@
 import { AbstractStackBuilder, Branch, Stack, StackNode } from ".";
+import { MultiParentError, SiblingBranchError } from "../lib/errors";
 import { getTrunk, gpExecSync } from "../lib/utils";
 
 export class GitStackBuilder extends AbstractStackBuilder {
@@ -49,10 +50,23 @@ export class GitStackBuilder extends AbstractStackBuilder {
   }
 
   protected getChildrenForBranch(branch: Branch): Branch[] {
+    this.checkSiblingBranches(branch);
     return branch.getChildrenFromGit();
   }
 
   protected getParentForBranch(branch: Branch): Branch | undefined {
-    return branch.getParentsFromGit()[0];
+    this.checkSiblingBranches(branch);
+    const parents = branch.getParentsFromGit();
+    if (parents.length > 1) {
+      throw new MultiParentError(branch, parents);
+    }
+    return parents[0];
+  }
+
+  private checkSiblingBranches(branch: Branch): void {
+    const siblingBranches = branch.branchesWithSameCommit();
+    if (siblingBranches.length > 0) {
+      throw new SiblingBranchError([branch].concat(siblingBranches));
+    }
   }
 }

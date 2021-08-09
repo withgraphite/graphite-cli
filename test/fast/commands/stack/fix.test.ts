@@ -141,12 +141,11 @@ for (const scene of allScenes) {
       expect(scene.repo.currentBranchName()).to.eq("main");
     });
 
-    it("Can gen a stack where the branch matches main HEAD", () => {
+    it("Expect a branch matching main to throw an error", () => {
       scene.repo.createAndCheckoutBranch("a");
-      scene.repo.execCliCommand("stack fix --regen -q");
-      expect(scene.repo.currentBranchName()).to.eq("a");
-      scene.repo.execCliCommand(`branch prev --no-interactive`);
-      expect(scene.repo.currentBranchName()).to.eq("main");
+      expect(() => scene.repo.execCliCommand("stack fix --regen -q")).to.throw(
+        Error
+      );
     });
 
     it("Can gen a stack branch head is behind main", () => {

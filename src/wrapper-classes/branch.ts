@@ -622,6 +622,7 @@ export default class Branch {
 
     const matchingBranches = matchingBranchesRaw
       .split("\n")
+      .filter((line) => line.length > 0)
       .map((refName) => refName.replace("refs/heads/", ""))
       .map((name) => new Branch(name));
     return matchingBranches;
