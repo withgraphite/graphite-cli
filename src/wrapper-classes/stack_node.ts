@@ -2,16 +2,16 @@ import { Branch } from ".";
 
 export class StackNode {
   branch: Branch;
-  parents: StackNode[];
+  parent?: StackNode;
   children: StackNode[];
 
   constructor(opts: {
     branch: Branch;
-    parents?: StackNode[];
+    parent?: StackNode;
     children?: StackNode[];
   }) {
     this.branch = opts.branch;
-    this.parents = opts.parents || [];
+    this.parent = opts.parent || undefined;
     this.children = opts.children || [];
   }
 
@@ -34,16 +34,7 @@ export class StackNode {
     ) {
       return false;
     }
-    if (
-      this.parents
-        .map((c) => c.branch.name)
-        .sort()
-        .join(" ") !==
-      other.parents
-        .map((c) => c.branch.name)
-        .sort()
-        .join(" ")
-    ) {
+    if (this.parent?.branch.name !== other.parent?.branch.name) {
       return false;
     }
     return this.children.every((c) => {
@@ -75,7 +66,7 @@ export class StackNode {
     return Object.keys(map).map((branchName) => {
       const node: StackNode = new StackNode({
         branch: new Branch(branchName),
-        parents: [parent],
+        parent: parent,
         children: [],
       });
       node.children = StackNode.childrenNodesFromMap(node, map[branchName]);

@@ -101,7 +101,7 @@ async function restackNode(node: StackNode): Promise<void> {
       `Interactive rebase in progress, cannot fix (${node.branch.name}). Complete the rebase and re-run fix command.`
     );
   }
-  const parentBranch = node.parents[0].branch;
+  const parentBranch = node.parent?.branch;
   if (!parentBranch) {
     throw new ExitFailedError(
       `Cannot find parent in stack for (${node.branch.name}), stopping fix`
@@ -172,7 +172,7 @@ function recursiveRegen(node: StackNode) {
   // Set parents if not trunk
   if (branch.name !== getTrunk().name) {
     const oldParent = branch.getParentFromMeta();
-    const newParent = node.parents[0]?.branch || getTrunk(); // TODO: Deal with regen if there are multi parents
+    const newParent = node.parent?.branch || getTrunk();
     if (oldParent && oldParent.name === newParent.name) {
       logInfo(
         `-> No change for (${branch.name}) with branch parent (${oldParent.name})`

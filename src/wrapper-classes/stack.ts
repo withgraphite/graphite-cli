@@ -33,8 +33,8 @@ export class Stack {
 
   private base(): StackNode {
     let base = this.source;
-    while (base.parents.length > 0) {
-      base = base.parents[0];
+    while (base.parent) {
+      base = base.parent;
     }
     return base;
   }
@@ -46,7 +46,7 @@ export class Stack {
     const sourceBranchName = Object.keys(map)[0] as string;
     const sourceNode: StackNode = new StackNode({
       branch: new Branch(sourceBranchName),
-      parents: [],
+      parent: undefined,
       children: [],
     });
     sourceNode.children = StackNode.childrenNodesFromMap(

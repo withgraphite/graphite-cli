@@ -33,7 +33,7 @@ export abstract class AbstractStackBuilder {
   public upstackInclusiveFromBranchWithoutParents(branch: Branch): Stack {
     const sourceNode: StackNode = new StackNode({
       branch,
-      parents: [],
+      parent: undefined,
       children: [],
     });
 
@@ -47,7 +47,7 @@ export abstract class AbstractStackBuilder {
         (child) => {
           return new StackNode({
             branch: child,
-            parents: [curNode],
+            parent: curNode,
             children: [],
           });
         }
@@ -73,5 +73,5 @@ export abstract class AbstractStackBuilder {
 
   protected abstract getStackBaseBranch(branch: Branch): Branch;
   protected abstract getChildrenForBranch(branch: Branch): Branch[];
-  protected abstract getParentsForBranch(branch: Branch): Branch[];
+  protected abstract getParentForBranch(branch: Branch): Branch | undefined;
 }

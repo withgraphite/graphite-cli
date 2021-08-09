@@ -18,10 +18,10 @@ export class GitStackBuilder extends AbstractStackBuilder {
 
     const trunkNode: StackNode = new StackNode({
       branch: getTrunk(),
-      parents: [],
+      parent: undefined,
       children: [stack.source],
     });
-    stack.source.parents = [trunkNode];
+    stack.source.parent = trunkNode;
     stack.source = trunkNode;
     return stack;
   };
@@ -52,7 +52,7 @@ export class GitStackBuilder extends AbstractStackBuilder {
     return branch.getChildrenFromGit();
   }
 
-  protected getParentsForBranch(branch: Branch): Branch[] {
-    return branch.getParentsFromGit();
+  protected getParentForBranch(branch: Branch): Branch | undefined {
+    return branch.getParentsFromGit()[0];
   }
 }

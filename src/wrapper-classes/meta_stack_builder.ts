@@ -27,10 +27,10 @@ export class MetaStackBuilder extends AbstractStackBuilder {
     if (parent && parent.name == getTrunk().name) {
       const trunkNode: StackNode = new StackNode({
         branch: getTrunk(),
-        parents: [],
+        parent: undefined,
         children: [stack.source],
       });
-      stack.source.parents = [trunkNode];
+      stack.source.parent = trunkNode;
       stack.source = trunkNode;
     } else {
       // To get in this state, the user must likely have changed their trunk branch...
@@ -42,8 +42,7 @@ export class MetaStackBuilder extends AbstractStackBuilder {
     return branch.getChildrenFromMeta();
   }
 
-  protected getParentsForBranch(branch: Branch): Branch[] {
-    const parent = branch.getParentFromMeta();
-    return parent === undefined ? [] : [parent];
+  protected getParentForBranch(branch: Branch): Branch | undefined {
+    return branch.getParentFromMeta();
   }
 }

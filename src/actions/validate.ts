@@ -53,8 +53,8 @@ function validateBranchUpstackInclusive(branch: Branch): void {
     branch
   );
 
-  metaStack.source.parents = [];
-  gitStack.source.parents = [];
+  metaStack.source.parent = undefined;
+  gitStack.source.parent = undefined;
 
   compareStacks(metaStack, gitStack);
 }
