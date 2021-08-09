@@ -29,16 +29,21 @@ function gitTreeFromRevListOutput(output: string): Record<string, string[]> {
   return ret;
 }
 
-function branchListFromShowRefOutput(output: string): Record<string, string> {
-  const ret: Record<string, string> = {};
+function branchListFromShowRefOutput(output: string): Record<string, string[]> {
+  const ret: Record<string, string[]> = {};
   const ignorebranches = repoConfig.getIgnoreBranches();
 
   for (const line of output.split("\n")) {
     if (line.length > 0) {
       const parts = line.split(" ");
       const branchName = parts[1].slice("refs/heads/".length);
+      const branchRef = parts[0];
       if (!ignorebranches.includes(branchName)) {
-        ret[parts[0]] = branchName;
+        if (branchRef in ret) {
+          ret[branchRef].push(branchName);
+        } else {
+          ret[branchRef] = [branchName];
+        }
       }
     }
   }
@@ -49,12 +54,12 @@ function branchListFromShowRefOutput(output: string): Record<string, string> {
 function traverseGitTreeFromCommitUntilBranch(
   commit: string,
   gitTree: Record<string, string[]>,
-  branchList: Record<string, string>,
+  branchList: Record<string, string[]>,
   n: number
 ): Set<string> {
   // Skip the first iteration b/c that is the CURRENT branch
   if (n > 0 && commit in branchList) {
-    return new Set([branchList[commit]]);
+    return new Set(branchList[commit]);
   }
 
   // Limit the seach
