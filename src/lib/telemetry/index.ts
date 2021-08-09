@@ -1,4 +1,5 @@
 import { getUserEmail } from "./context";
+import { refreshPRInfoInBackground } from "./fetch_pr_info";
 import { postTelemetryInBackground } from "./post_traces";
 import { profile } from "./profile";
 import { registerSigintHandler } from "./sigint_handler";
@@ -15,4 +16,5 @@ export {
   fetchUpgradePromptInBackground,
   postTelemetryInBackground,
   registerSigintHandler,
+  refreshPRInfoInBackground,
 };

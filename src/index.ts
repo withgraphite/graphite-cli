@@ -10,6 +10,7 @@ import { passthrough } from "./lib/passthrough";
 import {
   fetchUpgradePromptInBackground,
   postTelemetryInBackground,
+  refreshPRInfoInBackground,
 } from "./lib/telemetry";
 import {
   logError,
@@ -18,6 +19,7 @@ import {
 } from "./lib/utils";
 
 fetchUpgradePromptInBackground();
+refreshPRInfoInBackground();
 // https://www.npmjs.com/package/tmp#graceful-cleanup
 tmp.setGracefulCleanup();
 

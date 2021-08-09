@@ -4,7 +4,20 @@ import path from "path";
 import { ExitFailedError } from "../lib/errors";
 import { getRepoRootPath } from "../lib/utils";
 
-export type TBranchPRInfo = { number: number; base: string; url: string };
+export type TBranchPRState = "OPEN" | "CLOSED" | "MERGED";
+export type TBranchPRReviewDecision =
+  | "APPROVED"
+  | "REVIEW_REQUIRED"
+  | "CHANGES_REQUESTED";
+export type TBranchPRInfo = {
+  number: number;
+  base: string;
+  url: string;
+  title?: string;
+  state?: TBranchPRState;
+  reviewDecision?: TBranchPRReviewDecision;
+  isDraft?: boolean;
+};
 
 export type TMeta = {
   parentBranchName?: string;
