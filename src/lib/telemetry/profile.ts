@@ -84,7 +84,11 @@ export async function profile(
     postTelemetryInBackground({
       commandName: parsedArgs.command,
       durationMiliSeconds: end - start,
-      err,
+      err: {
+        errName: err.name,
+        errMessage: err.message,
+        errStack: err.stack || "",
+      },
     });
     // eslint-disable-next-line no-restricted-syntax
     process.exit(1);
