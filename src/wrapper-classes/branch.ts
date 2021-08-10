@@ -411,6 +411,10 @@ export default class Branch {
           timeFormat: "UNIX_TIMESTAMP",
         })
       );
+
+      // If the current branch is older than the minimum time, we can
+      // short-circuit the rest of the search as well - we gathered the
+      // branches in descending chronological order.
       if (
         minCommittedUnixTimestamp !== undefined &&
         committed < minCommittedUnixTimestamp
