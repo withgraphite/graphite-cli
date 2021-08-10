@@ -235,9 +235,10 @@ export default class Branch {
     return undefined;
   }
 
-  static allBranches(): Branch[] {
+  static allBranches(opts?: { sort?: "-committerdate" }): Branch[] {
+    const sortString = opts?.sort === undefined ? "" : `--sort='${opts?.sort}`;
     return execSync(
-      `git for-each-ref --format='%(refname:short)' --sort='-committerdate' refs/heads/`
+      `git for-each-ref --format='%(refname:short)' ${sortString} refs/heads/`
     )
       .toString()
       .trim()
