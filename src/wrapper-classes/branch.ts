@@ -153,6 +153,11 @@ export default class Branch {
     this.shouldUseMemoizedResults = false;
   }
 
+  /**
+   * Uses memoized results for some of the branch calculations. Only turn this
+   * on if the git tree should not change at all during the current invoked
+   * command.
+   */
   public useMemoizedResults(): Branch {
     this.shouldUseMemoizedResults = true;
     return this;
@@ -376,14 +381,8 @@ export default class Branch {
     return branches.filter((b) => b.getParentsFromGit().length === 0);
   }
 
-  static async getAllBranchesWithParents(opts?: {
-    useMemoizedResults?: boolean;
-  }): Promise<Branch[]> {
-    let branches = Branch.allBranches();
-    if (opts?.useMemoizedResults) {
-      branches = branches.map((branch) => branch.useMemoizedResults());
-    }
-    return branches.filter((b) => b.getParentsFromGit().length > 0);
+  static async getAllBranchesWithParents(): Promise<Branch[]> {
+    return Branch.allBranches().filter((b) => b.getParentsFromGit().length > 0);
   }
 
   public head(): Commit {
