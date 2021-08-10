@@ -131,7 +131,7 @@ class RepoConfig {
     return this._data.logSettings?.maxStacksShownBehindTrunk ?? 10;
   }
 
-  public setMaxStacksShownBehindTrunk(n: number): void {
+  public setLogMaxStacksShownBehindTrunk(n: number): void {
     this._data.logSettings = {
       ...this._data.logSettings,
       maxStacksShownBehindTrunk: n,
