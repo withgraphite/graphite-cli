@@ -57,14 +57,14 @@ async function printStacksBehindTrunk(): Promise<void> {
   // divide by 1000 because Date.now() returns milliseconds.
   const currentUnixTimestamp = Date.now() / 1000;
   const secondsInDay = 24 * 60 * 60;
-  const maxStackAgeToShow =
+  const minStackCommittedToShow =
     currentUnixTimestamp -
     repoConfig.getLogMaxDaysShownBehindTrunk() * secondsInDay;
   const maxStacksToShow = repoConfig.getLogMaxStacksShownBehindTrunk();
 
   const branchesWithoutParents = await Branch.getAllBranchesWithoutParents({
     useMemoizedResults: true,
-    minCommittedUnixTimestamp: maxStackAgeToShow,
+    minCommittedUnixTimestamp: minStackCommittedToShow,
     maxBranches: maxStacksToShow,
     excludeTrunk: true,
   });
