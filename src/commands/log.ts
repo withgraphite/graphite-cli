@@ -36,12 +36,8 @@ export const handler = async (argv: argsT): Promise<void> => {
       }
     } else {
       // Use our custom logging of branches and stacks:
-      try {
-        printTrunkLog();
-        await printStacksBehindTrunk();
-      } catch (e) {
-        console.log(e);
-      }
+      printTrunkLog();
+      await printStacksBehindTrunk();
     }
   });
 };
