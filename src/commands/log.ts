@@ -15,6 +15,20 @@ const args = {
     type: "boolean",
     alias: "c",
   },
+  "on-trunk": {
+    describe: `Only show commits on trunk`,
+    demandOption: false,
+    default: false,
+    type: "boolean",
+    alias: "t",
+  },
+  "behind-trunk": {
+    describe: `Only show commits behind trunk`,
+    demandOption: false,
+    default: false,
+    type: "boolean",
+    alias: "b",
+  },
 } as const;
 
 export const command = "log";
@@ -37,8 +51,14 @@ export const handler = async (argv: argsT): Promise<void> => {
       }
     } else {
       // Use our custom logging of branches and stacks:
-      printTrunkLog();
-      await printStacksBehindTrunk();
+      if (argv["on-trunk"]) {
+        printTrunkLog();
+      } else if (argv["behind-trunk"]) {
+        await printStacksBehindTrunk();
+      } else {
+        printTrunkLog();
+        await printStacksBehindTrunk();
+      }
     }
   });
 };
