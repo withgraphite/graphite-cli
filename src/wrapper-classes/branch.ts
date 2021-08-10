@@ -28,6 +28,44 @@ function gitTreeFromRevListOutput(output: string): Record<string, string[]> {
   return ret;
 }
 
+let memoizedChildrenRevListGitTree: Record<string, string[]>;
+function getChildrenRevListGitTree(opts: {
+  useMemoizedResult?: boolean;
+}): Record<string, string[]> {
+  if (opts.useMemoizedResult && memoizedChildrenRevListGitTree !== undefined) {
+    return memoizedChildrenRevListGitTree;
+  }
+
+  memoizedChildrenRevListGitTree = gitTreeFromRevListOutput(
+    execSync(`git rev-list --children --all`, {
+      maxBuffer: 1024 * 1024 * 1024,
+    })
+      .toString()
+      .trim()
+  );
+
+  return memoizedChildrenRevListGitTree;
+}
+
+let memoizedParentRevListGitTree: Record<string, string[]>;
+function getParentRevListGitTree(opts: {
+  useMemoizedResult?: boolean;
+}): Record<string, string[]> {
+  if (opts.useMemoizedResult && memoizedParentRevListGitTree !== undefined) {
+    return memoizedParentRevListGitTree;
+  }
+
+  memoizedParentRevListGitTree = gitTreeFromRevListOutput(
+    execSync(`git rev-list --parents --all`, {
+      maxBuffer: 1024 * 1024 * 1024,
+    })
+      .toString()
+      .trim()
+  );
+
+  return memoizedParentRevListGitTree;
+}
+
 function branchListFromShowRefOutput(output: string): Record<string, string[]> {
   const ret: Record<string, string[]> = {};
   const ignorebranches = repoConfig.getIgnoreBranches();
@@ -48,6 +86,25 @@ function branchListFromShowRefOutput(output: string): Record<string, string[]> {
   }
 
   return ret;
+}
+
+let memoizedBranchList: Record<string, string[]>;
+function getBranchList(opts: {
+  useMemoizedResult?: boolean;
+}): Record<string, string[]> {
+  if (opts.useMemoizedResult && memoizedBranchList !== undefined) {
+    return memoizedBranchList;
+  }
+
+  memoizedBranchList = branchListFromShowRefOutput(
+    execSync("git show-ref --heads", {
+      maxBuffer: 1024 * 1024 * 1024,
+    })
+      .toString()
+      .trim()
+  );
+
+  return memoizedBranchList;
 }
 
 function traverseGitTreeFromCommitUntilBranch(
@@ -89,9 +146,16 @@ function traverseGitTreeFromCommitUntilBranch(
 
 export default class Branch {
   name: string;
+  shouldUseMemoizedResults: boolean;
 
   constructor(name: string) {
     this.name = name;
+    this.shouldUseMemoizedResults = false;
+  }
+
+  public useMemoizedResults(): Branch {
+    this.shouldUseMemoizedResults = true;
+    return this;
   }
 
   public toString(): string {
@@ -302,14 +366,24 @@ export default class Branch {
     return name.length > 0 && name !== "HEAD" ? new Branch(name) : null;
   }
 
-  static async getAllBranchesWithoutParents(): Promise<Branch[]> {
-    return Branch.allBranches().filter(
-      (b) => b.getParentsFromGit().length === 0
-    );
+  static async getAllBranchesWithoutParents(opts?: {
+    useMemoizedResults?: boolean;
+  }): Promise<Branch[]> {
+    let branches = Branch.allBranches();
+    if (opts?.useMemoizedResults) {
+      branches = branches.map((branch) => branch.useMemoizedResults());
+    }
+    return branches.filter((b) => b.getParentsFromGit().length === 0);
   }
 
-  static async getAllBranchesWithParents(): Promise<Branch[]> {
-    return Branch.allBranches().filter((b) => b.getParentsFromGit().length > 0);
+  static async getAllBranchesWithParents(opts?: {
+    useMemoizedResults?: boolean;
+  }): Promise<Branch[]> {
+    let branches = Branch.allBranches();
+    if (opts?.useMemoizedResults) {
+      branches = branches.map((branch) => branch.useMemoizedResults());
+    }
+    return branches.filter((b) => b.getParentsFromGit().length > 0);
   }
 
   public head(): Commit {
@@ -329,7 +403,10 @@ export default class Branch {
   }
 
   public getChildrenFromGit(): Branch[] {
-    return this.getChildrenOrParents("CHILDREN");
+    return this.getChildrenOrParents({
+      direction: "CHILDREN",
+      useMemoizedResults: this.shouldUseMemoizedResults,
+    });
   }
 
   public getParentsFromGit(): Branch[] {
@@ -342,46 +419,49 @@ export default class Branch {
     } else if (this.pointsToSameCommitAs(getTrunk())) {
       return [getTrunk()];
     }
-    return this.getChildrenOrParents("PARENTS");
+    return this.getChildrenOrParents({
+      direction: "PARENTS",
+      useMemoizedResults: this.shouldUseMemoizedResults,
+    });
   }
 
   private pointsToSameCommitAs(branch: Branch): boolean {
     return !!this.branchesWithSameCommit().find((b) => b.name === branch.name);
   }
 
-  private getChildrenOrParents(opt: "CHILDREN" | "PARENTS"): Branch[] {
+  private getChildrenOrParents(opt: {
+    direction: "CHILDREN" | "PARENTS";
+    useMemoizedResults?: boolean;
+  }): Branch[] {
+    const direction = opt.direction;
+    const useMemoizedResults = opt.useMemoizedResults ?? false;
     return tracer.spanSync(
       {
         name: "function",
         resource: "branch.getChildrenOrParents",
-        meta: { direction: opt },
+        meta: { direction: direction },
       },
       () => {
-        const revListOutput = execSync(
-          `git rev-list ${
-            opt === "CHILDREN" ? "--children" : "--parents"
-          } --all`,
-          {
-            maxBuffer: 1024 * 1024 * 1024,
-          }
-        );
-        const gitTree = gitTreeFromRevListOutput(
-          revListOutput.toString().trim()
-        );
-
-        const showRefOutput = execSync("git show-ref --heads", {
-          maxBuffer: 1024 * 1024 * 1024,
-        });
-        const branchList = branchListFromShowRefOutput(
-          showRefOutput.toString().trim()
-        );
+        const gitTree =
+          direction === "CHILDREN"
+            ? getChildrenRevListGitTree({
+                useMemoizedResult: useMemoizedResults,
+              })
+            : getParentRevListGitTree({
+                useMemoizedResult: useMemoizedResults,
+              });
 
         const headSha = execSync(`git rev-parse ${this.name}`)
           .toString()
           .trim();
 
         return Array.from(
-          traverseGitTreeFromCommitUntilBranch(headSha, gitTree, branchList, 0)
+          traverseGitTreeFromCommitUntilBranch(
+            headSha,
+            gitTree,
+            getBranchList({ useMemoizedResult: useMemoizedResults }),
+            0
+          )
         ).map((name) => new Branch(name));
       }
     );

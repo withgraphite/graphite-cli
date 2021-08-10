@@ -53,7 +53,9 @@ function printTrunkLog(): void {
 async function printStacksBehindTrunk(): Promise<void> {
   const trunk = getTrunk();
   const branchesWithoutParents = (
-    await Branch.getAllBranchesWithoutParents()
+    await Branch.getAllBranchesWithoutParents({
+      useMemoizedResults: true,
+    })
   ).filter((branch) => branch.name !== trunk.name);
   if (branchesWithoutParents.length === 0) {
     return;
