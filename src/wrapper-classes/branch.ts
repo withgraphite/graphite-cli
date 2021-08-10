@@ -236,7 +236,9 @@ export default class Branch {
   }
 
   static allBranches(): Branch[] {
-    return execSync(`git for-each-ref --format='%(refname:short)' refs/heads/`)
+    return execSync(
+      `git for-each-ref --format='%(refname:short)' --sort='-committerdate' refs/heads/`
+    )
       .toString()
       .trim()
       .split("\n")
