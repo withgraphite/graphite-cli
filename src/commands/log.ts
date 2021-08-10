@@ -2,6 +2,7 @@ import chalk from "chalk";
 import { execSync } from "child_process";
 import yargs from "yargs";
 import { printStack } from "../actions/print_stack";
+import { repoConfig } from "../lib/config";
 import { profile } from "../lib/telemetry";
 import { getTrunk } from "../lib/utils/trunk";
 import Branch from "../wrapper-classes/branch";
@@ -52,11 +53,21 @@ function printTrunkLog(): void {
 
 async function printStacksBehindTrunk(): Promise<void> {
   const trunk = getTrunk();
-  const branchesWithoutParents = (
-    await Branch.getAllBranchesWithoutParents({
-      useMemoizedResults: true,
-    })
-  ).filter((branch) => branch.name !== trunk.name);
+
+  // divide by 1000 because Date.now() returns milliseconds.
+  const currentUnixTimestamp = Date.now() / 1000;
+  const secondsInDay = 24 * 60 * 60;
+  const maxStackAgeToShow =
+    currentUnixTimestamp -
+    repoConfig.getLogMaxDaysShownBehindTrunk() * secondsInDay;
+  const maxStacksToShow = repoConfig.getLogMaxStacksShownBehindTrunk();
+
+  const branchesWithoutParents = await Branch.getAllBranchesWithoutParents({
+    useMemoizedResults: true,
+    minCommittedUnixTimestamp: maxStackAgeToShow,
+    maxBranches: maxStacksToShow,
+    excludeTrunk: true,
+  });
   if (branchesWithoutParents.length === 0) {
     return;
   }

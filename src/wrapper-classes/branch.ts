@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import { repoConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import { tracer } from "../lib/telemetry";
-import { getTrunk, gpExecSync } from "../lib/utils";
+import { getCommitterDate, getTrunk, gpExecSync } from "../lib/utils";
 import Commit from "./commit";
 
 type TMeta = {
@@ -144,6 +144,13 @@ function traverseGitTreeFromCommitUntilBranch(
   return commitsMatchingBranches;
 }
 
+type TBranchFilters = {
+  useMemoizedResults?: boolean;
+  minCommittedUnixTimestamp?: number;
+  maxBranches?: number;
+  sort?: "-committerdate";
+};
+
 export default class Branch {
   name: string;
   shouldUseMemoizedResults: boolean;
@@ -233,17 +240,6 @@ export default class Branch {
       return new Branch(parentName);
     }
     return undefined;
-  }
-
-  static allBranches(opts?: { sort?: "-committerdate" }): Branch[] {
-    const sortString = opts?.sort === undefined ? "" : `--sort='${opts?.sort}`;
-    return execSync(
-      `git for-each-ref --format='%(refname:short)' ${sortString} refs/heads/`
-    )
-      .toString()
-      .trim()
-      .split("\n")
-      .map((name) => new Branch(name));
   }
 
   public getChildrenFromMeta(): Branch[] {
@@ -374,18 +370,82 @@ export default class Branch {
     return name.length > 0 && name !== "HEAD" ? new Branch(name) : null;
   }
 
-  static async getAllBranchesWithoutParents(opts?: {
-    useMemoizedResults?: boolean;
-  }): Promise<Branch[]> {
-    let branches = Branch.allBranches();
+  static allBranches(opts?: { sort?: "-committerdate" }): Branch[] {
+    const sortString = opts?.sort === undefined ? "" : `--sort='${opts?.sort}'`;
+    return execSync(
+      `git for-each-ref --format='%(refname:short)' ${sortString} refs/heads/`
+    )
+      .toString()
+      .trim()
+      .split("\n")
+      .map((name) => new Branch(name));
+  }
+
+  static allBranchesWithPredicate(
+    predicate: (branch: Branch) => boolean,
+    opts?: TBranchFilters
+  ): Branch[] {
+    let branches = Branch.allBranches({
+      sort:
+        opts?.minCommittedUnixTimestamp !== undefined
+          ? "-committerdate"
+          : opts?.sort,
+    });
+
     if (opts?.useMemoizedResults) {
       branches = branches.map((branch) => branch.useMemoizedResults());
     }
-    return branches.filter((b) => b.getParentsFromGit().length === 0);
+
+    const minCommittedUnixTimestamp = opts?.minCommittedUnixTimestamp;
+    const maxBranches = opts?.maxBranches;
+
+    const filteredBranches = [];
+    for (let i = 0; i < branches.length; i++) {
+      if (filteredBranches.length === maxBranches) {
+        break;
+      }
+
+      const committed = parseInt(
+        getCommitterDate({
+          revision: branches[i].name,
+          timeFormat: "UNIX_TIMESTAMP",
+        })
+      );
+      if (
+        minCommittedUnixTimestamp !== undefined &&
+        committed < minCommittedUnixTimestamp
+      ) {
+        break;
+      }
+
+      if (predicate(branches[i])) {
+        filteredBranches.push(branches[i]);
+      }
+    }
+
+    return filteredBranches;
   }
 
-  static async getAllBranchesWithParents(): Promise<Branch[]> {
-    return Branch.allBranches().filter((b) => b.getParentsFromGit().length > 0);
+  static async getAllBranchesWithoutParents(
+    opts?: TBranchFilters & {
+      excludeTrunk?: boolean;
+    }
+  ): Promise<Branch[]> {
+    return this.allBranchesWithPredicate((branch) => {
+      if (opts?.excludeTrunk && branch.name === getTrunk().name) {
+        return false;
+      }
+      return branch.getParentsFromGit().length === 0;
+    }, opts);
+  }
+
+  static async getAllBranchesWithParents(
+    opts?: TBranchFilters
+  ): Promise<Branch[]> {
+    return this.allBranchesWithPredicate(
+      (branch) => branch.getParentsFromGit().length > 0,
+      opts
+    );
   }
 
   public head(): Commit {

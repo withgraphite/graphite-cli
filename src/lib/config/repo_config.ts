@@ -33,6 +33,10 @@ type RepoConfigT = {
   name?: string;
   trunk?: string;
   ignoreBranches?: string[];
+  logSettings?: {
+    maxStacksShownBehindTrunk?: number;
+    maxDaysShownBehindTrunk?: number;
+  };
 };
 
 class RepoConfig {
@@ -108,6 +112,30 @@ class RepoConfig {
   }
   public setRepoName(name: string): void {
     this._data.name = name;
+    this.save();
+  }
+
+  public getLogMaxDaysShownBehindTrunk(): number {
+    return this._data.logSettings?.maxDaysShownBehindTrunk ?? 30;
+  }
+
+  public setLogMaxDaysShownBehindTrunk(n: number): void {
+    this._data.logSettings = {
+      ...this._data.logSettings,
+      maxDaysShownBehindTrunk: n,
+    };
+    this.save();
+  }
+
+  public getLogMaxStacksShownBehindTrunk(): number {
+    return this._data.logSettings?.maxStacksShownBehindTrunk ?? 10;
+  }
+
+  public setMaxStacksShownBehindTrunk(n: number): void {
+    this._data.logSettings = {
+      ...this._data.logSettings,
+      maxStacksShownBehindTrunk: n,
+    };
     this.save();
   }
 }
