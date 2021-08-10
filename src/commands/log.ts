@@ -65,9 +65,13 @@ export const handler = async (argv: argsT): Promise<void> => {
 
 function printTrunkLog(): void {
   const trunk = getTrunk();
-  printStack(trunk, 0, {
-    currentBranch: Branch.getCurrentBranch(),
-    offTrunk: true,
+  printStack({
+    baseBranch: trunk.useMemoizedResults(),
+    indentLevel: 0,
+    config: {
+      currentBranch: Branch.getCurrentBranch(),
+      offTrunk: true,
+    },
   });
 }
 
@@ -102,9 +106,13 @@ async function printStacksBehindTrunk(): Promise<void> {
 
   branchesWithoutParents.forEach((branch) => {
     console.log("․");
-    printStack(branch, 1, {
-      currentBranch: Branch.getCurrentBranch(),
-      offTrunk: false,
+    printStack({
+      baseBranch: branch.useMemoizedResults(),
+      indentLevel: 1,
+      config: {
+        currentBranch: Branch.getCurrentBranch(),
+        offTrunk: false,
+      },
     });
     console.log(`◌──┘`);
     console.log("․");

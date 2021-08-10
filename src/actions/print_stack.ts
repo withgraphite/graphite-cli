@@ -8,16 +8,20 @@ type TPrintStackConfig = {
   offTrunk: boolean;
 };
 
-export function printStack(
-  branch: Branch,
-  indentLevel: number,
-  config: TPrintStackConfig
-): void {
-  const children = branch.getChildrenFromGit();
-  const currPrefix = getPrefix(indentLevel, config);
+export function printStack(args: {
+  baseBranch: Branch;
+  indentLevel: number;
+  config: TPrintStackConfig;
+}): void {
+  const children = args.baseBranch.getChildrenFromGit();
+  const currPrefix = getPrefix(args.indentLevel, args.config);
 
   children.forEach((child, i) => {
-    printStack(child, indentLevel + i, config);
+    printStack({
+      baseBranch: child,
+      indentLevel: args.indentLevel + i,
+      config: args.config,
+    });
   });
 
   // 1) if there is only 1 child, we only need to continue the parent's stem
@@ -40,14 +44,16 @@ export function printStack(
   }
 
   // print lines of branch info
-  const branchInfo = getBranchInfo(branch, config);
+  const branchInfo = getBranchInfo(args.baseBranch, args.config);
   branchInfo.forEach((line) => console.log(currPrefix + line));
 
   // print trailing stem
   // note: stem directly behind trunk should be dotted
   console.log(
     currPrefix +
-      (!config.offTrunk && branch.name === getTrunk().name ? "․" : "│")
+      (!args.config.offTrunk && args.baseBranch.name === getTrunk().name
+        ? "․"
+        : "│")
   );
 }
 

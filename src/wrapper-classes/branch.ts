@@ -528,7 +528,12 @@ export default class Branch {
             getBranchList({ useMemoizedResult: useMemoizedResults }),
             0
           )
-        ).map((name) => new Branch(name));
+        ).map((name) => {
+          const branch = new Branch(name);
+          return this.shouldUseMemoizedResults
+            ? branch.useMemoizedResults()
+            : branch;
+        });
       }
     );
   }
