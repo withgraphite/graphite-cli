@@ -3,7 +3,6 @@ import { repoConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import { tracer } from "../lib/telemetry";
 import { getTrunk, gpExecSync } from "../lib/utils";
-import { getReadableTimeBeforeNow } from "../lib/utils/time";
 import Commit from "./commit";
 
 type TMeta = {
@@ -444,13 +443,5 @@ export default class Branch {
       .map((refName) => refName.replace("refs/heads/", ""))
       .map((name) => new Branch(name));
     return matchingBranches;
-  }
-
-  public lastUpdated(): number {
-    return new Commit(this.ref()).timestampInSeconds();
-  }
-
-  public lastUpdatedReadable(): string {
-    return getReadableTimeBeforeNow(this.lastUpdated());
   }
 }

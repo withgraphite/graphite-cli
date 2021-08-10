@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { getCommitterDate } from "../lib/utils";
 import { getTrunk } from "../lib/utils/trunk";
 import Branch from "../wrapper-classes/branch";
 
@@ -76,7 +77,14 @@ function getBranchInfo(branch: Branch, config: TPrintStackConfig): string[] {
   const pr = prInfo !== undefined ? chalk.yellow(`PR #${prInfo.number}`) : "";
   branchInfo.push(`${dot} ${branchName} ${pr}`);
 
-  branchInfo.push(`│ ${chalk.dim(branch.lastUpdatedReadable())}`);
+  branchInfo.push(
+    `│ ${chalk.dim(
+      getCommitterDate({
+        revision: branch.name,
+        timeFormat: "RELATIVE_READABLE",
+      })
+    )}`
+  );
 
   return branchInfo;
 }

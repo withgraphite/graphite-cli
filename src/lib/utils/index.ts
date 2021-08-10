@@ -1,4 +1,5 @@
 import { checkoutBranch } from "./checkout_branch";
+import { getCommitterDate } from "./committer_date";
 import { detectStagedChanges } from "./detect_staged_changes";
 import { gpExecSync } from "./exec_sync";
 import GitRepo from "./git_repo";
@@ -25,5 +26,6 @@ export {
   GitRepo,
   parseArgs,
   makeId,
+  getCommitterDate,
   VALIDATION_HELPER_MESSAGE,
 };
