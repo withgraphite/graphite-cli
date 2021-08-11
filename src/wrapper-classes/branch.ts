@@ -146,7 +146,7 @@ function traverseGitTreeFromCommitUntilBranch(
 
 type TBranchFilters = {
   useMemoizedResults?: boolean;
-  minCommittedUnixTimestamp?: number;
+  maxDaysBehindTrunk?: number;
   maxBranches?: number;
   sort?: "-committerdate";
 };
@@ -388,16 +388,25 @@ export default class Branch {
   ): Branch[] {
     let branches = Branch.allBranches({
       sort:
-        opts?.minCommittedUnixTimestamp !== undefined
-          ? "-committerdate"
-          : opts?.sort,
+        opts?.maxDaysBehindTrunk !== undefined ? "-committerdate" : opts?.sort,
     });
 
     if (opts?.useMemoizedResults) {
       branches = branches.map((branch) => branch.useMemoizedResults());
     }
 
-    const minCommittedUnixTimestamp = opts?.minCommittedUnixTimestamp;
+    const maxDaysBehindTrunk = opts?.maxDaysBehindTrunk;
+    let minUnixTimestamp = undefined;
+    if (maxDaysBehindTrunk) {
+      const trunkUnixTimestamp = parseInt(
+        getCommitterDate({
+          revision: getTrunk().ref(),
+          timeFormat: "UNIX_TIMESTAMP",
+        })
+      );
+      const secondsInDay = 24 * 60 * 60;
+      minUnixTimestamp = trunkUnixTimestamp - maxDaysBehindTrunk * secondsInDay;
+    }
     const maxBranches = opts?.maxBranches;
 
     const filteredBranches = [];
@@ -416,10 +425,7 @@ export default class Branch {
       // If the current branch is older than the minimum time, we can
       // short-circuit the rest of the search as well - we gathered the
       // branches in descending chronological order.
-      if (
-        minCommittedUnixTimestamp !== undefined &&
-        committed < minCommittedUnixTimestamp
-      ) {
+      if (minUnixTimestamp !== undefined && committed < minUnixTimestamp) {
         break;
       }
 
