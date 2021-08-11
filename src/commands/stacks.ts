@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import prompts from "prompts";
 import yargs from "yargs";
+import { repoConfig } from "../lib/config";
 import { ExitCancelledError, ExitFailedError } from "../lib/errors";
 import { profile } from "../lib/telemetry";
 import { getTrunk, gpExecSync } from "../lib/utils";
@@ -34,33 +35,86 @@ type TBranchWithMetadata = {
   status: "TRACKED" | "NEEDS_RESTACK" | "NEEDS_REGEN";
 };
 
-function computeBranchLineage() {
+async function computeBranchLineage(): Promise<{
+  rootBranches: TBranchWithMetadata[];
+  precomputedChildren: Record<string, TBranchWithMetadata[]>;
+}> {
   const precomputedChildren: Record<string, TBranchWithMetadata[]> = {};
   const rootBranches: TBranchWithMetadata[] = [];
-  Branch.allBranches().forEach((branch) => {
-    const parent = branch.getParentFromMeta();
-    if (!parent) {
-      rootBranches.push({
-        branch,
-        status:
-          branch.getParentsFromGit().length > 0 ? "NEEDS_REGEN" : "TRACKED",
-      });
-    } else {
-      if (!(parent.name in precomputedChildren)) {
-        precomputedChildren[parent.name] = [];
-      }
+  const visitedBranches = {};
 
-      precomputedChildren[parent.name].push({
-        branch,
-        status: branch.getParentsFromGit().some((gitParent) => {
-          return gitParent.name === parent.name;
-        })
-          ? "TRACKED"
-          : "NEEDS_RESTACK",
-      });
-    }
+  // Compute lineage of stacks off of trunk.
+  computeLineage({
+    branch: getTrunk().useMemoizedResults(),
+    children: precomputedChildren,
+    rootBranches: rootBranches,
+    visitedBranches: visitedBranches,
   });
+
+  // Compute lineage of the remaining stacks in our search space - up to
+  // maxStacksShowBehindTrunk whose bases were updated more recently than
+  // maxDaysShownBehindTrunk.
+  const branchesWithoutParents = await Branch.getAllBranchesWithoutParents({
+    useMemoizedResults: true,
+    maxDaysBehindTrunk: repoConfig.getMaxDaysShownBehindTrunk(),
+    maxBranches: repoConfig.getMaxStacksShownBehindTrunk(),
+    excludeTrunk: true,
+  });
+  branchesWithoutParents.forEach((branch) => {
+    computeLineage({
+      branch: branch,
+      children: precomputedChildren,
+      rootBranches: rootBranches,
+      visitedBranches: visitedBranches,
+    });
+  });
+
   return { rootBranches, precomputedChildren };
+}
+
+function computeLineage(args: {
+  branch: Branch;
+  children: Record<string, TBranchWithMetadata[]>;
+  rootBranches: TBranchWithMetadata[];
+  visitedBranches: Record<string, boolean>;
+}): void {
+  const branch = args.branch;
+  const children: Record<string, TBranchWithMetadata[]> = args.children;
+  const rootBranches: TBranchWithMetadata[] = args.rootBranches;
+  const visitedBranches = args.visitedBranches;
+
+  if (visitedBranches[branch.name]) {
+    return;
+  } else {
+    visitedBranches[branch.name] = true;
+    children[branch.name] = [];
+  }
+
+  const parent = branch.getParentFromMeta();
+  if (!parent) {
+    rootBranches.push({
+      branch,
+      status: branch.getParentsFromGit().length > 0 ? "NEEDS_REGEN" : "TRACKED",
+    });
+  } else {
+    children[parent.name].push({
+      branch,
+      status: branch.getParentsFromGit().some((gitParent) => {
+        return gitParent.name === parent.name;
+      })
+        ? "TRACKED"
+        : "NEEDS_RESTACK",
+    });
+  }
+
+  branch.getChildrenFromGit().forEach((child) => {
+    computeLineage({
+      branch: child,
+      children: children,
+      rootBranches: rootBranches,
+      visitedBranches: visitedBranches,
+    });
+  });
 }
 
 type promptOptionT = { title: string; value: string };
@@ -158,7 +212,7 @@ async function promptBranchesAndChildren(
   all: boolean,
   interactive: boolean
 ): Promise<void> {
-  const { rootBranches, precomputedChildren } = computeBranchLineage();
+  const { rootBranches, precomputedChildren } = await computeBranchLineage();
   const trunk = getTrunk();
   const current = Branch.getCurrentBranch();
   let choices: promptOptionT[] = [];
