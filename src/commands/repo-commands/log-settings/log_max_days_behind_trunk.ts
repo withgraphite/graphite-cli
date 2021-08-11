@@ -23,9 +23,9 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
     if (argv.set) {
-      repoConfig.setLogMaxDaysShownBehindTrunk(argv.set);
+      repoConfig.setMaxDaysShownBehindTrunk(argv.set);
     } else {
-      logInfo(repoConfig.getLogMaxDaysShownBehindTrunk().toString());
+      logInfo(repoConfig.getMaxDaysShownBehindTrunk().toString());
     }
   });
 };

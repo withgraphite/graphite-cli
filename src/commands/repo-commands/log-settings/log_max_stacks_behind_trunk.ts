@@ -23,9 +23,9 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
     if (argv.set) {
-      repoConfig.setLogMaxStacksShownBehindTrunk(argv.set);
+      repoConfig.setMaxStacksShownBehindTrunk(argv.set);
     } else {
-      logInfo(repoConfig.getLogMaxStacksShownBehindTrunk().toString());
+      logInfo(repoConfig.getMaxStacksShownBehindTrunk().toString());
     }
   });
 };

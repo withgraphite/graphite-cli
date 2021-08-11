@@ -33,10 +33,14 @@ type RepoConfigT = {
   name?: string;
   trunk?: string;
   ignoreBranches?: string[];
+  // TODO (nicholasyan): clean this up once we've advanced a few versions past
+  // v0.8.1.
   logSettings?: {
     maxStacksShownBehindTrunk?: number;
     maxDaysShownBehindTrunk?: number;
   };
+  maxStacksShownBehindTrunk?: number;
+  maxDaysShownBehindTrunk?: number;
 };
 
 class RepoConfig {
@@ -115,27 +119,47 @@ class RepoConfig {
     this.save();
   }
 
-  public getLogMaxDaysShownBehindTrunk(): number {
-    return this._data.logSettings?.maxDaysShownBehindTrunk ?? 30;
+  public getMaxDaysShownBehindTrunk(): number {
+    this.migrateLogSettings();
+    return this._data.maxDaysShownBehindTrunk ?? 30;
   }
 
-  public setLogMaxDaysShownBehindTrunk(n: number): void {
-    this._data.logSettings = {
-      ...this._data.logSettings,
-      maxDaysShownBehindTrunk: n,
-    };
+  public setMaxDaysShownBehindTrunk(n: number): void {
+    this.migrateLogSettings();
+    this._data.maxDaysShownBehindTrunk = n;
     this.save();
   }
 
-  public getLogMaxStacksShownBehindTrunk(): number {
-    return this._data.logSettings?.maxStacksShownBehindTrunk ?? 10;
+  public getMaxStacksShownBehindTrunk(): number {
+    this.migrateLogSettings();
+    return this._data.maxStacksShownBehindTrunk ?? 10;
   }
 
-  public setLogMaxStacksShownBehindTrunk(n: number): void {
-    this._data.logSettings = {
-      ...this._data.logSettings,
-      maxStacksShownBehindTrunk: n,
-    };
+  public setMaxStacksShownBehindTrunk(n: number): void {
+    this.migrateLogSettings();
+    this._data.maxStacksShownBehindTrunk = n;
+    this.save();
+  }
+
+  /**
+   * These settings used to (briefly) live in logSettings. Moving these to live
+   * in the top-level namespace now that they're shared between multiple
+   * commands (e.g. log and stacks).
+   */
+  public migrateLogSettings(): void {
+    const maxStacksShownBehindTrunk =
+      this._data.logSettings?.maxStacksShownBehindTrunk;
+    if (maxStacksShownBehindTrunk !== undefined) {
+      this._data.maxStacksShownBehindTrunk = maxStacksShownBehindTrunk;
+    }
+
+    const maxDaysShownBehindTrunk =
+      this._data.logSettings?.maxDaysShownBehindTrunk;
+    if (maxDaysShownBehindTrunk !== undefined) {
+      this._data.maxDaysShownBehindTrunk = maxDaysShownBehindTrunk;
+    }
+
+    this._data.logSettings = undefined;
     this.save();
   }
 }
