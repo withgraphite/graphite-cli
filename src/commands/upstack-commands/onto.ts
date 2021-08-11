@@ -14,7 +14,7 @@ const args = {
 
 export const command = "onto <branch>";
 export const description =
-  "Rebase all upstack branches onto the latest commit (HEAD) of the target branch.";
+  "Rebase all upstack branches onto the latest commit (tip) of the target branch.";
 export const builder = args;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
