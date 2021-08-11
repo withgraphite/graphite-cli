@@ -36,13 +36,13 @@ export default class GitRepo {
       prefix ? prefix + "_" : ""
     }${TEXT_FILE_NAME}`;
     fs.writeFileSync(filePath, textValue);
-    execSync(`git -C ${this.dir} add ${filePath}`);
+    execSync(`git -C "${this.dir}" add ${filePath}`);
   }
 
   createChangeAndCommit(textValue: string, prefix?: string): void {
     this.createChange(textValue, prefix);
-    execSync(`git -C ${this.dir} add .`);
-    execSync(`git -C ${this.dir} commit -m "${textValue}"`);
+    execSync(`git -C "${this.dir}" add .`);
+    execSync(`git -C "${this.dir}" commit -m "${textValue}"`);
   }
 
   createPrecommitHook(contents: string): void {
@@ -52,11 +52,11 @@ export default class GitRepo {
   }
 
   createAndCheckoutBranch(name: string): void {
-    execSync(`git -C ${this.dir} checkout -b "${name}"`, { stdio: "ignore" });
+    execSync(`git -C "${this.dir}" checkout -b "${name}"`, { stdio: "ignore" });
   }
 
   checkoutBranch(name: string): void {
-    execSync(`git -C ${this.dir} checkout "${name}"`, { stdio: "ignore" });
+    execSync(`git -C "${this.dir}" checkout "${name}"`, { stdio: "ignore" });
   }
 
   rebaseInProgress(): boolean {
@@ -65,7 +65,7 @@ export default class GitRepo {
 
   finishInteractiveRebase(): void {
     while (this.rebaseInProgress()) {
-      execSync(`git -C ${this.dir} add .`, { stdio: "ignore" });
+      execSync(`git -C "${this.dir}" add .`, { stdio: "ignore" });
       execSync(`GIT_EDITOR="touch $1" git -C ${this.dir} rebase --continue`, {
         stdio: "ignore",
       });
@@ -73,13 +73,13 @@ export default class GitRepo {
   }
 
   currentBranchName(): string {
-    return execSync(`git -C ${this.dir} branch --show-current`)
+    return execSync(`git -C "${this.dir}" branch --show-current`)
       .toString()
       .trim();
   }
 
   listCurrentBranchCommitMessages(): string[] {
-    return execSync(`git -C ${this.dir} log --oneline  --format=%B`)
+    return execSync(`git -C "${this.dir}" log --oneline  --format=%B`)
       .toString()
       .trim()
       .split("\n")

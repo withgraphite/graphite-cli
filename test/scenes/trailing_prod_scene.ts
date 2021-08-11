@@ -15,7 +15,7 @@ export class TrailingProdScene extends AbstractScene {
     this.repo.checkoutBranch("main");
     this.repo.createChangeAndCommit("0.5", "0.5");
 
-    execSync(`git -C ${this.dir} merge prod`);
+    execSync(`git -C "${this.dir}" merge prod`);
 
     this.repo.checkoutBranch("main");
     this.repo.createChangeAndCommit("1", "1");

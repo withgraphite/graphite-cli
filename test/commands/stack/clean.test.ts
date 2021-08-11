@@ -10,21 +10,21 @@ function fakeGitSquashAndMerge(
   squashedCommitMessage: string
 ) {
   // Fake github squash and merge
-  execSync(`git -C ${repo.dir} switch -q -c temp ${branchName}`);
+  execSync(`git -C "${repo.dir}" switch -q -c temp ${branchName}`);
   repo.checkoutBranch("temp");
-  execSync(`git -C ${repo.dir} rebase main -Xtheirs`, { stdio: "ignore" });
+  execSync(`git -C "${repo.dir}" rebase main -Xtheirs`, { stdio: "ignore" });
   execSync(
-    `git -C ${repo.dir} reset --soft $(git -C ${repo.dir} merge-base HEAD main)`
+    `git -C "${repo.dir}" reset --soft $(git -C "${repo.dir}" merge-base HEAD main)`
   );
   repo.checkoutBranch("main");
-  execSync(`git -C ${repo.dir} commit -m "${squashedCommitMessage}"`);
-  execSync(`git -C ${repo.dir} branch -D temp`);
+  execSync(`git -C "${repo.dir}" commit -m "${squashedCommitMessage}"`);
+  execSync(`git -C "${repo.dir}" branch -D temp`);
 }
 
 function expectBranches(repo: GitRepo, sortedBranches: string) {
   expect(
     execSync(
-      `git -C ${repo.dir} for-each-ref refs/heads/ "--format=%(refname:short)"`
+      `git -C "${repo.dir}" for-each-ref refs/heads/ "--format=%(refname:short)"`
     )
       .toString()
       .trim()
