@@ -20,7 +20,7 @@ for (const scene of allScenes) {
 
     it("Can list no children", () => {
       expect(scene.repo.execCliCommandAndGetOutput(`branch children`)).to.eq(
-        "(main) has no child branches stacked on top of it."
+        "(main) has no child branches (branches stacked on top of it)."
       );
     });
   });
