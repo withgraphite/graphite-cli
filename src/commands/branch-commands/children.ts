@@ -16,7 +16,7 @@ export const handler = async (argv: argsT): Promise<void> => {
 
     const children = branch.getChildrenFromMeta();
     if (children.length === 0) {
-      logInfo(`(${branch}) has no child branches stacked on top of it.`);
+      logInfo(`(${branch}) has no child branches (branches stacked on top of it).`);
     } else {
       children.forEach((child) => console.log(child.name));
     }
