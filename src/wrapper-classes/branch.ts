@@ -265,8 +265,9 @@ export default class Branch {
         command: `git show-ref refs/heads/${this.name} -s`,
       },
       (_) => {
-        // just soft-fail if we can't find the commits
-        return Buffer.alloc(0);
+        throw new ExitFailedError(
+          `Could not find ref refs/heads/${this.name}.`
+        );
       }
     )
       .toString()
@@ -580,19 +581,29 @@ export default class Branch {
   }
 
   public branchesWithSameCommit(): Branch[] {
-    const curBranchSha = execSync(
-      `git show-ref --heads | grep refs/heads/${this.name} -s | awk '{print $1}'`
+    const matchingBranchesRaw = execSync(
+      `git show-ref --heads | grep ${this.ref()} | grep -v "refs/heads/${
+        this.name
+      }" | awk '{print $2}'`
     )
       .toString()
       .trim();
-    const matchingBranches = execSync(
-      `git show-ref --heads | grep ${curBranchSha} | grep -v "refs/heads/${this.name}" | awk '{print $2}'`
-    )
-      .toString()
-      .trim()
+
+    // We want to check the length before we split because ''.split("\n")
+    // counterintuitively returns [ '' ] (an array with 1 entry as the empty
+    // string).
+    if (matchingBranchesRaw.length === 0) {
+      return [];
+    }
+
+    const matchingBranches = matchingBranchesRaw
       .split("\n")
-      .map((refName) => refName.replace("refs/heads/", ""))
-      .map((name) => new Branch(name));
+      .map((refName) => {
+        return refName.replace("refs/heads/", "");
+      })
+      .map((name) => {
+        return new Branch(name);
+      });
     return matchingBranches;
   }
 }
