@@ -10,7 +10,7 @@ const args = {
     type: "string",
   },
   "ignore-branches": {
-    describe: `A list of branches that Graphite should ignore when constructing stacks (i.e. branches you never intend to merge into trunk).`,
+    describe: `A list of branches that Graphite should ignore when tracking your stacks (i.e. branches you never intend to merge into trunk).`,
     demandOption: false,
     optional: true,
     type: "string",
