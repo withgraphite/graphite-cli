@@ -598,12 +598,8 @@ export default class Branch {
 
     const matchingBranches = matchingBranchesRaw
       .split("\n")
-      .map((refName) => {
-        return refName.replace("refs/heads/", "");
-      })
-      .map((name) => {
-        return new Branch(name);
-      });
+      .map((refName) => refName.replace("refs/heads/", ""))
+      .map((name) => new Branch(name));
     return matchingBranches;
   }
 }
