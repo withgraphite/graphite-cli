@@ -1,14 +1,14 @@
 import yargs from "yargs";
 import { userConfig } from "../lib/config";
 import { profile } from "../lib/telemetry";
-import { logSuccess } from "../lib/utils";
+import { logInfo, logSuccess } from "../lib/utils";
 
 const args = {
   token: {
     type: "string",
     alias: "t",
     describe: "Auth token.",
-    demandOption: true,
+    demandOption: false,
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -20,7 +20,11 @@ export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
-    userConfig.setAuthToken(argv.token);
-    logSuccess(`🔐 Saved auth token to "${userConfig.path()}"`);
+    if (argv.token) {
+      userConfig.setAuthToken(argv.token);
+      logSuccess(`🔐 Saved auth token to "${userConfig.path()}"`);
+      return;
+    }
+    logInfo(userConfig.getAuthToken() ?? "No auth token set.");
   });
 };
