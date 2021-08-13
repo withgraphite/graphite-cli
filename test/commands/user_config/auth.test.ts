@@ -1,7 +1,7 @@
 import { expect } from "chai";
-import { userConfig } from "../../src/lib/config";
-import { BasicScene } from "../scenes";
-import { configureTest } from "../utils";
+import { userConfig } from "../../../src/lib/config";
+import { BasicScene } from "../../scenes";
+import { configureTest } from "../../utils";
 
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): auth`, function () {

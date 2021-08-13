@@ -19,12 +19,17 @@ class MessageConfig {
     this._data = data;
   }
   public setMessage(message: TMessage | undefined): void {
+    console.log(`Setting the message to: ${message}`);
     this._data.message = message;
     this.save();
   }
 
   public getMessage(): TMessage | undefined {
     return this._data.message;
+  }
+
+  public path(): string {
+    return MESSAGE_CONFIG_PATH;
   }
 
   private save(): void {
@@ -51,6 +56,10 @@ function readMessageConfig(): MessageConfig {
     }
   }
   return new MessageConfig({});
+}
+
+export function readMessageConfigForTestingOnly(): MessageConfig {
+  return readMessageConfig();
 }
 
 const messageConfigSingleton = readMessageConfig();
