@@ -400,7 +400,7 @@ export default class Branch {
     if (maxDaysBehindTrunk) {
       const trunkUnixTimestamp = parseInt(
         getCommitterDate({
-          revision: getTrunk().ref(),
+          revision: getTrunk().name,
           timeFormat: "UNIX_TIMESTAMP",
         })
       );
