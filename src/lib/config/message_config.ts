@@ -28,7 +28,15 @@ class MessageConfig {
   }
 
   private save(): void {
-    fs.writeFileSync(MESSAGE_CONFIG_PATH, JSON.stringify(this._data));
+    if (this._data.message !== undefined) {
+      fs.writeFileSync(MESSAGE_CONFIG_PATH, JSON.stringify(this._data));
+      return;
+    }
+
+    if (fs.existsSync(MESSAGE_CONFIG_PATH)) {
+      fs.unlinkSync(MESSAGE_CONFIG_PATH);
+      return;
+    }
   }
 }
 
