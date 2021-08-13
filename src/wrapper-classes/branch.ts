@@ -400,10 +400,6 @@ export default class Branch {
           : args.opts?.sort,
     });
 
-    if (args.opts === undefined) {
-      return branches;
-    }
-
     if (args.opts?.useMemoizedResults) {
       branches = branches.map((branch) => branch.useMemoizedResults());
     }
@@ -428,18 +424,19 @@ export default class Branch {
         break;
       }
 
-      const committed = parseInt(
-        getCommitterDate({
-          revision: branches[i].name,
-          timeFormat: "UNIX_TIMESTAMP",
-        })
-      );
-
       // If the current branch is older than the minimum time, we can
       // short-circuit the rest of the search as well - we gathered the
       // branches in descending chronological order.
-      if (minUnixTimestamp !== undefined && committed < minUnixTimestamp) {
-        break;
+      if (minUnixTimestamp !== undefined) {
+        const committed = parseInt(
+          getCommitterDate({
+            revision: branches[i].name,
+            timeFormat: "UNIX_TIMESTAMP",
+          })
+        );
+        if (committed < minUnixTimestamp) {
+          break;
+        }
       }
 
       if (args.filter(branches[i])) {
