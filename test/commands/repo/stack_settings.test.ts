@@ -10,18 +10,18 @@ for (const scene of [new BasicScene()]) {
     configureTest(this, scene);
 
     it("Can read settings written using the CLI commands", () => {
-      scene.repo.execCliCommand("repo log max-stacks-behind-trunk -s 1");
-      scene.repo.execCliCommand("repo log max-days-behind-trunk -s 2");
+      scene.repo.execCliCommand("repo max-stacks-behind-trunk -s 1");
+      scene.repo.execCliCommand("repo max-days-behind-trunk -s 2");
 
       expect(
         scene.repo
-          .execCliCommandAndGetOutput("repo log max-stacks-behind-trunk")
+          .execCliCommandAndGetOutput("repo max-stacks-behind-trunk")
           .includes("1")
       ).to.be.true;
 
       expect(
         scene.repo
-          .execCliCommandAndGetOutput("repo log max-days-behind-trunk")
+          .execCliCommandAndGetOutput("repo max-days-behind-trunk")
           .includes("2")
       ).to.be.true;
     });
@@ -39,13 +39,13 @@ for (const scene of [new BasicScene()]) {
 
       expect(
         scene.repo
-          .execCliCommandAndGetOutput("repo log max-stacks-behind-trunk")
+          .execCliCommandAndGetOutput("repo max-stacks-behind-trunk")
           .includes("5")
       ).to.be.true;
 
       expect(
         scene.repo
-          .execCliCommandAndGetOutput("repo log max-days-behind-trunk")
+          .execCliCommandAndGetOutput("repo max-days-behind-trunk")
           .includes("10")
       ).to.be.true;
     });
