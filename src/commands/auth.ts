@@ -1,11 +1,11 @@
 import yargs from "yargs";
-import { messageConfig } from "../lib/config";
+import { userConfig } from "../lib/config";
 import { profile } from "../lib/telemetry";
-import { logInfo } from "../lib/utils";
+import { logInfo, logSuccess } from "../lib/utils";
 
 const args = {
-  empty: {
-    type: "boolean",
+  token: {
+    type: "string",
     alias: "t",
     describe: "Auth token.",
     demandOption: false,
@@ -20,17 +20,11 @@ export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
-    if (argv.empty) {
-      /*userConfig.setAuthToken(argv.token);
+    if (argv.token) {
+      userConfig.setAuthToken(argv.token);
       logSuccess(`🔐 Saved auth token to "${userConfig.path()}"`);
-      return;*/
-      messageConfig.setMessage(undefined);
-    } else {
-      messageConfig.setMessage({
-        contents: "Hello world",
-        cliVersion: "0.0.0",
-      });
+      return;
     }
-    logInfo(messageConfig.getMessage()?.contents ?? "No message.");
+    logInfo(userConfig.getAuthToken() ?? "No auth token set.");
   });
 };

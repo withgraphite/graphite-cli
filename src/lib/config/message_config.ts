@@ -19,7 +19,6 @@ class MessageConfig {
     this._data = data;
   }
   public setMessage(message: TMessage | undefined): void {
-    console.log(`Setting the message to: ${message}`);
     this._data.message = message;
     this.save();
   }
