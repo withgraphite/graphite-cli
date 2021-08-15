@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import chalk from "chalk";
 import tmp from "tmp";
 import yargs from "yargs";
 import {
@@ -30,9 +31,20 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
+function deprecatedGpWarning(argv: yargs.Arguments) {
+  if (argv["$0"] == "gp") {
+    console.log(
+      chalk.yellow(
+        `Warning: Based on feedback, we've update the Graphite CLI name to "gt". The name "gp" has been deprecated.`
+      )
+    );
+  }
+}
+
 yargs
   .commandDir("commands")
   .help()
+  .middleware(deprecatedGpWarning)
   .usage(
     [
       "Graphite is a command line tool that makes working with stacked changes fast & intuitive.",

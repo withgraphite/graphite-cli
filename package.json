@@ -33,7 +33,8 @@
     "dist"
   ],
   "bin": {
-    "gp": "dist/src/index.js"
+    "gp": "dist/src/index.js",
+    "gt": "dist/src/index.js"
   },
   "devDependencies": {
     "@commitlint/cli": "^13.1.0",

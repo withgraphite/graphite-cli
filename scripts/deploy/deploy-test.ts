@@ -40,7 +40,7 @@ function testDeploy() {
 
   // expect not to fail...
   execSync(
-    `${execSync("brew --prefix graphite").toString().trim()}/bin/gp stacks`,
+    `${execSync("brew --prefix graphite").toString().trim()}/bin/gt stacks`,
     {
       stdio: "inherit",
     }
