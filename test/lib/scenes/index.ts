@@ -1,4 +1,5 @@
 import { BasicScene } from "./basic_scene";
+import { LargeScene } from "./large_scene";
 import { TrailingProdScene } from "./trailing_prod_scene";
 
 const allScenes = [
@@ -6,4 +7,4 @@ const allScenes = [
   new TrailingProdScene(),
 ];
 
-export { TrailingProdScene, BasicScene, allScenes };
+export { TrailingProdScene, BasicScene, allScenes, LargeScene };
