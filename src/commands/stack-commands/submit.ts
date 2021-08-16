@@ -9,6 +9,7 @@ export const description =
 const args = {} as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const builder = args;
+export const aliases = ["s"];
 
 export const handler = async (argv: argsT): Promise<void> => {
   await profile(argv, async () => {
