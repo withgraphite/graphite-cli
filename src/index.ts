@@ -10,7 +10,7 @@ import {
   fetchUpgradePromptInBackground,
   postTelemetryInBackground,
 } from "./lib/telemetry";
-import { logError } from "./lib/utils";
+import { logError, preprocessCommand } from "./lib/utils";
 
 fetchUpgradePromptInBackground();
 // https://www.npmjs.com/package/tmp#graceful-cleanup
@@ -41,7 +41,8 @@ function deprecatedGpWarning(argv: yargs.Arguments) {
   }
 }
 
-yargs
+preprocessCommand();
+yargs(process.argv.slice(2))
   .commandDir("commands")
   .help()
   .middleware(deprecatedGpWarning)

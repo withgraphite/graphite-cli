@@ -5,6 +5,7 @@ import { gpExecSync } from "./exec_sync";
 import GitRepo from "./git_repo";
 import { makeId } from "./make_id";
 import { parseArgs } from "./parse_args";
+import { preprocessCommand } from "./preprocess_command";
 import { rebaseInProgress } from "./rebase_in_progress";
 import { logError, logInfo, logNewline, logSuccess, logWarn } from "./splog";
 import { getTrunk } from "./trunk";
@@ -27,5 +28,6 @@ export {
   parseArgs,
   makeId,
   getCommitterDate,
+  preprocessCommand,
   VALIDATION_HELPER_MESSAGE,
 };
