@@ -48,7 +48,7 @@ async function stackOnto(currentBranch: Branch, onto: string) {
     () => {
       if (rebaseInProgress()) {
         throw new RebaseConflictError(
-          "Please resolve the rebase conflict and then continue with your `stack onto` command."
+          "Please resolve the rebase conflict and then continue with your `upstack onto` command."
         );
       } else {
         throw new ExitFailedError(
