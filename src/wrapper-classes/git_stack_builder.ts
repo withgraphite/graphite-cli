@@ -1,7 +1,7 @@
 import { AbstractStackBuilder, Branch, Stack, StackNode } from ".";
 import { getTrunk, gpExecSync } from "../lib/utils";
 
-export class GitStackBuilder extends AbstractStackBuilder {
+export default class GitStackBuilder extends AbstractStackBuilder {
   public fullStackFromBranch = (branch: Branch): Stack => {
     const base = this.getStackBaseBranch(branch);
     const stack = this.upstackInclusiveFromBranchWithoutParents(base);

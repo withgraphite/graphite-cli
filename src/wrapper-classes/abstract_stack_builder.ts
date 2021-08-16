@@ -3,7 +3,7 @@ import { repoConfig } from "../lib/config";
 import { getTrunk } from "../lib/utils";
 import Branch from "./branch";
 
-export abstract class AbstractStackBuilder {
+export default abstract class AbstractStackBuilder {
   public allStacksFromTrunk(): Stack[] {
     const baseBranches = this.allStackBaseNames();
     return baseBranches.map(this.fullStackFromBranch);

@@ -29,7 +29,8 @@ function expectBranches(repo: GitRepo, sortedBranches: string) {
       .toString()
       .trim()
       .split("\n")
-      .filter((b) => b !== "prod")
+      .filter((b) => b !== "prod") // scene related branch
+      .filter((b) => b !== "x2") // scene related branch
       .sort()
       .join(", ")
   ).to.equal(sortedBranches);

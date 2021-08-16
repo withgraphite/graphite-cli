@@ -1,6 +1,6 @@
-import { Branch } from ".";
+import Branch from "./branch";
 
-export class StackNode {
+export default class StackNode {
   branch: Branch;
   parent?: StackNode;
   children: StackNode[];

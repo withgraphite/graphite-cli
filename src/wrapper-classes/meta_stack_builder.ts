@@ -2,7 +2,7 @@ import { AbstractStackBuilder, Stack, StackNode } from ".";
 import { getTrunk } from "../lib/utils";
 import Branch from "./branch";
 
-export class MetaStackBuilder extends AbstractStackBuilder {
+export default class MetaStackBuilder extends AbstractStackBuilder {
   protected getStackBaseBranch(branch: Branch): Branch {
     const parent = branch.getParentFromMeta();
     if (!parent) {

@@ -15,6 +15,14 @@ export class TrailingProdScene extends AbstractScene {
     this.repo.checkoutBranch("main");
     this.repo.createChangeAndCommit("0.5", "0.5");
 
+    // Create a dangling branch as well, to cause a little chaos.
+    this.repo.createAndCheckoutBranch("x1");
+    this.repo.createChangeAndCommit("x1", "x1");
+    this.repo.createAndCheckoutBranch("x2");
+    this.repo.createChangeAndCommit("x2", "x2");
+    this.repo.execCliCommand(`branch parent --set x1`);
+    this.repo.deleteBranch("x1");
+
     execSync(`git -C "${this.dir}" merge prod`);
 
     this.repo.checkoutBranch("main");

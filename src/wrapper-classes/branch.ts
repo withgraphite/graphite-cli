@@ -229,22 +229,33 @@ export default class Branch {
     if (this.name === getTrunk().name) {
       return undefined;
     }
-    const parentName = this.getMeta()?.parentBranchName;
-    if (parentName) {
-      // Consider the chance that the parent branch has been deleted.
-      if (!Branch.exists(parentName)) {
+
+    let parentName = this.getMeta()?.parentBranchName;
+
+    if (!parentName) {
+      return undefined;
+    }
+
+    // Cycle untile we find a parent that has a real branch, or just is undefined.
+    if (!Branch.exists(parentName)) {
+      while (parentName && !Branch.exists(parentName)) {
+        parentName = new Branch(parentName).getMeta()?.parentBranchName;
+      }
+      if (parentName) {
+        this.setParentBranchName(parentName);
+      } else {
         this.clearParentMetadata();
         return undefined;
       }
-      if (parentName === this.name) {
-        this.clearParentMetadata();
-        throw new ExitFailedError(
-          `Branch (${this.name}) has itself listed as a parent in the meta. Deleting (${this.name}) parent metadata and exiting.`
-        );
-      }
-      return new Branch(parentName);
     }
-    return undefined;
+
+    if (parentName === this.name) {
+      this.clearParentMetadata();
+      throw new ExitFailedError(
+        `Branch (${this.name}) has itself listed as a parent in the meta. Deleting (${this.name}) parent metadata and exiting.`
+      );
+    }
+    return new Branch(parentName);
   }
 
   public getChildrenFromMeta(): Branch[] {
