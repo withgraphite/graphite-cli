@@ -4,7 +4,7 @@ function splitShortcuts(command: string): string[] {
   } else if (
     typeof command === "string" &&
     command.length == 3 &&
-    command == "bco" // special case this two-letter shortcut for checkout
+    command === "bco" // special case this two-letter shortcut for checkout
   ) {
     return [command[0], command.slice(1)];
   }
