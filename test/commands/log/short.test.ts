@@ -1,6 +1,16 @@
 import { expect } from "chai";
+<<<<<<< HEAD
 import { allScenes } from "../../lib/scenes";
 import { configureTest } from "../../lib/utils";
+=======
+<<<<<<< HEAD:test/fast/commands/stacks.test.ts
+import { allScenes } from "../../lib/scenes";
+import { configureTest } from "../../lib/utils";
+=======
+import { allScenes } from "../../scenes";
+import { configureTest } from "../../utils";
+>>>>>>> e630bf0 (refactor(log): move to noun verb pattern):test/commands/log/short.test.ts
+>>>>>>> f856e3c (refactor(log): move to noun verb pattern)
 
 for (const scene of allScenes) {
   describe(`(${scene}): log short`, function () {
