@@ -31,19 +31,21 @@ async function promptStacks(opts: {
   const response = await prompts({
     type: "select",
     name: "value",
-    message: `Pick a source of truth for stacks`,
+    message: `Rebase branches or regerate stacks metadata?`,
     choices: ["rebase", "regen"].map((r) => {
       return {
         title:
           r === "rebase"
-            ? `Graphite stacks (${chalk.green("common choice")})\n` +
+            ? `rebase branches, using Graphite stacks as truth (${chalk.green(
+                "common choice"
+              )})\n` +
               opts.metaStack
                 .toString()
                 .split("\n")
                 .map((l) => "    " + l)
                 .join("\n") +
               "\n"
-            : `Git commit tree\n` +
+            : `regen stack metadata, using Git commit tree as truth\n` +
               opts.gitStack
                 .toString()
                 .split("\n")
