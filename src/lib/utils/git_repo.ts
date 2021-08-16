@@ -45,6 +45,10 @@ export default class GitRepo {
     execSync(`git -C "${this.dir}" commit -m "${textValue}"`);
   }
 
+  deleteBranch(name: string): void {
+    execSync(`git -C "${this.dir}" branch -D ${name}`);
+  }
+
   createPrecommitHook(contents: string): void {
     fs.mkdirpSync(`${this.dir}/.git/hooks`);
     fs.writeFileSync(`${this.dir}/.git/hooks/pre-commit`, contents);

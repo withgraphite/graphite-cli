@@ -231,6 +231,11 @@ export default class Branch {
     }
     const parentName = this.getMeta()?.parentBranchName;
     if (parentName) {
+      // Consider the chance that the parent branch has been deleted.
+      if (!Branch.exists(parentName)) {
+        this.clearParentMetadata();
+        return undefined;
+      }
       if (parentName === this.name) {
         this.clearParentMetadata();
         throw new ExitFailedError(
