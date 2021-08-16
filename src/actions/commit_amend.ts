@@ -44,7 +44,7 @@ export async function commitAmendAction(opts: {
     await fixAction({ action: "rebase" });
   } else {
     logWarn(
-      "Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gp stack fix`"
+      "Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix`"
     );
   }
 }

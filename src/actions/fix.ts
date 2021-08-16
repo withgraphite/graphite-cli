@@ -132,7 +132,7 @@ async function restackNode(node: StackNode): Promise<void> {
       () => {
         if (rebaseInProgress()) {
           throw new RebaseConflictError(
-            "Resolve the conflict (via `git rebase --continue`) and then rerun `gp stack fix` to fix the remaining stack."
+            "Resolve the conflict (via `git rebase --continue`) and then rerun `gt stack fix` to fix the remaining stack."
           );
         }
       }

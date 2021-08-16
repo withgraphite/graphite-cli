@@ -18,7 +18,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "branch-prefix";
 export const description =
-  "The prefix which Graphite will prepend to all auto-generated branch names (i.e. when you don't specify a branch name when calling `gp branch create`).";
+  "The prefix which Graphite will prepend to all auto-generated branch names (i.e. when you don't specify a branch name when calling `gt branch create`).";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
@@ -28,7 +28,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     } else {
       logInfo(
         userConfig.getBranchPrefix() ||
-          "branch-prefix is not set. Try running `gp user branch-prefix --set <prefix>` to update the value."
+          "branch-prefix is not set. Try running `gt user branch-prefix --set <prefix>` to update the value."
       );
     }
   });

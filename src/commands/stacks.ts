@@ -17,7 +17,7 @@ const args = {
   },
   interactive: {
     describe:
-      "Whether or not to show the interactive branch picker (set to false when using `gp stacks` as part of a shell script).",
+      "Whether or not to show the interactive branch picker (set to false when using `gt stacks` as part of a shell script).",
     demandOption: false,
     default: true,
     type: "boolean",
