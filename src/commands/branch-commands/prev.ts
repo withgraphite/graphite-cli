@@ -1,5 +1,6 @@
 import yargs from "yargs";
 import { nextOrPrevAction } from "../../actions/next_or_prev";
+import { globalArgs } from "../../lib/global-arguments";
 import { profile } from "../../lib/telemetry";
 
 const args = {
@@ -9,14 +10,6 @@ const args = {
     default: 1,
     type: "number",
     alias: "n",
-  },
-  interactive: {
-    describe:
-      "Whether or not to show the interactive branch picker (set to false when using `gt prev` as part of a shell script).",
-    demandOption: false,
-    default: true,
-    type: "boolean",
-    alias: "i",
   },
 } as const;
 
@@ -32,7 +25,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     await nextOrPrevAction({
       nextOrPrev: "prev",
       numSteps: argv.steps,
-      interactive: argv.interactive,
+      interactive: globalArgs.interactive,
     });
   });
 };
