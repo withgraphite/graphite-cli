@@ -22,7 +22,7 @@ for (const scene of allScenes) {
       scene.repo.createChangeAndCommit("2", "2");
 
       expect(() =>
-        scene.repo.execCliCommandAndGetOutput(`stacks --no-interactive`)
+        scene.repo.execCliCommandAndGetOutput(`stacks`)
       ).to.not.throw(Error);
     });
   });
