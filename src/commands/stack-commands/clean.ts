@@ -21,6 +21,7 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "clean";
+export const aliases = ["c"];
 export const description =
   "Delete any branches that have been merged or squashed into the trunk branch, and fix their upstack branches recursively.";
 export const builder = args;
