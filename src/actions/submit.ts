@@ -18,6 +18,7 @@ import {
   logSuccess,
   logWarn,
 } from "../lib/utils";
+import { getPRTemplate } from "../lib/utils/pr_templates";
 import Branch from "../wrapper-classes/branch";
 import Commit from "../wrapper-classes/commit";
 import { TScope } from "./scope";
@@ -130,7 +131,7 @@ async function submitPRsForBranches(args: {
   const branchPRInfo: t.UnwrapSchemaMap<
     typeof graphiteCLIRoutes.submitPullRequests.params
   >["prs"] = [];
-  args.branches.forEach((branch) => {
+  for (const branch of args.branches) {
     // The branch here should always have a parent - above, the branches we've
     // gathered should exclude trunk which ensures that every branch we're submitting
     // a PR for has a valid parent.
@@ -145,14 +146,19 @@ async function submitPRsForBranches(args: {
         prNumber: prInfo.number,
       });
     } else {
+      const title = inferPRTitle(branch);
+      const body = await getPRTemplate({
+        prName: title,
+      });
       branchPRInfo.push({
         action: "create",
         head: branch.name,
         base: parentBranchName,
-        title: inferPRTitle(branch),
+        title: title,
+        body: body,
       });
     }
-  });
+  }
 
   try {
     const response = await request.requestWithArgs(

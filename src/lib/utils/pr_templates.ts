@@ -1,6 +1,40 @@
 import fs from "fs-extra";
 import path from "path";
+import prompts from "prompts";
 import { currentGitRepoPrecondition } from "../preconditions";
+
+export async function getPRTemplate(opts: {
+  prName: string;
+}): Promise<string | undefined> {
+  const templateFiles = getPRTemplateFilepaths();
+  if (templateFiles.length === 0) {
+    return undefined;
+  }
+
+  let templateFilepath: string;
+  if (templateFiles.length === 1) {
+    templateFilepath = templateFiles[0];
+  } else {
+    const response = await prompts({
+      type: "select",
+      name: "templateFilepath",
+      message: `Select a PR template for PR "${opts.prName}"`,
+      choices: templateFiles.map((file) => {
+        return {
+          title: getRelativePathFromRepo(file),
+          value: file,
+        };
+      }),
+    });
+    templateFilepath = response.templateFilepath;
+  }
+  return fs.readFileSync(templateFilepath).toString();
+}
+
+function getRelativePathFromRepo(path: string): string {
+  const repoPath = currentGitRepoPrecondition();
+  return path.replace(repoPath, "");
+}
 
 /**
  * Returns GitHub PR templates, following the order of precedence GitHub uses
