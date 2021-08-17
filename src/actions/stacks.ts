@@ -103,6 +103,9 @@ function computeLineage(args: {
       status: branch.getParentsFromGit().length > 0 ? "NEEDS_REGEN" : "TRACKED",
     });
   } else {
+    if (!children[parent.name]) {
+      children[parent.name] = [];
+    }
     children[parent.name].push({
       branch,
       status: branch.getParentsFromGit().some((gitParent) => {

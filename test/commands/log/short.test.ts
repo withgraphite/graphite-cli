@@ -1,8 +1,9 @@
 import { expect } from "chai";
-import { allScenes } from "../../lib/scenes";
+import { execSync } from "child_process";
+import { TrailingProdScene } from "../../lib/scenes";
 import { configureTest } from "../../lib/utils";
 
-for (const scene of allScenes) {
+for (const scene of [new TrailingProdScene()]) {
   describe(`(${scene}): log short`, function () {
     configureTest(this, scene);
 
@@ -11,19 +12,20 @@ for (const scene of allScenes) {
     });
 
     it("Can print stacks if a branch's parent has been deleted", () => {
-      scene.repo.createAndCheckoutBranch("a");
-      scene.repo.createChangeAndCommit("a", "a");
-      scene.repo.createAndCheckoutBranch("b");
-      scene.repo.createChangeAndCommit("b", "b");
-      scene.repo.execCliCommand(`branch parent --set a`);
-      scene.repo.deleteBranch("a");
+      // This is mostly an effort to recreate a messed-up repo state that created a bug for a user.
+      scene.repo.createChange("a", "a");
+      scene.repo.execCliCommand(`branch create a -m "a"`);
+
+      scene.repo.createChange("b", "b");
+      scene.repo.execCliCommand(`branch create b -m "b"`);
 
       scene.repo.checkoutBranch("main");
       scene.repo.createChangeAndCommit("2", "2");
+      scene.repo.checkoutBranch("a");
+      execSync(`git -C ${scene.repo.dir} rebase prod`);
 
-      expect(() =>
-        scene.repo.execCliCommandAndGetOutput(`log short`)
-      ).to.not.throw(Error);
+      // b's now has no git-parents, but it's meta points to "a" which still exists but is not off main.
+      expect(() => scene.repo.execCliCommand(`log short`)).to.not.throw(Error);
     });
   });
 }
