@@ -1,3 +1,4 @@
+import execStateConfig from "./exec_state_config";
 import messageConfig, {
   readMessageConfigForTestingOnly,
 } from "./message_config";
@@ -9,4 +10,5 @@ export {
   userConfig,
   repoConfig,
   readMessageConfigForTestingOnly,
+  execStateConfig,
 };

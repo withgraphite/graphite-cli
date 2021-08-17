@@ -1,8 +1,9 @@
+import chalk from "chalk";
 import { execSync } from "child_process";
-import { repoConfig } from "../lib/config";
+import { execStateConfig, repoConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import { tracer } from "../lib/telemetry";
-import { getCommitterDate, getTrunk, gpExecSync, logWarn } from "../lib/utils";
+import { getCommitterDate, getTrunk, gpExecSync } from "../lib/utils";
 import Commit from "./commit";
 
 type TMeta = {
@@ -109,48 +110,57 @@ function traverseGitTreeFromCommitUntilBranch(
   commit: string,
   gitTree: Record<string, string[]>,
   branchList: Record<string, string[]>,
-  n: number,
-  debugInfo: {
-    branchName: string;
-    direction: "CHILDREN" | "PARENTS";
-  }
-): Set<string> {
+  n: number
+): {
+  branches: Set<string>;
+  shortCircuitedDueToMaxDepth?: boolean;
+} {
   // Skip the first iteration b/c that is the CURRENT branch
   if (n > 0 && commit in branchList) {
-    return new Set(branchList[commit]);
+    return {
+      branches: new Set(branchList[commit]),
+    };
   }
 
   // Limit the seach
   const maxBranchLength = repoConfig.getMaxBranchLength();
   if (n > maxBranchLength) {
-    const branchName = debugInfo.branchName;
-    const searchItems = debugInfo.direction.toLowerCase();
-    logWarn(
-      `Searched ${maxBranchLength} commits from the tip of ${branchName} but could not find ${branchName}'s ${searchItems}. If this is correct (i.e. ${branchName}'s ${searchItems} are more than ${maxBranchLength} commits away from ${branchName}'s branch tip), please increase Graphite's max branch length to search via \`gt repo max-branch-length\`.`
-    );
-    return new Set();
+    return {
+      branches: new Set(),
+      shortCircuitedDueToMaxDepth: true,
+    };
   }
 
   if (!gitTree[commit] || gitTree[commit].length == 0) {
-    return new Set();
+    return {
+      branches: new Set(),
+    };
   }
 
   const commitsMatchingBranches = new Set<string>();
+  let shortCircuitedDueToMaxDepth = undefined;
   for (const neighborCommit of gitTree[commit]) {
-    const discoveredMatches = traverseGitTreeFromCommitUntilBranch(
+    const results = traverseGitTreeFromCommitUntilBranch(
       neighborCommit,
       gitTree,
       branchList,
-      n + 1,
-      debugInfo
+      n + 1
     );
-    if (discoveredMatches.size !== 0) {
-      discoveredMatches.forEach((commit) => {
+
+    const branches = results.branches;
+    shortCircuitedDueToMaxDepth =
+      results.shortCircuitedDueToMaxDepth || shortCircuitedDueToMaxDepth;
+
+    if (branches.size !== 0) {
+      branches.forEach((commit) => {
         commitsMatchingBranches.add(commit);
       });
     }
   }
-  return commitsMatchingBranches;
+  return {
+    branches: commitsMatchingBranches,
+    shortCircuitedDueToMaxDepth: shortCircuitedDueToMaxDepth,
+  };
 }
 
 type TBranchFilters = {
@@ -566,18 +576,31 @@ export default class Branch {
           .toString()
           .trim();
 
-        return Array.from(
-          traverseGitTreeFromCommitUntilBranch(
-            headSha,
-            gitTree,
-            getBranchList({ useMemoizedResult: useMemoizedResults }),
-            0,
-            {
-              branchName: this.name,
-              direction: direction,
-            }
-          )
-        ).map((name) => {
+        const childrenOrParents = traverseGitTreeFromCommitUntilBranch(
+          headSha,
+          gitTree,
+          getBranchList({ useMemoizedResult: useMemoizedResults }),
+          0
+        );
+
+        if (
+          execStateConfig.outputDebugLogs() &&
+          childrenOrParents.shortCircuitedDueToMaxDepth
+        ) {
+          console.log(
+            `${chalk.magenta(
+              `Potential missing branch ${direction.toLocaleLowerCase()}:`
+            )} Short-circuited search for branch ${chalk.bold(
+              this.name
+            )}'s ${direction.toLocaleLowerCase()} due to Graphite 'max-branch-length' setting. (Your Graphite CLI is currently configured to search a max of <${repoConfig.getMaxBranchLength()}> commits away from a branch's tip.) If this is causing an incorrect result (e.g. you know that ${
+              this.name
+            } has ${direction.toLocaleLowerCase()} ${
+              repoConfig.getMaxBranchLength() + 1
+            } commits away), please adjust the setting using \`gt repo max-branch-length\`.`
+          );
+        }
+
+        return Array.from(childrenOrParents.branches).map((name) => {
           const branch = new Branch(name);
           return this.shouldUseMemoizedResults
             ? branch.useMemoizedResults()

@@ -1,4 +1,5 @@
 import yargs from "yargs";
+import { execStateConfig } from "../config";
 
 const globalArgumentsOptions = {
   interactive: {
@@ -9,6 +10,7 @@ const globalArgumentsOptions = {
   },
   quiet: { alias: "q", default: false, type: "boolean", demandOption: false },
   verify: { default: true, type: "boolean", demandOption: false },
+  debug: { default: false, type: "boolean", demandOption: false },
 } as const;
 
 type argsT = yargs.Arguments<
@@ -19,6 +21,7 @@ function processGlobalArgumentsMiddleware(argv: argsT): void {
   globalArgs.quiet = argv.quiet;
   globalArgs.noVerify = !argv.verify;
   globalArgs.interactive = argv.interactive;
+  execStateConfig.setOutputDebugLogs(argv.debug);
 }
 
 const globalArgs = { quiet: false, noVerify: false, interactive: true };
