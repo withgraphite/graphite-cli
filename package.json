@@ -1,6 +1,6 @@
 {
   "name": "graphite-cli",
-  "version": "0.10.0",
+  "version": "0.9.1",
   "license": "None",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

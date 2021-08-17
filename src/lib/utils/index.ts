@@ -7,6 +7,7 @@ import { makeId } from "./make_id";
 import { parseArgs } from "./parse_args";
 import { preprocessCommand } from "./preprocess_command";
 import { rebaseInProgress } from "./rebase_in_progress";
+import { signpostDeprecatedCommands } from "./signpost_deprecated_commands";
 import { logError, logInfo, logNewline, logSuccess, logWarn } from "./splog";
 import { getTrunk } from "./trunk";
 import { uncommittedChanges } from "./uncommitted_changes";
@@ -29,5 +30,6 @@ export {
   makeId,
   getCommitterDate,
   preprocessCommand,
+  signpostDeprecatedCommands,
   VALIDATION_HELPER_MESSAGE,
 };
