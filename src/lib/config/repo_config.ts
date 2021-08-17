@@ -41,6 +41,7 @@ type RepoConfigT = {
   };
   maxStacksShownBehindTrunk?: number;
   maxDaysShownBehindTrunk?: number;
+  maxBranchLength?: number;
 };
 
 class RepoConfig {
@@ -160,6 +161,15 @@ class RepoConfig {
     }
 
     this._data.logSettings = undefined;
+    this.save();
+  }
+
+  public getMaxBranchLength(): number {
+    return this._data.maxBranchLength ?? 50;
+  }
+
+  public setMaxBranchLength(numCommits: number) {
+    this._data.maxBranchLength = numCommits;
     this.save();
   }
 }

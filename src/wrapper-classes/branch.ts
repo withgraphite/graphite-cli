@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import { repoConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import { tracer } from "../lib/telemetry";
-import { getCommitterDate, getTrunk, gpExecSync } from "../lib/utils";
+import { getCommitterDate, getTrunk, gpExecSync, logWarn } from "../lib/utils";
 import Commit from "./commit";
 
 type TMeta = {
@@ -13,8 +13,6 @@ type TMeta = {
     url: string;
   };
 };
-
-export const MAX_COMMITS_TO_TRAVERSE_FOR_NEXT_OR_PREV = 50;
 
 function gitTreeFromRevListOutput(output: string): Record<string, string[]> {
   const ret: Record<string, string[]> = {};
@@ -111,7 +109,11 @@ function traverseGitTreeFromCommitUntilBranch(
   commit: string,
   gitTree: Record<string, string[]>,
   branchList: Record<string, string[]>,
-  n: number
+  n: number,
+  debugInfo: {
+    branchName: string;
+    direction: "CHILDREN" | "PARENTS";
+  }
 ): Set<string> {
   // Skip the first iteration b/c that is the CURRENT branch
   if (n > 0 && commit in branchList) {
@@ -119,7 +121,13 @@ function traverseGitTreeFromCommitUntilBranch(
   }
 
   // Limit the seach
-  if (n > MAX_COMMITS_TO_TRAVERSE_FOR_NEXT_OR_PREV) {
+  const maxBranchLength = repoConfig.getMaxBranchLength();
+  if (n > maxBranchLength) {
+    const branchName = debugInfo.branchName;
+    const searchItems = debugInfo.direction.toLowerCase();
+    logWarn(
+      `Searched ${maxBranchLength} commits from the tip of ${branchName} but could not find ${branchName}'s ${searchItems}. If this is correct (i.e. ${branchName}'s ${searchItems} are more than ${maxBranchLength} commits away from ${branchName}'s branch tip), please increase Graphite's max branch length to search via \`gt repo max-branch-length\`.`
+    );
     return new Set();
   }
 
@@ -133,7 +141,8 @@ function traverseGitTreeFromCommitUntilBranch(
       neighborCommit,
       gitTree,
       branchList,
-      n + 1
+      n + 1,
+      debugInfo
     );
     if (discoveredMatches.size !== 0) {
       discoveredMatches.forEach((commit) => {
@@ -562,7 +571,11 @@ export default class Branch {
             headSha,
             gitTree,
             getBranchList({ useMemoizedResult: useMemoizedResults }),
-            0
+            0,
+            {
+              branchName: this.name,
+              direction: direction,
+            }
           )
         ).map((name) => {
           const branch = new Branch(name);
