@@ -162,8 +162,12 @@ async function computeChoices(
     }${indent > 0 ? `${indent} deep` : "root"}${
       {
         TRACKED: "",
-        NEEDS_RESTACK: `, ${chalk.yellow("`stack fix` required")}`,
-        NEEDS_REGEN: `, ${chalk.yellow("untracked")}`,
+        NEEDS_RESTACK: `, ${chalk.yellow(
+          "Behind parent branch, consider (gt stack fix --rebase)"
+        )}`,
+        NEEDS_REGEN: `, ${chalk.yellow(
+          `untracked by Graphite, consider (git checkout ... && gt stack fix --regen)`
+        )}`,
       }[branch.status]
     })`,
   });
