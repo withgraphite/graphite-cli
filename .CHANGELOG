@@ -1,3 +1,15 @@
+# 0.10.0 2020-08-17
+- Fix case where commands fail if a branch's stack parent had been deleted.
+- Fix copy across CLI to use "gt" rather than the old "gp".
+- Add more shortcut aliases for commands such as "s" for "submit"
+- Fix copy around "repo-config" to "repo"
+- Add command "branch checkout"
+- Refactor "stacks" command into "log short"
+- Update "log" command to support "log", "log short" and "log long"
+- Support dropping the space on double-alias shortcuts. Eg "branch next" = "b n" = "bn", "stack submit" = "ss" etc
+- Throw actionable errors if two branches point at the same commit.
+- Add top level "graphite" alias such that the CLI can be called using both "gt" and "graphite".
+
 # 0.9.1 2020-08-15
 - Fix "gp" alias deprecation warning for homebrew installations.
 
