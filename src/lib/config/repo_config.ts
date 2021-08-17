@@ -69,7 +69,7 @@ class RepoConfig {
     }
 
     throw new ExitFailedError(
-      "Could not determine the owner of this repo (e.g. 'screenplaydev' in the repo 'screenplaydev/graphite-cli'). Please run `gp repo owner --set <owner>` to manually set the repo owner."
+      "Could not determine the owner of this repo (e.g. 'screenplaydev' in the repo 'screenplaydev/graphite-cli'). Please run `gt repo owner --set <owner>` to manually set the repo owner."
     );
   }
 
@@ -111,7 +111,7 @@ class RepoConfig {
     }
 
     throw new ExitFailedError(
-      "Could not determine the name of this repo (e.g. 'graphite-cli' in the repo 'screenplaydev/graphite-cli'). Please run `gp repo name --set <owner>` to manually set the repo name."
+      "Could not determine the name of this repo (e.g. 'graphite-cli' in the repo 'screenplaydev/graphite-cli'). Please run `gt repo name --set <owner>` to manually set the repo name."
     );
   }
   public setRepoName(name: string): void {

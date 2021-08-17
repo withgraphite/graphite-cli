@@ -55,7 +55,7 @@ export function getTrunk(): Branch {
   if (configTrunkName) {
     if (!Branch.exists(configTrunkName)) {
       throw new ExitFailedError(
-        `Configured trunk branch (${configTrunkName}) not found in the current repo. Consider updating the trunk name by running "gp repo init".`
+        `Configured trunk branch (${configTrunkName}) not found in the current repo. Consider updating the trunk name by running "gt repo init".`
       );
     }
     memoizedTrunk = new Branch(configTrunkName);
@@ -69,6 +69,6 @@ export function getTrunk(): Branch {
     return memoizedTrunk;
   }
   throw new ConfigError(
-    `No configured trunk branch, and unable to infer. Consider setting the trunk name by running "gp repo init".`
+    `No configured trunk branch, and unable to infer. Consider setting the trunk name by running "gt repo init".`
   );
 }

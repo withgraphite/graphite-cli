@@ -67,7 +67,7 @@ export const handler = async (argv: argsT): Promise<void> => {
 };
 
 function execCliCommand(command: string, opts: { fromDir: string }) {
-  execSync(`gp ${command}`, {
+  execSync(`gt ${command}`, {
     stdio: "inherit",
     cwd: opts.fromDir,
   });
