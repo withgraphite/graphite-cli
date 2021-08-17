@@ -63,7 +63,7 @@ function compareStacks(metaStack: Stack, gitStack: Stack): void {
   if (!metaStack.equals(gitStack)) {
     throw new ValidationFailedError(
       [
-        `Graphite stack does not match git derrived stack\n`,
+        `Graphite stack does not match git-derived stack\n`,
         "\nGraphite Stack:",
         metaStack.toString(),
         "\nGit Stack:",
