@@ -13,7 +13,6 @@ import {
   PreconditionsFailedError,
   ValidationFailedError,
 } from "../lib/errors";
-import { globalArgs } from "../lib/global-arguments";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import {
   gpExecSync,
@@ -33,13 +32,17 @@ type TSubmittedPRInfo = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.submitPullRequests.response
 >;
 
-export async function submitAction(scope: TScope): Promise<void> {
+export async function submitAction(args: {
+  scope: TScope;
+  editPRFieldsInline: boolean;
+  createNewPRsAsDraft: boolean;
+}): Promise<void> {
   const cliAuthToken = getCLIAuthToken();
   const repoName = repoConfig.getRepoName();
   const repoOwner = repoConfig.getRepoOwner();
 
   try {
-    validate(scope);
+    validate(args.scope);
   } catch {
     throw new ValidationFailedError(`Validation failed before submitting.`);
   }
@@ -54,6 +57,8 @@ export async function submitAction(scope: TScope): Promise<void> {
     cliAuthToken: cliAuthToken,
     repoOwner: repoOwner,
     repoName: repoName,
+    editPRFieldsInline: args.editPRFieldsInline,
+    createNewPRsAsDraft: args.createNewPRsAsDraft,
   });
   if (submittedPRInfo === null) {
     throw new ExitFailedError("Failed to submit commits. Please try again.");
@@ -132,6 +137,8 @@ async function submitPRsForBranches(args: {
   cliAuthToken: string;
   repoOwner: string;
   repoName: string;
+  editPRFieldsInline: boolean;
+  createNewPRsAsDraft: boolean;
 }): Promise<TSubmittedPRInfo | null> {
   const branchPRInfo: t.UnwrapSchemaMap<
     typeof graphiteCLIRoutes.submitPullRequests.params
@@ -151,9 +158,11 @@ async function submitPRsForBranches(args: {
         prNumber: previousPRInfo.number,
       });
     } else {
-      const { title, body } = await getPRTitleAndBody({
+      const { title, body } = await getPRCreationInfo({
         branch: branch,
         parentBranchName: parentBranchName,
+        editPRFieldsInline: args.editPRFieldsInline,
+        createNewPRsAsDraft: args.createNewPRsAsDraft,
       });
       branchPRInfo.push({
         action: "create",
@@ -161,6 +170,7 @@ async function submitPRsForBranches(args: {
         base: parentBranchName,
         title: title,
         body: body,
+        draft: args.createNewPRsAsDraft,
       });
     }
   }
@@ -197,18 +207,23 @@ async function submitPRsForBranches(args: {
   }
 }
 
-async function getPRTitleAndBody(args: {
+async function getPRCreationInfo(args: {
   branch: Branch;
   parentBranchName: string;
+  editPRFieldsInline: boolean;
+  createNewPRsAsDraft: boolean;
 }): Promise<{
   title: string;
   body: string | undefined;
 }> {
-  logInfo(`Creating PR for ${args.branch.name} ▸ ${args.parentBranchName}:`);
-  const interactive = globalArgs.interactive;
+  logInfo(
+    `Creating ${
+      args.createNewPRsAsDraft ? "Draft Pull Request" : "Pull Request"
+    } for ${chalk.yellow(args.branch.name)} ▸ ${args.parentBranchName}:`
+  );
 
   let title = inferPRTitle(args.branch);
-  if (interactive) {
+  if (args.editPRFieldsInline) {
     const response = await prompts({
       type: "text",
       name: "title",
@@ -220,7 +235,7 @@ async function getPRTitleAndBody(args: {
 
   let body = await getPRTemplate();
   const hasPRTemplate = body !== undefined;
-  if (interactive) {
+  if (args.editPRFieldsInline) {
     const response = await prompts({
       type: "select",
       name: "body",
