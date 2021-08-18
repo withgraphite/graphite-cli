@@ -35,7 +35,7 @@ type TSubmittedPRInfo = t.UnwrapSchemaMap<
 export async function submitAction(args: {
   scope: TScope;
   editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean;
+  createNewPRsAsDraft: boolean | undefined;
 }): Promise<void> {
   const cliAuthToken = getCLIAuthToken();
   const repoName = repoConfig.getRepoName();
@@ -138,7 +138,7 @@ async function submitPRsForBranches(args: {
   repoOwner: string;
   repoName: string;
   editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean;
+  createNewPRsAsDraft: boolean | undefined;
 }): Promise<TSubmittedPRInfo | null> {
   const branchPRInfo: t.UnwrapSchemaMap<
     typeof graphiteCLIRoutes.submitPullRequests.params
@@ -158,7 +158,7 @@ async function submitPRsForBranches(args: {
         prNumber: previousPRInfo.number,
       });
     } else {
-      const { title, body } = await getPRCreationInfo({
+      const { title, body, draft } = await getPRCreationInfo({
         branch: branch,
         parentBranchName: parentBranchName,
         editPRFieldsInline: args.editPRFieldsInline,
@@ -170,7 +170,7 @@ async function submitPRsForBranches(args: {
         base: parentBranchName,
         title: title,
         body: body,
-        draft: args.createNewPRsAsDraft,
+        draft: draft,
       });
     }
   }
@@ -211,15 +211,16 @@ async function getPRCreationInfo(args: {
   branch: Branch;
   parentBranchName: string;
   editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean;
+  createNewPRsAsDraft: boolean | undefined;
 }): Promise<{
   title: string;
   body: string | undefined;
+  draft: boolean;
 }> {
   logInfo(
-    `Creating ${
-      args.createNewPRsAsDraft ? "Draft Pull Request" : "Pull Request"
-    } for ${chalk.yellow(args.branch.name)} ▸ ${args.parentBranchName}:`
+    `Creating Pull Request for ${chalk.yellow(args.branch.name)} ▸ ${
+      args.parentBranchName
+    }:`
   );
 
   let title = inferPRTitle(args.branch);
@@ -253,6 +254,22 @@ async function getPRCreationInfo(args: {
     }
   }
 
+  let draft: boolean;
+  if (args.createNewPRsAsDraft === undefined) {
+    const response = await prompts({
+      type: "select",
+      name: "draft",
+      message: "Submit",
+      choices: [
+        { title: "Publish Pull Request", value: "publish" },
+        { title: "Create Draft Pull Request", value: "draft" },
+      ],
+    });
+    draft = response.draft === "draft" ? true : false;
+  } else {
+    draft = args.createNewPRsAsDraft;
+  }
+
   // Log newline at the end to create some visual separation to the next
   // interactive PR section or status output.
   logNewline();
@@ -260,6 +277,7 @@ async function getPRCreationInfo(args: {
   return {
     title: title,
     body: body,
+    draft: draft,
   };
 }
 

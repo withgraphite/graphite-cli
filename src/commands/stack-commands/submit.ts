@@ -25,13 +25,14 @@ export const description =
  */
 const args = {
   draft: {
-    describe: "Creates new PRs in draft mode.",
+    describe:
+      "Creates new PRs in draft mode. If --no-interactive is true, this is automatically set to true.",
     type: "boolean",
-    default: true,
     alias: "d",
   },
   edit: {
-    describe: "Edit PR fields inline.",
+    describe:
+      "Edit PR fields inline. If --no-interactive is true, this is automatically set to false.",
     type: "boolean",
     default: true,
     alias: "e",
@@ -43,10 +44,28 @@ export const aliases = ["s"];
 
 export const handler = async (argv: argsT): Promise<void> => {
   await profile(argv, async () => {
+    const { editPRFieldsInline, createNewPRsAsDraft } = getSubmitSettings(argv);
     await submitAction({
       scope: "FULLSTACK",
-      editPRFieldsInline: argv.edit && globalArgs.interactive,
-      createNewPRsAsDraft: argv.draft,
+      editPRFieldsInline: editPRFieldsInline,
+      createNewPRsAsDraft: createNewPRsAsDraft,
     });
   });
 };
+
+function getSubmitSettings(argv: argsT): {
+  editPRFieldsInline: boolean;
+  createNewPRsAsDraft: boolean | undefined;
+} {
+  if (!globalArgs.interactive) {
+    return {
+      editPRFieldsInline: false,
+      createNewPRsAsDraft: true,
+    };
+  }
+
+  return {
+    editPRFieldsInline: argv.edit,
+    createNewPRsAsDraft: argv.draft,
+  };
+}
