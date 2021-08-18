@@ -1,6 +1,6 @@
 import { execSync } from "child_process";
+import { execStateConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
-import { globalArgs } from "../lib/global-arguments";
 import { uncommittedChangesPrecondition } from "../lib/preconditions";
 import { gpExecSync, logWarn } from "../lib/utils";
 import { fixAction } from "./fix";
@@ -32,7 +32,7 @@ export async function commitAmendAction(opts: {
             ? [`-m ${opts.message}`]
             : [],
         ],
-        ...[globalArgs.noVerify ? ["--no-verify"] : []],
+        ...[execStateConfig.noVerify() ? ["--no-verify"] : []],
       ].join(" "),
       { stdio: "inherit" }
     );

@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { nextOrPrevAction } from "../../actions/next_or_prev";
-import { globalArgs } from "../../lib/global-arguments";
+import { execStateConfig } from "../../lib/config";
 import { profile } from "../../lib/telemetry";
 
 const args = {
@@ -25,7 +25,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     await nextOrPrevAction({
       nextOrPrev: "prev",
       numSteps: argv.steps,
-      interactive: globalArgs.interactive,
+      interactive: execStateConfig.interactive(),
     });
   });
 };

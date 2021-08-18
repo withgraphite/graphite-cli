@@ -18,12 +18,11 @@ type argsT = yargs.Arguments<
 >;
 
 function processGlobalArgumentsMiddleware(argv: argsT): void {
-  globalArgs.quiet = argv.quiet;
-  globalArgs.noVerify = !argv.verify;
-  globalArgs.interactive = argv.interactive;
-  execStateConfig.setOutputDebugLogs(argv.debug);
+  execStateConfig
+    .setQuiet(argv.quiet)
+    .setNoVerify(!argv.verify)
+    .setInteractive(argv.interactive)
+    .setOutputDebugLogs(argv.debug);
 }
 
-const globalArgs = { quiet: false, noVerify: false, interactive: true };
-
-export { globalArgumentsOptions, processGlobalArgumentsMiddleware, globalArgs };
+export { globalArgumentsOptions, processGlobalArgumentsMiddleware };

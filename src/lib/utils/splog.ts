@@ -1,6 +1,5 @@
 import chalk from "chalk";
 import { execStateConfig, userConfig } from "../config";
-import { globalArgs } from "../global-arguments";
 
 export function logError(msg: string): void {
   console.log(chalk.redBright(`ERROR: ${msg}`));
@@ -11,13 +10,13 @@ export function logWarn(msg: string): void {
 }
 
 export function logInfo(msg: string): void {
-  if (!globalArgs.quiet) {
+  if (!execStateConfig.quiet()) {
     console.log(`${msg}`);
   }
 }
 
 export function logSuccess(msg: string): void {
-  if (!globalArgs.quiet) {
+  if (!execStateConfig.quiet()) {
     console.log(chalk.green(`${msg}`));
   }
 }
@@ -28,7 +27,7 @@ export function logDebug(msg: string): void {
   }
 }
 export function logTip(msg: string): void {
-  if (!globalArgs.quiet && userConfig.tipsEnabled()) {
+  if (!execStateConfig.quiet() && userConfig.tipsEnabled()) {
     console.log(
       chalk.gray(
         [
@@ -42,7 +41,7 @@ export function logTip(msg: string): void {
 }
 
 export function logNewline(): void {
-  if (!globalArgs.quiet) {
+  if (!execStateConfig.quiet()) {
     console.log("");
   }
 }

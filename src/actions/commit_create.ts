@@ -1,5 +1,5 @@
+import { execStateConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
-import { globalArgs } from "../lib/global-arguments";
 import {
   ensureSomeStagedChangesPrecondition,
   uncommittedChangesPrecondition,
@@ -29,7 +29,7 @@ export async function commitCreateAction(opts: {
       command: [
         "git commit",
         `-m "${opts.message}"`,
-        ...[globalArgs.noVerify ? ["--no-verify"] : []],
+        ...[execStateConfig.noVerify() ? ["--no-verify"] : []],
       ].join(" "),
     },
     () => {

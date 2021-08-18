@@ -1,6 +1,5 @@
-import { userConfig } from "../lib/config";
+import { execStateConfig, userConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
-import { globalArgs } from "../lib/global-arguments";
 import {
   currentBranchPrecondition,
   ensureSomeStagedChangesPrecondition,
@@ -31,7 +30,7 @@ export async function createBranchAction(opts: {
     gpExecSync(
       {
         command: `git commit -m "${opts.commitMessage}" ${
-          globalArgs.noVerify ? "--no-verify" : ""
+          execStateConfig.noVerify() ? "--no-verify" : ""
         }`,
         options: {
           stdio: "inherit",

@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { submitAction } from "../../actions/submit";
-import { globalArgs } from "../../lib/global-arguments";
+import { execStateConfig } from "../../lib/config";
 import { profile } from "../../lib/telemetry";
 
 export const command = "submit";
@@ -57,7 +57,7 @@ function getSubmitSettings(argv: argsT): {
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
 } {
-  if (!globalArgs.interactive) {
+  if (!execStateConfig.interactive()) {
     return {
       editPRFieldsInline: false,
       createNewPRsAsDraft: true,
