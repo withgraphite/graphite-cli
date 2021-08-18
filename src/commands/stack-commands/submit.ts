@@ -28,11 +28,13 @@ const args = {
     describe: "Creates new PRs in draft mode.",
     type: "boolean",
     default: true,
+    alias: "d",
   },
   edit: {
     describe: "Edit PR fields inline.",
     type: "boolean",
     default: true,
+    alias: "e",
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
