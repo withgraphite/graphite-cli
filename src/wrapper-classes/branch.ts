@@ -1,9 +1,10 @@
 import chalk from "chalk";
 import { execSync } from "child_process";
-import { execStateConfig, repoConfig } from "../lib/config";
+import { repoConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import { tracer } from "../lib/telemetry";
 import { getCommitterDate, getTrunk, gpExecSync } from "../lib/utils";
+import { logDebug } from "../lib/utils/splog";
 import Commit from "./commit";
 
 type TMeta = {
@@ -583,11 +584,8 @@ export default class Branch {
           0
         );
 
-        if (
-          execStateConfig.outputDebugLogs() &&
-          childrenOrParents.shortCircuitedDueToMaxDepth
-        ) {
-          console.log(
+        if (childrenOrParents.shortCircuitedDueToMaxDepth) {
+          logDebug(
             `${chalk.magenta(
               `Potential missing branch ${direction.toLocaleLowerCase()}:`
             )} Short-circuited search for branch ${chalk.bold(

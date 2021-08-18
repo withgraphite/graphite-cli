@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { execStateConfig } from "../config";
 import { globalArgs } from "../global-arguments";
 
 export function logError(msg: string): void {
@@ -18,6 +19,12 @@ export function logInfo(msg: string): void {
 export function logSuccess(msg: string): void {
   if (!globalArgs.quiet) {
     console.log(chalk.green(`${msg}`));
+  }
+}
+
+export function logDebug(msg: string): void {
+  if (execStateConfig.outputDebugLogs()) {
+    console.log(msg);
   }
 }
 
