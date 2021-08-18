@@ -180,7 +180,7 @@ class RepoConfig {
 function inferRepoGitHubInfo(): {
   repoOwner: string;
   repoName: string;
-} | null {
+} {
   // This assumes that the remote to use is named 'origin' and that the remote
   // to fetch from is the same as the remote to push to. If a user runs into
   // an issue where any of these invariants are not true, they can manually
@@ -196,33 +196,63 @@ function inferRepoGitHubInfo(): {
   )
     .toString()
     .trim();
+
+  const inferError = new ExitFailedError(
+    `Failed to infer the owner and name of this repo from remote origin "${url}". Please run \`gt repo owner --set <owner>\` and \`gt repo name --set <name>\` to manually set the repo owner/name. (e.g. in the repo 'screenplaydev/graphite-cli', 'screenplaydev' is the repo owner and 'graphite-cli' is the repo name)`
+  );
   if (!url || url.length === 0) {
-    return null;
+    throw inferError;
   }
 
-  let regex = undefined;
-  if (url.startsWith("git@github.com")) {
-    regex = /git@github.com:([^/]+)\/(.+)?.git/;
-  } else if (url.startsWith("https://")) {
-    regex = /https:\/\/github.com\/([^/]+)\/(.+)?.git/;
-  } else {
-    return null;
-  }
-
-  // e.g. in screenplaydev/graphite-cli we're trying to get the owner
-  // ('screenplaydev') and the repo name ('graphite-cli')
-  const matches = regex.exec(url);
-  const owner = matches?.[1];
-  const name = matches?.[2];
-
+  const { owner, name } = getOwnerAndNameFromURL(url);
   if (owner === undefined || name === undefined) {
-    return null;
+    throw inferError;
   }
 
   return {
     repoOwner: owner,
     repoName: name,
   };
+}
+
+function getOwnerAndNameFromURL(originURL: string): {
+  owner: string | undefined;
+  name: string | undefined;
+} {
+  let regex = undefined;
+
+  // Most of the time these URLs end with '.git', but sometimes they don't. To
+  // keep things clean, when we see it we'll just chop it off.
+  let url = originURL;
+  if (url.endsWith(".git")) {
+    url = url.slice(0, -".git".length);
+  }
+
+  if (url.startsWith("git@github.com")) {
+    regex = /git@github.com:([^/]+)\/(.+)/;
+  } else if (url.startsWith("https://")) {
+    regex = /https:\/\/github.com\/([^/]+)\/(.+)/;
+  } else {
+    return {
+      owner: undefined,
+      name: undefined,
+    };
+  }
+
+  // e.g. in screenplaydev/graphite-cli we're trying to get the owner
+  // ('screenplaydev') and the repo name ('graphite-cli')
+  const matches = regex.exec(url);
+  return {
+    owner: matches?.[1],
+    name: matches?.[2],
+  };
+}
+
+export function getOwnerAndNameFromURLForTesting(originURL: string): {
+  owner: string | undefined;
+  name: string | undefined;
+} {
+  return getOwnerAndNameFromURL(originURL);
 }
 
 function readRepoConfig(): RepoConfig {
