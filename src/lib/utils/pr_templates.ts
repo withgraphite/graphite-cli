@@ -3,9 +3,7 @@ import path from "path";
 import prompts from "prompts";
 import { currentGitRepoPrecondition } from "../preconditions";
 
-export async function getPRTemplate(opts: {
-  prName: string;
-}): Promise<string | undefined> {
+export async function getPRTemplate(): Promise<string | undefined> {
   const templateFiles = getPRTemplateFilepaths();
   if (templateFiles.length === 0) {
     return undefined;
@@ -18,7 +16,7 @@ export async function getPRTemplate(opts: {
     const response = await prompts({
       type: "select",
       name: "templateFilepath",
-      message: `Select a PR template for PR "${opts.prName}"`,
+      message: `Body Template`,
       choices: templateFiles.map((file) => {
         return {
           title: getRelativePathFromRepo(file),

@@ -2,6 +2,10 @@ import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
 import * as t from "@screenplaydev/retype";
 import { request } from "@screenplaydev/retyped-routes";
 import chalk from "chalk";
+import { execSync } from "child_process";
+import fs from "fs-extra";
+import prompts from "prompts";
+import tmp from "tmp";
 import { API_SERVER } from "../lib/api";
 import { repoConfig, userConfig } from "../lib/config";
 import {
@@ -9,6 +13,7 @@ import {
   PreconditionsFailedError,
   ValidationFailedError,
 } from "../lib/errors";
+import { globalArgs } from "../lib/global-arguments";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import {
   gpExecSync,
@@ -137,18 +142,18 @@ async function submitPRsForBranches(args: {
     // a PR for has a valid parent.
     const parentBranchName = branch.getParentFromMeta()!.name;
 
-    const prInfo = branch.getPRInfo();
-    if (prInfo) {
+    const previousPRInfo = branch.getPRInfo();
+    if (previousPRInfo) {
       branchPRInfo.push({
         action: "update",
         head: branch.name,
         base: parentBranchName,
-        prNumber: prInfo.number,
+        prNumber: previousPRInfo.number,
       });
     } else {
-      const title = inferPRTitle(branch);
-      const body = await getPRTemplate({
-        prName: title,
+      const { title, body } = await getPRTitleAndBody({
+        branch: branch,
+        parentBranchName: parentBranchName,
       });
       branchPRInfo.push({
         action: "create",
@@ -192,6 +197,57 @@ async function submitPRsForBranches(args: {
   }
 }
 
+async function getPRTitleAndBody(args: {
+  branch: Branch;
+  parentBranchName: string;
+}): Promise<{
+  title: string;
+  body: string | undefined;
+}> {
+  logInfo(`Creating PR for ${args.branch.name} ▸ ${args.parentBranchName}:`);
+  const interactive = globalArgs.interactive;
+
+  let title = inferPRTitle(args.branch);
+  if (interactive) {
+    const response = await prompts({
+      type: "text",
+      name: "title",
+      message: "Title",
+      initial: title,
+    });
+    title = response.title;
+  }
+
+  let body = await getPRTemplate();
+  const hasPRTemplate = body !== undefined;
+  if (interactive) {
+    const response = await prompts({
+      type: "select",
+      name: "body",
+      message: "Body",
+      choices: [
+        { title: "Edit Body (using vim)", value: "edit" },
+        {
+          title: `Skip${hasPRTemplate ? ` (just paste template)` : ""}`,
+          value: "skip",
+        },
+      ],
+    });
+    if (response.body === "edit") {
+      body = await editPRBody(body ?? "");
+    }
+  }
+
+  // Log newline at the end to create some visual separation to the next
+  // interactive PR section or status output.
+  logNewline();
+
+  return {
+    title: title,
+    body: body,
+  };
+}
+
 function inferPRTitle(branch: Branch) {
   // Only infer the title from the commit if the branch has just 1 commit.
   const singleCommitMessage = getSingleCommitMessageOnBranch(branch);
@@ -210,6 +266,15 @@ function getSingleCommitMessageOnBranch(branch: Branch): string | null {
   const commit = new Commit(commits[0]);
   const commitMessage = commit.message();
   return commitMessage.length > 0 ? commitMessage : null;
+}
+
+async function editPRBody(initial: string): Promise<string> {
+  const file = tmp.fileSync();
+  fs.writeFileSync(file.name, initial);
+  execSync(`\${EDITOR:-vi} ${file.name}`, { stdio: "inherit" });
+  const contents = fs.readFileSync(file.name).toString();
+  file.removeCallback();
+  return contents;
 }
 
 function printSubmittedPRInfo(
