@@ -271,7 +271,7 @@ function getSingleCommitMessageOnBranch(branch: Branch): string | null {
 async function editPRBody(initial: string): Promise<string> {
   const file = tmp.fileSync();
   fs.writeFileSync(file.name, initial);
-  execSync(`\${EDITOR:-vi} ${file.name}`, { stdio: "inherit" });
+  execSync(`\${GIT_EDITOR:-vi} ${file.name}`, { stdio: "inherit" });
   const contents = fs.readFileSync(file.name).toString();
   file.removeCallback();
   return contents;
