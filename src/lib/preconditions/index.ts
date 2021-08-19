@@ -1,4 +1,5 @@
 import Branch from "../../wrapper-classes/branch";
+import { repoConfig } from "../config";
 import { PreconditionsFailedError } from "../errors";
 import { detectStagedChanges, gpExecSync, uncommittedChanges } from "../utils";
 
@@ -7,6 +8,14 @@ function currentBranchPrecondition(): Branch {
   if (!branch) {
     throw new PreconditionsFailedError(
       `Cannot find current branch. Please ensure you're running this command atop a checked-out branch.`
+    );
+  }
+  if (repoConfig.branchIsIgnored(branch.name)) {
+    throw new PreconditionsFailedError(
+      [
+        `Cannot use graphite atop (${branch.name}) which is explicately ignored in your repo config.`,
+        `If you'd like to edit your ignored branches, consider running "gt repo init", or manually editing your ".git/.graphite_repo_config" file.`,
+      ].join("\n")
     );
   }
   return branch;

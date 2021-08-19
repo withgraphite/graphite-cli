@@ -30,5 +30,13 @@ for (const scene of allScenes) {
       expect(scene.repo.currentBranchName().includes("feat_test_info")).to.be
         .true;
     });
+
+    it("Cant create a branch off an ignored branch", () => {
+      scene.repo.createAndCheckoutBranch("a");
+      scene.repo.execCliCommand("repo init --trunk main --ignore-branches a");
+      expect(() => scene.repo.execCliCommand(`branch create test -q`)).to.throw(
+        Error
+      );
+    });
   });
 }

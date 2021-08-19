@@ -142,6 +142,10 @@ class RepoConfig {
     this.save();
   }
 
+  public branchIsIgnored(branchName: string): boolean {
+    return this.getIgnoreBranches().includes(branchName);
+  }
+
   /**
    * These settings used to (briefly) live in logSettings. Moving these to live
    * in the top-level namespace now that they're shared between multiple
