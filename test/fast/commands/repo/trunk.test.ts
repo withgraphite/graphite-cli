@@ -13,5 +13,11 @@ for (const scene of allScenes) {
         scene.repo.execCliCommandAndGetOutput("repo trunk").includes("(main)")
       ).to.be.true;
     });
+
+    it("Throws an error if trunk has a sibling commit", () => {
+      expect(() => scene.repo.execCliCommand("ls")).to.not.throw(Error);
+      scene.repo.createAndCheckoutBranch("sibling");
+      expect(() => scene.repo.execCliCommand("ls")).to.throw(Error);
+    });
   });
 }
