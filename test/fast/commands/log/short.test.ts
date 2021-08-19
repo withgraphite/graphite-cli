@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { execSync } from "child_process";
-import { TrailingProdScene } from "../../lib/scenes";
-import { configureTest } from "../../lib/utils";
+import { TrailingProdScene } from "../../../lib/scenes";
+import { configureTest } from "../../../lib/utils";
 
 for (const scene of [new TrailingProdScene()]) {
   describe(`(${scene}): log short`, function () {
