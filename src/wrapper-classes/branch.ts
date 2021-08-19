@@ -28,42 +28,37 @@ function gitTreeFromRevListOutput(output: string): Record<string, string[]> {
   return ret;
 }
 
-let memoizedChildrenRevListGitTree: Record<string, string[]>;
-function getChildrenRevListGitTree(opts: {
-  useMemoizedResult?: boolean;
-}): Record<string, string[]> {
-  if (opts.useMemoizedResult && memoizedChildrenRevListGitTree !== undefined) {
-    return memoizedChildrenRevListGitTree;
-  }
+function getChildrenRevListGitTree(
+  branchName: string
+): Record<string, string[]> {
+  const otherBranches = Branch.allBranches()
+    .map((b) => b.name)
+    .filter((b) => b !== branchName);
 
-  memoizedChildrenRevListGitTree = gitTreeFromRevListOutput(
-    execSync(`git rev-list --children --all`, {
-      maxBuffer: 1024 * 1024 * 1024,
-    })
+  return gitTreeFromRevListOutput(
+    execSync(
+      // Check that there is a commit behind this branch before getting the full list.
+      `git show-ref ${branchName}~1 && git rev-list --children ${otherBranches.join(
+        " "
+        // If there are no commits behind current, just fetch all refs.
+      )} ^${branchName}~1 || git rev-list --children --all`,
+      {
+        maxBuffer: 1024 * 1024 * 1024,
+      }
+    )
       .toString()
       .trim()
   );
-
-  return memoizedChildrenRevListGitTree;
 }
 
-let memoizedParentRevListGitTree: Record<string, string[]>;
-function getParentRevListGitTree(opts: {
-  useMemoizedResult?: boolean;
-}): Record<string, string[]> {
-  if (opts.useMemoizedResult && memoizedParentRevListGitTree !== undefined) {
-    return memoizedParentRevListGitTree;
-  }
-
-  memoizedParentRevListGitTree = gitTreeFromRevListOutput(
-    execSync(`git rev-list --parents --all`, {
+function getParentRevListGitTree(branchName: string): Record<string, string[]> {
+  return gitTreeFromRevListOutput(
+    execSync(`git rev-list --parents ${branchName} ^${getTrunk().name}`, {
       maxBuffer: 1024 * 1024 * 1024,
     })
       .toString()
       .trim()
   );
-
-  return memoizedParentRevListGitTree;
 }
 
 function branchListFromShowRefOutput(output: string): Record<string, string[]> {
@@ -566,12 +561,8 @@ export default class Branch {
       () => {
         const gitTree =
           direction === "CHILDREN"
-            ? getChildrenRevListGitTree({
-                useMemoizedResult: useMemoizedResults,
-              })
-            : getParentRevListGitTree({
-                useMemoizedResult: useMemoizedResults,
-              });
+            ? getChildrenRevListGitTree(this.name)
+            : getParentRevListGitTree(this.name);
 
         const headSha = execSync(`git rev-parse ${this.name}`)
           .toString()
