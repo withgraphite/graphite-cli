@@ -24,7 +24,7 @@
     "cli": "ts-node ./src/index.ts",
     "test": "yarn ts-mocha \"test/**/*.test.ts\"  --parallel --jobs 8",
     "test-fast": "yarn ts-mocha \"test/fast/**/*.test.ts\"  --parallel --jobs 8",
-    "test-slow": "yarn ts-mocha \"test/slow/**/*.test.ts\"  --parallel --jobs 8",
+    "test-slow": "yarn ts-mocha \"test/slow/**/*.test.ts\"",
     "test-one": "yarn ts-mocha --parallel --jobs 8",
     "test-grep": "yarn ts-mocha \"test/**/*.test.ts\" -g",
     "deploy": "ts-node ./scripts/deploy/deploy.ts",
