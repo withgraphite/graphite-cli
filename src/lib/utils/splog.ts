@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { execStateConfig } from "../config";
+import { execStateConfig, userConfig } from "../config";
 import { globalArgs } from "../global-arguments";
 
 export function logError(msg: string): void {
@@ -25,6 +25,19 @@ export function logSuccess(msg: string): void {
 export function logDebug(msg: string): void {
   if (execStateConfig.outputDebugLogs()) {
     console.log(msg);
+  }
+}
+export function logTip(msg: string): void {
+  if (!globalArgs.quiet && userConfig.tipsEnabled()) {
+    console.log(
+      chalk.gray(
+        [
+          "",
+          `${chalk.bold("tip")}: ${msg}`,
+          chalk.italic('Feeling expert? "gt user tips --disable"'),
+        ].join("\n")
+      )
+    );
   }
 }
 

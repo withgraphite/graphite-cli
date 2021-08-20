@@ -22,6 +22,7 @@ if (fs.existsSync(DEPRECATED_USER_CONFIG_PATH)) {
 type UserConfigT = {
   branchPrefix?: string;
   authToken?: string;
+  tips?: boolean;
 };
 
 class UserConfig {
@@ -47,6 +48,15 @@ class UserConfig {
 
   public getBranchPrefix(): string | undefined {
     return this._data.branchPrefix;
+  }
+
+  public tipsEnabled(): boolean {
+    return this._data.tips || true;
+  }
+
+  public toggleTips(enabled: boolean): void {
+    this._data.tips = enabled;
+    this.save();
   }
 
   private save(): void {

@@ -8,7 +8,14 @@ import { parseArgs } from "./parse_args";
 import { preprocessCommand } from "./preprocess_command";
 import { rebaseInProgress } from "./rebase_in_progress";
 import { signpostDeprecatedCommands } from "./signpost_deprecated_commands";
-import { logError, logInfo, logNewline, logSuccess, logWarn } from "./splog";
+import {
+  logError,
+  logInfo,
+  logNewline,
+  logSuccess,
+  logTip,
+  logWarn,
+} from "./splog";
 import { getTrunk } from "./trunk";
 import { uncommittedChanges } from "./uncommitted_changes";
 import { VALIDATION_HELPER_MESSAGE } from "./validation_helper_message";
@@ -31,5 +38,6 @@ export {
   getCommitterDate,
   preprocessCommand,
   signpostDeprecatedCommands,
+  logTip,
   VALIDATION_HELPER_MESSAGE,
 };
