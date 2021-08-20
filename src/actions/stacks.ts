@@ -1,8 +1,6 @@
 import chalk from "chalk";
-import prompts from "prompts";
 import { repoConfig } from "../lib/config";
-import { ExitCancelledError, ExitFailedError } from "../lib/errors";
-import { getTrunk, gpExecSync } from "../lib/utils";
+import { getTrunk } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
 type TBranchWithMetadata = {
@@ -10,10 +8,7 @@ type TBranchWithMetadata = {
   status: "TRACKED" | "NEEDS_RESTACK" | "NEEDS_REGEN";
 };
 
-export async function stacksAction(opts: {
-  all: boolean;
-  interactive: boolean;
-}): Promise<void> {
+export async function stacksAction(opts: { all: boolean }): Promise<void> {
   const { rootBranches, precomputedChildren } = await computeBranchLineage();
   const trunk = getTrunk();
   const current = Branch.getCurrentBranch();
@@ -31,14 +26,10 @@ export async function stacksAction(opts: {
     );
   }
 
-  if (opts.interactive) {
-    await promptBranches(choices);
-  } else {
-    choices.forEach((choice) => {
-      console.log(choice.title);
-    });
-    return;
-  }
+  choices.forEach((choice) => {
+    console.log(choice.title);
+  });
+  return;
 }
 
 async function computeBranchLineage(): Promise<{
@@ -188,35 +179,4 @@ async function computeChoices(
     );
   }
   return choices;
-}
-
-async function promptBranches(choices: promptOptionT[]): Promise<void> {
-  const currentBranch = Branch.getCurrentBranch();
-  let currentBranchIndex: undefined | number = undefined;
-
-  if (currentBranch) {
-    currentBranchIndex = choices
-      .map((c) => c.value)
-      .indexOf(currentBranch.name);
-  }
-
-  const chosenBranch = (
-    await prompts({
-      type: "select",
-      name: "branch",
-      message: `Checkout a branch`,
-      choices: choices,
-      ...(currentBranchIndex ? { initial: currentBranchIndex } : {}),
-    })
-  ).branch;
-
-  if (!chosenBranch) {
-    throw new ExitCancelledError("No branch selected");
-  }
-
-  if (chosenBranch && chosenBranch !== currentBranch?.name) {
-    gpExecSync({ command: `git checkout ${chosenBranch}` }, (err) => {
-      throw new ExitFailedError(`Failed to checkout ${chosenBranch}: ${err}`);
-    });
-  }
 }

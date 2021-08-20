@@ -12,6 +12,6 @@ export const aliases = ["s"];
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
-    await stacksAction({ all: false, interactive: false });
+    await stacksAction({ all: false });
   });
 };

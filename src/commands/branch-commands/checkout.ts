@@ -1,5 +1,5 @@
 import yargs from "yargs";
-import { stacksAction } from "../../actions/stacks";
+import { interactiveCheckout } from "../../actions/interactive_checkout";
 import { profile } from "../../lib/telemetry";
 import { gpExecSync } from "../../lib/utils";
 
@@ -23,7 +23,7 @@ export const handler = async (args: argsT): Promise<void> => {
     if (args.branch) {
       gpExecSync({ command: `git checkout ${args.branch}` });
     } else {
-      await stacksAction({ all: false, interactive: true });
+      await interactiveCheckout();
     }
   });
 };

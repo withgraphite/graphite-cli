@@ -8,6 +8,19 @@ export default class Stack {
     this.source = source;
   }
 
+  public toPromptChoices(indent = 0): { title: string; value: string }[] {
+    let choices = [
+      {
+        title: `${"  ".repeat(indent)}↳ (${this.source.branch.name})`,
+        value: this.source.branch.name,
+      },
+    ];
+    this.source.children.forEach((c) => {
+      choices = choices.concat(new Stack(c).toPromptChoices(indent + 1));
+    });
+    return choices;
+  }
+
   public toString(): string {
     const indentMultilineString = (lines: string) =>
       lines
