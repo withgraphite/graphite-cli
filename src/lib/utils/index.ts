@@ -1,4 +1,3 @@
-import { getBranchChildrenOrParentsFromGit } from "./branch_refs";
 import { checkoutBranch } from "./checkout_branch";
 import { getCommitterDate } from "./committer_date";
 import { detectStagedChanges } from "./detect_staged_changes";
@@ -40,6 +39,5 @@ export {
   preprocessCommand,
   signpostDeprecatedCommands,
   logTip,
-  getBranchChildrenOrParentsFromGit,
   VALIDATION_HELPER_MESSAGE,
 };

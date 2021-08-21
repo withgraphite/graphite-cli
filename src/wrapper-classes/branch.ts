@@ -3,10 +3,10 @@ import { repoConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import {
   getBranchChildrenOrParentsFromGit,
-  getCommitterDate,
-  getTrunk,
-  gpExecSync,
-} from "../lib/utils";
+  getRef,
+  otherBranchesWithSameCommit,
+} from "../lib/git-refs";
+import { getCommitterDate, getTrunk, gpExecSync } from "../lib/utils";
 import Commit from "./commit";
 
 type TMeta = {
@@ -150,18 +150,7 @@ export default class Branch {
   }
 
   public ref(): string {
-    return gpExecSync(
-      {
-        command: `git show-ref refs/heads/${this.name} -s`,
-      },
-      (_) => {
-        throw new ExitFailedError(
-          `Could not find ref refs/heads/${this.name}.`
-        );
-      }
-    )
-      .toString()
-      .trim();
+    return getRef(this);
   }
 
   public getMetaMergeBase(): string | undefined {
@@ -393,7 +382,7 @@ export default class Branch {
 
   public getChildrenFromGit(): Branch[] {
     return getBranchChildrenOrParentsFromGit(this, {
-      direction: "CHILDREN",
+      direction: "children",
       useMemoizedResults: this.shouldUseMemoizedResults,
     });
   }
@@ -409,13 +398,19 @@ export default class Branch {
       return [getTrunk()];
     }
     return getBranchChildrenOrParentsFromGit(this, {
-      direction: "PARENTS",
+      direction: "parents",
       useMemoizedResults: this.shouldUseMemoizedResults,
     });
   }
 
   private pointsToSameCommitAs(branch: Branch): boolean {
-    return !!this.branchesWithSameCommit().find((b) => b.name === branch.name);
+    return !!otherBranchesWithSameCommit(branch).find(
+      (b) => b.name === branch.name
+    );
+  }
+
+  public branchesWithSameCommit(): Branch[] {
+    return otherBranchesWithSameCommit(this);
   }
 
   public setPRInfo(prInfo: { number: number; url: string }): void {
@@ -428,6 +423,7 @@ export default class Branch {
     return this.getMeta()?.prInfo;
   }
 
+  // Due to deprecate in favor of other functions.
   public getCommitSHAs(): string[] {
     // We rely on meta here as the source of truth to handle the case where
     // the user has just created a new branch, but hasn't added any commits
@@ -457,29 +453,5 @@ export default class Branch {
     });
 
     return [...shas];
-  }
-
-  public branchesWithSameCommit(): Branch[] {
-    const matchingBranchesRaw = execSync(
-      `git show-ref --heads | grep ${this.ref()} | grep -v "refs/heads/${
-        this.name
-      }" | awk '{print $2}'`
-    )
-      .toString()
-      .trim();
-
-    // We want to check the length before we split because ''.split("\n")
-    // counterintuitively returns [ '' ] (an array with 1 entry as the empty
-    // string).
-    if (matchingBranchesRaw.length === 0) {
-      return [];
-    }
-
-    const matchingBranches = matchingBranchesRaw
-      .split("\n")
-      .filter((line) => line.length > 0)
-      .map((refName) => refName.replace("refs/heads/", ""))
-      .map((name) => new Branch(name));
-    return matchingBranches;
   }
 }
