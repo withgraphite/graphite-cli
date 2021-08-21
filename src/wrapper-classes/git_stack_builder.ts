@@ -1,6 +1,6 @@
 import { AbstractStackBuilder, Branch, Stack, StackNode } from ".";
 import { MultiParentError, SiblingBranchError } from "../lib/errors";
-import { getTrunk, gpExecSync } from "../lib/utils";
+import { getTrunk } from "../lib/utils";
 
 export default class GitStackBuilder extends AbstractStackBuilder {
   public fullStackFromBranch = (branch: Branch): Stack => {
@@ -28,19 +28,12 @@ export default class GitStackBuilder extends AbstractStackBuilder {
   };
 
   protected getStackBaseBranch(branch: Branch): Branch {
-    const trunkMergeBase = gpExecSync({
-      command: `git merge-base ${getTrunk()} ${branch.name}`,
-    })
-      .toString()
-      .trim();
-
     let baseBranch: Branch = branch;
     let baseBranchParent = baseBranch.getParentsFromGit()[0]; // TODO: greg - support two parents
 
     while (
       baseBranchParent !== undefined &&
-      baseBranchParent.name !== getTrunk().name &&
-      baseBranchParent.isUpstreamOf(trunkMergeBase)
+      baseBranchParent.name !== getTrunk().name
     ) {
       baseBranch = baseBranchParent;
       baseBranchParent = baseBranch.getParentsFromGit()[0];
