@@ -10,7 +10,9 @@ function getStacks(): {
   untrackedStacks: Stack[];
   trunkStack: Stack;
 } {
-  const stacks = new GitStackBuilder().allStacksFromTrunk();
+  const stacks = new GitStackBuilder({
+    useMemoizedResults: true,
+  }).allStacksFromTrunk();
 
   const trunkStack = stacks.find((s) => s.source.branch.isTrunk());
   if (!trunkStack) {

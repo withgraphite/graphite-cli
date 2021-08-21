@@ -2,6 +2,12 @@ import { Stack, StackNode } from ".";
 import Branch from "./branch";
 
 export default abstract class AbstractStackBuilder {
+  useMemoizedResults: boolean;
+
+  constructor(opts?: { useMemoizedResults: boolean }) {
+    this.useMemoizedResults = opts?.useMemoizedResults || false;
+  }
+
   public allStacksFromTrunk(): Stack[] {
     const baseBranches = this.allStackBaseNames();
     return baseBranches.map(this.fullStackFromBranch);
@@ -57,12 +63,16 @@ export default abstract class AbstractStackBuilder {
   }
 
   protected allStackBaseNames(): Branch[] {
-    const allBranches = Branch.allBranches();
+    const allBranches = Branch.allBranches({
+      useMemoizedResults: this.useMemoizedResults,
+    });
     const allStackBaseNames = allBranches.map(
       (b) => this.getStackBaseBranch(b).name
     );
     const uniqueStackBaseNames = [...new Set(allStackBaseNames)];
-    return uniqueStackBaseNames.map((bn) => new Branch(bn));
+    return uniqueStackBaseNames.map(
+      (bn) => new Branch(bn, { useMemoizedResults: this.useMemoizedResults })
+    );
   }
 
   protected abstract getStackBaseBranch(branch: Branch): Branch;
