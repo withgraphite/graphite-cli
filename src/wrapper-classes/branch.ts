@@ -1,4 +1,5 @@
 import { execSync } from "child_process";
+import { repoConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import {
   getBranchChildrenOrParentsFromGit,
@@ -99,7 +100,6 @@ export default class Branch {
   }
 
   getParentFromMeta(): Branch | undefined {
-    console.log(`getting meta parent ${this.name}`);
     if (this.name === getTrunk().name) {
       return undefined;
     }
@@ -133,7 +133,6 @@ export default class Branch {
   }
 
   public getChildrenFromMeta(): Branch[] {
-    console.log(`getting meta children ${this.name}`);
     const children = Branch.allBranches().filter(
       (b) => b.getMeta()?.parentBranchName === this.name
     );
@@ -393,7 +392,6 @@ export default class Branch {
   }
 
   public getChildrenFromGit(): Branch[] {
-    console.log(`get children from git ${this.name}`);
     return getBranchChildrenOrParentsFromGit(this, {
       direction: "CHILDREN",
       useMemoizedResults: this.shouldUseMemoizedResults,
@@ -401,7 +399,6 @@ export default class Branch {
   }
 
   public getParentsFromGit(): Branch[] {
-    console.log(`get parents from git ${this.name}`);
     if (
       // Current branch is trunk
       this.name === getTrunk().name

@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { execSync } from "child_process";
 import { getTrunk } from ".";
-import { Branch } from "../../wrapper-classes";
+import Branch from "../../wrapper-classes/branch";
 import { repoConfig } from "../config";
 import { tracer } from "../telemetry";
 import { logDebug } from "./splog";

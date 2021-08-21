@@ -2,7 +2,7 @@ import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
 import { ExitFailedError } from "../../lib/errors";
-import { gpExecSync } from "../../lib/utils";
+import { gpExecSync } from "../../lib/utils/exec_sync";
 import { PreconditionsFailedError } from "../errors";
 
 const currentGitRepoPrecondition = (): string => {
