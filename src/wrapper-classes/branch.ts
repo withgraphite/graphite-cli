@@ -29,9 +29,9 @@ export default class Branch {
   name: string;
   shouldUseMemoizedResults: boolean;
 
-  constructor(name: string) {
+  constructor(name: string, opts?: { useMemoizedResults: boolean }) {
     this.name = name;
-    this.shouldUseMemoizedResults = false;
+    this.shouldUseMemoizedResults = opts?.useMemoizedResults || false;
   }
 
   /**
