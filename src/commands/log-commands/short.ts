@@ -1,5 +1,5 @@
 import yargs from "yargs";
-import { stacksAction } from "../../actions/stacks";
+import { logShortAction } from "../../actions/log_short";
 import { profile } from "../../lib/telemetry";
 
 const args = {} as const;
@@ -12,6 +12,6 @@ export const aliases = ["s"];
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
-    await stacksAction({ all: false });
+    await logShortAction();
   });
 };
