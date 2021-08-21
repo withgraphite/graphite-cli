@@ -1,6 +1,4 @@
 import { Stack, StackNode } from ".";
-import { repoConfig } from "../lib/config";
-import { getTrunk } from "../lib/utils";
 import Branch from "./branch";
 
 export default abstract class AbstractStackBuilder {
@@ -60,13 +58,9 @@ export default abstract class AbstractStackBuilder {
 
   protected allStackBaseNames(): Branch[] {
     const allBranches = Branch.allBranches();
-    const allStackBaseNames = allBranches
-      .filter(
-        (b) =>
-          !repoConfig.getIgnoreBranches().includes(b.name) &&
-          b.name != getTrunk().name
-      )
-      .map((b) => this.getStackBaseBranch(b).name);
+    const allStackBaseNames = allBranches.map(
+      (b) => this.getStackBaseBranch(b).name
+    );
     const uniqueStackBaseNames = [...new Set(allStackBaseNames)];
     return uniqueStackBaseNames.map((bn) => new Branch(bn));
   }
