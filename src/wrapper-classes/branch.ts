@@ -376,6 +376,18 @@ export default class Branch {
     this.writeMeta(meta);
   }
 
+  public lastCommitTime(): number {
+    return parseInt(
+      gpExecSync({ command: `git log ${this.name} -1 --format=%ct` })
+        .toString()
+        .trim()
+    );
+  }
+
+  public isTrunk(): boolean {
+    return this.name === getTrunk().name;
+  }
+
   static async branchWithName(name: string): Promise<Branch> {
     const branch = Branch.allBranches().find((b) => b.name === name);
     if (!branch) {
