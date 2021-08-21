@@ -58,14 +58,14 @@ export function getTrunk(): Branch {
         `Configured trunk branch (${configTrunkName}) not found in the current repo. Consider updating the trunk name by running "gt repo init".`
       );
     }
-    memoizedTrunk = new Branch(configTrunkName);
+    memoizedTrunk = new Branch(configTrunkName, { useMemoizedResults: true });
   }
 
   // No configured trunk, infer
   if (!memoizedTrunk) {
     const inferredTrunk = inferTrunk();
     if (inferredTrunk) {
-      memoizedTrunk = inferredTrunk;
+      memoizedTrunk = inferredTrunk.useMemoizedResults();
       return memoizedTrunk;
     }
     throw new ConfigError(
