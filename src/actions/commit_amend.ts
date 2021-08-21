@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import { ExitFailedError } from "../lib/errors";
-import { workingTreeClean } from "../lib/git-utils";
 import { globalArgs } from "../lib/global-arguments";
+import { uncommittedChangesPrecondition } from "../lib/preconditions";
 import { gpExecSync, logWarn } from "../lib/utils";
 import { fixAction } from "./fix";
 
@@ -40,9 +40,10 @@ export async function commitAmendAction(opts: {
     throw new ExitFailedError("Failed to amend changes. Aborting...");
   }
   // Only restack if working tree is now clean.
-  if (workingTreeClean()) {
+  try {
+    uncommittedChangesPrecondition();
     await fixAction({ action: "rebase" });
-  } else {
+  } catch {
     logWarn(
       "Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix`"
     );
