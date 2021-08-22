@@ -22,11 +22,14 @@ export class PublicRepoScene extends AbstractScene {
   public setup(): void {
     this.tmpDir = tmp.dirSync();
     this.dir = this.tmpDir.name;
+    console.log(`Cloning...`);
     this.repo = new GitRepo(this.dir, { repoUrl: this.repoUrl });
+    console.log(`Tracking branches...`);
     execSync(
       `git branch -r | grep -v '\\->' | while read remote; do git branch --track "\${remote#origin/}" "$remote"; done`,
       { cwd: this.dir }
     );
+    console.log(`Fetching branches...`);
     execSync(`git -C ${this.dir} fetch --all`);
     fs.writeFileSync(
       `${this.dir}/.git/.graphite_repo_config`,

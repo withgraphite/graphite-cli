@@ -36,27 +36,27 @@ jobs:
       - name: Test
         run: yarn test-fast
 
-  # slow_tests:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     # Basic setup
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         clean: "false"
-  #         fetch-depth: 0
-  #     - uses: actions/setup-node@v2-beta
-  #       with:
-  #         node-version: 15.14.0
-  #     - name: Install
-  #       run: yarn install --immutable
-  #     - name: Build
-  #       run: yarn build
-  #     - name: Setup git
-  #       run: git config --global user.email "test@gmail.com" && git config --global user.name "test"
-  #     - name: Git Version
-  #       run: git --version
-  #     - name: Test
-  #       run: yarn test-slow
+  slow_tests:
+    runs-on: ubuntu-latest
+    steps:
+      # Basic setup
+      - uses: actions/checkout@v2
+        with:
+          clean: "false"
+          fetch-depth: 0
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: 15.14.0
+      - name: Install
+        run: yarn install --immutable
+      - name: Build
+        run: yarn build
+      - name: Setup git
+        run: git config --global user.email "test@gmail.com" && git config --global user.name "test"
+      - name: Git Version
+        run: git --version
+      - name: Test
+        run: yarn test-slow
 
   # deploy_test:
   #   runs-on: ubuntu-latest
