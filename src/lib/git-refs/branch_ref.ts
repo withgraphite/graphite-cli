@@ -1,13 +1,12 @@
 import Branch from "../../wrapper-classes/branch";
 import { ExitFailedError } from "../errors";
 import { gpExecSync } from "../utils";
+import cache from "./cache";
 
-let memoizedBranchToRef: Record<string, string> | undefined = undefined;
-let memoizedRefToBranches: Record<string, string[]> | undefined = undefined;
-
-function refreshRefsInMemory(): void {
-  memoizedRefToBranches = {};
-  memoizedBranchToRef = {};
+function refreshRefsCache(): void {
+  cache.clearBranchRefs();
+  const memoizedRefToBranches: Record<string, string[]> = {};
+  const memoizedBranchToRef: Record<string, string> = {};
   gpExecSync({
     command: `git show-ref --heads`,
   })
@@ -22,33 +21,33 @@ function refreshRefsInMemory(): void {
       }
       const ref = pair[0];
       const branchName = pair[1].replace("refs/heads/", "");
-      memoizedRefToBranches![ref]
-        ? memoizedRefToBranches![ref].push(branchName)
-        : (memoizedRefToBranches![ref] = [branchName]);
+      memoizedRefToBranches[ref]
+        ? memoizedRefToBranches[ref].push(branchName)
+        : (memoizedRefToBranches[ref] = [branchName]);
 
-      memoizedBranchToRef![branchName] = ref;
+      memoizedBranchToRef[branchName] = ref;
     });
+  cache.setBranchRefs({
+    branchToRef: memoizedBranchToRef,
+    refToBranches: memoizedRefToBranches,
+  });
 }
 export function getRef(branch: Branch): string {
-  if (!branch.shouldUseMemoizedResults || !memoizedBranchToRef) {
-    refreshRefsInMemory();
+  if (!branch.shouldUseMemoizedResults || !cache.getBranchToRef()) {
+    refreshRefsCache();
   }
-  const ref = memoizedBranchToRef?.[branch.name];
+  const ref = cache.getBranchToRef()?.[branch.name];
   if (!ref) {
     throw new ExitFailedError(`Failed to find ref for ${branch.name}`);
   }
   return ref;
 }
 export function otherBranchesWithSameCommit(branch: Branch): Branch[] {
-  if (
-    !branch.shouldUseMemoizedResults ||
-    !memoizedRefToBranches ||
-    !memoizedBranchToRef
-  ) {
-    refreshRefsInMemory();
+  if (!branch.shouldUseMemoizedResults || !cache.getRefToBranches()) {
+    refreshRefsCache();
   }
   const ref = branch.ref();
-  const branchNames = memoizedRefToBranches?.[ref];
+  const branchNames = cache.getRefToBranches()?.[ref];
   if (!branchNames) {
     throw new ExitFailedError(`Failed to find branches for ref ${ref}`);
   }

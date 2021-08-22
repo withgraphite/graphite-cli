@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { validate } from "../../../src/actions/validate";
+import { cache } from "../../../src/lib/git-refs";
 import { allScenes } from "../../lib/scenes";
 import { configureTest } from "../../lib/utils";
 
@@ -62,14 +63,17 @@ for (const scene of allScenes) {
     it("Can validate fullstack", async () => {
       scene.repo.createChange("a");
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      cache.clearAll();
       expect(() => validate("FULLSTACK")).to.not.throw(Error);
 
       scene.repo.createChange("b");
       scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+      cache.clearAll();
       expect(() => validate("FULLSTACK")).to.not.throw(Error);
 
       scene.repo.createAndCheckoutBranch("c");
       scene.repo.createChangeAndCommit("c");
+      cache.clearAll();
       expect(() => validate("FULLSTACK")).to.throw(Error);
     });
   });

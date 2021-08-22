@@ -5,6 +5,7 @@ import {
   ExitFailedError,
   RebaseConflictError,
 } from "../lib/errors";
+import { cache } from "../lib/git-refs";
 import {
   currentBranchPrecondition,
   uncommittedChangesPrecondition,
@@ -139,6 +140,7 @@ async function restackNode(node: StackNode): Promise<void> {
         }
       }
     );
+    cache.clearAll();
   }
 
   for (const child of node.children) {

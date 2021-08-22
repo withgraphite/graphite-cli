@@ -4,6 +4,8 @@ import { repoConfig } from "../config";
 import { tracer } from "../telemetry";
 import { gpExecSync } from "../utils";
 import { logDebug } from "../utils/splog";
+import { getRef } from "./branch_ref";
+import cache from "./cache";
 
 export function getBranchChildrenOrParentsFromGit(
   branch: Branch,
@@ -25,9 +27,8 @@ export function getBranchChildrenOrParentsFromGit(
         useMemoizedResults,
         direction: opts.direction,
       });
-      const headSha = gpExecSync({ command: `git rev-parse ${branch.name}` })
-        .toString()
-        .trim();
+
+      const headSha = getRef(branch);
 
       const childrenOrParents = traverseGitTreeFromCommitUntilBranch(
         headSha,
@@ -60,25 +61,24 @@ export function getBranchChildrenOrParentsFromGit(
   );
 }
 
-let memoizedParentsRevList: Record<string, string[]> | undefined = undefined;
-let memoizedChildrenRevList: Record<string, string[]> | undefined = undefined;
-
 function getRevListGitTree(opts: {
   useMemoizedResults: boolean;
   direction: "parents" | "children";
 }): Record<string, string[]> {
+  const cachedParentsRevList = cache.getParentsRevList();
+  const cachedChildrenRevList = cache.getChildrenRevList();
   if (
     opts.useMemoizedResults &&
     opts.direction === "parents" &&
-    memoizedParentsRevList
+    cachedParentsRevList
   ) {
-    return memoizedParentsRevList;
+    return cachedParentsRevList;
   } else if (
     opts.useMemoizedResults &&
     opts.direction === "children" &&
-    memoizedChildrenRevList
+    cachedChildrenRevList
   ) {
-    return memoizedChildrenRevList;
+    return cachedChildrenRevList;
   }
   const allBranches = Branch.allBranches()
     .map((b) => b.name)
@@ -87,7 +87,7 @@ function getRevListGitTree(opts: {
     gpExecSync({
       command:
         // Check that there is a commit behind this branch before getting the full list.
-        `git rev-list --${opts.direction} ^$(git merge-base ${allBranches})~1 ${allBranches}`,
+        `git rev-list --${opts.direction} ^$(git merge-base --octopus ${allBranches})~1 ${allBranches} 2> /dev/null || git rev-list --${opts.direction} --all`,
       options: {
         maxBuffer: 1024 * 1024 * 1024,
       },
@@ -96,9 +96,9 @@ function getRevListGitTree(opts: {
       .trim()
   );
   if (opts.direction === "parents") {
-    memoizedParentsRevList = revList;
+    cache.setParentsRevList(revList);
   } else if (opts.direction === "children") {
-    memoizedChildrenRevList = revList;
+    cache.setChildrenRevList(revList);
   }
   return revList;
 }

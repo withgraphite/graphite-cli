@@ -5,6 +5,7 @@ import {
   RebaseConflictError,
   ValidationFailedError,
 } from "../lib/errors";
+import { cache } from "../lib/git-refs";
 import {
   branchExistsPrecondition,
   currentBranchPrecondition,
@@ -57,6 +58,7 @@ async function stackOnto(currentBranch: Branch, onto: string) {
       }
     }
   );
+  cache.clearAll();
   // set current branch's parent only if the rebase succeeds.
   console.log(`setting ${currentBranch.name} parent to ${onto}`);
   currentBranch.setParentBranchName(onto);

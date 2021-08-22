@@ -381,10 +381,11 @@ export default class Branch {
   }
 
   public getChildrenFromGit(): Branch[] {
-    return getBranchChildrenOrParentsFromGit(this, {
+    const kids = getBranchChildrenOrParentsFromGit(this, {
       direction: "children",
       useMemoizedResults: this.shouldUseMemoizedResults,
     });
+    return kids;
   }
 
   public getParentsFromGit(): Branch[] {
