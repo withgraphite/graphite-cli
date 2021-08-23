@@ -28,14 +28,14 @@ for (const scene of allScenes) {
       scene.repo.createAndCheckoutBranch("d");
       scene.repo.createChangeAndCommit("d");
 
-      const gitStacks = new GitStackBuilder().allStacksFromTrunk();
-      const metaStacks = new MetaStackBuilder().allStacksFromTrunk();
+      const gitStacks = new GitStackBuilder().allStacks();
+      const metaStacks = new MetaStackBuilder().allStacks();
 
       expect(
-        gitStacks[0].equals(Stack.fromMap({ main: { a: { b: { c: {} } } } }))
+        gitStacks[0].equals(
+          Stack.fromMap({ main: { d: {}, a: { b: { c: {} } } } })
+        )
       ).to.be.true;
-      expect(gitStacks[1].equals(Stack.fromMap({ main: { d: {} } }))).to.be
-        .true;
 
       // Expect default meta to be 4 stacks of 1 off main.
       expect(metaStacks[0].equals(Stack.fromMap({ main: { a: {} } })));
@@ -56,13 +56,12 @@ for (const scene of allScenes) {
       scene.repo.createChange("d");
       scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
-      const metaStacks = new MetaStackBuilder().allStacksFromTrunk();
-      const gitStacks = new GitStackBuilder().allStacksFromTrunk();
+      const metaStacks = new MetaStackBuilder().allStacks();
+      const gitStacks = new GitStackBuilder().allStacks();
 
-      expect(metaStacks[0].equals(Stack.fromMap({ main: { a: { b: {} } } }))).to
-        .be.true;
-      expect(metaStacks[1].equals(Stack.fromMap({ main: { d: {} } }))).to.be
-        .true;
+      expect(
+        metaStacks[0].equals(Stack.fromMap({ main: { d: {}, a: { b: {} } } }))
+      ).to.be.true;
 
       // Expect git and meta stacks to equal
       expect(gitStacks[0].equals(metaStacks[0])).to.be.true;

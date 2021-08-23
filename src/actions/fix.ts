@@ -160,7 +160,7 @@ async function regen(branch: Branch): Promise<void> {
 }
 
 function regenAllStacks(): void {
-  const allGitStacks = new GitStackBuilder().allStacksFromTrunk();
+  const allGitStacks = new GitStackBuilder().allStacks();
   logInfo(`Computing regenerating ${allGitStacks.length} stacks...`);
   allGitStacks.forEach((stack) => {
     logInfo(`\nRegenerating:\n${stack.toString()}`);

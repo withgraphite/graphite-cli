@@ -12,7 +12,7 @@ function getStacks(): {
 } {
   const stacks = new GitStackBuilder({
     useMemoizedResults: true,
-  }).allStacksFromTrunk();
+  }).allStacks();
 
   const trunkStack = stacks.find((s) => s.source.branch.isTrunk());
   if (!trunkStack) {
