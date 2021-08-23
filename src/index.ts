@@ -38,10 +38,12 @@ process.on("uncaughtException", (err) => {
 function deprecatedGpWarning(argv: yargs.Arguments) {
   if (argv["$0"].endsWith("gp")) {
     console.log(
-      chalk.yellow(
+      chalk.red(
         `Warning: Based on feedback, we've update the Graphite CLI alias to "gt". The alias "gp" has been deprecated.`
       )
     );
+    // eslint-disable-next-line no-restricted-syntax
+    process.exit(1);
   }
 }
 
