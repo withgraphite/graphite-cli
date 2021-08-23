@@ -37,10 +37,10 @@ export async function logShortAction(): Promise<void> {
   const currentBranch = currentBranchPrecondition();
   const stacks = getStacks();
 
-  const needsFix: boolean = printStackNode(stacks.trunkStack.source, {
+  const tips = printStackNode(stacks.trunkStack.source, {
     indent: 0,
     currentBranch: currentBranch,
-  }).needsFix;
+  });
 
   stacks.fallenStacks.sort(sortStacksByAge).forEach((s) => {
     printStackNode(s.source, {
@@ -49,7 +49,7 @@ export async function logShortAction(): Promise<void> {
     });
   });
 
-  if (needsFix || stacks.fallenStacks.length > 0) {
+  if (tips.needsFix || stacks.fallenStacks.length > 0) {
     logRebaseTip();
   }
 
@@ -61,6 +61,9 @@ export async function logShortAction(): Promise<void> {
         currentBranch,
       })
     );
+  }
+
+  if (stacks.untrackedStacks.length > 0 || tips.untracked) {
     logRegenTip();
   }
 }
@@ -74,8 +77,9 @@ function sortStacksByAge(a: Stack, b: Stack): number {
 function printStackNode(
   node: StackNode,
   opts: { indent: number; currentBranch: Branch }
-): { needsFix: boolean } {
+): { needsFix: boolean; untracked: boolean } {
   const metaParent = node.branch.getParentFromMeta();
+  let untracked = !metaParent && !node.branch.isTrunk();
   let needsFix: boolean =
     !!metaParent &&
     (!node.parent || metaParent.name !== node.parent.branch.name);
@@ -88,17 +92,19 @@ function printStackNode(
         ? chalk.cyan(`↳ ${node.branch.name}`)
         : `↳ ${node.branch.name}`,
       // whether it needs a rebase or not
-      `${needsFix ? chalk.yellow(`(off ${metaParent?.name})`) : ""}`,
+      ...(needsFix ? [chalk.yellow(`(off ${metaParent?.name})`)] : []),
+      ...(untracked ? [chalk.yellow(`(untracked)`)] : []),
     ].join(" ")
   );
   node.children.forEach((c) => {
-    needsFix =
-      printStackNode(c, {
-        indent: opts.indent + 1,
-        currentBranch: opts.currentBranch,
-      }).needsFix || needsFix;
+    const tips = printStackNode(c, {
+      indent: opts.indent + 1,
+      currentBranch: opts.currentBranch,
+    });
+    untracked = tips.untracked || untracked;
+    needsFix = tips.needsFix || needsFix;
   });
-  return { needsFix };
+  return { untracked, needsFix };
 }
 
 function logRebaseTip(): void {
