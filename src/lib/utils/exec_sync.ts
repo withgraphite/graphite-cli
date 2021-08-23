@@ -16,7 +16,7 @@ export function gpExecSync(
   onError?: (e: Error) => void
 ): Buffer {
   try {
-    // Only measure if we're with an exisiting span.
+    // Only measure if we're with an existing span.
     if (tracer.currentSpanId) {
       return tracer.spanSync(
         {

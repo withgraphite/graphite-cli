@@ -10,8 +10,20 @@ import Branch from "../wrapper-classes/branch";
 export async function createBranchAction(opts: {
   branchName?: string;
   commitMessage?: string;
+  addAll?: boolean
 }): Promise<void> {
   const parentBranch = currentBranchPrecondition();
+
+  if (opts.addAll) {
+    gpExecSync(
+        {
+          command: "git add --all",
+        },
+        () => {
+          throw new ExitFailedError("Failed to add changes. Aborting...");
+        }
+    );
+  }
 
   if (opts.commitMessage) {
     ensureSomeStagedChangesPrecondition();
