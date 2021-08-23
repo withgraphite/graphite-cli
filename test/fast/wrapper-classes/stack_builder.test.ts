@@ -65,7 +65,6 @@ for (const scene of allScenes) {
 
       // Expect git and meta stacks to equal
       expect(gitStacks[0].equals(metaStacks[0])).to.be.true;
-      expect(gitStacks[1].equals(metaStacks[1])).to.be.true;
     });
 
     it("Can get full stack from a branch", () => {

@@ -83,7 +83,7 @@ export default abstract class AbstractStackBuilder {
     }
 
     // If the parent is trunk (the only possibility because this is a off trunk)
-    const parent = this.getBranchParent(branch);
+    const parent = this.getBranchParent(stack.source.branch);
     if (parent && parent.name == getTrunk().name) {
       const trunkNode: StackNode = new StackNode({
         branch: getTrunk(),
