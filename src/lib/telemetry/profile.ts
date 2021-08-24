@@ -2,7 +2,7 @@
 // We the creators want to understand how people are using the tool
 // All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
 import yargs from "yargs";
-import { postTelemetryInBackground } from ".";
+import { postTelemetryInBackground, registerSigintHandler } from ".";
 import { version } from "../../../package.json";
 import { init } from "../../actions/init";
 import { execStateConfig, repoConfig } from "../config";
@@ -32,6 +32,8 @@ export async function profile(
 ): Promise<void> {
   // Self heal repo config on all commands besides init:
   const parsedArgs = parseArgs(args);
+  const start = Date.now();
+  registerSigintHandler({ commandName: parsedArgs.command, startTime: start });
   if (parsedArgs.command !== "repo init" && !repoConfig.getTrunk()) {
     logInfo(
       `No trunk branch specified in "${repoConfig.path()}", please choose now.`
@@ -39,7 +41,6 @@ export async function profile(
     await init();
   }
 
-  const start = Date.now();
   const numCommits = getNumCommitObjects();
   const numBranches = getNumBranches();
 

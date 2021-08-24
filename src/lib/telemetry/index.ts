@@ -1,6 +1,7 @@
 import { getNumBranches, getNumCommitObjects, getUserEmail } from "./context";
 import { postTelemetryInBackground } from "./post_traces";
 import { profile } from "./profile";
+import { registerSigintHandler } from "./sigint_handler";
 import tracer from "./tracer";
 import { fetchUpgradePromptInBackground } from "./upgrade_prompt";
 
@@ -15,4 +16,5 @@ export {
   SHOULD_REPORT_TELEMETRY,
   fetchUpgradePromptInBackground,
   postTelemetryInBackground,
+  registerSigintHandler,
 };

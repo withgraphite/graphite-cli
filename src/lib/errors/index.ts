@@ -42,6 +42,13 @@ class ConfigError extends ExitError {
   }
 }
 
+class KilledError extends ExitError {
+  constructor() {
+    super(`User killed Graphite early`);
+    this.name = "Killed";
+  }
+}
+
 class SiblingBranchError extends ExitError {
   constructor(branches: Branch[]) {
     super(
@@ -80,4 +87,5 @@ export {
   ExitCancelledError,
   SiblingBranchError,
   MultiParentError,
+  KilledError,
 };
