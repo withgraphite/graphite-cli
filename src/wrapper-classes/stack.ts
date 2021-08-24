@@ -8,6 +8,14 @@ export default class Stack {
     this.source = source;
   }
 
+  public branches(): Branch[] {
+    let branches = [this.source.branch];
+    this.source.children.forEach((c) => {
+      branches = branches.concat(new Stack(c).branches());
+    });
+    return branches;
+  }
+
   public toPromptChoices(indent = 0): { title: string; value: string }[] {
     let choices = [
       {

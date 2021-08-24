@@ -165,5 +165,23 @@ for (const scene of allScenes) {
         .true;
       expect(metaStack.equals(gitStack)).to.be.true;
     });
+
+    it("Can get branchs from a stack", () => {
+      scene.repo.createChange("a");
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.createChange("b");
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+      scene.repo.createChange("c");
+      scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
+      const metaStack = new MetaStackBuilder().fullStackFromBranch(
+        new Branch("b")
+      );
+      expect(
+        metaStack
+          .branches()
+          .map((b) => b.name)
+          .join(", ")
+      ).equals("main, a, b, c");
+    });
   });
 }
