@@ -7,7 +7,7 @@ import fs from "fs-extra";
 import prompts from "prompts";
 import tmp from "tmp";
 import { API_SERVER } from "../lib/api";
-import { repoConfig, userConfig } from "../lib/config";
+import { execStateConfig, repoConfig, userConfig } from "../lib/config";
 import {
   ExitFailedError,
   PreconditionsFailedError,
@@ -37,6 +37,11 @@ export async function submitAction(args: {
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
 }): Promise<void> {
+  if (!execStateConfig.interactive()) {
+    args.editPRFieldsInline = false;
+    args.createNewPRsAsDraft = true;
+  }
+
   const cliAuthToken = getCLIAuthToken();
   const repoName = repoConfig.getRepoName();
   const repoOwner = repoConfig.getRepoOwner();

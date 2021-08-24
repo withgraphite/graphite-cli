@@ -1,6 +1,5 @@
 import yargs from "yargs";
 import { submitAction } from "../../actions/submit";
-import { execStateConfig } from "../../lib/config";
 import { profile } from "../../lib/telemetry";
 
 export const command = "submit";
@@ -38,34 +37,16 @@ const args = {
     alias: "e",
   },
 } as const;
-type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const builder = args;
 export const aliases = ["s"];
+export type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const handler = async (argv: argsT): Promise<void> => {
   await profile(argv, async () => {
-    const { editPRFieldsInline, createNewPRsAsDraft } = getSubmitSettings(argv);
     await submitAction({
       scope: "FULLSTACK",
-      editPRFieldsInline: editPRFieldsInline,
-      createNewPRsAsDraft: createNewPRsAsDraft,
+      editPRFieldsInline: argv.edit,
+      createNewPRsAsDraft: argv.draft,
     });
   });
 };
-
-function getSubmitSettings(argv: argsT): {
-  editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean | undefined;
-} {
-  if (!execStateConfig.interactive()) {
-    return {
-      editPRFieldsInline: false,
-      createNewPRsAsDraft: true,
-    };
-  }
-
-  return {
-    editPRFieldsInline: argv.edit,
-    createNewPRsAsDraft: argv.draft,
-  };
-}
