@@ -20,10 +20,10 @@ import {
   logInfo,
   logNewline,
   logSuccess,
-  logWarn,
 } from "../lib/utils";
 import { getPRTemplate } from "../lib/utils/pr_templates";
 import { Unpacked } from "../lib/utils/ts_helpers";
+import { MetaStackBuilder } from "../wrapper-classes";
 import Branch from "../wrapper-classes/branch";
 import Commit from "../wrapper-classes/commit";
 import { TScope } from "./scope";
@@ -50,7 +50,12 @@ export async function submitAction(args: {
   }
 
   const currentBranch = currentBranchPrecondition();
-  const branchesToSubmit = await getBranchesToSubmit(currentBranch);
+  const stack =
+    args.scope === "DOWNSTACK"
+      ? new MetaStackBuilder().downstackFromBranch(currentBranch)
+      : new MetaStackBuilder().fullStackFromBranch(currentBranch);
+
+  const branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
 
   pushBranchesToRemote(branchesToSubmit);
 
@@ -78,40 +83,6 @@ function getCLIAuthToken(): string {
     );
   }
   return token;
-}
-
-async function getBranchesToSubmit(currentBranch: Branch): Promise<Branch[]> {
-  const stackOfBranches = await getDownstackInclusive(currentBranch);
-
-  if (stackOfBranches.length === 0) {
-    logWarn("No downstack branches found.");
-    return [];
-  }
-
-  return stackOfBranches.filter((branch) => {
-    return branch.getCommitSHAs().length > 0;
-  });
-}
-
-async function getDownstackInclusive(topOfStack: Branch): Promise<Branch[]> {
-  const downstack: Branch[] = [];
-
-  let currentBranch = topOfStack;
-  while (
-    currentBranch != null &&
-    currentBranch != undefined &&
-    // don't include trunk as part of the stack
-    currentBranch.getParentFromMeta() != undefined
-  ) {
-    downstack.push(currentBranch);
-
-    const parentBranchName: string = currentBranch.getParentFromMeta()!.name;
-    currentBranch = await Branch.branchWithName(parentBranchName);
-  }
-
-  downstack.reverse();
-
-  return downstack;
 }
 
 function pushBranchesToRemote(branches: Branch[]): void {
