@@ -11,6 +11,7 @@ import { userConfig } from "../../lib/config";
 import { API_SERVER } from "../api";
 
 type oldTelemetryT = {
+  canonicalCommandName: string;
   commandName: string;
   durationMiliSeconds: number;
   err?: { errName: string; errMessage: string; errStack: string };

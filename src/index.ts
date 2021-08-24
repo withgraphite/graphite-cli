@@ -25,6 +25,7 @@ tmp.setGracefulCleanup();
 
 process.on("uncaughtException", (err) => {
   postTelemetryInBackground({
+    canonicalCommandName: "unknown",
     commandName: "unknown",
     durationMiliSeconds: 0,
     err: {

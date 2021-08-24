@@ -28,7 +28,7 @@ export const description =
   "Show the parent branch of your current branch (i.e. directly below the current branch in the stack) as tracked by Graphite. Branch location metadata is stored under `.git/refs/branch-metadata`.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, "branch parent", async () => {
     const branch = currentBranchPrecondition();
     if (argv.set) {
       setParent(branch, argv.set);

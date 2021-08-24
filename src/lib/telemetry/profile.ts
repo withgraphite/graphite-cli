@@ -30,6 +30,7 @@ import tracer from "./tracer";
 
 export async function profile(
   args: yargs.Arguments,
+  canonicalName: string,
   handler: () => Promise<void>
 ): Promise<void> {
   // Self heal repo config on all commands besides init:
@@ -101,6 +102,7 @@ export async function profile(
       logInfo(err.stack);
     }
     postTelemetryInBackground({
+      canonicalCommandName: canonicalName,
       commandName: parsedArgs.command,
       durationMiliSeconds: end - start,
       err: {
@@ -115,6 +117,7 @@ export async function profile(
 
   const end = Date.now();
   postTelemetryInBackground({
+    canonicalCommandName: canonicalName,
     commandName: parsedArgs.command,
     durationMiliSeconds: end - start,
   });

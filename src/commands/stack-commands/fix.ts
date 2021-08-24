@@ -26,7 +26,7 @@ export const builder = args;
 export const aliases = ["f"];
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, "stack fix", async () => {
     if (argv.rebase && argv.regen) {
       throw new ExitFailedError(
         'Please specify either the "--rebase" or "--regen" method, not both'

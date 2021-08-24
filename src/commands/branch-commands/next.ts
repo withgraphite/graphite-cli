@@ -1,5 +1,8 @@
 import yargs from "yargs";
-import { switchBranchAction, TraversalDirection } from "../../actions/branch_traversal";
+import {
+  switchBranchAction,
+  TraversalDirection,
+} from "../../actions/branch_traversal";
 import { execStateConfig } from "../../lib/config";
 import { profile } from "../../lib/telemetry";
 
@@ -16,12 +19,13 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "next [steps]";
+export const canonical = "branch next";
 export const aliases = ["n"];
 export const description =
   "If you're in a stack, i.e. Branch A → Branch B (you are here) → Branch C, checkout the branch directly upstack (Branch C). If there are multiple child branches above in the stack, `gt next` will prompt you to choose which branch to checkout.  Pass the `steps` arg to checkout the branch `[steps]` levels above in the stack.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, canonical, async () => {
     await switchBranchAction(TraversalDirection.Next, {
       numSteps: argv.steps,
       interactive: execStateConfig.interactive(),

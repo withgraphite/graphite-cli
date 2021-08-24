@@ -25,7 +25,7 @@ export const description =
   "Create or regenerate a `.graphite_repo_config` file.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, "repo init", async () => {
     await init(argv.trunk, argv["ignore-branches"]);
   });
 };

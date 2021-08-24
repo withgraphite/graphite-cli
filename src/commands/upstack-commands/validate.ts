@@ -11,7 +11,7 @@ export const description =
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, "stack validate", async () => {
     validate("UPSTACK");
   });
 };

@@ -17,13 +17,14 @@ const args = {
 } as const;
 
 export const command = "trunk";
+export const canonical = "repo trunk";
 export const description =
   "The trunk branch of the current repo. Graphite uses the trunk branch as the base of all stacks.";
 export const builder = args;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, canonical, async () => {
     if (argv.set) {
       branchExistsPrecondition(argv.set);
       repoConfig.setTrunk(argv.set);
