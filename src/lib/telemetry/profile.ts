@@ -23,7 +23,7 @@ import {
   parseArgs,
   VALIDATION_HELPER_MESSAGE,
 } from "../utils";
-import { getNumBranches, getNumCommitObjects, getUserEmail } from "./context";
+import { getUserEmail } from "./context";
 import tracer from "./tracer";
 
 export async function profile(
@@ -41,9 +41,6 @@ export async function profile(
     await init();
   }
 
-  const numCommits = getNumCommitObjects();
-  const numBranches = getNumBranches();
-
   try {
     await tracer.span(
       {
@@ -54,8 +51,6 @@ export async function profile(
           version: version,
           args: parsedArgs.args,
           alias: parsedArgs.alias,
-          ...(numCommits ? { commits: numCommits.toString() } : {}),
-          ...(numBranches ? { branches: numBranches.toString() } : {}),
         },
       },
       async () => {
