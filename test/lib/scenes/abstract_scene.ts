@@ -1,6 +1,7 @@
 import { execSync } from "child_process";
 import fs from "fs-extra";
 import tmp from "tmp";
+import { execStateConfig } from "../../../src/lib/config";
 import { GitRepo } from "../../../src/lib/utils";
 
 export abstract class AbstractScene {
@@ -28,6 +29,7 @@ export abstract class AbstractScene {
     process.chdir(this.dir);
     if (process.env.DEBUG) {
       console.log(`Dir: ${this.dir}`);
+      execStateConfig.setOutputDebugLogs(true);
     }
   }
 

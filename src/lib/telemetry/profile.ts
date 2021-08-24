@@ -5,7 +5,7 @@ import yargs from "yargs";
 import { postTelemetryInBackground } from ".";
 import { version } from "../../../package.json";
 import { init } from "../../actions/init";
-import { repoConfig } from "../config";
+import { execStateConfig, repoConfig } from "../config";
 import {
   ConfigError,
   ExitCancelledError,
@@ -96,6 +96,9 @@ export async function profile(
     );
   } catch (err) {
     const end = Date.now();
+    if (execStateConfig.outputDebugLogs()) {
+      logError(err);
+    }
     postTelemetryInBackground({
       commandName: parsedArgs.command,
       durationMiliSeconds: end - start,
