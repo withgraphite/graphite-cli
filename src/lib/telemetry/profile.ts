@@ -98,7 +98,8 @@ export async function profile(
   } catch (err) {
     const end = Date.now();
     if (execStateConfig.outputDebugLogs()) {
-      logError(err);
+      logInfo(err);
+      logInfo(err.stack);
     }
     postTelemetryInBackground({
       commandName: parsedArgs.command,
