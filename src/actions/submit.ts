@@ -23,14 +23,11 @@ import {
   logWarn,
 } from "../lib/utils";
 import { getPRTemplate } from "../lib/utils/pr_templates";
+import { Unpacked } from "../lib/utils/ts_helpers";
 import Branch from "../wrapper-classes/branch";
 import Commit from "../wrapper-classes/commit";
 import { TScope } from "./scope";
 import { validate } from "./validate";
-
-type TSubmittedPRInfo = t.UnwrapSchemaMap<
-  typeof graphiteCLIRoutes.submitPullRequests.response
->;
 
 export async function submitAction(args: {
   scope: TScope;
@@ -64,8 +61,8 @@ export async function submitAction(args: {
     throw new ExitFailedError("Failed to submit commits. Please try again.");
   }
 
-  printSubmittedPRInfo(submittedPRInfo.prs);
-  saveBranchPRInfo(submittedPRInfo.prs);
+  printSubmittedPRInfo(submittedPRInfo);
+  saveBranchPRInfo(submittedPRInfo);
 }
 
 function getCLIAuthToken(): string {
@@ -132,6 +129,18 @@ function pushBranchesToRemote(branches: Branch[]): void {
   });
 }
 
+type TSubmittedPRRequest = Unpacked<
+  t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.params>["prs"]
+>;
+type TSubmittedPRResponse = Unpacked<
+  t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.response>["prs"]
+>;
+
+type TSubmittedPR = {
+  request: TSubmittedPRRequest;
+  response: TSubmittedPRResponse;
+};
+
 async function submitPRsForBranches(args: {
   branches: Branch[];
   cliAuthToken: string;
@@ -139,7 +148,7 @@ async function submitPRsForBranches(args: {
   repoName: string;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
-}): Promise<TSubmittedPRInfo | null> {
+}): Promise<TSubmittedPR[] | null> {
   const branchPRInfo: t.UnwrapSchemaMap<
     typeof graphiteCLIRoutes.submitPullRequests.params
   >["prs"] = [];
@@ -188,7 +197,17 @@ async function submitPRsForBranches(args: {
     );
 
     if (response._response.status === 200 && response._response.body !== null) {
-      return response;
+      const requests: { [head: string]: TSubmittedPRRequest } = {};
+      branchPRInfo.forEach((prRequest) => {
+        requests[prRequest.head] = prRequest;
+      });
+
+      return response.prs.map((prResponse) => {
+        return {
+          request: requests[prResponse.head],
+          response: prResponse,
+        };
+      });
     }
 
     if (response._response.status === 401) {
@@ -310,16 +329,12 @@ async function editPRBody(initial: string): Promise<string> {
   return contents;
 }
 
-function printSubmittedPRInfo(
-  prs: t.UnwrapSchemaMap<
-    typeof graphiteCLIRoutes.submitPullRequests.response
-  >["prs"]
-): void {
+function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
   prs.forEach((pr) => {
-    logSuccess(pr.head);
+    logSuccess(pr.response.head);
 
-    let status: string = pr.status;
-    switch (pr.status) {
+    let status: string = pr.response.status;
+    switch (pr.response.status) {
       case "updated":
         status = chalk.yellow(status);
         break;
@@ -330,30 +345,26 @@ function printSubmittedPRInfo(
         status = chalk.red(status);
         break;
       default:
-        assertUnreachable(pr);
+        assertUnreachable(pr.response);
     }
 
-    if ("error" in pr) {
-      logError(pr.error);
+    if ("error" in pr.response) {
+      logError(pr.response.error);
     } else {
-      console.log(`${pr.prURL} (${status})`);
+      console.log(`${pr.response.prURL} (${status})`);
     }
 
     logNewline();
   });
 }
 
-function saveBranchPRInfo(
-  prs: t.UnwrapSchemaMap<
-    typeof graphiteCLIRoutes.submitPullRequests.response
-  >["prs"]
-): void {
+function saveBranchPRInfo(prs: TSubmittedPR[]): void {
   prs.forEach(async (pr) => {
-    if (pr.status === "updated" || pr.status === "created") {
-      const branch = await Branch.branchWithName(pr.head);
+    if (pr.response.status === "updated" || pr.response.status === "created") {
+      const branch = await Branch.branchWithName(pr.response.head);
       branch.setPRInfo({
-        number: pr.prNumber,
-        url: pr.prURL,
+        number: pr.response.prNumber,
+        url: pr.response.prURL,
       });
     }
   });
