@@ -365,6 +365,7 @@ function saveBranchPRInfo(prs: TSubmittedPR[]): void {
       branch.setPRInfo({
         number: pr.response.prNumber,
         url: pr.response.prURL,
+        base: pr.request.base,
       });
     }
   });
