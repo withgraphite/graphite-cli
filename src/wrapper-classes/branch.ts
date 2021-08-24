@@ -9,13 +9,12 @@ import {
 import { getCommitterDate, getTrunk, gpExecSync } from "../lib/utils";
 import Commit from "./commit";
 
+export type TBranchPRInfo = { number: number; base: string; url: string };
+
 type TMeta = {
   parentBranchName?: string;
   prevRef?: string;
-  prInfo?: {
-    number: number;
-    url: string;
-  };
+  prInfo?: TBranchPRInfo;
 };
 
 type TBranchFilters = {
@@ -414,13 +413,13 @@ export default class Branch {
     return otherBranchesWithSameCommit(this);
   }
 
-  public setPRInfo(prInfo: { number: number; url: string }): void {
+  public setPRInfo(prInfo: TBranchPRInfo): void {
     const meta: TMeta = this.getMeta() || {};
     meta.prInfo = prInfo;
     this.writeMeta(meta);
   }
 
-  public getPRInfo(): { number: number; url: string } | undefined {
+  public getPRInfo(): TBranchPRInfo | undefined {
     return this.getMeta()?.prInfo;
   }
 
