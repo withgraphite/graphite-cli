@@ -24,7 +24,7 @@ import {
 import { getPRTemplate } from "../lib/utils/pr_templates";
 import { Unpacked } from "../lib/utils/ts_helpers";
 import { MetaStackBuilder } from "../wrapper-classes";
-import Branch from "../wrapper-classes/branch";
+import Branch, { TBranchPRInfo } from "../wrapper-classes/branch";
 import Commit from "../wrapper-classes/commit";
 import { TScope } from "./scope";
 import { validate } from "./validate";
@@ -57,10 +57,10 @@ export async function submitAction(args: {
 
   const branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
 
-  pushBranchesToRemote(branchesToSubmit);
-
+  const branchesPushedToRemote = pushBranchesToRemote(branchesToSubmit);
   const submittedPRInfo = await submitPRsForBranches({
     branches: branchesToSubmit,
+    branchesPushedToRemote: branchesPushedToRemote,
     cliAuthToken: cliAuthToken,
     repoOwner: repoOwner,
     repoName: repoName,
@@ -85,24 +85,40 @@ function getCLIAuthToken(): string {
   return token;
 }
 
-function pushBranchesToRemote(branches: Branch[]): void {
+function pushBranchesToRemote(branches: Branch[]): Branch[] {
+  const branchesPushedToRemote: Branch[] = [];
+
   logInfo("Pushing branches to remote...");
   logNewline();
 
   branches.forEach((branch) => {
     logInfo(`Pushing ${branch.name}...`);
-    gpExecSync(
+
+    const output = gpExecSync(
       {
-        command: `git push origin -f ${branch.name}`,
+        // redirecting stderr to stdout here because 1) git prints the output
+        // of the push command to stderr 2) we want to analyze it but Node's
+        // execSync makes analyzing stderr extremely challenging
+        command: `git push origin -f ${branch.name} 2>&1`,
       },
       (_) => {
         throw new ExitFailedError(
           `Failed to push changes for ${branch.name} to origin. Aborting...`
         );
       }
-    );
+    )
+      .toString()
+      .trim();
+
+    console.log(output);
     logNewline();
+
+    if (!output.includes("Everything up-to-date")) {
+      branchesPushedToRemote.push(branch);
+    }
   });
+
+  return branchesPushedToRemote;
 }
 
 type TSubmittedPRRequest = Unpacked<
@@ -119,12 +135,13 @@ type TSubmittedPR = {
 
 async function submitPRsForBranches(args: {
   branches: Branch[];
+  branchesPushedToRemote: Branch[];
   cliAuthToken: string;
   repoOwner: string;
   repoName: string;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
-}): Promise<TSubmittedPR[] | null> {
+}): Promise<TSubmittedPR[]> {
   const branchPRInfo: t.UnwrapSchemaMap<
     typeof graphiteCLIRoutes.submitPullRequests.params
   >["prs"] = [];
@@ -132,17 +149,10 @@ async function submitPRsForBranches(args: {
     // The branch here should always have a parent - above, the branches we've
     // gathered should exclude trunk which ensures that every branch we're submitting
     // a PR for has a valid parent.
-    const parentBranchName = branch.getParentFromMeta()!.name;
+    const parentBranchName = getBranchBaseName(branch);
 
     const previousPRInfo = branch.getPRInfo();
-    if (previousPRInfo) {
-      branchPRInfo.push({
-        action: "update",
-        head: branch.name,
-        base: parentBranchName,
-        prNumber: previousPRInfo.number,
-      });
-    } else {
+    if (previousPRInfo === undefined) {
       const { title, body, draft } = await getPRCreationInfo({
         branch: branch,
         parentBranchName: parentBranchName,
@@ -157,7 +167,24 @@ async function submitPRsForBranches(args: {
         body: body,
         draft: draft,
       });
+    } else if (
+      shouldUpdatePR({
+        branch: branch,
+        previousBranchPRInfo: previousPRInfo,
+        branchesPushedToRemote: args.branchesPushedToRemote,
+      })
+    ) {
+      branchPRInfo.push({
+        action: "update",
+        head: branch.name,
+        base: parentBranchName,
+        prNumber: previousPRInfo.number,
+      });
     }
+  }
+
+  if (branchPRInfo.length === 0) {
+    return [];
   }
 
   try {
@@ -200,6 +227,49 @@ async function submitPRsForBranches(args: {
   } catch (error) {
     throw new ExitFailedError(`Failed to submit PRs: ${error.message}`);
   }
+}
+
+function getBranchBaseName(branch: Branch): string {
+  return branch.getParentFromMeta()!.name;
+}
+
+/**
+ * For now, we only allow users to update the following PR properties which
+ * necessitate a PR update:
+ * - the PR base
+ * - the PR's code contents
+ *
+ * Notably, we do not yet allow users to update the PR title, body, etc.
+ *
+ * Therefore, we should only update the PR iff either of these properties
+ * differ from our stored data on the previous PR submission.
+ */
+function shouldUpdatePR(args: {
+  branch: Branch;
+  previousBranchPRInfo: TBranchPRInfo;
+  branchesPushedToRemote: Branch[];
+}): boolean {
+  // base was updated
+  if (getBranchBaseName(args.branch) !== args.previousBranchPRInfo.base) {
+    return true;
+  }
+
+  // code was updated
+  if (
+    args.branchesPushedToRemote.find(
+      (branchPushedToRemote) => branchPushedToRemote.name === args.branch.name
+    )
+  ) {
+    return true;
+  }
+
+  if (execStateConfig.outputDebugLogs()) {
+    logInfo(
+      `No PR update needed for ${args.branch.name}: PR base and code unchanged.`
+    );
+  }
+
+  return false;
 }
 
 async function getPRCreationInfo(args: {
@@ -306,6 +376,11 @@ async function editPRBody(initial: string): Promise<string> {
 }
 
 function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
+  if (prs.length === 0) {
+    logInfo("All PRs up-to-date on GitHub; no PR updates necessary.");
+    return;
+  }
+
   prs.forEach((pr) => {
     logSuccess(pr.response.head);
 
