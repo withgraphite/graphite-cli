@@ -250,7 +250,7 @@ async function getPRCreationInfo(args: {
       message: "Title",
       initial: title,
     });
-    title = response.title;
+    title = response.title ?? title;
   }
 
   let body = await getPRTemplate();
