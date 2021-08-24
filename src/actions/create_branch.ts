@@ -4,7 +4,7 @@ import {
   currentBranchPrecondition,
   ensureSomeStagedChangesPrecondition,
 } from "../lib/preconditions";
-import { checkoutBranch, gpExecSync } from "../lib/utils";
+import { checkoutBranch, gpExecSync, logTip } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 
 export async function createBranchAction(opts: {
@@ -45,6 +45,18 @@ export async function createBranchAction(opts: {
         });
         throw new ExitFailedError("Failed to commit changes, aborting", err);
       }
+    );
+  } else {
+    logTip(
+      [
+        `You've created a stacked branch without committing changes to it.`,
+        `Without a commit, the new branch and its parent will point to the same commit.`,
+        `This temporarily breaks Graphite's ability to infer parent-child branch order.`,
+        `We recommend making your staged changes first,`,
+        `and then simultaneously creating a new branch and committing to it by running either`,
+        `> gt branch create <name> -m <message>`,
+        `> gt bc -m <message> # Shortcut alias which autogenerates branch name`,
+      ].join("\n")
     );
   }
 
