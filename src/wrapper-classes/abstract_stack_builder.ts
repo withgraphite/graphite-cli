@@ -74,6 +74,18 @@ export default abstract class AbstractStackBuilder {
     );
   }
 
+  public downstackFromBranch = (branch: Branch): Stack => {
+    let node = new StackNode({ branch });
+    let parent = branch.getParentFromMeta();
+    while (parent) {
+      node.parent = new StackNode({ branch: parent });
+      node.parent.children = [node];
+      node = node.parent;
+      parent = parent.getParentFromMeta();
+    }
+    return new Stack(node);
+  };
+
   public fullStackFromBranch = (branch: Branch): Stack => {
     const base = this.getStackBaseBranch(branch, { excludingTrunk: true });
     const stack = this.upstackInclusiveFromBranchWithoutParents(base);

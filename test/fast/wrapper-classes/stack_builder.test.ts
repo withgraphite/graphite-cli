@@ -147,5 +147,23 @@ for (const scene of allScenes) {
         new GitStackBuilder().fullStackFromBranch(new Branch("a"))
       ).to.throw(SiblingBranchError);
     });
+
+    it("Can get just downstack from a branch", () => {
+      scene.repo.createChange("a");
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.createChange("b");
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+      scene.repo.createChange("c");
+      scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
+      const metaStack = new MetaStackBuilder().downstackFromBranch(
+        new Branch("b")
+      );
+      const gitStack = new GitStackBuilder().downstackFromBranch(
+        new Branch("b")
+      );
+      expect(metaStack.equals(Stack.fromMap({ main: { a: { b: {} } } }))).to.be
+        .true;
+      expect(metaStack.equals(gitStack)).to.be.true;
+    });
   });
 }
