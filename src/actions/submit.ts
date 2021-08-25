@@ -302,12 +302,13 @@ async function getPRCreationInfo(args: {
   let body = await getPRTemplate();
   const hasPRTemplate = body !== undefined;
   if (args.editPRFieldsInline) {
+    const defaultEditor = getDefaultEditor();
     const response = await prompts({
       type: "select",
       name: "body",
       message: "Body",
       choices: [
-        { title: "Edit Body (using vim)", value: "edit" },
+        { title: `Edit Body (using ${defaultEditor})`, value: "edit" },
         {
           title: `Skip${hasPRTemplate ? ` (just paste template)` : ""}`,
           value: "skip",
@@ -315,7 +316,10 @@ async function getPRCreationInfo(args: {
       ],
     });
     if (response.body === "edit") {
-      body = await editPRBody(body ?? "");
+      body = await editPRBody({
+        initial: body ?? "",
+        editor: defaultEditor,
+      });
     }
   }
 
@@ -346,6 +350,20 @@ async function getPRCreationInfo(args: {
   };
 }
 
+function getDefaultEditor(): string {
+  const gitEditor = execSync(`echo \${GIT_EDITOR}`).toString().trim();
+  if (gitEditor.length !== 0) {
+    return gitEditor;
+  }
+
+  const editor = execSync(`echo \${EDITOR}`).toString().trim();
+  if (editor.length !== 0) {
+    return editor;
+  }
+
+  return "vi";
+}
+
 function inferPRTitle(branch: Branch) {
   // Only infer the title from the commit if the branch has just 1 commit.
   const singleCommitMessage = getSingleCommitMessageOnBranch(branch);
@@ -366,10 +384,13 @@ function getSingleCommitMessageOnBranch(branch: Branch): string | null {
   return commitMessage.length > 0 ? commitMessage : null;
 }
 
-async function editPRBody(initial: string): Promise<string> {
+async function editPRBody(args: {
+  initial: string;
+  editor: string;
+}): Promise<string> {
   const file = tmp.fileSync();
-  fs.writeFileSync(file.name, initial);
-  execSync(`\${GIT_EDITOR:-vi} ${file.name}`, { stdio: "inherit" });
+  fs.writeFileSync(file.name, args.initial);
+  execSync(`${args.editor} ${file.name}`, { stdio: "inherit" });
   const contents = fs.readFileSync(file.name).toString();
   file.removeCallback();
   return contents;
