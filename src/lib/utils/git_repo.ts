@@ -1,6 +1,7 @@
 import { execSync } from "child_process";
 import fs from "fs-extra";
 import { rebaseInProgress } from "./";
+import { unStagedChanges } from "./";
 
 const TEXT_FILE_NAME = "test.txt";
 export default class GitRepo {
@@ -39,6 +40,17 @@ export default class GitRepo {
     )
       .toString()
       .trim();
+  }
+
+  createUnstagedChange(textValue: string, prefix?: string): void {
+    const filePath = `${this.dir}/${
+        prefix ? prefix + "_" : ""
+    }${TEXT_FILE_NAME}`;
+    fs.writeFileSync(filePath, textValue);
+  }
+
+  unstagedChanges(): boolean {
+    return unStagedChanges();
   }
 
   createChange(textValue: string, prefix?: string): void {

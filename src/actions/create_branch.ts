@@ -20,13 +20,13 @@ export async function createBranchAction(opts: {
           command: "git add --all",
         },
         () => {
-          throw new ExitFailedError("Failed to add changes. Aborting...");
+          throw new ExitFailedError("Could not add all staged changes. Aborting...");
         }
     );
   }
 
   if (opts.commitMessage) {
-    ensureSomeStagedChangesPrecondition();
+    ensureSomeStagedChangesPrecondition("Use -a option to stage all unstaged changes.");
   }
 
   const branchName = newBranchName(opts.branchName, opts.commitMessage);

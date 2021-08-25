@@ -37,10 +37,10 @@ function uncommittedChangesPrecondition(): void {
   }
 }
 
-function ensureSomeStagedChangesPrecondition(): void {
+function ensureSomeStagedChangesPrecondition(message?: string): void {
   if (!detectStagedChanges()) {
     gpExecSync({ command: `git status`, options: { stdio: "ignore" } });
-    throw new PreconditionsFailedError(`Cannot run without staged changes.`);
+    throw new PreconditionsFailedError(`Cannot run without staged changes. ${message}`);
   }
 }
 

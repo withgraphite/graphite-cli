@@ -16,7 +16,7 @@ for (const scene of allScenes) {
     });
 
     it("Can rollback changes on a failed commit hook", () => {
-      // Agressive AF commit hook from your angry coworker
+      // Aggressive AF commit hook from your angry coworker
       scene.repo.createPrecommitHook("exit 1");
       scene.repo.createChange("2");
       expect(() => {
@@ -30,6 +30,13 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch create -m "feat(test): info" -q`);
       expect(scene.repo.currentBranchName().includes("feat_test_info")).to.be
         .true;
+    });
+
+    it("Can create a branch with add all option", () => {
+      scene.repo.createUnstagedChange("23");
+      expect(scene.repo.unstagedChanges()).to.be.true
+      scene.repo.execCliCommand(`branch create test-branch -m "add all" -a -q`);
+      expect(scene.repo.unstagedChanges()).to.be.false
     });
 
     it("Cant create a branch off an ignored branch", () => {

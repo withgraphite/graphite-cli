@@ -19,6 +19,7 @@ import {
 } from "./splog";
 import { getTrunk } from "./trunk";
 import { uncommittedChanges } from "./uncommitted_changes";
+import { unStagedChanges } from "./unstaged_changes";
 import { VALIDATION_HELPER_MESSAGE } from "./validation_helper_message";
 
 export {
@@ -32,6 +33,7 @@ export {
   rebaseInProgress,
   detectStagedChanges,
   uncommittedChanges,
+  unStagedChanges,
   getTrunk,
   GitRepo,
   parseArgs,
