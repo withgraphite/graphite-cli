@@ -37,7 +37,7 @@ async function promptBranches(choices: promptOptionT[]): Promise<void> {
 
   if (chosenBranch && chosenBranch !== currentBranch?.name) {
     gpExecSync({ command: `git checkout ${chosenBranch}` }, (err) => {
-      throw new ExitFailedError(`Failed to checkout ${chosenBranch}: ${err}`);
+      throw new ExitFailedError(`Failed to checkout ${chosenBranch}`, err);
     });
   }
 }

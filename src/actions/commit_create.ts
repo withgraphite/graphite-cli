@@ -16,8 +16,8 @@ export async function commitCreateAction(opts: {
       {
         command: "git add --all",
       },
-      () => {
-        throw new ExitFailedError("Failed to add changes. Aborting...");
+      (err) => {
+        throw new ExitFailedError("Failed to add changes. Aborting...", err);
       }
     );
   }
@@ -32,8 +32,8 @@ export async function commitCreateAction(opts: {
         ...[execStateConfig.noVerify() ? ["--no-verify"] : []],
       ].join(" "),
     },
-    () => {
-      throw new ExitFailedError("Failed to commit changes. Aborting...");
+    (err) => {
+      throw new ExitFailedError("Failed to commit changes. Aborting...", err);
     }
   );
 

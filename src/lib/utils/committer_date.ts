@@ -21,9 +21,10 @@ export function getCommitterDate(args: {
     {
       command: `git log -1 --format=${logFormat} -n 1 ${args.revision}`,
     },
-    (_) => {
+    (err) => {
       throw new ExitFailedError(
-        `Could not find commit for revision ${args.revision}.`
+        `Could not find commit for revision ${args.revision}.`,
+        err
       );
     }
   )

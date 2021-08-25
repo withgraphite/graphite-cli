@@ -6,9 +6,10 @@ export function uncommittedChanges(): boolean {
       {
         command: `git status --porcelain=v1 2>/dev/null | wc -l`,
       },
-      () => {
+      (err) => {
         throw new ExitFailedError(
-          `Failed to check current dir for uncommitted changes.`
+          `Failed to check current dir for uncommitted changes.`,
+          err
         );
       }
     )

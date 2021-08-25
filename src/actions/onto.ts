@@ -46,14 +46,15 @@ async function stackOnto(currentBranch: Branch, onto: string) {
       command: `git rebase --onto ${onto} $(git merge-base ${currentBranch.name} ${parent.name}) ${currentBranch.name}`,
       options: { stdio: "ignore" },
     },
-    () => {
+    (err) => {
       if (rebaseInProgress()) {
         throw new RebaseConflictError(
           "Please resolve the rebase conflict and then continue with your `upstack onto` command."
         );
       } else {
         throw new ExitFailedError(
-          `Rebase failed when moving (${currentBranch.name}) onto (${onto}).`
+          `Rebase failed when moving (${currentBranch.name}) onto (${onto}).`,
+          err
         );
       }
     }

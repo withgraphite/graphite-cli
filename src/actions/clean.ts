@@ -27,9 +27,9 @@ export async function cleanAction(opts: {
   const oldBranchName = oldBranch.name;
   checkoutBranch(trunk);
   if (opts.pull) {
-    gpExecSync({ command: `git pull` }, () => {
+    gpExecSync({ command: `git pull` }, (err) => {
       checkoutBranch(oldBranchName);
-      throw new ExitFailedError(`Failed to pull trunk ${trunk}`);
+      throw new ExitFailedError(`Failed to pull trunk ${trunk}`, err);
     });
   }
   const trunkChildren: Branch[] = new Branch(trunk).getChildrenFromMeta();

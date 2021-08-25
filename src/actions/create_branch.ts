@@ -36,14 +36,14 @@ export async function createBranchAction(opts: {
           stdio: "inherit",
         },
       },
-      () => {
+      (err) => {
         // Commit failed, usually due to precommit hooks. Rollback the branch.
         checkoutBranch(parentBranch.name);
         gpExecSync({
           command: `git branch -d ${branchName}`,
           options: { stdio: "ignore" },
         });
-        throw new ExitFailedError("Failed to commit changes, aborting");
+        throw new ExitFailedError("Failed to commit changes, aborting", err);
       }
     );
   }
@@ -92,8 +92,11 @@ function checkoutNewBranch(branchName: string): void {
     {
       command: `git checkout -b "${branchName}"`,
     },
-    () => {
-      throw new ExitFailedError(`Failed to checkout new branch ${branchName}`);
+    (err) => {
+      throw new ExitFailedError(
+        `Failed to checkout new branch ${branchName}`,
+        err
+      );
     }
   );
 }

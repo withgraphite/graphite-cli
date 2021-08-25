@@ -1,4 +1,3 @@
-import { execSync } from "child_process";
 import { execStateConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import { uncommittedChangesPrecondition } from "../lib/preconditions";
@@ -15,15 +14,15 @@ export async function commitAmendAction(opts: {
       {
         command: "git add --all",
       },
-      () => {
-        throw new ExitFailedError("Failed to add changes. Aborting...");
+      (err) => {
+        throw new ExitFailedError("Failed to add changes. Aborting...", err);
       }
     );
   }
 
-  try {
-    execSync(
-      [
+  gpExecSync(
+    {
+      command: [
         `git commit --amend`,
         ...[
           opts.noEdit
@@ -34,11 +33,12 @@ export async function commitAmendAction(opts: {
         ],
         ...[execStateConfig.noVerify() ? ["--no-verify"] : []],
       ].join(" "),
-      { stdio: "inherit" }
-    );
-  } catch {
-    throw new ExitFailedError("Failed to amend changes. Aborting...");
-  }
+      options: { stdio: "inherit" },
+    },
+    (err) => {
+      throw new ExitFailedError("Failed to amend changes. Aborting...", err);
+    }
+  );
   // Only restack if working tree is now clean.
   try {
     uncommittedChangesPrecondition();
