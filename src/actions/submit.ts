@@ -21,6 +21,7 @@ import {
   logNewline,
   logSuccess,
 } from "../lib/utils";
+import { getDefaultEditor } from "../lib/utils/default_editor";
 import { getPRTemplate } from "../lib/utils/pr_templates";
 import { Unpacked } from "../lib/utils/ts_helpers";
 import { MetaStackBuilder } from "../wrapper-classes";
@@ -348,20 +349,6 @@ async function getPRCreationInfo(args: {
     body: body,
     draft: draft,
   };
-}
-
-function getDefaultEditor(): string {
-  const gitEditor = execSync(`echo \${GIT_EDITOR}`).toString().trim();
-  if (gitEditor.length !== 0) {
-    return gitEditor;
-  }
-
-  const editor = execSync(`echo \${EDITOR}`).toString().trim();
-  if (editor.length !== 0) {
-    return editor;
-  }
-
-  return "vi";
 }
 
 function inferPRTitle(branch: Branch) {
