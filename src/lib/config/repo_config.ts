@@ -5,7 +5,7 @@ import { ExitFailedError } from "../../lib/errors";
 import { gpExecSync } from "../../lib/utils/exec_sync";
 import { PreconditionsFailedError } from "../errors";
 
-const currentGitRepoPrecondition = (): string => {
+export const currentGitRepoPrecondition = (): string => {
   const repoRootPath = gpExecSync(
     {
       command: `git rev-parse --git-dir`,

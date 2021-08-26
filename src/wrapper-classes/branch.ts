@@ -47,7 +47,7 @@ export default class Branch {
     return this.name;
   }
 
-  private getMeta(): TMeta | undefined {
+  public getMeta(): TMeta | undefined {
     try {
       const metaString = execSync(
         `git cat-file -p refs/branch-metadata/${this.name} 2> /dev/null`
