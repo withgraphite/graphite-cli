@@ -142,6 +142,11 @@ for (const scene of allScenes) {
       expect(() =>
         new GitStackBuilder().fullStackFromBranch(new Branch("a"))
       ).to.not.throw(SiblingBranchError);
+      expect(
+        new GitStackBuilder()
+          .fullStackFromBranch(new Branch("a"))
+          .equals(Stack.fromMap({ main: { a: { b: {} } } }))
+      ).to.be.true;
     });
 
     it("Throws an error if two git branches point to the same commit WITHOUT meta", () => {

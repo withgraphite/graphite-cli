@@ -386,6 +386,15 @@ export default class Branch {
       direction: "children",
       useMemoizedResults: this.shouldUseMemoizedResults,
     });
+    const siblings = this.branchesWithSameCommit();
+    if (siblings.length > 0) {
+      // consider if siblings are children.
+      siblings.forEach((s) => {
+        if (s.getParentFromMeta()?.name === this.name) {
+          kids.push(s);
+        }
+      });
+    }
     return kids;
   }
 
