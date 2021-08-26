@@ -12,7 +12,7 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch create a -m "a" -q`);
 
       const branch = new Branch("a");
-      expect(branch.getParentsFromGit()[0].name).to.equal("main");
+      expect(branch.getParentFromGit()?.name).to.equal("main");
     });
 
     it("Can list parent based on meta for a branch", () => {

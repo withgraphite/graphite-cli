@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import path from "path";
 import Branch from "../../wrapper-classes/branch";
 import { repoConfig } from "../config";
-import { ConfigError, ExitFailedError, SiblingBranchError } from "../errors";
+import { ConfigError, ExitFailedError } from "../errors";
 
 function findRemoteOriginBranch(): Branch | undefined {
   let config;
@@ -71,10 +71,6 @@ export function getTrunk(): Branch {
     throw new ConfigError(
       `No configured trunk branch, and unable to infer. Consider setting the trunk name by running "gt repo init".`
     );
-  }
-  const trunkSiblings = memoizedTrunk.branchesWithSameCommit();
-  if (trunkSiblings.length > 0) {
-    throw new SiblingBranchError([memoizedTrunk].concat(trunkSiblings));
   }
   return memoizedTrunk;
 }
