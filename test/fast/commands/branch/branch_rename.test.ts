@@ -23,6 +23,9 @@ for (const scene of allScenes) {
 
       scene.repo.execCliCommand(`branch prev --no-interactive`);
       expect(scene.repo.currentBranchName()).to.equal("main");
+      expect(() => scene.repo.execCliCommand(`stack validate`)).to.not.throw(
+        Error
+      );
     });
   });
 }
