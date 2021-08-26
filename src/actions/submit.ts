@@ -10,6 +10,7 @@ import { API_SERVER } from "../lib/api";
 import { execStateConfig, repoConfig, userConfig } from "../lib/config";
 import {
   ExitFailedError,
+  KilledError,
   PreconditionsFailedError,
   ValidationFailedError,
 } from "../lib/errors";
@@ -292,12 +293,19 @@ async function getPRCreationInfo(args: {
 
   let title = inferPRTitle(args.branch);
   if (args.editPRFieldsInline) {
-    const response = await prompts({
-      type: "text",
-      name: "title",
-      message: "Title",
-      initial: title,
-    });
+    const response = await prompts(
+      {
+        type: "text",
+        name: "title",
+        message: "Title",
+        initial: title,
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    );
     title = response.title ?? title;
   }
 
@@ -305,18 +313,25 @@ async function getPRCreationInfo(args: {
   const hasPRTemplate = body !== undefined;
   if (args.editPRFieldsInline) {
     const defaultEditor = getDefaultEditor();
-    const response = await prompts({
-      type: "select",
-      name: "body",
-      message: "Body",
-      choices: [
-        { title: `Edit Body (using ${defaultEditor})`, value: "edit" },
-        {
-          title: `Skip${hasPRTemplate ? ` (just paste template)` : ""}`,
-          value: "skip",
+    const response = await prompts(
+      {
+        type: "select",
+        name: "body",
+        message: "Body",
+        choices: [
+          { title: `Edit Body (using ${defaultEditor})`, value: "edit" },
+          {
+            title: `Skip${hasPRTemplate ? ` (just paste template)` : ""}`,
+            value: "skip",
+          },
+        ],
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
         },
-      ],
-    });
+      }
+    );
     if (response.body === "edit") {
       body = await editPRBody({
         initial: body ?? "",
@@ -327,15 +342,22 @@ async function getPRCreationInfo(args: {
 
   let draft: boolean;
   if (args.createNewPRsAsDraft === undefined) {
-    const response = await prompts({
-      type: "select",
-      name: "draft",
-      message: "Submit",
-      choices: [
-        { title: "Publish Pull Request", value: "publish" },
-        { title: "Create Draft Pull Request", value: "draft" },
-      ],
-    });
+    const response = await prompts(
+      {
+        type: "select",
+        name: "draft",
+        message: "Submit",
+        choices: [
+          { title: "Publish Pull Request", value: "publish" },
+          { title: "Create Draft Pull Request", value: "draft" },
+        ],
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    );
     draft = response.draft === "draft" ? true : false;
   } else {
     draft = args.createNewPRsAsDraft;
