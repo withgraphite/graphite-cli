@@ -10,8 +10,8 @@ import { API_SERVER } from "../lib/api";
 import { execStateConfig, repoConfig, userConfig } from "../lib/config";
 import {
   ExitFailedError,
+  KilledError,
   PreconditionsFailedError,
-  ValidationFailedError,
 } from "../lib/errors";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import {
@@ -27,7 +27,6 @@ import { MetaStackBuilder } from "../wrapper-classes";
 import Branch from "../wrapper-classes/branch";
 import Commit from "../wrapper-classes/commit";
 import { TScope } from "./scope";
-import { validate } from "./validate";
 
 export async function submitAction(args: {
   scope: TScope;
@@ -43,11 +42,11 @@ export async function submitAction(args: {
   const repoName = repoConfig.getRepoName();
   const repoOwner = repoConfig.getRepoOwner();
 
-  try {
-    validate(args.scope);
-  } catch {
-    throw new ValidationFailedError(`Validation failed before submitting.`);
-  }
+  // try {
+  //   validate(args.scope);
+  // } catch {
+  //   throw new ValidationFailedError(`Validation failed before submitting.`);
+  // }
 
   const currentBranch = currentBranchPrecondition();
   const stack =
@@ -220,12 +219,19 @@ async function getPRCreationInfo(args: {
 
   let title = inferPRTitle(args.branch);
   if (args.editPRFieldsInline) {
-    const response = await prompts({
-      type: "text",
-      name: "title",
-      message: "Title",
-      initial: title,
-    });
+    const response = await prompts(
+      {
+        type: "text",
+        name: "title",
+        message: "Title",
+        initial: title,
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    );
     title = response.title ?? title;
   }
 
@@ -331,6 +337,7 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
     }
 
     logNewline();
+    logInfo(chalk.green(`See your full stack on app.graphite.dev`));
   });
 }
 
