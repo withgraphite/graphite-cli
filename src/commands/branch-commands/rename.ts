@@ -1,13 +1,11 @@
 import chalk from "chalk";
-import fs from "fs-extra";
-import path from "path";
 import yargs from "yargs";
 import { cache } from "../../lib/config";
 import { ExitFailedError } from "../../lib/errors";
 import { currentBranchPrecondition } from "../../lib/preconditions";
 import { profile } from "../../lib/telemetry";
-import { getRepoRootPath, gpExecSync, logInfo } from "../../lib/utils";
-import { Branch } from "../../wrapper-classes";
+import { gpExecSync, logInfo } from "../../lib/utils";
+import { Branch, MetadataRef } from "../../wrapper-classes";
 
 const args = {
   "new-branch-name": {
@@ -27,7 +25,6 @@ export const builder = args;
 export const handler = async (args: argsT): Promise<void> => {
   return profile(args, async () => {
     const currentBranch = currentBranchPrecondition();
-    const gitRepoPath = getRepoRootPath();
     const oldName = currentBranch.name;
     const newName = args["new-branch-name"];
     const allBranches = Branch.allBranches();
@@ -39,15 +36,8 @@ export const handler = async (args: argsT): Promise<void> => {
     // Good habit to clear cache after write operations.
     cache.clearAll();
 
-    // Move the ref for the current branch.
-    if (
-      fs.existsSync(path.join(gitRepoPath, `refs/branch-metadata/${oldName}`))
-    ) {
-      fs.moveSync(
-        path.join(gitRepoPath, `refs/branch-metadata/${oldName}`),
-        path.join(gitRepoPath, `refs/branch-metadata/${newName}`)
-      );
-    }
+    const curBranchMetadataRef = new MetadataRef(currentBranch.name);
+    curBranchMetadataRef.rename(newName);
 
     // Update any references to the branch.
     allBranches.forEach((branch) => {
