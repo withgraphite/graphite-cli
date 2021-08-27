@@ -13,7 +13,7 @@ const args = {
   pull: {
     describe: `Pull the trunk branch from remote before searching for stale branches.`,
     demandOption: false,
-    default: false,
+    default: true,
     type: "boolean",
     alias: "p",
   },

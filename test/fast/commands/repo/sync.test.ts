@@ -48,15 +48,15 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, "a, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash");
-      scene.repo.execCliCommand(`repo sync -qf`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
 
       expectBranches(scene.repo, "main");
     });
 
     it("Can noop sync if there are no stacks", () => {
-      expect(() => scene.repo.execCliCommand(`repo sync -qf`)).to.not.throw(
-        Error
-      );
+      expect(() =>
+        scene.repo.execCliCommand(`repo sync -qf --no-pull`)
+      ).to.not.throw(Error);
     });
 
     it("Can delete the foundation of a double stack", async () => {
@@ -69,7 +69,7 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, "a, b, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash");
-      scene.repo.execCliCommand(`repo sync -qf`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
 
       expectBranches(scene.repo, "b, main");
       expectCommits(scene.repo, "squash, 1");
@@ -92,7 +92,7 @@ for (const scene of allScenes) {
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash_a");
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
-      scene.repo.execCliCommand(`repo sync -qf`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
 
       expectBranches(scene.repo, "c, main");
       expectCommits(scene.repo, "squash_b, squash_a, 1");
@@ -111,9 +111,9 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, "a, b, c, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash_a");
-      scene.repo.execCliCommand(`repo sync -qf`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
-      scene.repo.execCliCommand(`repo sync -qf`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
 
       expectBranches(scene.repo, "c, main");
       expectCommits(scene.repo, "squash_b, squash_a, 1");
@@ -143,7 +143,7 @@ for (const scene of allScenes) {
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
       fakeGitSquashAndMerge(scene.repo, "d", "squash_d");
 
-      scene.repo.execCliCommand(`repo sync -qf`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
 
       expectBranches(scene.repo, "c, e, main");
       scene.repo.checkoutBranch("main");
