@@ -2,7 +2,11 @@ import chalk from "chalk";
 import { execSync } from "child_process";
 import prompts from "prompts";
 import { repoConfig } from "../lib/config";
-import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
+import {
+  ExitFailedError,
+  KilledError,
+  PreconditionsFailedError,
+} from "../lib/errors";
 import {
   cliAuthPrecondition,
   currentBranchPrecondition,
@@ -92,17 +96,21 @@ function shouldDeleteBranch(branchName: string): boolean {
 
 async function deleteBranch(opts: { branchName: string; force: boolean }) {
   if (!opts.force) {
-    const response = await prompts({
-      type: "confirm",
-      name: "value",
-      message: `Delete (${chalk.green(
-        opts.branchName
-      )}), which has been merged into (${getTrunk().name})?`,
-      initial: true,
-    });
-    console.log("RESPONSE...");
-    console.log(response.value);
-    console.log("^ RESPONSE...");
+    const response = await prompts(
+      {
+        type: "confirm",
+        name: "value",
+        message: `Delete (${chalk.green(
+          opts.branchName
+        )}), which has been merged into (${getTrunk().name})?`,
+        initial: true,
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    );
     if (response.value != true) {
       return;
     }

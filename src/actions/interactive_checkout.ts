@@ -1,5 +1,9 @@
 import prompts from "prompts";
-import { ExitCancelledError, ExitFailedError } from "../lib/errors";
+import {
+  ExitCancelledError,
+  ExitFailedError,
+  KilledError,
+} from "../lib/errors";
 import { getTrunk, gpExecSync } from "../lib/utils";
 import { MetaStackBuilder } from "../wrapper-classes";
 import Branch from "../wrapper-classes/branch";
@@ -22,13 +26,20 @@ async function promptBranches(choices: promptOptionT[]): Promise<void> {
   }
 
   const chosenBranch = (
-    await prompts({
-      type: "select",
-      name: "branch",
-      message: `Checkout a branch`,
-      choices: choices,
-      ...(currentBranchIndex ? { initial: currentBranchIndex } : {}),
-    })
+    await prompts(
+      {
+        type: "select",
+        name: "branch",
+        message: `Checkout a branch`,
+        choices: choices,
+        ...(currentBranchIndex ? { initial: currentBranchIndex } : {}),
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    )
   ).branch;
 
   if (!chosenBranch) {

@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import prompts from "prompts";
+import { KilledError } from "../errors";
 import { currentGitRepoPrecondition } from "../preconditions";
 
 export async function getPRTemplate(): Promise<string | undefined> {
@@ -13,17 +14,24 @@ export async function getPRTemplate(): Promise<string | undefined> {
   if (templateFiles.length === 1) {
     templateFilepath = templateFiles[0];
   } else {
-    const response = await prompts({
-      type: "select",
-      name: "templateFilepath",
-      message: `Body Template`,
-      choices: templateFiles.map((file) => {
-        return {
-          title: getRelativePathFromRepo(file),
-          value: file,
-        };
-      }),
-    });
+    const response = await prompts(
+      {
+        type: "select",
+        name: "templateFilepath",
+        message: `Body Template`,
+        choices: templateFiles.map((file) => {
+          return {
+            title: getRelativePathFromRepo(file),
+            value: file,
+          };
+        }),
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    );
     templateFilepath = response.templateFilepath;
   }
   return fs.readFileSync(templateFilepath).toString();

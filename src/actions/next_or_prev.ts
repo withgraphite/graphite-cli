@@ -2,7 +2,7 @@
 import chalk from "chalk";
 import { execSync } from "child_process";
 import prompts from "prompts";
-import { ExitFailedError } from "../lib/errors";
+import { ExitFailedError, KilledError } from "../lib/errors";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import { logInfo } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
@@ -24,14 +24,21 @@ async function getNextBranch(
   if (candidates.length > 1) {
     if (interactive) {
       return (
-        await prompts({
-          type: "select",
-          name: "branch",
-          message: "Select a branch to checkout",
-          choices: candidates.map((b) => {
-            return { title: b.name, value: b.name };
-          }),
-        })
+        await prompts(
+          {
+            type: "select",
+            name: "branch",
+            message: "Select a branch to checkout",
+            choices: candidates.map((b) => {
+              return { title: b.name, value: b.name };
+            }),
+          },
+          {
+            onCancel: () => {
+              throw new KilledError();
+            },
+          }
+        )
       ).branch;
     } else {
       throw new ExitFailedError(
