@@ -1,3 +1,4 @@
+import cache from "./cache";
 import execStateConfig from "./exec_state_config";
 import messageConfig, {
   readMessageConfigForTestingOnly,
@@ -12,4 +13,5 @@ export {
   repoConfig,
   getOwnerAndNameFromURLForTesting,
   execStateConfig,
+  cache,
 };

@@ -1,11 +1,11 @@
 import chalk from "chalk";
 import Branch from "../../wrapper-classes/branch";
 import { repoConfig } from "../config";
+import cache from "../config/cache";
 import { tracer } from "../telemetry";
 import { gpExecSync } from "../utils";
 import { logDebug } from "../utils/splog";
 import { getRef } from "./branch_ref";
-import cache from "./cache";
 
 export function getBranchChildrenOrParentsFromGit(
   branch: Branch,

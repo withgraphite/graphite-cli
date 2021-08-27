@@ -1,7 +1,7 @@
 import Branch from "../../wrapper-classes/branch";
+import cache from "../config/cache";
 import { ExitFailedError } from "../errors";
 import { gpExecSync } from "../utils";
-import cache from "./cache";
 
 function refreshRefsCache(): void {
   cache.clearBranchRefs();

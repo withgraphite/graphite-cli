@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { validate } from "../../../src/actions/validate";
-import { cache } from "../../../src/lib/git-refs";
+import { cache } from "../../../src/lib/config";
 import { allScenes } from "../../lib/scenes";
 import { configureTest } from "../../lib/utils";
 

@@ -10,7 +10,13 @@ let parentsRevList: revListT | undefined = undefined;
 
 let childrenRevList: revListT | undefined = undefined;
 
+let repoRootPath: string | undefined = undefined;
+
 class Cache {
+  public getRepoRootPath(): string | undefined {
+    return repoRootPath;
+  }
+
   public getBranchToRef(): Record<string, string> | undefined {
     return branchRefs?.branchToRef;
   }
@@ -47,6 +53,10 @@ class Cache {
 
   setBranchRefs(newBranchRefs: branchRefsT): void {
     branchRefs = newBranchRefs;
+  }
+
+  setRepoRootPath(newRepoRootPath: string): void {
+    repoRootPath = newRepoRootPath;
   }
 }
 

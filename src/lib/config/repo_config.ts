@@ -2,31 +2,11 @@ import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
 import { ExitFailedError } from "../../lib/errors";
+import { getRepoRootPath } from "../../lib/utils";
 import { gpExecSync } from "../../lib/utils/exec_sync";
-import { PreconditionsFailedError } from "../errors";
-
-export const currentGitRepoPrecondition = (): string => {
-  const repoRootPath = gpExecSync(
-    {
-      command: `git rev-parse --git-dir`,
-    },
-    () => {
-      return Buffer.alloc(0);
-    }
-  )
-    .toString()
-    .trim();
-  if (!repoRootPath || repoRootPath.length === 0) {
-    throw new PreconditionsFailedError("No .git repository found.");
-  }
-  return repoRootPath;
-};
 
 const CONFIG_NAME = ".graphite_repo_config";
-const CURRENT_REPO_CONFIG_PATH = path.join(
-  currentGitRepoPrecondition(),
-  CONFIG_NAME
-);
+const CURRENT_REPO_CONFIG_PATH = path.join(getRepoRootPath(), CONFIG_NAME);
 
 type RepoConfigT = {
   owner?: string;

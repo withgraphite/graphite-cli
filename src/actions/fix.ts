@@ -1,11 +1,11 @@
 import chalk from "chalk";
 import prompts from "prompts";
+import { cache } from "../lib/config";
 import {
   ExitCancelledError,
   ExitFailedError,
   RebaseConflictError,
 } from "../lib/errors";
-import { cache } from "../lib/git-refs";
 import {
   currentBranchPrecondition,
   uncommittedChangesPrecondition,

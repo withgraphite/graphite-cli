@@ -7,6 +7,7 @@ import { makeId } from "./make_id";
 import { parseArgs } from "./parse_args";
 import { preprocessCommand } from "./preprocess_command";
 import { rebaseInProgress } from "./rebase_in_progress";
+import { getRepoRootPath } from "./repo_root_path";
 import { signpostDeprecatedCommands } from "./signpost_deprecated_commands";
 import {
   logError,
@@ -39,5 +40,6 @@ export {
   preprocessCommand,
   signpostDeprecatedCommands,
   logTip,
+  getRepoRootPath,
   VALIDATION_HELPER_MESSAGE,
 };

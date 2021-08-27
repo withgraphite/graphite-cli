@@ -1,4 +1,4 @@
-import { cache } from "../../../src/lib/git-refs";
+import { cache } from "../../../src/lib/config";
 import { AbstractScene } from "../scenes/abstract_scene";
 
 export function configureTest(suite: Mocha.Suite, scene: AbstractScene): void {

@@ -2,12 +2,11 @@ import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
 import yargs from "yargs";
-import { currentGitRepoPrecondition } from "../../lib/config/repo_config";
+import { cache } from "../../lib/config";
 import { ExitFailedError } from "../../lib/errors";
-import { cache } from "../../lib/git-refs";
 import { currentBranchPrecondition } from "../../lib/preconditions";
 import { profile } from "../../lib/telemetry";
-import { gpExecSync, logInfo } from "../../lib/utils";
+import { getRepoRootPath, gpExecSync, logInfo } from "../../lib/utils";
 import { Branch } from "../../wrapper-classes";
 
 const args = {
@@ -28,7 +27,7 @@ export const builder = args;
 export const handler = async (args: argsT): Promise<void> => {
   return profile(args, async () => {
     const currentBranch = currentBranchPrecondition();
-    const gitRepoPath = currentGitRepoPrecondition();
+    const gitRepoPath = getRepoRootPath();
     const oldName = currentBranch.name;
     const newName = args["new-branch-name"];
     const allBranches = Branch.allBranches();

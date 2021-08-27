@@ -1,11 +1,11 @@
 import { validate } from "../actions/validate";
+import { cache } from "../lib/config";
 import {
   ExitFailedError,
   PreconditionsFailedError,
   RebaseConflictError,
   ValidationFailedError,
 } from "../lib/errors";
-import { cache } from "../lib/git-refs";
 import {
   branchExistsPrecondition,
   currentBranchPrecondition,
