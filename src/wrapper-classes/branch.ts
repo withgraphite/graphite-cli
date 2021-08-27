@@ -12,14 +12,7 @@ import {
 } from "../lib/git-refs";
 import { getCommitterDate, getTrunk, gpExecSync } from "../lib/utils";
 import Commit from "./commit";
-
-export type TBranchPRInfo = { number: number; base: string; url: string };
-
-type TMeta = {
-  parentBranchName?: string;
-  prevRef?: string;
-  prInfo?: TBranchPRInfo;
-};
+import MetadataRef, { TBranchPRInfo, TMeta } from "./metadata_ref";
 
 type TBranchFilters = {
   useMemoizedResults?: boolean;
@@ -51,33 +44,6 @@ export default class Branch {
     return this.name;
   }
 
-  public getMeta(): TMeta | undefined {
-    try {
-      const metaString = execSync(
-        `git cat-file -p refs/branch-metadata/${this.name} 2> /dev/null`
-      )
-        .toString()
-        .trim();
-      if (metaString.length == 0) {
-        return undefined;
-      }
-      // TODO: Better account for malformed desc; possibly validate with retype
-      const meta = JSON.parse(metaString);
-      return meta;
-    } catch {
-      return undefined;
-    }
-  }
-
-  private writeMeta(desc: TMeta) {
-    const metaSha = execSync(`git hash-object -w --stdin`, {
-      input: JSON.stringify(desc),
-    }).toString();
-    execSync(`git update-ref refs/branch-metadata/${this.name} ${metaSha}`, {
-      stdio: "ignore",
-    });
-  }
-
   stackByTracingMetaParents(branch?: Branch): string[] {
     const curBranch = branch || this;
     const metaParent = curBranch.getParentFromMeta();
@@ -105,7 +71,7 @@ export default class Branch {
       return undefined;
     }
 
-    let parentName = this.getMeta()?.parentBranchName;
+    let parentName = MetadataRef.getMeta(this.name)?.parentBranchName;
 
     if (!parentName) {
       return undefined;
@@ -114,7 +80,7 @@ export default class Branch {
     // Cycle untile we find a parent that has a real branch, or just is undefined.
     if (!Branch.exists(parentName)) {
       while (parentName && !Branch.exists(parentName)) {
-        parentName = new Branch(parentName).getMeta()?.parentBranchName;
+        parentName = MetadataRef.getMeta(parentName)?.parentBranchName;
       }
       if (parentName) {
         this.setParentBranchName(parentName);
@@ -135,7 +101,7 @@ export default class Branch {
 
   public getChildrenFromMeta(): Branch[] {
     const children = Branch.allBranches().filter(
-      (b) => b.getMeta()?.parentBranchName === this.name
+      (b) => MetadataRef.getMeta(b.name)?.parentBranchName === this.name
     );
     return children;
   }
@@ -199,8 +165,16 @@ export default class Branch {
     return true;
   }
 
+  private getMeta(): TMeta | undefined {
+    return MetadataRef.getMeta(this.name);
+  }
+
+  private writeMeta(meta: TMeta): void {
+    MetadataRef.updateOrCreate(this.name, meta);
+  }
+
   public getMetaPrevRef(): string | undefined {
-    return this.getMeta()?.prevRef;
+    return MetadataRef.getMeta(this.name)?.prevRef;
   }
 
   public getCurrentRef(): string {

@@ -26,8 +26,9 @@ import { getDefaultEditor } from "../lib/utils/default_editor";
 import { getPRTemplate } from "../lib/utils/pr_templates";
 import { Unpacked } from "../lib/utils/ts_helpers";
 import { MetaStackBuilder } from "../wrapper-classes";
-import Branch, { TBranchPRInfo } from "../wrapper-classes/branch";
+import Branch from "../wrapper-classes/branch";
 import Commit from "../wrapper-classes/commit";
+import { TBranchPRInfo } from "../wrapper-classes/metadata_ref";
 import { TScope } from "./scope";
 import { validate } from "./validate";
 

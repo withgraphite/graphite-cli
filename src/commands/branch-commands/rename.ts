@@ -41,7 +41,7 @@ export const handler = async (args: argsT): Promise<void> => {
 
     // Update any references to the branch.
     allBranches.forEach((branch) => {
-      if (branch.getMeta()?.parentBranchName === oldName) {
+      if (MetadataRef.getMeta(branch.name)?.parentBranchName === oldName) {
         branch.setParentBranchName(newName);
       }
     });
