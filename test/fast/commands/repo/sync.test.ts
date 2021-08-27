@@ -132,24 +132,24 @@ for (const scene of allScenes) {
         .be.false;
     });
 
-    xit("Can detect dead branches off multiple stacks", async () => {
-      scene.repo.createChange("2", "a");
+    it("Can detect dead branches off multiple stacks", async () => {
+      scene.repo.createChange("a", "a");
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
-      scene.repo.createChange("3", "b");
+      scene.repo.createChange("b", "b");
       scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
 
-      scene.repo.createChange("4", "c");
+      scene.repo.createChange("c", "c");
       scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
 
       expectBranches(scene.repo, "a, b, c, main");
 
       scene.repo.checkoutBranch("main");
 
-      scene.repo.createChange("5", "d");
+      scene.repo.createChange("d", "d");
       scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
-      scene.repo.createChange("6", "e");
+      scene.repo.createChange("e", "e");
       scene.repo.execCliCommand(`branch create "e" -m "e" -q`);
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash_a");
@@ -160,11 +160,11 @@ for (const scene of allScenes) {
 
       expectBranches(scene.repo, "c, e, main");
       scene.repo.checkoutBranch("main");
-      expectCommits(scene.repo, "squash_b, squash_a, 1");
+      expectCommits(scene.repo, "squash_d, squash_b, squash_a");
       scene.repo.checkoutBranch("c");
-      expectCommits(scene.repo, "c, squash_d, squash_b, squash_a, 1");
+      expectCommits(scene.repo, "c, squash_d, squash_b, squash_a");
       scene.repo.checkoutBranch("e");
-      expectCommits(scene.repo, "e, squash_d, squash_b, squash_a, 1");
+      expectCommits(scene.repo, "e, squash_d, squash_b, squash_a");
     });
   });
 }
