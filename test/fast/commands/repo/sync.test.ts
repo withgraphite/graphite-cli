@@ -38,7 +38,7 @@ function expectBranches(repo: GitRepo, sortedBranches: string) {
 
 for (const scene of allScenes) {
   // eslint-disable-next-line max-lines-per-function
-  describe(`(${scene}): stack clean`, function () {
+  describe(`(${scene}): repo sync`, function () {
     configureTest(this, scene);
 
     it("Can delete a single merged branch", async () => {
@@ -48,13 +48,13 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, "a, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash");
-      scene.repo.execCliCommand(`stack clean -qf`);
+      scene.repo.execCliCommand(`repo sync -qf`);
 
       expectBranches(scene.repo, "main");
     });
 
-    it("Can noop clean if there are no stacks", () => {
-      expect(() => scene.repo.execCliCommand(`stack clean -qf`)).to.not.throw(
+    it("Can noop sync if there are no stacks", () => {
+      expect(() => scene.repo.execCliCommand(`repo sync -qf`)).to.not.throw(
         Error
       );
     });
@@ -69,7 +69,7 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, "a, b, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash");
-      scene.repo.execCliCommand(`stack clean -qf`);
+      scene.repo.execCliCommand(`repo sync -qf`);
 
       expectBranches(scene.repo, "b, main");
       expectCommits(scene.repo, "squash, 1");
@@ -92,7 +92,7 @@ for (const scene of allScenes) {
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash_a");
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
-      scene.repo.execCliCommand(`stack clean -qf`);
+      scene.repo.execCliCommand(`repo sync -qf`);
 
       expectBranches(scene.repo, "c, main");
       expectCommits(scene.repo, "squash_b, squash_a, 1");
@@ -111,9 +111,9 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, "a, b, c, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash_a");
-      scene.repo.execCliCommand(`stack clean -qf`);
+      scene.repo.execCliCommand(`repo sync -qf`);
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
-      scene.repo.execCliCommand(`stack clean -qf`);
+      scene.repo.execCliCommand(`repo sync -qf`);
 
       expectBranches(scene.repo, "c, main");
       expectCommits(scene.repo, "squash_b, squash_a, 1");
@@ -143,7 +143,7 @@ for (const scene of allScenes) {
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
       fakeGitSquashAndMerge(scene.repo, "d", "squash_d");
 
-      scene.repo.execCliCommand(`stack clean -qf`);
+      scene.repo.execCliCommand(`repo sync -qf`);
 
       expectBranches(scene.repo, "c, e, main");
       scene.repo.checkoutBranch("main");

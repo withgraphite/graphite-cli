@@ -1,7 +1,6 @@
 import chalk from "chalk";
 import { execSync } from "child_process";
 import prompts from "prompts";
-import { ontoAction } from "../actions/onto";
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import {
@@ -12,13 +11,14 @@ import {
   uncommittedChanges,
 } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
+import { ontoAction } from "./onto";
 
-export async function cleanAction(opts: {
+export async function syncAction(opts: {
   pull: boolean;
   force: boolean;
 }): Promise<void> {
   if (uncommittedChanges()) {
-    throw new PreconditionsFailedError("Cannot clean with uncommitted changes");
+    throw new PreconditionsFailedError("Cannot sync with uncommitted changes");
   }
 
   const oldBranch = currentBranchPrecondition();
