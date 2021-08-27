@@ -407,26 +407,35 @@ export default class Branch {
 
     const siblings = this.branchesWithSameCommit();
 
-    // Check if sibling branch is the parent.
+    // If the current branch has siblings (pointing to the same commit)
+    // consider the chance that one of them is the parent of the current branch.
+    // We only consider a sibling a parent if there is metadata pointing to it.
+    // This is the one edge case that we use metadata when deriving a parent from git.
+    // If metadata can't prove the parent relationship, through a sibling error.
     if (siblings.length > 0) {
       const metaParent = this.getParentFromMeta();
-      if (metaParent && siblings.map((s) => s.name).includes(metaParent.name)) {
-        return metaParent;
-      } else if (siblings.length > 0 && !metaParent) {
-        // Cant determine parent, throw error.
+      if (!metaParent) {
+        // Without metadata, just throw a sibling error.
         throw new SiblingBranchError(siblings.concat([this]));
       }
+      // With meta, attempt to discern between siblings and normal git parents.
+      if (siblings.find((s) => s.name === metaParent.name)) {
+        return metaParent;
+      }
+      // At this point, we have meta, and we know the parent isnt a sibling.
+      // Proceed to check the git parent(s)
     }
 
-    // Check if one of potentially many parent branches is the parent.
     const parents = getBranchChildrenOrParentsFromGit(this, {
       direction: "parents",
       useMemoizedResults: this.shouldUseMemoizedResults,
     });
 
+    // If there are multiple parents per git, once again use metadata to make a decision.
+    // If there is no metadata to help the decision, through a multi-parent error.
     if (parents.length > 1) {
       const metaParent = this.getParentFromMeta();
-      if (metaParent && parents.map((p) => p.name).includes(metaParent.name)) {
+      if (metaParent && parents.find((p) => p.name === metaParent.name)) {
         return metaParent;
       }
       throw new MultiParentError(this, parents);
