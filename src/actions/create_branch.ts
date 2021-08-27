@@ -26,7 +26,7 @@ export async function createBranchAction(opts: {
   }
 
   if (opts.commitMessage) {
-    ensureSomeStagedChangesPrecondition("Use -a option to stage all unstaged changes.");
+    ensureSomeStagedChangesPrecondition(true);
   }
 
   const branchName = newBranchName(opts.branchName, opts.commitMessage);
