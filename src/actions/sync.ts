@@ -22,19 +22,24 @@ export async function syncAction(opts: {
   if (uncommittedChanges()) {
     throw new PreconditionsFailedError("Cannot sync with uncommitted changes");
   }
-
   const oldBranch = currentBranchPrecondition();
   const trunk = getTrunk().name;
-
-  const oldBranchName = oldBranch.name;
   checkoutBranch(trunk);
+
   if (opts.pull) {
     gpExecSync({ command: `git pull` }, (err) => {
-      checkoutBranch(oldBranchName);
+      checkoutBranch(oldBranch.name);
       throw new ExitFailedError(`Failed to pull trunk ${trunk}`, err);
     });
   }
-  const trunkChildren: Branch[] = new Branch(trunk).getChildrenFromMeta();
+
+  await deleteMergedBranches(opts.force);
+  checkoutBranch(oldBranch.name);
+  cleanDanglingMetadata();
+}
+
+async function deleteMergedBranches(force: boolean): Promise<void> {
+  const trunkChildren: Branch[] = getTrunk().getChildrenFromMeta();
   do {
     const branch = trunkChildren.pop();
     if (!branch) {
@@ -46,15 +51,13 @@ export async function syncAction(opts: {
     }
     for (const child of children) {
       checkoutBranch(child.name);
-      logInfo(`upstacking (${child.name}) onto (${trunk})`);
-      await ontoAction(trunk);
+      logInfo(`upstacking (${child.name}) onto (${getTrunk().name})`);
+      await ontoAction(getTrunk().name);
       trunkChildren.push(child);
     }
-    checkoutBranch(trunk);
-    await deleteBranch({ branchName: branch.name, ...opts });
+    checkoutBranch(getTrunk().name);
+    await deleteBranch({ branchName: branch.name, force });
   } while (trunkChildren.length > 0);
-  checkoutBranch(oldBranchName);
-  cleanDanglingMetadata();
 }
 
 function shouldDeleteBranch(branchName: string): boolean {
