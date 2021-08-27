@@ -19,8 +19,12 @@ export default class MetadataRef {
     this._branchName = branchName;
   }
 
+  private static branchMetadataDirPath(): string {
+    return path.join(getRepoRootPath(), `refs/branch-metadata/`);
+  }
+
   private static pathForBranchName(branchName: string): string {
-    return path.join(getRepoRootPath(), `refs/branch-metadata/`, branchName);
+    return path.join(MetadataRef.branchMetadataDirPath(), branchName);
   }
 
   static getMeta(branchName: string): TMeta | undefined {
@@ -69,5 +73,18 @@ export default class MetadataRef {
     } catch {
       return undefined;
     }
+  }
+
+  public delete(): void {
+    fs.removeSync(this.getPath());
+  }
+
+  public static allMetadataRefs(): MetadataRef[] {
+    if (!fs.existsSync(MetadataRef.branchMetadataDirPath())) {
+      return [];
+    }
+    return fs
+      .readdirSync(MetadataRef.branchMetadataDirPath())
+      .map((dirent) => new MetadataRef(dirent));
   }
 }

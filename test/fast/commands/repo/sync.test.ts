@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { execSync } from "child_process";
+import fs from "fs-extra";
 import { GitRepo } from "../../../../src/lib/utils";
 import { allScenes } from "../../../lib/scenes";
 import { configureTest, expectCommits } from "../../../lib/utils";
@@ -117,6 +118,18 @@ for (const scene of allScenes) {
 
       expectBranches(scene.repo, "c, main");
       expectCommits(scene.repo, "squash_b, squash_a, 1");
+    });
+
+    it("Deletes dangling metadata refs", async () => {
+      scene.repo.createChange("2", "a");
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.checkoutBranch("main");
+      execSync(`git -C "${scene.repo.dir}" branch -D a`);
+      expect(fs.existsSync(`${scene.repo.dir}/.git/refs/branch-metadata/a`)).to
+        .be.true;
+      scene.repo.execCliCommand(`repo sync -q --no-pull`);
+      expect(fs.existsSync(`${scene.repo.dir}/.git/refs/branch-metadata/a`)).to
+        .be.false;
     });
 
     xit("Can detect dead branches off multiple stacks", async () => {

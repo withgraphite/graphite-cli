@@ -10,7 +10,9 @@ import {
   logInfo,
   uncommittedChanges,
 } from "../lib/utils";
+import { logDebug } from "../lib/utils/splog";
 import Branch from "../wrapper-classes/branch";
+import MetadataRef from "../wrapper-classes/metadata_ref";
 import { ontoAction } from "./onto";
 
 export async function syncAction(opts: {
@@ -52,6 +54,7 @@ export async function syncAction(opts: {
     await deleteBranch({ branchName: branch.name, ...opts });
   } while (trunkChildren.length > 0);
   checkoutBranch(oldBranchName);
+  cleanDanglingMetadata();
 }
 
 function shouldDeleteBranch(branchName: string): boolean {
@@ -91,4 +94,15 @@ async function deleteBranch(opts: { branchName: string; force: boolean }) {
     logInfo(`Deleting (${chalk.red(opts.branchName)})`);
   }
   execSync(`git branch -D ${opts.branchName}`);
+}
+
+function cleanDanglingMetadata(): void {
+  const allMetadataRefs = MetadataRef.allMetadataRefs();
+  const allBranches = Branch.allBranches();
+  allMetadataRefs.forEach((ref) => {
+    if (!allBranches.find((b) => b.name === ref._branchName)) {
+      logDebug(`Deleting metadata for ${ref._branchName}`);
+      ref.delete();
+    }
+  });
 }
