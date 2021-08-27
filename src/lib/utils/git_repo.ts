@@ -42,23 +42,18 @@ export default class GitRepo {
       .trim();
   }
 
-  createUnstagedChange(textValue: string, prefix?: string): void {
-    const filePath = `${this.dir}/${
-        prefix ? prefix + "_" : ""
-    }${TEXT_FILE_NAME}`;
-    fs.writeFileSync(filePath, textValue);
-  }
-
   unstagedChanges(): boolean {
     return unStagedChanges();
   }
 
-  createChange(textValue: string, prefix?: string): void {
+  createChange(textValue: string, prefix?: string, unstaged?: boolean): void {
     const filePath = `${this.dir}/${
       prefix ? prefix + "_" : ""
     }${TEXT_FILE_NAME}`;
     fs.writeFileSync(filePath, textValue);
-    execSync(`git -C "${this.dir}" add ${filePath}`);
+    if (!unstaged) {
+      execSync(`git -C "${this.dir}" add ${filePath}`);
+    }
   }
 
   createChangeAndCommit(textValue: string, prefix?: string): void {
