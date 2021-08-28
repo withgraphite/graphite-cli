@@ -1,5 +1,5 @@
 import Branch from "../../wrapper-classes/branch";
-import { repoConfig } from "../config";
+import { repoConfig, userConfig } from "../config";
 import { PreconditionsFailedError } from "../errors";
 import { detectStagedChanges, gpExecSync, uncommittedChanges } from "../utils";
 
@@ -44,6 +44,16 @@ function ensureSomeStagedChangesPrecondition(): void {
   }
 }
 
+function cliAuthPrecondition(): string {
+  const token = userConfig.getAuthToken();
+  if (!token || token.length === 0) {
+    throw new PreconditionsFailedError(
+      "Please authenticate your Graphite CLI by visiting https://app.graphite.dev/activate."
+    );
+  }
+  return token;
+}
+
 function currentGitRepoPrecondition(): string {
   const repoRootPath = gpExecSync(
     {
@@ -67,4 +77,5 @@ export {
   uncommittedChangesPrecondition,
   currentGitRepoPrecondition,
   ensureSomeStagedChangesPrecondition,
+  cliAuthPrecondition,
 };
