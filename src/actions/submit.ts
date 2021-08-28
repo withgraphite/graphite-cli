@@ -7,14 +7,17 @@ import fs from "fs-extra";
 import prompts from "prompts";
 import tmp from "tmp";
 import { API_SERVER } from "../lib/api";
-import { execStateConfig, repoConfig, userConfig } from "../lib/config";
+import { execStateConfig, repoConfig } from "../lib/config";
 import {
   ExitFailedError,
   KilledError,
   PreconditionsFailedError,
   ValidationFailedError,
 } from "../lib/errors";
-import { currentBranchPrecondition } from "../lib/preconditions";
+import {
+  cliAuthPrecondition,
+  currentBranchPrecondition,
+} from "../lib/preconditions";
 import {
   gpExecSync,
   logError,
@@ -42,7 +45,7 @@ export async function submitAction(args: {
     args.createNewPRsAsDraft = true;
   }
 
-  const cliAuthToken = getCLIAuthToken();
+  const cliAuthToken = cliAuthPrecondition();
   const repoName = repoConfig.getRepoName();
   const repoOwner = repoConfig.getRepoOwner();
 
@@ -76,16 +79,6 @@ export async function submitAction(args: {
 
   printSubmittedPRInfo(submittedPRInfo);
   saveBranchPRInfo(submittedPRInfo);
-}
-
-function getCLIAuthToken(): string {
-  const token = userConfig.getAuthToken();
-  if (!token || token.length === 0) {
-    throw new PreconditionsFailedError(
-      "Please authenticate your Graphite CLI by visiting https://app.graphite.dev/activate."
-    );
-  }
-  return token;
 }
 
 function pushBranchesToRemote(branches: Branch[]): Branch[] {
@@ -137,7 +130,7 @@ type TSubmittedPR = {
   response: TSubmittedPRResponse;
 };
 
-async function submitPRsForBranches(args: {
+export async function submitPRsForBranches(args: {
   branches: Branch[];
   branchesPushedToRemote: Branch[];
   cliAuthToken: string;
