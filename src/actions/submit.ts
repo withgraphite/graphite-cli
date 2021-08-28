@@ -435,7 +435,7 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
   });
 }
 
-function saveBranchPRInfo(prs: TSubmittedPR[]): void {
+export function saveBranchPRInfo(prs: TSubmittedPR[]): void {
   prs.forEach(async (pr) => {
     if (pr.response.status === "updated" || pr.response.status === "created") {
       const branch = await Branch.branchWithName(pr.response.head);

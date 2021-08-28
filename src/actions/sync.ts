@@ -1,8 +1,12 @@
 import chalk from "chalk";
 import { execSync } from "child_process";
 import prompts from "prompts";
+import { repoConfig } from "../lib/config";
 import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
-import { currentBranchPrecondition } from "../lib/preconditions";
+import {
+  cliAuthPrecondition,
+  currentBranchPrecondition,
+} from "../lib/preconditions";
 import {
   checkoutBranch,
   getTrunk,
@@ -14,6 +18,7 @@ import { logDebug } from "../lib/utils/splog";
 import Branch from "../wrapper-classes/branch";
 import MetadataRef from "../wrapper-classes/metadata_ref";
 import { ontoAction } from "./onto";
+import { saveBranchPRInfo, submitPRsForBranches } from "./submit";
 
 export async function syncAction(opts: {
   pull: boolean;
@@ -35,6 +40,7 @@ export async function syncAction(opts: {
 
   await deleteMergedBranches(opts.force);
   checkoutBranch(oldBranch.name);
+  await resubmitBranchesWithNewBases(opts.force);
   cleanDanglingMetadata();
 }
 
@@ -108,4 +114,51 @@ function cleanDanglingMetadata(): void {
       ref.delete();
     }
   });
+}
+
+async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
+  const needsResubmission: Branch[] = [];
+  Branch.allBranches().forEach((b) => {
+    const base = b.getPRInfo()?.base;
+    if (base && base !== b.getParentFromMeta()?.name) {
+      needsResubmission.push(b);
+    }
+  });
+  if (needsResubmission.length === 0) {
+    return;
+  }
+  logInfo(
+    [
+      `Detected merge bases changes for:`,
+      ...needsResubmission.map((b) => `- ${b.name}`),
+    ].join("\n")
+  );
+
+  // Prompt for resubmission.
+  let resubmit: boolean = force;
+  if (!force) {
+    const response = await prompts({
+      type: "confirm",
+      name: "value",
+      message: `Update remote PR mergebases to match local?`,
+      initial: true,
+    });
+    resubmit = response.value;
+  }
+  if (resubmit) {
+    logInfo(`Updating outstanding PR mergebases...`);
+    const cliAuthToken = cliAuthPrecondition();
+    const repoName = repoConfig.getRepoName();
+    const repoOwner = repoConfig.getRepoOwner();
+    const submittedPRInfo = await submitPRsForBranches({
+      branches: needsResubmission,
+      branchesPushedToRemote: needsResubmission,
+      cliAuthToken: cliAuthToken,
+      repoOwner: repoOwner,
+      repoName: repoName,
+      editPRFieldsInline: false,
+      createNewPRsAsDraft: false,
+    });
+    saveBranchPRInfo(submittedPRInfo);
+  }
 }
