@@ -6,6 +6,7 @@ import {
   globalArgumentsOptions,
   processGlobalArgumentsMiddleware,
 } from "./lib/global-arguments";
+import { passthrough } from "./lib/passthrough";
 import {
   fetchUpgradePromptInBackground,
   postTelemetryInBackground,
@@ -48,6 +49,7 @@ function deprecatedGpWarning(argv: yargs.Arguments) {
 }
 
 signpostDeprecatedCommands(process.argv[2]);
+passthrough(process.argv);
 preprocessCommand();
 yargs(process.argv.slice(2))
   .commandDir("commands")
