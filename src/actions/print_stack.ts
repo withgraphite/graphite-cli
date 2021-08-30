@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import { getCommitterDate } from "../lib/utils";
 import { getTrunk } from "../lib/utils/trunk";
+import { Commit } from "../wrapper-classes";
 import Branch from "../wrapper-classes/branch";
 import { TBranchPRInfo } from "../wrapper-classes/metadata_ref";
 
@@ -90,6 +91,18 @@ function getBranchInfo(branch: Branch, config: TPrintStackConfig): string[] {
       })
     )}`
   );
+
+  if (!branch.isTrunk()) {
+    const commits = branch.getCommitSHAs();
+    if (commits.length !== 0) {
+      commits.forEach((commitSHA) => {
+        const commit = new Commit(commitSHA);
+        branchInfoLines.push(
+          chalk.gray(`* ${commit.sha.slice(0, 6)} - ${commit.message()}`)
+        );
+      });
+    }
+  }
 
   branchInfoLines = dimMergedOrClosedBranches({
     lines: branchInfoLines,

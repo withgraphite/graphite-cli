@@ -444,6 +444,10 @@ export default class Branch {
     // - so both branch tips point to the same commit. Graphite knows that
     // this is a parent-child relationship, but git does not.
     const parent = this.getParentFromMeta();
+    if (parent === undefined) {
+      return [];
+    }
+
     const shas: Set<string> = new Set();
 
     const commits = gpExecSync(
