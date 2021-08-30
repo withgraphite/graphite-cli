@@ -7,10 +7,20 @@ import { API_SERVER } from "../api";
 import { repoConfig, userConfig } from "../config";
 
 export function refreshPRInfoInBackground(): void {
-  cp.spawn("/usr/bin/env", ["node", __filename], {
-    detached: true,
-    stdio: "inherit",
-  });
+  // do our potential write before we kick off the child process so that we
+  // don't incur a possible race condition with the write
+  const now = Date.now();
+  const lastFetchedMs = repoConfig.getLastFetchedPRInfoMs();
+  const msInSecond = 1000;
+
+  // rate limit refreshing PR info to once per minute
+  if (lastFetchedMs === undefined || now - lastFetchedMs > 60 * msInSecond) {
+    repoConfig.setLastFetchedPRInfoMs(now);
+    cp.spawn("/usr/bin/env", ["node", __filename], {
+      detached: true,
+      stdio: "ignore",
+    });
+  }
 }
 
 async function refreshPRInfo(): Promise<void> {
