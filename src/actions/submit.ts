@@ -35,8 +35,10 @@ import { TBranchPRInfo } from "../wrapper-classes/metadata_ref";
 import { TScope } from "./scope";
 import { validate } from "./validate";
 
+type TSubmitScope = TScope | "BRANCH";
+
 export async function submitAction(args: {
-  scope: TScope;
+  scope: TSubmitScope;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
 }): Promise<void> {
@@ -50,19 +52,17 @@ export async function submitAction(args: {
   const repoOwner = repoConfig.getRepoOwner();
 
   try {
-    validate(args.scope);
+    if (args.scope !== "BRANCH") {
+      validate(args.scope);
+    }
   } catch {
     throw new ValidationFailedError(`Validation failed before submitting.`);
   }
 
-  const currentBranch = currentBranchPrecondition();
-  const stack =
-    args.scope === "DOWNSTACK"
-      ? new MetaStackBuilder().downstackFromBranch(currentBranch)
-      : new MetaStackBuilder().fullStackFromBranch(currentBranch);
-
-  const branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
-
+  const branchesToSubmit = getBranchesToSubmit({
+    currentBranch: currentBranchPrecondition(),
+    scope: args.scope,
+  });
   const branchesPushedToRemote = pushBranchesToRemote(branchesToSubmit);
   const submittedPRInfo = await submitPRsForBranches({
     branches: branchesToSubmit,
@@ -79,6 +79,34 @@ export async function submitAction(args: {
 
   printSubmittedPRInfo(submittedPRInfo);
   saveBranchPRInfo(submittedPRInfo);
+}
+
+function getBranchesToSubmit(args: {
+  currentBranch: Branch;
+  scope: TSubmitScope;
+}): Branch[] {
+  switch (args.scope) {
+    case "DOWNSTACK":
+      return new MetaStackBuilder()
+        .downstackFromBranch(args.currentBranch)
+        .branches()
+        .filter((b) => !b.isTrunk());
+    case "FULLSTACK":
+      return new MetaStackBuilder()
+        .fullStackFromBranch(args.currentBranch)
+        .branches()
+        .filter((b) => !b.isTrunk());
+    case "UPSTACK":
+      return new MetaStackBuilder()
+        .upstackInclusiveFromBranchWithParents(args.currentBranch)
+        .branches()
+        .filter((b) => !b.isTrunk());
+    case "BRANCH":
+      return [args.currentBranch];
+    default:
+      assertUnreachable(args.scope);
+      return [];
+  }
 }
 
 function pushBranchesToRemote(branches: Branch[]): Branch[] {
