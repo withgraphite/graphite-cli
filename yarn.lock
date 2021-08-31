@@ -294,14 +294,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@screenplaydev/graphite-cli-routes@npm:0.6.0":
-  version: 0.6.0
-  resolution: "@screenplaydev/graphite-cli-routes@npm:0.6.0"
+"@screenplaydev/graphite-cli-routes@npm:0.7.0":
+  version: 0.7.0
+  resolution: "@screenplaydev/graphite-cli-routes@npm:0.7.0"
   dependencies:
     "@screenplaydev/retype": ^0.2.0
     "@screenplaydev/retyped-routes": ^0.1.0
     "@types/node": ^14.14.37
-  checksum: 4e917bd1bb3ec347f861c34ea666475d57d387fc36f7e44bca08f2b9be1a3fd2a1567b5653f9be68db280daa265c530e54064fe18ee95326764a9f8b11e5847c
+  checksum: 8e54b3437a2fa5c9b6816e773ee1667aa70a797df1da5c8f39a2a0adb68a30465b761b3e8be047d663f2f5054ce2c8ef730e653d251ee4c979a12507d549fd47
   languageName: node
   linkType: hard
 
@@ -2265,7 +2265,7 @@ fsevents@~2.3.1:
   dependencies:
     "@commitlint/cli": ^13.1.0
     "@commitlint/config-conventional": ^13.1.0
-    "@screenplaydev/graphite-cli-routes": 0.6.0
+    "@screenplaydev/graphite-cli-routes": 0.7.0
     "@screenplaydev/retype": ^0.2.0
     "@screenplaydev/retyped-routes": ^0.1.0
     "@types/chai": ^4.2.14
