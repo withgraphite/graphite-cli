@@ -1,14 +1,11 @@
 import { submitAction } from "../../actions/submit";
 import { profile } from "../../lib/telemetry";
-import {
-  aliases,
-  argsT,
-  builder,
-  command,
-  description,
-} from "../stack-commands/submit";
+import type { argsT } from "../shared-commands/submit";
 
-export { command, description, builder, aliases };
+export { aliases, builder, command } from "../shared-commands/submit";
+export const description =
+  "Idempotently force push all downstack branches (including the current one) to GitHub, creating or updating distinct pull requests for each.";
+
 export const handler = async (argv: argsT): Promise<void> => {
   await profile(argv, async () => {
     await submitAction({
