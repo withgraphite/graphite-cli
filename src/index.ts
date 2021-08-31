@@ -7,10 +7,10 @@ import {
   processGlobalArgumentsMiddleware,
 } from "./lib/global-arguments";
 import { passthrough } from "./lib/passthrough";
+import { refreshPRInfoInBackground } from "./lib/requests";
 import {
   fetchUpgradePromptInBackground,
   postTelemetryInBackground,
-  refreshPRInfoInBackground,
 } from "./lib/telemetry";
 import {
   logError,
