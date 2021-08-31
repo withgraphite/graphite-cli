@@ -133,31 +133,18 @@ for (const scene of allScenes) {
       expect(gitStack.equals(Stack.fromMap({ a: {} }))).to.be.true;
     });
 
-    it("Does not throw an error if two git branches point to the same commit WITH meta", () => {
+    it("Throws an error if two git branches point to the same commit", () => {
       scene.repo.createChange("a");
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+
+      expect(() =>
+        new GitStackBuilder().fullStackFromBranch(new Branch("a"))
+      ).to.not.throw(Error);
 
       scene.repo.execCliCommand(`branch create "b" -q`);
 
       expect(() =>
         new GitStackBuilder().fullStackFromBranch(new Branch("a"))
-      ).to.not.throw(SiblingBranchError);
-      expect(
-        new GitStackBuilder()
-          .fullStackFromBranch(new Branch("a"))
-          .equals(Stack.fromMap({ main: { a: { b: {} } } }))
-      ).to.be.true;
-    });
-
-    it("Throws an error if two git branches point to the same commit WITHOUT meta", () => {
-      scene.repo.createChange("a");
-      scene.repo.createAndCheckoutBranch("a");
-
-      scene.repo.createChange("b");
-      scene.repo.createAndCheckoutBranch("b");
-
-      expect(() =>
-        new GitStackBuilder().fullStackFromBranch(new Branch("b"))
       ).to.throw(SiblingBranchError);
     });
 

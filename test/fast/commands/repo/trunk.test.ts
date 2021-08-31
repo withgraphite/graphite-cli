@@ -14,9 +14,10 @@ for (const scene of allScenes) {
       ).to.be.true;
     });
 
-    it("Does not throw an error if trunk has a sibling commit WITH meta", () => {
-      scene.repo.execCliCommand("branch create 'sibling' -q");
+    it("Throws an error if trunk has a sibling commit", () => {
       expect(() => scene.repo.execCliCommand("ls")).to.not.throw(Error);
+      scene.repo.createAndCheckoutBranch("sibling");
+      expect(() => scene.repo.execCliCommand("ls")).to.throw(Error);
     });
   });
 }

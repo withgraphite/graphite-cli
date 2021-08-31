@@ -28,14 +28,10 @@ for (const scene of [new TrailingProdScene()]) {
       expect(() => scene.repo.execCliCommand(`log short`)).to.not.throw(Error);
     });
 
-    it("Can print correctly if trunk has two branches pointing to one commit", () => {
+    it("Errors if trunk has two branches pointing to one commit", () => {
       scene.repo.execCliCommand(`branch create a`);
       scene.repo.checkoutBranch("main");
-      scene.repo.createChange("b", "b");
-      scene.repo.execCliCommand(`branch create b -m "b"`);
-      expect(
-        scene.repo.execCliCommandAndGetOutput("log short").split("\n").length
-      ).to.eq(3, "number of lines from ls output");
+      expect(() => scene.repo.execCliCommand("log short")).to.throw(Error);
     });
   });
 }
