@@ -10,3 +10,4 @@ xcuserdata/
 dist/
 .eslintcache
 .graphite_repo_config
+.idea/*
