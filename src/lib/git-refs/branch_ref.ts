@@ -1,4 +1,5 @@
 import Branch from "../../wrapper-classes/branch";
+import { repoConfig } from "../config";
 import cache from "../config/cache";
 import { ExitFailedError } from "../errors";
 import { gpExecSync } from "../utils";
@@ -21,11 +22,12 @@ function refreshRefsCache(): void {
       }
       const ref = pair[0];
       const branchName = pair[1].replace("refs/heads/", "");
-      memoizedRefToBranches[ref]
-        ? memoizedRefToBranches[ref].push(branchName)
-        : (memoizedRefToBranches[ref] = [branchName]);
-
-      memoizedBranchToRef[branchName] = ref;
+      if (repoConfig.isNotIgnoredBranch(branchName)) {
+        memoizedRefToBranches[ref]
+          ? memoizedRefToBranches[ref].push(branchName)
+          : (memoizedRefToBranches[ref] = [branchName]);
+        memoizedBranchToRef[branchName] = ref;
+      }
     });
   cache.setBranchRefs({
     branchToRef: memoizedBranchToRef,

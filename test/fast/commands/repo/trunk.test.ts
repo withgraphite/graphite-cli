@@ -19,5 +19,18 @@ for (const scene of allScenes) {
       scene.repo.createAndCheckoutBranch("sibling");
       expect(() => scene.repo.execCliCommand("ls")).to.throw(Error);
     });
+
+    it("Can get trunk if there is an ignored branch pointing to the same commit", () => {
+      scene.repo.createAndCheckoutBranch("ignore-me");
+      scene.repo.checkoutBranch("main");
+      expect(() => scene.repo.execCliCommand("ls")).to.throw(Error);
+
+      scene.repo.execCliCommand("repo ignored-branches --add ignore-me");
+      expect(() => scene.repo.execCliCommand("ls")).to.not.throw(Error);
+
+      expect(
+        scene.repo.execCliCommandAndGetOutput("repo trunk").includes("(main)")
+      ).to.be.true;
+    });
   });
 }

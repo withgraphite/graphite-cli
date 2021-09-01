@@ -39,6 +39,10 @@ class RepoConfig {
     );
   }
 
+  isNotIgnoredBranch(branchName: string) {
+    return !this.getIgnoreBranches().includes(branchName);
+  }
+
   public getRepoOwner(): string {
     const configOwner = this._data.owner;
     if (configOwner) {
