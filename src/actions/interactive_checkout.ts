@@ -1,9 +1,5 @@
 import prompts from "prompts";
-import {
-  ExitCancelledError,
-  ExitFailedError,
-  KilledError,
-} from "../lib/errors";
+import { ExitCancelledError, ExitFailedError } from "../lib/errors";
 import { getTrunk, gpExecSync } from "../lib/utils";
 import { MetaStackBuilder } from "../wrapper-classes";
 import Branch from "../wrapper-classes/branch";
@@ -36,7 +32,7 @@ async function promptBranches(choices: promptOptionT[]): Promise<void> {
       },
       {
         onCancel: () => {
-          throw new KilledError();
+          return;
         },
       }
     )

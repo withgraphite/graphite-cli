@@ -10,6 +10,7 @@ import {
   ConfigError,
   ExitCancelledError,
   ExitFailedError,
+  KilledError,
   MultiParentError,
   PreconditionsFailedError,
   RebaseConflictError,
@@ -83,6 +84,8 @@ export async function profile(
             case MultiParentError:
               logError(err.message);
               throw err;
+            case KilledError:
+              return; // don't log output if user manually kills.
             default:
               logError(err.message);
               throw err;
