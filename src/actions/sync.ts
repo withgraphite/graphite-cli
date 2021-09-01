@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { execSync } from "child_process";
 import prompts from "prompts";
-import { repoConfig } from "../lib/config";
+import { cache, repoConfig } from "../lib/config";
 import {
   ExitFailedError,
   KilledError,
@@ -43,11 +43,7 @@ export async function syncAction(opts: {
   }
 
   await deleteMergedBranches(opts.force);
-  if (Branch.exists(oldBranch.name)) {
-    checkoutBranch(oldBranch.name);
-  } else {
-    checkoutBranch(trunk);
-  }
+  checkoutBranch(Branch.exists(oldBranch.name) ? oldBranch.name : trunk);
   await resubmitBranchesWithNewBases(opts.force);
   cleanDanglingMetadata();
 }
@@ -117,6 +113,7 @@ async function deleteBranch(opts: { branchName: string; force: boolean }) {
   }
   logInfo(`Deleting (${chalk.red(opts.branchName)})`);
   execSync(`git branch -D ${opts.branchName}`);
+  cache.clearAll();
 }
 
 function cleanDanglingMetadata(): void {

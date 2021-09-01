@@ -118,18 +118,35 @@ for (const scene of allScenes) {
 
       expectBranches(scene.repo, "c, main");
       expectCommits(scene.repo, "squash_b, squash_a, 1");
+
+      const metadata = fs.readdirSync(
+        `${scene.repo.dir}/.git/refs/branch-metadata`
+      );
+      expect(metadata.includes("a")).to.be.false;
+      expect(metadata.includes("b")).to.be.false;
+      expect(metadata.includes("c")).to.be.true;
     });
 
-    xit("Deletes dangling metadata refs", async () => {
-      scene.repo.createChange("2", "a");
+    it("Deletes dangling metadata refs", async () => {
+      scene.repo.createChange("a", "a");
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+
+      scene.repo.createChange("b", "b");
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+
       scene.repo.checkoutBranch("main");
       execSync(`git -C "${scene.repo.dir}" branch -D a`);
-      expect(fs.existsSync(`${scene.repo.dir}/.git/refs/branch-metadata/a`)).to
-        .be.true;
-      scene.repo.execCliCommand(`repo sync -q --no-pull`);
-      expect(fs.existsSync(`${scene.repo.dir}/.git/refs/branch-metadata/a`)).to
-        .be.false;
+
+      let metadata = fs.readdirSync(
+        `${scene.repo.dir}/.git/refs/branch-metadata`
+      );
+      expect(metadata.includes("a")).to.be.true;
+      expect(metadata.includes("b")).to.be.true;
+      scene.repo.execCliCommand(`repo sync -q --no-pull -f`);
+
+      metadata = fs.readdirSync(`${scene.repo.dir}/.git/refs/branch-metadata`);
+      expect(metadata.includes("a")).to.be.false;
+      expect(metadata.includes("b")).to.be.true;
     });
 
     xit("Can detect dead branches off multiple stacks", async () => {
