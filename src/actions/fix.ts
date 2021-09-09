@@ -16,8 +16,8 @@ import {
   gpExecSync,
   logInfo,
   rebaseInProgress,
+  getTrunk,
 } from "../lib/utils";
-import { getTrunk } from "../lib/utils/trunk";
 import {
   Branch,
   GitStackBuilder,
@@ -33,7 +33,7 @@ async function promptStacks(opts: {
   const response = await prompts({
     type: "select",
     name: "value",
-    message: `Rebase branches or regerate stacks metadata?`,
+    message: `Rebase branches or regenerate stacks metadata?`,
     choices: ["rebase", "regen"].map(
       (r) => {
         return {
