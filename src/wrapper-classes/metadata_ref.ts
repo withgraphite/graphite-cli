@@ -12,7 +12,7 @@ export type TBranchPRReviewDecision =
 export type TBranchPRInfo = {
   number: number;
   base: string;
-  url: string;
+  url?: string;
   title?: string;
   state?: TBranchPRState;
   reviewDecision?: TBranchPRReviewDecision;
