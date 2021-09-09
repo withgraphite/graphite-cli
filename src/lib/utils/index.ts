@@ -19,7 +19,7 @@ import {
 } from "./splog";
 import { getTrunk } from "./trunk";
 import { uncommittedChanges } from "./git_status_utils";
-import { unStagedChanges } from "./git_status_utils";
+import { unstagedChanges } from "./git_status_utils";
 import { VALIDATION_HELPER_MESSAGE } from "./validation_helper_message";
 
 export {
@@ -33,7 +33,7 @@ export {
   rebaseInProgress,
   detectStagedChanges,
   uncommittedChanges,
-  unStagedChanges,
+  unstagedChanges,
   getTrunk,
   GitRepo,
   parseArgs,

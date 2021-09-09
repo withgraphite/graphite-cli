@@ -1,10 +1,10 @@
 import Branch from "../../wrapper-classes/branch";
 import { repoConfig, userConfig } from "../config";
 import { PreconditionsFailedError } from "../errors";
-import {detectStagedChanges, gpExecSync, logTip, uncommittedChanges, unStagedChanges} from "../utils";
+import {detectStagedChanges, gpExecSync, logTip, uncommittedChanges, unstagedChanges} from "../utils";
 
 function addAllAvailableTip(): void {
-  if (unStagedChanges()) {
+  if (unstagedChanges()) {
     logTip(
         "There are unstaged changes. Use -a option to stage all unstaged changes."
     );

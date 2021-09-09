@@ -2,14 +2,13 @@ import { gpExecSync } from ".";
 import { ExitFailedError } from "../errors";
 
 enum ChangeType {
-    unCommitted,
-    unStaged
+    uncommitted,
+    unstaged
 }
+
 function gitStatus(changeType: ChangeType): boolean{
-    let cmd =  `git status --porcelain=v1 2>/dev/null | wc -l`
-    if(changeType == ChangeType.unStaged) {
-        cmd = `git status -u --porcelain=v1 2>/dev/null | wc -l`
-    }
+    const cmd = `git status ${changeType == ChangeType.unstaged ? '-u' : ''} --porcelain=v1 2>/dev/null | wc -l`
+
     return (
         gpExecSync(
             {
@@ -28,9 +27,9 @@ function gitStatus(changeType: ChangeType): boolean{
 
 
 export function uncommittedChanges(): boolean {
-    return gitStatus(ChangeType.unCommitted)
+    return gitStatus(ChangeType.uncommitted)
 }
 
-export function unStagedChanges(): boolean {
-    return gitStatus(ChangeType.unStaged)
+export function unstagedChanges(): boolean {
+    return gitStatus(ChangeType.unstaged)
 }

@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import fs from "fs-extra";
 import { rebaseInProgress } from "./";
-import { unStagedChanges } from "./";
+import { unstagedChanges } from "./";
 
 const TEXT_FILE_NAME = "test.txt";
 export default class GitRepo {
@@ -43,7 +43,7 @@ export default class GitRepo {
   }
 
   unstagedChanges(): boolean {
-    return unStagedChanges();
+    return unstagedChanges();
   }
 
   createChange(textValue: string, prefix?: string, unstaged?: boolean): void {
