@@ -1,22 +1,15 @@
 import { gpExecSync } from ".";
 import { ExitFailedError } from "../errors";
 
-enum ChangeType {
-    uncommitted,
-    unstaged
-}
-
-function gitStatus(changeType: ChangeType): boolean{
-    const cmd = `git status ${changeType == ChangeType.unstaged ? '-u' : ''} --porcelain=v1 2>/dev/null | wc -l`
-
-    return (
+function isPresent(cmd: string): boolean{
+ return (
         gpExecSync(
             {
                 command: cmd,
             },
             () => {
                 throw new ExitFailedError(
-                    `Failed to check current dir for uncommitted changes.`
+                    `Failed to check current dir for untracked/uncommitted changes.`
                 );
             }
         )
@@ -27,9 +20,13 @@ function gitStatus(changeType: ChangeType): boolean{
 
 
 export function uncommittedChanges(): boolean {
-    return gitStatus(ChangeType.uncommitted)
+    return isPresent(`git status -u --porcelain=v1 2>/dev/null | wc -l`)
 }
 
 export function unstagedChanges(): boolean {
-    return gitStatus(ChangeType.unstaged)
+    return isPresent(`git ls-files --others --exclude-standard | wc -l`)
+}
+
+export function trackedUncommittedChanges(): boolean {
+    return isPresent(`git status -uno --porcelain=v1 2>/dev/null | wc -l`)
 }
