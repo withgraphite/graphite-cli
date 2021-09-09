@@ -2,6 +2,7 @@ import Branch from "../../wrapper-classes/branch";
 import { repoConfig, userConfig } from "../config";
 import { PreconditionsFailedError } from "../errors";
 import {detectStagedChanges, gpExecSync, logTip, uncommittedChanges, unstagedChanges} from "../utils";
+import {trackedUncommittedChanges} from "../utils/git_status_utils";
 
 function addAllAvailableTip(): void {
   if (unstagedChanges()) {
@@ -21,7 +22,7 @@ function currentBranchPrecondition(): Branch {
   if (repoConfig.branchIsIgnored(branch.name)) {
     throw new PreconditionsFailedError(
       [
-        `Cannot use graphite atop (${branch.name}) which is explicately ignored in your repo config.`,
+        `Cannot use graphite atop (${branch.name}) which is explicitly ignored in your repo config.`,
         `If you'd like to edit your ignored branches, consider running "gt repo init", or manually editing your ".git/.graphite_repo_config" file.`,
       ].join("\n")
     );
@@ -34,6 +35,14 @@ function branchExistsPrecondition(branchName: string): void {
     throw new PreconditionsFailedError(
       `Cannot find branch named: (${branchName}).`
     );
+  }
+}
+
+function uncommittedTrackedChangesPrecondition(): void {
+  if (trackedUncommittedChanges()) {
+    throw new PreconditionsFailedError(
+        `There are tracked changes that have not been committed. Please resolve and then retry.`
+    )
   }
 }
 
@@ -85,6 +94,7 @@ function currentGitRepoPrecondition(): string {
 export {
   currentBranchPrecondition,
   branchExistsPrecondition,
+  uncommittedTrackedChangesPrecondition,
   uncommittedChangesPrecondition,
   currentGitRepoPrecondition,
   ensureSomeStagedChangesPrecondition,

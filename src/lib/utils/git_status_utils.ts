@@ -20,13 +20,13 @@ function isPresent(cmd: string): boolean{
 
 
 export function uncommittedChanges(): boolean {
-    return isPresent(`git status -u --porcelain=v1 2>/dev/null | wc -l`)
+    return isPresent(`git status -u --porcelain=v1 2>/dev/null | wc -l`) // Includes untracked and staged changes
 }
 
 export function unstagedChanges(): boolean {
-    return isPresent(`git ls-files --others --exclude-standard | wc -l`)
+    return isPresent(`git ls-files --others --exclude-standard | wc -l`) // untracked changes only
 }
 
 export function trackedUncommittedChanges(): boolean {
-    return isPresent(`git status -uno --porcelain=v1 2>/dev/null | wc -l`)
+    return isPresent(`git status -uno --porcelain=v1 2>/dev/null | wc -l`) // staged but uncommitted changes only
 }
