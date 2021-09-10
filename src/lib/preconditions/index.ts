@@ -40,7 +40,7 @@ function branchExistsPrecondition(branchName: string): void {
 function uncommittedChangesPrecondition(): void {
   if (uncommittedChanges()) {
     throw new PreconditionsFailedError(
-      `Cannot run with uncommitted changes present, please resolve and then retry.`
+      `Cannot run with untracked or uncommitted changes present, please resolve and then retry.`
     );
   }
 }
