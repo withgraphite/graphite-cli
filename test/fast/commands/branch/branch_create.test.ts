@@ -33,7 +33,7 @@ for (const scene of allScenes) {
     });
 
     it("Can create a branch with add all option", () => {
-      scene.repo.createChange("23", "", true);
+      scene.repo.createChange("23", "test", true);
       expect(scene.repo.unstagedChanges()).to.be.true
       scene.repo.execCliCommand(`branch create test-branch -m "add all" -a -q`);
       expect(scene.repo.unstagedChanges()).to.be.false
