@@ -48,12 +48,13 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "sync";
+export const canonical = "repo sync";
 export const aliases = ["s"];
 export const description =
   "Delete any branches that have been merged or squashed into the trunk branch, and fix their upstack branches recursively.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, canonical, async () => {
     await syncAction({
       pull: argv.pull,
       force: argv.force,

@@ -36,7 +36,11 @@ export async function profile(
   // Self heal repo config on all commands besides init:
   const parsedArgs = parseArgs(args);
   const start = Date.now();
-  registerSigintHandler({ commandName: parsedArgs.command, startTime: start });
+  registerSigintHandler({
+    commandName: parsedArgs.command,
+    canonicalCommandName: canonicalName,
+    startTime: start,
+  });
 
   if (parsedArgs.command !== "repo init" && !repoConfig.getTrunk()) {
     logInfo(`Graphite has not been initialized, attempting to setup now...`);

@@ -21,11 +21,12 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "create";
+export const canonical = "commit create";
 export const aliases = ["c"];
 export const description = "Create a new commit and fix upstack branches.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, "commit create", async () => {
+  return profile(argv, canonical, async () => {
     await commitCreateAction({
       message: argv.message,
       addAll: argv.all,

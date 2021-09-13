@@ -9,9 +9,10 @@ export const command = "validate";
 export const description =
   "Validate that Graphite's stack metadata for all upstack branches matches the branch relationships stored in git.";
 export const builder = args;
+export const canonical = "upstack validate";
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, "stack validate", async () => {
+  return profile(argv, canonical, async () => {
     validate("UPSTACK");
   });
 };

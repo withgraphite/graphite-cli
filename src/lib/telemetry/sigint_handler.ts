@@ -3,6 +3,7 @@ import { KilledError } from "../errors";
 
 export function registerSigintHandler(opts: {
   commandName: string;
+  canonicalCommandName: string;
   startTime: number;
 }): void {
   process.on("SIGINT", () => {
@@ -12,6 +13,7 @@ export function registerSigintHandler(opts: {
     tracer.allSpans.forEach((s) => s.end(err));
     postTelemetryInBackground({
       commandName: opts.commandName,
+      canonicalCommandName: opts.canonicalCommandName,
       durationMiliSeconds: Date.now() - opts.startTime,
       err: {
         errName: err.name,

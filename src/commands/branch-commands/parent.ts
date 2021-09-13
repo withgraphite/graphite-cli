@@ -2,7 +2,7 @@ import chalk from "chalk";
 import yargs from "yargs";
 import {
   branchExistsPrecondition,
-  currentBranchPrecondition,
+  currentBranchPrecondition
 } from "../../lib/preconditions";
 import { profile } from "../../lib/telemetry";
 import { logInfo } from "../../lib/utils";
@@ -24,11 +24,12 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "parent";
+export const canonical = "branch parent";
 export const description =
   "Show the parent branch of your current branch (i.e. directly below the current branch in the stack) as tracked by Graphite. Branch location metadata is stored under `.git/refs/branch-metadata`.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, "branch parent", async () => {
+  return profile(argv, canonical, async () => {
     const branch = currentBranchPrecondition();
     if (argv.set) {
       setParent(branch, argv.set);

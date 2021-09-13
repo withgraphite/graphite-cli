@@ -22,9 +22,10 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "tips";
 export const description = "Show tips while using Graphite";
+export const canonical = "user tips";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, canonical, async () => {
     if (argv.enable) {
       userConfig.toggleTips(true);
       logInfo(`tips enabled`);

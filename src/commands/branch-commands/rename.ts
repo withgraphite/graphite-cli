@@ -18,12 +18,13 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "rename <new-branch-name>";
+export const canonical = "branch rename";
 export const description =
   "Rename a branch and update metadata referencing it.";
 export const builder = args;
 
 export const handler = async (args: argsT): Promise<void> => {
-  return profile(args, async () => {
+  return profile(args, canonical, async () => {
     const currentBranch = currentBranchPrecondition();
     const oldName = currentBranch.name;
     const newName = args["new-branch-name"];

@@ -27,12 +27,13 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "amend";
+export const canonical = "commit amend";
 export const aliases = ["a"];
 export const description =
   "Amend the most recent commit and fix upstack branches.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, "commit amend", async () => {
+  return profile(argv, canonical, async () => {
     await commitAmendAction({
       message: argv.message,
       noEdit: !argv.edit,

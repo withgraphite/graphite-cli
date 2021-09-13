@@ -17,9 +17,10 @@ export const command = "auth";
 export const description =
   "Add your auth token to enable Graphite CLI to create and update your PRs on GitHub. You can get your auth token here: https://app.graphite.dev/activate.";
 export const builder = args;
+export const canonical = "auth";
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, "auth", async () => {
+  return profile(argv, canonical, async () => {
     if (argv.token) {
       userConfig.setAuthToken(argv.token);
       logSuccess(`🔐 Saved auth token to "${userConfig.path()}"`);

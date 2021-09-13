@@ -21,11 +21,12 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "init";
+export const canonical = "repo init";
 export const description =
   "Create or regenerate a `.graphite_repo_config` file.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, "repo init", async () => {
+  return profile(argv, canonical, async () => {
     await init(argv.trunk, argv["ignore-branches"]);
   });
 };

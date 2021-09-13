@@ -26,10 +26,11 @@ const args = {
 export const command = "*";
 export const description = "Log all stacks tracked by Graphite.";
 export const builder = args;
+export const canonical = "log";
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, canonical, async () => {
     // Use our custom logging of branches and stacks:
     if (argv["on-trunk"]) {
       printTrunkLog();

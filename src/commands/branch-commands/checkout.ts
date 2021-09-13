@@ -14,12 +14,13 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "checkout [branch]";
+export const canonical = "branch checkout";
 export const description = "Checkout a branch in a stack";
 export const aliases = ["co"];
 export const builder = args;
 
 export const handler = async (args: argsT): Promise<void> => {
-  return profile(args, async () => {
+  return profile(args, canonical, async () => {
     if (args.branch) {
       gpExecSync({ command: `git checkout ${args.branch}` });
     } else {

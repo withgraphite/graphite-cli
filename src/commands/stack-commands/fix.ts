@@ -4,6 +4,7 @@ import { ExitFailedError } from "../../lib/errors";
 import { profile } from "../../lib/telemetry";
 
 export const command = "fix";
+export const canonical = "stack fix";
 export const description =
   "Fix your stack of changes, either by recursively rebasing branches onto their parents, or by regenerating Graphite's stack metadata from the branch relationships in the git commit tree.";
 
@@ -26,7 +27,7 @@ export const builder = args;
 export const aliases = ["f"];
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, "stack fix", async () => {
+  return profile(argv, canonical, async () => {
     if (argv.rebase && argv.regen) {
       throw new ExitFailedError(
         'Please specify either the "--rebase" or "--regen" method, not both'

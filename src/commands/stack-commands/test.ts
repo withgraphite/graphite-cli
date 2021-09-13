@@ -27,12 +27,13 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "test <command>";
+export const canonical = "stack test";
 export const aliases = ["t"];
 export const description =
   "Checkout each branch in your stack, run the provided command, and aggregate the results. Good finding bugs in your stack.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, canonical, async () => {
     testStack(argv.command, { skipTrunk: argv["skip-trunk"] });
   });
 };

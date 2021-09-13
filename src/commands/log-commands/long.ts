@@ -8,10 +8,11 @@ export const command = "long";
 export const description = "Log all stacks tracked by Graphite.";
 export const builder = args;
 export const aliases = ["l"];
+export const canonical = "log long";
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, canonical, async () => {
     // If this flag is passed, print the old logging style:
     try {
       execSync(

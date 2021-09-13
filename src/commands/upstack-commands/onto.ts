@@ -13,12 +13,13 @@ const args = {
 } as const;
 
 export const command = "onto <branch>";
+export const canonical = "upstack onto";
 export const description =
   "Rebase all upstack branches onto the latest commit (tip) of the target branch.";
 export const builder = args;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, "stack onto", async () => {
+  return profile(argv, canonical, async () => {
     await ontoAction(argv.branch);
   });
 };
