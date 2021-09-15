@@ -27,6 +27,8 @@ import { saveBranchPRInfo, submitPRsForBranches } from "./submit";
 export async function syncAction(opts: {
   pull: boolean;
   force: boolean;
+  delete: boolean;
+  resubmit: boolean;
 }): Promise<void> {
   if (uncommittedChanges()) {
     throw new PreconditionsFailedError("Cannot sync with uncommitted changes");
@@ -42,9 +44,14 @@ export async function syncAction(opts: {
     });
   }
 
-  await deleteMergedBranches(opts.force);
+  if (opts.delete) {
+    await deleteMergedBranches(opts.force);
+  }
+  if (opts.resubmit) {
+    await resubmitBranchesWithNewBases(opts.force);
+  }
+
   checkoutBranch(Branch.exists(oldBranch.name) ? oldBranch.name : trunk);
-  await resubmitBranchesWithNewBases(opts.force);
   cleanDanglingMetadata();
 }
 

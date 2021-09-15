@@ -3,8 +3,22 @@ import { syncAction } from "../../actions/sync";
 import { profile } from "../../lib/telemetry";
 
 const args = {
+  delete: {
+    describe: `Delete branches which have been merged.`,
+    demandOption: false,
+    default: true,
+    type: "boolean",
+    alias: "d",
+  },
+  resubmit: {
+    describe: `Re-submit branches whose merge bases have changed locally and now differ from their PRs.`,
+    demandOption: false,
+    default: true,
+    type: "boolean",
+    alias: "r",
+  },
   force: {
-    describe: `Don't prompt you to confirm when a branch will be deleted.`,
+    describe: `Don't prompt you to confirm when a branch will be deleted or re-submitted.`,
     demandOption: false,
     default: false,
     type: "boolean",
@@ -30,6 +44,8 @@ export const handler = async (argv: argsT): Promise<void> => {
     await syncAction({
       pull: argv.pull,
       force: argv.force,
+      resubmit: argv.resubmit,
+      delete: argv.delete,
     });
   });
 };
