@@ -120,7 +120,10 @@ function getBranchInfo(branch: Branch, config: TPrintStackConfig): string[] {
   return branchInfoLines;
 }
 
-function getBranchTitle(branch: Branch, config: TPrintStackConfig): string {
+export function getBranchTitle(
+  branch: Branch,
+  config: TPrintStackConfig
+): string {
   const prInfo = branch.getPRInfo();
   const branchName =
     config.currentBranch?.name === branch.name
