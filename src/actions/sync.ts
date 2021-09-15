@@ -147,9 +147,13 @@ function cleanDanglingMetadata(): void {
 
 async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
   const needsResubmission: Branch[] = [];
-  Branch.allBranches().forEach((b) => {
-    const base = b.getPRInfo()?.base;
-    if (base && base !== b.getParentFromMeta()?.name) {
+  Branch.allBranchesWithFilter({
+    filter: (b) => !b.isTrunk() && b.getParentFromMeta() !== undefined,
+  }).forEach((b) => {
+    const currentBase = b.getParentFromMeta()?.name;
+    const githubBase = b.getPRInfo()?.base;
+
+    if (githubBase && githubBase !== currentBase) {
       needsResubmission.push(b);
     }
   });
