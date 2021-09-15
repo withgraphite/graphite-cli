@@ -148,7 +148,15 @@ function cleanDanglingMetadata(): void {
 async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
   const needsResubmission: Branch[] = [];
   Branch.allBranchesWithFilter({
-    filter: (b) => !b.isTrunk() && b.getParentFromMeta() !== undefined,
+    filter: (b) => {
+      const prState = b.getPRInfo()?.state;
+      return (
+        !b.isTrunk() &&
+        b.getParentFromMeta() !== undefined &&
+        prState !== "MERGED" &&
+        prState !== "CLOSED"
+      );
+    },
   }).forEach((b) => {
     const currentBase = b.getParentFromMeta()?.name;
     const githubBase = b.getPRInfo()?.base;
