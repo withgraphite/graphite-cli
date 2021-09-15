@@ -20,15 +20,6 @@ export async function syncPRInfoForBranches(branches: Branch[]): Promise<void> {
   const repoName = repoConfig.getRepoName();
   const repoOwner = repoConfig.getRepoOwner();
 
-  const prNumsToBranches: { [key: number]: Branch } = {};
-  branches.forEach((branch) => {
-    const prInfo = branch.getPRInfo();
-    if (prInfo === undefined) {
-      return;
-    }
-    prNumsToBranches[prInfo.number] = branch;
-  });
-
   const response = await request.requestWithArgs(
     API_SERVER,
     graphiteCLIRoutes.pullRequestInfo,
@@ -36,14 +27,18 @@ export async function syncPRInfoForBranches(branches: Branch[]): Promise<void> {
       authToken: authToken,
       repoName: repoName,
       repoOwner: repoOwner,
-      prNumbers: Object.keys(prNumsToBranches).map((num) => parseInt(num)),
+      prNumbers: [],
+      prHeadRefNames: branches.map((branch) => branch.name),
     }
   );
 
   if (response._response.status === 200) {
+    // Note that this currently does not play nicely if the user has a branch
+    // that is being merged into multiple other branches; we expect this to
+    // be a rare case and will develop it lazily.
     await Promise.all(
       response.prs.map(async (pr) => {
-        const branch = prNumsToBranches[pr.prNumber];
+        const branch = await Branch.branchWithName(pr.headRefName);
         branch.setPRInfo({
           number: pr.prNumber,
           base: pr.baseRefName,
