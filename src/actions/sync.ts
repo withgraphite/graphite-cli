@@ -56,7 +56,7 @@ async function deleteMergedBranches(force: boolean): Promise<void> {
       break;
     }
     const children = branch.getChildrenFromMeta();
-    if (!shouldDeleteBranch(branch.name)) {
+    if (!shouldDeleteBranch(branch)) {
       continue;
     }
     for (const child of children) {
@@ -70,7 +70,13 @@ async function deleteMergedBranches(force: boolean): Promise<void> {
   } while (trunkChildren.length > 0);
 }
 
-function shouldDeleteBranch(branchName: string): boolean {
+function shouldDeleteBranch(branch: Branch): boolean {
+  const prMerged = branch.getPRInfo()?.state === "MERGED";
+  if (prMerged) {
+    return true;
+  }
+
+  const branchName = branch.name;
   const trunk = getTrunk().name;
   const cherryCheckProvesMerged = execSync(
     `mergeBase=$(git merge-base ${trunk} ${branchName}) && git cherry ${trunk} $(git commit-tree $(git rev-parse "${branchName}^{tree}") -p $mergeBase -m _)`
@@ -81,12 +87,14 @@ function shouldDeleteBranch(branchName: string): boolean {
   if (cherryCheckProvesMerged) {
     return true;
   }
+
   const diffCheckProvesMerged =
     execSync(`git diff ${branchName} ${trunk} | wc -l`).toString().trim() ===
     "0";
   if (diffCheckProvesMerged) {
     return true;
   }
+
   return false;
 }
 
