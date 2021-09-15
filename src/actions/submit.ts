@@ -63,22 +63,14 @@ export async function submitAction(args: {
     currentBranch: currentBranchPrecondition(),
     scope: args.scope,
   });
-  const branchesPushedToRemote = pushBranchesToRemote(branchesToSubmit);
-  const submittedPRInfo = await submitPRsForBranches({
-    branches: branchesToSubmit,
-    branchesPushedToRemote: branchesPushedToRemote,
+  await submitBranches({
+    branchesToSubmit: branchesToSubmit,
     cliAuthToken: cliAuthToken,
     repoOwner: repoOwner,
     repoName: repoName,
     editPRFieldsInline: args.editPRFieldsInline,
     createNewPRsAsDraft: args.createNewPRsAsDraft,
   });
-  if (submittedPRInfo === null) {
-    throw new ExitFailedError("Failed to submit commits. Please try again.");
-  }
-
-  printSubmittedPRInfo(submittedPRInfo);
-  saveBranchPRInfo(submittedPRInfo);
 }
 
 function getBranchesToSubmit(args: {
@@ -107,6 +99,32 @@ function getBranchesToSubmit(args: {
       assertUnreachable(args.scope);
       return [];
   }
+}
+
+export async function submitBranches(args: {
+  branchesToSubmit: Branch[];
+  cliAuthToken: string;
+  repoOwner: string;
+  repoName: string;
+  editPRFieldsInline: boolean;
+  createNewPRsAsDraft: boolean | undefined;
+}): Promise<void> {
+  const branchesPushedToRemote = pushBranchesToRemote(args.branchesToSubmit);
+  const submittedPRInfo = await submitPRsForBranches({
+    branches: args.branchesToSubmit,
+    branchesPushedToRemote: branchesPushedToRemote,
+    cliAuthToken: args.cliAuthToken,
+    repoOwner: args.repoOwner,
+    repoName: args.repoName,
+    editPRFieldsInline: args.editPRFieldsInline,
+    createNewPRsAsDraft: args.createNewPRsAsDraft,
+  });
+  if (submittedPRInfo === null) {
+    throw new ExitFailedError("Failed to submit commits. Please try again.");
+  }
+
+  printSubmittedPRInfo(submittedPRInfo);
+  saveBranchPRInfo(submittedPRInfo);
 }
 
 function pushBranchesToRemote(branches: Branch[]): Branch[] {
@@ -158,7 +176,7 @@ type TSubmittedPR = {
   response: TSubmittedPRResponse;
 };
 
-export async function submitPRsForBranches(args: {
+async function submitPRsForBranches(args: {
   branches: Branch[];
   branchesPushedToRemote: Branch[];
   cliAuthToken: string;

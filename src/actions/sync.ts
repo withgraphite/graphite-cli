@@ -23,7 +23,7 @@ import { logDebug } from "../lib/utils/splog";
 import Branch from "../wrapper-classes/branch";
 import MetadataRef from "../wrapper-classes/metadata_ref";
 import { ontoAction } from "./onto";
-import { saveBranchPRInfo, submitPRsForBranches } from "./submit";
+import { submitBranches } from "./submit";
 
 export async function syncAction(opts: {
   pull: boolean;
@@ -191,15 +191,13 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
     const cliAuthToken = cliAuthPrecondition();
     const repoName = repoConfig.getRepoName();
     const repoOwner = repoConfig.getRepoOwner();
-    const submittedPRInfo = await submitPRsForBranches({
-      branches: needsResubmission,
-      branchesPushedToRemote: needsResubmission,
+    await submitBranches({
+      branchesToSubmit: needsResubmission,
       cliAuthToken: cliAuthToken,
       repoOwner: repoOwner,
       repoName: repoName,
       editPRFieldsInline: false,
       createNewPRsAsDraft: false,
     });
-    saveBranchPRInfo(submittedPRInfo);
   }
 }
