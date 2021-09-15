@@ -11,6 +11,7 @@ import {
   cliAuthPrecondition,
   currentBranchPrecondition,
 } from "../lib/preconditions";
+import { syncPRInfoForBranches } from "../lib/sync/pr_info";
 import {
   checkoutBranch,
   getTrunk,
@@ -43,6 +44,8 @@ export async function syncAction(opts: {
       throw new ExitFailedError(`Failed to pull trunk ${trunk}`, err);
     });
   }
+
+  await syncPRInfoForBranches(Branch.allBranches());
 
   if (opts.delete) {
     await deleteMergedBranches(opts.force);

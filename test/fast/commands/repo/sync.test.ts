@@ -1,6 +1,9 @@
+import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
 import { expect } from "chai";
 import { execSync } from "child_process";
 import fs from "fs-extra";
+import nock from "nock";
+import { API_SERVER } from "../../../../src/lib/api";
 import { GitRepo } from "../../../../src/lib/utils";
 import { allScenes } from "../../../lib/scenes";
 import { configureTest, expectCommits } from "../../../lib/utils";
@@ -42,6 +45,24 @@ for (const scene of allScenes) {
   describe(`(${scene}): repo sync`, function () {
     configureTest(this, scene);
 
+    beforeEach(() => {
+      // We need to stub out the endpoint that sends back information on
+      // the GitHub PRs associated with each branch.
+      nock(API_SERVER).post(graphiteCLIRoutes.pullRequestInfo.url).reply(200, {
+        prs: [],
+      });
+
+      // Querying this endpoint requires a repo owner and name so we set
+      // that here too. Note that these values are meaningless (for now)
+      // and just need to exist.
+      scene.repo.execCliCommand(`repo owner -s "sweazle"`);
+      scene.repo.execCliCommand(`repo name -s "test-repo"`);
+    });
+
+    afterEach(() => {
+      nock.restore();
+    });
+
     it("Can delete a single merged branch", async () => {
       scene.repo.createChange("2", "a");
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
@@ -49,14 +70,14 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, "a, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash");
-      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
 
       expectBranches(scene.repo, "main");
     });
 
     it("Can noop sync if there are no stacks", () => {
       expect(() =>
-        scene.repo.execCliCommand(`repo sync -qf --no-pull`)
+        scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`)
       ).to.not.throw(Error);
     });
 
@@ -70,7 +91,7 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, "a, b, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash");
-      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
 
       expectBranches(scene.repo, "b, main");
       expectCommits(scene.repo, "squash, 1");
@@ -93,7 +114,7 @@ for (const scene of allScenes) {
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash_a");
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
-      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
 
       expectBranches(scene.repo, "c, main");
       expectCommits(scene.repo, "squash_b, squash_a, 1");
@@ -112,9 +133,9 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, "a, b, c, main");
 
       fakeGitSquashAndMerge(scene.repo, "a", "squash_a");
-      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
-      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
 
       expectBranches(scene.repo, "c, main");
       expectCommits(scene.repo, "squash_b, squash_a, 1");
@@ -142,7 +163,7 @@ for (const scene of allScenes) {
       );
       expect(metadata.includes("a")).to.be.true;
       expect(metadata.includes("b")).to.be.true;
-      scene.repo.execCliCommand(`repo sync -q --no-pull -f`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
 
       metadata = fs.readdirSync(`${scene.repo.dir}/.git/refs/branch-metadata`);
       expect(metadata.includes("a")).to.be.false;
@@ -173,7 +194,7 @@ for (const scene of allScenes) {
       fakeGitSquashAndMerge(scene.repo, "b", "squash_b");
       fakeGitSquashAndMerge(scene.repo, "d", "squash_d");
 
-      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
 
       expectBranches(scene.repo, "c, e, main");
       scene.repo.checkoutBranch("main");
