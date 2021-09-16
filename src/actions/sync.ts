@@ -51,7 +51,7 @@ export async function syncAction(opts: {
   // This needs to happen before we delete/resubmit so that we can potentially
   // delete or resubmit on the dangling branches.
   if (opts.fixDanglingBranches) {
-    await fixDanglingBranches();
+    await fixDanglingBranches(opts.force);
   }
 
   if (opts.delete) {
@@ -155,7 +155,7 @@ async function deleteBranch(opts: { branch: Branch; force: boolean }) {
   cache.clearAll();
 }
 
-async function fixDanglingBranches(): Promise<void> {
+async function fixDanglingBranches(force: boolean): Promise<void> {
   const danglingBranches = Branch.allBranchesWithFilter({
     filter: (b) => !b.isTrunk() && b.getParentFromMeta() === undefined,
   });
@@ -172,22 +172,24 @@ async function fixDanglingBranches(): Promise<void> {
 
   const trunk = getTrunk().name;
   for (const branch of danglingBranches) {
-    const response = await prompts(
-      {
-        type: "confirm",
-        name: "value",
-        message: `Set (${chalk.green(branch.name)})'s parent to (${trunk})?`,
-        initial: true,
-      },
-      {
-        onCancel: () => {
-          throw new KilledError();
+    let fix = force ? true : undefined;
+    if (fix === undefined) {
+      const response = await prompts(
+        {
+          type: "confirm",
+          name: "value",
+          message: `Set (${chalk.green(branch.name)})'s parent to (${trunk})?`,
+          initial: true,
         },
-      }
-    );
-    if (response.value != true) {
-      continue;
-    } else {
+        {
+          onCancel: () => {
+            throw new KilledError();
+          },
+        }
+      );
+      fix = response.value;
+    }
+    if (fix) {
       branch.setParentBranchName(trunk);
     }
   }
