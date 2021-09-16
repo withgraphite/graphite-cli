@@ -67,9 +67,18 @@ export async function syncAction(opts: {
 }
 
 async function deleteMergedBranches(force: boolean): Promise<void> {
+  // For now, our strategy is to only delete bases of stacks that have been
+  // merged into trunk. As a result, we grab all of stack bases - on trunk
+  // and those that have fallen off of trunk - and start our search for
+  // branches to delete there.
   const trunkChildren: Branch[] = getTrunk().getChildrenFromMeta();
+  const fallenOffTrunk: Branch[] = await Branch.getAllBranchesWithoutParents({
+    excludeTrunk: true,
+  });
+  const stackBases = trunkChildren.concat(fallenOffTrunk);
+
   do {
-    const branch = trunkChildren.pop();
+    const branch = stackBases.pop();
     if (!branch) {
       break;
     }
@@ -81,14 +90,19 @@ async function deleteMergedBranches(force: boolean): Promise<void> {
       checkoutBranch(child.name);
       logInfo(`upstacking (${child.name}) onto (${getTrunk().name})`);
       await ontoAction(getTrunk().name);
-      trunkChildren.push(child);
+      stackBases.push(child);
     }
     checkoutBranch(getTrunk().name);
     await deleteBranch({ branch: branch, force });
-  } while (trunkChildren.length > 0);
+  } while (stackBases.length > 0);
 }
 
 function shouldDeleteBranch(branch: Branch): boolean {
+  // Sanity check - never try to delete trunk.
+  if (branch.isTrunk()) {
+    return false;
+  }
+
   const prMerged = branch.getPRInfo()?.state === "MERGED";
   if (prMerged) {
     return true;
