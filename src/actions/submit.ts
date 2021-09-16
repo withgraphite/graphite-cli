@@ -12,18 +12,18 @@ import {
   ExitFailedError,
   KilledError,
   PreconditionsFailedError,
-  ValidationFailedError,
+  ValidationFailedError
 } from "../lib/errors";
 import {
   cliAuthPrecondition,
-  currentBranchPrecondition,
+  currentBranchPrecondition
 } from "../lib/preconditions";
 import {
   gpExecSync,
   logError,
   logInfo,
   logNewline,
-  logSuccess,
+  logSuccess
 } from "../lib/utils";
 import { getDefaultEditor } from "../lib/utils/default_editor";
 import { getPRTemplate } from "../lib/utils/pr_templates";
@@ -171,6 +171,10 @@ export async function submitPRsForBranches(args: {
     typeof graphiteCLIRoutes.submitPullRequests.params
   >["prs"] = [];
   for (const branch of args.branches) {
+    if (branch.getPRInfo()?.state === "MERGED") {
+      continue;
+    }
+
     // The branch here should always have a parent - above, the branches we've
     // gathered should exclude trunk which ensures that every branch we're submitting
     // a PR for has a valid parent.
