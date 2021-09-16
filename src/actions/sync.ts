@@ -5,11 +5,11 @@ import { cache, repoConfig } from "../lib/config";
 import {
   ExitFailedError,
   KilledError,
-  PreconditionsFailedError,
+  PreconditionsFailedError
 } from "../lib/errors";
 import {
   cliAuthPrecondition,
-  currentBranchPrecondition,
+  currentBranchPrecondition
 } from "../lib/preconditions";
 import { syncPRInfoForBranches } from "../lib/sync/pr_info";
 import {
@@ -17,9 +17,9 @@ import {
   getTrunk,
   gpExecSync,
   logInfo,
-  uncommittedChanges,
+  uncommittedChanges
 } from "../lib/utils";
-import { logDebug } from "../lib/utils/splog";
+import { logDebug, logNewline } from "../lib/utils/splog";
 import Branch from "../wrapper-classes/branch";
 import MetadataRef from "../wrapper-classes/metadata_ref";
 import { ontoAction } from "./onto";
@@ -30,6 +30,7 @@ export async function syncAction(opts: {
   force: boolean;
   delete: boolean;
   resubmit: boolean;
+  fixDanglingBranches: boolean;
 }): Promise<void> {
   if (uncommittedChanges()) {
     throw new PreconditionsFailedError("Cannot sync with uncommitted changes");
@@ -47,9 +48,16 @@ export async function syncAction(opts: {
 
   await syncPRInfoForBranches(Branch.allBranches());
 
+  // This needs to happen before we delete/resubmit so that we can potentially
+  // delete or resubmit on the dangling branches.
+  if (opts.fixDanglingBranches) {
+    await fixDanglingBranches();
+  }
+
   if (opts.delete) {
     await deleteMergedBranches(opts.force);
   }
+
   if (opts.resubmit) {
     await resubmitBranchesWithNewBases(opts.force);
   }
@@ -132,6 +140,44 @@ async function deleteBranch(opts: { branchName: string; force: boolean }) {
   logInfo(`Deleting (${chalk.red(opts.branchName)})`);
   execSync(`git branch -D ${opts.branchName}`);
   cache.clearAll();
+}
+
+async function fixDanglingBranches(): Promise<void> {
+  const danglingBranches = Branch.allBranchesWithFilter({
+    filter: (b) => !b.isTrunk() && b.getParentFromMeta() === undefined,
+  });
+  if (danglingBranches.length === 0) {
+    return;
+  }
+
+  logNewline();
+  console.log(
+    chalk.yellow(
+      `Detected branches in Graphite without a known parent. Suggesting a fix...`
+    )
+  );
+
+  const trunk = getTrunk().name;
+  for (const branch of danglingBranches) {
+    const response = await prompts(
+      {
+        type: "confirm",
+        name: "value",
+        message: `Set (${chalk.green(branch.name)})'s parent to (${trunk})?`,
+        initial: true,
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    );
+    if (response.value != true) {
+      continue;
+    } else {
+      branch.setParentBranchName(trunk);
+    }
+  }
 }
 
 function cleanDanglingMetadata(): void {
