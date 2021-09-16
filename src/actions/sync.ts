@@ -84,7 +84,7 @@ async function deleteMergedBranches(force: boolean): Promise<void> {
       trunkChildren.push(child);
     }
     checkoutBranch(getTrunk().name);
-    await deleteBranch({ branchName: branch.name, force });
+    await deleteBranch({ branch: branch, force });
   } while (trunkChildren.length > 0);
 }
 
@@ -116,15 +116,28 @@ function shouldDeleteBranch(branch: Branch): boolean {
   return false;
 }
 
-async function deleteBranch(opts: { branchName: string; force: boolean }) {
+async function deleteBranch(opts: { branch: Branch; force: boolean }) {
   if (!opts.force) {
+    const githubMergedBase =
+      opts.branch.getPRInfo()?.state === "MERGED"
+        ? opts.branch.getPRInfo()?.base
+        : undefined;
+
+    // If we've reached this point, we know that the branch was merged - it's
+    // just a question of where. If it was merged on GitHub, we see where it was
+    // merged into. If we don't detect that it was merged in GitHub but we do
+    // see the code in trunk, we fallback to say that it was merged into trunk.
+    // This extra check (rather than just saying trunk) is used to catch the
+    // case where one feature branch is merged into another on GitHub.
+    const mergedBase = githubMergedBase ?? getTrunk().name;
+
     const response = await prompts(
       {
         type: "confirm",
         name: "value",
         message: `Delete (${chalk.green(
-          opts.branchName
-        )}), which has been merged into (${getTrunk().name})?`,
+          opts.branch.name
+        )}), which has been merged into (${mergedBase})?`,
         initial: true,
       },
       {
@@ -137,8 +150,8 @@ async function deleteBranch(opts: { branchName: string; force: boolean }) {
       return;
     }
   }
-  logInfo(`Deleting (${chalk.red(opts.branchName)})`);
-  execSync(`git branch -D ${opts.branchName}`);
+  logInfo(`Deleting (${chalk.red(opts.branch.name)})`);
+  execSync(`git branch -D ${opts.branch.name}`);
   cache.clearAll();
 }
 
