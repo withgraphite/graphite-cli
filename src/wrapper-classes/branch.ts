@@ -393,6 +393,12 @@ export default class Branch {
     this.writeMeta(meta);
   }
 
+  public clearPRInfo(): void {
+    const meta: TMeta = this.getMeta() || {};
+    meta.prInfo = undefined;
+    this.writeMeta(meta);
+  }
+
   public getPRInfo(): TBranchPRInfo | undefined {
     return this.getMeta()?.prInfo;
   }

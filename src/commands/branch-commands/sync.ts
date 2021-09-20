@@ -7,7 +7,13 @@ import { syncPRInfoForBranches } from "../../lib/sync/pr_info";
 import { profile } from "../../lib/telemetry";
 import { logError } from "../../lib/utils";
 
-const args = {} as const;
+const args = {
+  reset: {
+    describe: `Removes current GitHub PR information linked to the current branch`,
+    demandOption: false,
+    type: "boolean",
+  },
+} as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const aliases = [];
@@ -18,6 +24,12 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, async () => {
     const branch = currentBranchPrecondition();
+
+    if (argv.reset) {
+      branch.clearPRInfo();
+      return;
+    }
+
     await syncPRInfoForBranches([branch]);
 
     const prInfo = branch.getPRInfo();
