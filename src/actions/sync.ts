@@ -5,11 +5,11 @@ import { cache, repoConfig } from "../lib/config";
 import {
   ExitFailedError,
   KilledError,
-  PreconditionsFailedError
+  PreconditionsFailedError,
 } from "../lib/errors";
 import {
   cliAuthPrecondition,
-  currentBranchPrecondition
+  currentBranchPrecondition,
 } from "../lib/preconditions";
 import { syncPRInfoForBranches } from "../lib/sync/pr_info";
 import {
@@ -17,7 +17,7 @@ import {
   getTrunk,
   gpExecSync,
   logInfo,
-  uncommittedChanges
+  uncommittedChanges,
 } from "../lib/utils";
 import { logDebug, logNewline } from "../lib/utils/splog";
 import Branch from "../wrapper-classes/branch";
@@ -172,14 +172,30 @@ async function fixDanglingBranches(force: boolean): Promise<void> {
 
   const trunk = getTrunk().name;
   for (const branch of danglingBranches) {
-    let fix = force ? true : undefined;
-    if (fix === undefined) {
+    type TFixStrategy = "parent_trunk" | "ignore_branch" | "no_fix" | undefined;
+    let fixStrategy: TFixStrategy = force ? "parent_trunk" : undefined;
+
+    if (fixStrategy === undefined) {
       const response = await prompts(
         {
-          type: "confirm",
+          type: "select",
           name: "value",
-          message: `Set (${chalk.green(branch.name)})'s parent to (${trunk})?`,
-          initial: true,
+          message: `${branch.name}`,
+          choices: [
+            {
+              title: `Set ${chalk.green(
+                `(${branch.name})`
+              )}'s parent to ${trunk}`,
+              value: "parent_trunk",
+            },
+            {
+              title: `Add ${chalk.green(
+                `(${branch.name})`
+              )} to the list of branches Graphite should ignore`,
+              value: "ignore_branch",
+            },
+            { title: `Fix later`, value: "no_fix" },
+          ],
         },
         {
           onCancel: () => {
@@ -187,13 +203,37 @@ async function fixDanglingBranches(force: boolean): Promise<void> {
           },
         }
       );
-      fix = response.value;
+
+      switch (response.value) {
+        case "parent_trunk":
+          fixStrategy = "parent_trunk";
+          break;
+        case "ignore_branch":
+          fixStrategy = "ignore_branch";
+          break;
+        case "no_fix":
+        default:
+          fixStrategy = "no_fix";
+      }
     }
-    if (fix) {
-      branch.setParentBranchName(trunk);
+
+    switch (fixStrategy) {
+      case "parent_trunk":
+        branch.setParentBranchName(trunk);
+        break;
+      case "ignore_branch":
+        repoConfig.addIgnoredBranches([branch.name]);
+        break;
+      case "no_fix":
+        break;
+      default:
+        assertUnreachable(fixStrategy);
     }
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+function assertUnreachable(arg: never): void {}
 
 function cleanDanglingMetadata(): void {
   const allMetadataRefs = MetadataRef.allMetadataRefs();

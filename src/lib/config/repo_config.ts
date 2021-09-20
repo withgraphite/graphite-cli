@@ -72,6 +72,11 @@ class RepoConfig {
     return this._data.trunk;
   }
 
+  public addIgnoredBranches(ignoreBranchesToAdd: string[]): void {
+    const currentIgnoredBranches = this.getIgnoreBranches();
+    this.setIgnoreBranches(ignoreBranchesToAdd.concat(currentIgnoredBranches));
+  }
+
   public setIgnoreBranches(ignoreBranches: string[]): void {
     this._data.ignoreBranches = ignoreBranches;
     this.save();
