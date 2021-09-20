@@ -191,6 +191,12 @@ export default class Branch {
     this.writeMeta(meta);
   }
 
+  public resetParentBranch(): void {
+    const meta: TMeta = this.getMeta() || {};
+    meta.parentBranchName = undefined;
+    this.writeMeta(meta);
+  }
+
   public setMetaPrevRef(prevRef: string): void {
     const meta: TMeta = this.getMeta() || {};
     meta.prevRef = prevRef;

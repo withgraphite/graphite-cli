@@ -15,6 +15,11 @@ const args = {
       "Manually set the stack parent of the current branch. This operation only modifies Graphite metadata and does not rebase any branches.",
     required: false,
   },
+  reset: {
+    type: "boolean",
+    describe: "Disassociate the branch from its current tracked parent.",
+    required: false,
+  },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
@@ -27,6 +32,8 @@ export const handler = async (argv: argsT): Promise<void> => {
     const branch = currentBranchPrecondition();
     if (argv.set) {
       setParent(branch, argv.set);
+    } else if (argv.reset) {
+      branch.resetParentBranch();
     } else {
       const parent = branch.getParentFromMeta();
       if (parent) {
