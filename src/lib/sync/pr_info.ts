@@ -28,7 +28,9 @@ export async function syncPRInfoForBranches(branches: Branch[]): Promise<void> {
       repoName: repoName,
       repoOwner: repoOwner,
       prNumbers: [],
-      prHeadRefNames: branches.map((branch) => branch.name),
+      prHeadRefNames: branches
+        .filter((branch) => !branch.isTrunk())
+        .map((branch) => branch.name),
     }
   );
 
