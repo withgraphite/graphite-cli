@@ -105,10 +105,26 @@ function recreateCommits(opts: {
   const treeObjectId = getTreeObjectId();
   const commitsToCreate: string[] = commitRefsWithNoParents(opts.refTree);
   const firstCommitRef = gpExecSync({ command: `git rev-parse HEAD` });
+  const totalOldCommits = Object.keys(opts.refTree).length;
+
   while (commitsToCreate.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const originalCommitRef: string = commitsToCreate.shift()!;
+
+    if (originalCommitRef in opts.refMappingsOldToNew) {
+      continue;
+    }
+
+    // Re-queue the commit if we're still missing one of its parents.
     const originalParents = opts.refTree[originalCommitRef] || [];
+    const missingParent = originalParents.find(
+      (p) => opts.refMappingsOldToNew[p] === undefined
+    );
+    if (missingParent) {
+      commitsToCreate.push(originalCommitRef);
+      continue;
+    }
+
     const newCommitRef = gpExecSync({
       command: `git commit-tree ${treeObjectId} -m "${originalCommitRef}" ${
         originalParents.length === 0
@@ -124,6 +140,11 @@ function recreateCommits(opts: {
 
     // Save mapping so we can later associate branches.
     opts.refMappingsOldToNew[originalCommitRef] = newCommitRef;
+
+    const totalNewCommits = Object.keys(opts.refMappingsOldToNew).length;
+    if (totalNewCommits % 100 === 0) {
+      console.log(`Progress: ${totalNewCommits} / ${totalOldCommits} created`);
+    }
 
     // Find all commits with this as parent, and enque them for creation.
     Object.keys(opts.refTree).forEach((potentialChildRef) => {
