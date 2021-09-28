@@ -50,6 +50,7 @@ function printTrunkLog(): void {
     config: {
       currentBranch: Branch.getCurrentBranch(),
       offTrunk: true,
+      visited: [],
     },
   });
 }
@@ -82,6 +83,7 @@ async function printStacksBehindTrunk(): Promise<void> {
       config: {
         currentBranch: Branch.getCurrentBranch(),
         offTrunk: false,
+        visited: [],
       },
     });
     console.log(`◌──┘`);

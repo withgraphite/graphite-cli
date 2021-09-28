@@ -8,6 +8,7 @@ import { TBranchPRInfo } from "../wrapper-classes/metadata_ref";
 type TPrintStackConfig = {
   currentBranch: Branch | null;
   offTrunk: boolean;
+  visited: string[];
 };
 
 export function printStack(args: {
@@ -15,23 +16,43 @@ export function printStack(args: {
   indentLevel: number;
   config: TPrintStackConfig;
 }): void {
+  args.config.visited.push(args.baseBranch.name);
+
   const children = args.baseBranch.getChildrenFromGit();
   const currPrefix = getPrefix(args.indentLevel, args.config);
 
-  children.forEach((child, i) => {
-    if (!child.isTrunk()) {
-      printStack({
-        baseBranch: child,
-        indentLevel: args.indentLevel + i,
-        config: args.config,
-      });
-    }
+  /**
+   * TODO(nicholasyan): we need to improve how we handle merges.
+   *
+   * C
+   * |\
+   * | B
+   * |/
+   * A
+   *
+   * For example in the above case, our logic will print the subtrees headed
+   * by both B and C - which means that the subtree headed by C gets printed
+   * twice.
+   *
+   * This is a short-term workaround to at least prevent duplicate printing
+   * in the near-term: we mark already-visited nodes and make sure if we
+   * hit an already-visited node, we just filter it out and skip it.
+   */
+  const unvisitedChildren = children.filter(
+    (child) => !child.isTrunk() && !args.config.visited.includes(child.name)
+  );
+  unvisitedChildren.forEach((child, i) => {
+    printStack({
+      baseBranch: child,
+      indentLevel: args.indentLevel + i,
+      config: args.config,
+    });
   });
 
   // 1) if there is only 1 child, we only need to continue the parent's stem
   // 2) if there are multiple children, the 2..n children branch off
   //    horizontally
-  const numChildren = children.length;
+  const numChildren = unvisitedChildren.length;
   if (numChildren > 1) {
     let newBranchOffshoots = "│";
     // we only need to draw numChildren - 1 offshots since the first child

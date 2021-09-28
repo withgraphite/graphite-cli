@@ -46,6 +46,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       getBranchTitle(branch, {
         currentBranch: null,
         offTrunk: false,
+        visited: [],
       })
     );
 
