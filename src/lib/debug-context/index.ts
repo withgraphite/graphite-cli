@@ -6,7 +6,7 @@ import { repoConfig, userConfig } from "../config";
 import { getBranchToRefMapping } from "../git-refs/branch_ref";
 import { getRevListGitTree } from "../git-refs/branch_relations";
 import { currentBranchPrecondition } from "../preconditions";
-import { gpExecSync, logInfo } from "../utils";
+import { gpExecSync, logInfo, logWarn } from "../utils";
 
 type stateT = {
   refTree: Record<string, string[]>;
@@ -42,7 +42,10 @@ export function recreateState(stateJson: string): string {
   const state = JSON.parse(stateJson) as stateT;
   const refMappingsOldToNew: Record<string, string> = {};
 
-  const tmpDir = createTmpGitDir();
+  const tmpTrunk = `initial-debug-context-head-${Date.now()}`;
+  const tmpDir = createTmpGitDir({
+    trunkName: tmpTrunk,
+  });
   process.chdir(tmpDir);
 
   logInfo(`Creating ${Object.keys(state.refTree).length} commits`);
@@ -62,6 +65,9 @@ export function recreateState(stateJson: string): string {
 
   logInfo(`Creating the metadata`);
   createMetadata({ metadata: state.metadata, tmpDir });
+
+  gpExecSync({ command: `git checkout "${repoConfig.getTrunk()}"` });
+  gpExecSync({ command: `git branch -D "${tmpTrunk}"` });
 
   return tmpDir;
 }
@@ -93,8 +99,13 @@ function createBranches(opts: {
   Object.keys(opts.branchToRefMapping).forEach((branch) => {
     const originalRef =
       opts.refMappingsOldToNew[opts.branchToRefMapping[branch]];
-    if (branch != curBranch.name)
+    if (branch != curBranch.name) {
       gpExecSync({ command: `git branch -f ${branch} ${originalRef}` });
+    } else {
+      logWarn(
+        `Skipping creating ${branch} which matches the name of the current branch`
+      );
+    }
   });
 }
 
@@ -156,10 +167,12 @@ function recreateCommits(opts: {
   }
 }
 
-function createTmpGitDir(): string {
+function createTmpGitDir(opts?: { trunkName?: string }): string {
   const tmpDir = tmp.dirSync().name;
   logInfo(`Creating tmp repo`);
-  gpExecSync({ command: `git -C ${tmpDir} init -b "main"` });
+  gpExecSync({
+    command: `git -C ${tmpDir} init -b "${opts?.trunkName ?? "main"}"`,
+  });
   gpExecSync({
     command: `cd ${tmpDir} && echo "first" > first.txt && git add first.txt && git commit -m "first"`,
   });
