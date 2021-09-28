@@ -1,7 +1,6 @@
 import { execSync } from "child_process";
 import fs from "fs-extra";
-import { rebaseInProgress } from "./";
-import { unstagedChanges } from "./";
+import { rebaseInProgress, unstagedChanges } from "./";
 
 const TEXT_FILE_NAME = "test.txt";
 export default class GitRepo {
@@ -105,5 +104,14 @@ export default class GitRepo {
       .trim()
       .split("\n")
       .filter((line) => line.length > 0);
+  }
+
+  mergeBranch(args: { branch: string; mergeIn: string }): void {
+    execSync(
+      `git -C "${this.dir}" checkout ${args.branch}; git merge ${args.mergeIn}`,
+      {
+        stdio: "ignore",
+      }
+    );
   }
 }

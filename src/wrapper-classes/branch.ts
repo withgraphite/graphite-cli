@@ -364,7 +364,23 @@ export default class Branch {
       direction: "children",
       useMemoizedResults: this.shouldUseMemoizedResults,
     });
-    return kids;
+
+    // In order to tacitly support those that use merge workflows, our logic
+    // marks children it has visited - and short circuits - to avoid
+    // duplication. This means that the ordering of children must be consistent
+    // between git and meta to ensure that our views of their stacks always
+    // align.
+    return kids.sort(this.sortBranchesAlphabetically);
+  }
+
+  private sortBranchesAlphabetically(a: Branch, b: Branch) {
+    if (a.name === b.name) {
+      return 0;
+    } else if (a.name < b.name) {
+      return -1;
+    } else {
+      return 1;
+    }
   }
 
   public getParentsFromGit(): Branch[] {
@@ -377,10 +393,16 @@ export default class Branch {
     } else if (this.pointsToSameCommitAs(getTrunk())) {
       return [getTrunk()];
     }
+
+    // In order to tacitly support those that use merge workflows, our logic
+    // marks children it has visited - and short circuits - to avoid
+    // duplication. This means that the ordering of children must be consistent
+    // between git and meta to ensure that our views of their stacks always
+    // align.
     return getBranchChildrenOrParentsFromGit(this, {
       direction: "parents",
       useMemoizedResults: this.shouldUseMemoizedResults,
-    });
+    }).sort(this.sortBranchesAlphabetically);
   }
 
   private pointsToSameCommitAs(branch: Branch): boolean {

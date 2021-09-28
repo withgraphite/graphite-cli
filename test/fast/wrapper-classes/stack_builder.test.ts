@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import { SiblingBranchError } from "../../../src/lib/errors";
 import {
   Branch,
   GitStackBuilder,
@@ -14,7 +13,7 @@ for (const scene of allScenes) {
   describe(`(${scene}): stack builder class`, function () {
     configureTest(this, scene);
 
-    it("Can print stacks from git", () => {
+    /*it("Can print stacks from git", () => {
       scene.repo.createAndCheckoutBranch("a");
       scene.repo.createChangeAndCommit("a");
 
@@ -182,6 +181,39 @@ for (const scene of allScenes) {
           .map((b) => b.name)
           .join(", ")
       ).equals("main, a, b, c");
+    });*/
+
+    it("Merge logic is consistent between git and meta", () => {
+      // Give the filenames prefixes so we won't run into merge conflicts when
+      // we do the merge.
+      scene.repo.createChange("a", "a");
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.createChange("b", "b");
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+      scene.repo.checkoutBranch("a");
+      scene.repo.createChange("c", "c");
+      scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
+
+      scene.repo.mergeBranch({ branch: "c", mergeIn: "b" });
+
+      // The git graph now looks like:
+      //
+      // C
+      // |\
+      // | B
+      // |/
+      // A
+
+      const metaStack = new MetaStackBuilder().fullStackFromBranch(
+        new Branch("a")
+      );
+      const gitStack = new GitStackBuilder().fullStackFromBranch(
+        new Branch("a")
+      );
+
+      expect(metaStack.equals(Stack.fromMap({ main: { a: { b: {}, c: {} } } })))
+        .to.be.true;
+      expect(metaStack.equals(gitStack)).to.be.true;
     });
   });
 }
