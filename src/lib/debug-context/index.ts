@@ -14,6 +14,7 @@ type stateT = {
   userConfig: string;
   repoConfig: string;
   metadata: Record<string, string>;
+  currentBranchName: string;
 };
 export function captureState(): string {
   const refTree = getRevListGitTree({
@@ -27,12 +28,15 @@ export function captureState(): string {
     metadata[ref._branchName] = JSON.stringify(ref.read());
   });
 
+  const currentBranchName = currentBranchPrecondition().name;
+
   const state: stateT = {
     refTree,
     branchToRefMapping,
     userConfig: JSON.stringify(userConfig._data),
     repoConfig: JSON.stringify(repoConfig._data),
     metadata,
+    currentBranchName,
   };
 
   return JSON.stringify(state, null, 2);
@@ -66,7 +70,7 @@ export function recreateState(stateJson: string): string {
   logInfo(`Creating the metadata`);
   createMetadata({ metadata: state.metadata, tmpDir });
 
-  gpExecSync({ command: `git checkout "${repoConfig.getTrunk()}"` });
+  gpExecSync({ command: `git checkout "${state.currentBranchName}"` });
   gpExecSync({ command: `git branch -D "${tmpTrunk}"` });
 
   return tmpDir;
