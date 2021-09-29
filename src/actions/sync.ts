@@ -29,6 +29,7 @@ export async function syncAction(opts: {
   pull: boolean;
   force: boolean;
   delete: boolean;
+  showDeleteProgress: boolean;
   resubmit: boolean;
   fixDanglingBranches: boolean;
 }): Promise<void> {
@@ -58,7 +59,10 @@ export async function syncAction(opts: {
   }
 
   if (opts.delete) {
-    await deleteMergedBranches(opts.force);
+    await deleteMergedBranches({
+      force: opts.force,
+      showDeleteProgress: opts.showDeleteProgress,
+    });
   }
 
   if (opts.resubmit) {
@@ -69,10 +73,16 @@ export async function syncAction(opts: {
   cleanDanglingMetadata();
 }
 
-async function deleteMergedBranches(force: boolean): Promise<void> {
+// eslint-disable-next-line max-lines-per-function
+async function deleteMergedBranches(opts: {
+  force: boolean;
+  showDeleteProgress: boolean;
+}): Promise<void> {
   logNewline();
   logInfo(`Checking if any branches have been merged and can be deleted...`);
   logTip(`Disable this behavior at any point in the future with --no-delete`);
+
+  const trunkChildren = getTrunk().getChildrenFromMeta();
 
   /**
    * To find and delete all of the merged branches, we traverse all of the
@@ -90,7 +100,7 @@ async function deleteMergedBranches(force: boolean): Promise<void> {
    * to determine what could and couldn't be deleted, now we take advantage
    * of that work as soon as we can.
    */
-  let toProcess: Branch[] = getTrunk().getChildrenFromMeta();
+  let toProcess: Branch[] = trunkChildren;
   const branchesToDelete: Record<
     string,
     {
@@ -99,8 +109,32 @@ async function deleteMergedBranches(force: boolean): Promise<void> {
     }
   > = {};
 
+  /**
+   * Since we're doing a DFS, assuming rather even distribution of stacks off
+   * of trunk children, we can trace the progress of the DFS through the trunk
+   * children to give the user a sense of how far the repo sync has progressed.
+   * Note that we only do this if the user has a large number of branches off
+   * of trunk (> 50).
+   */
+  const trunkChildrenProgressMarkers: Record<string, string> = {};
+  if (opts.showDeleteProgress) {
+    trunkChildren.forEach((child, i) => {
+      // Ignore the first child - don't show 0% progress.
+      if (i === 0) {
+        return;
+      }
+
+      trunkChildrenProgressMarkers[child.name] = `${+(
+        // Add 1 to the overall children length to account for the fact that
+        // when we're on the last trunk child, we're not 100% done - we need
+        // to go through its stack.
+        ((i / (trunkChildren.length + 1)) * 100).toFixed(2)
+      )}%`;
+    });
+  }
+
   do {
-    const branch = toProcess.pop();
+    const branch = toProcess.shift();
     if (branch === undefined) {
       break;
     }
@@ -109,15 +143,27 @@ async function deleteMergedBranches(force: boolean): Promise<void> {
       continue;
     }
 
+    if (
+      opts.showDeleteProgress &&
+      branch.name in trunkChildrenProgressMarkers
+    ) {
+      logInfo(
+        `${
+          trunkChildrenProgressMarkers[branch.name]
+        } done searching for merged branches to delete...`
+      );
+    }
+
     const shouldDelete = await shouldDeleteBranch({
       branch: branch,
-      force: force,
+      force: opts.force,
     });
     if (shouldDelete) {
       const children = branch.getChildrenFromMeta();
 
-      // We concat here (because we pop above) to make our search a DFS.
-      toProcess = toProcess.concat(children);
+      // We concat toProcess to children here (because we shift above) to make
+      // our search a DFS.
+      toProcess = children.concat(toProcess);
 
       branchesToDelete[branch.name] = {
         branch: branch,

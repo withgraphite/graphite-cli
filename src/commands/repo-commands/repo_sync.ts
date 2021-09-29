@@ -10,6 +10,12 @@ const args = {
     type: "boolean",
     alias: "d",
   },
+  "show-delete-progress": {
+    describe: `Show progress through merged branches.`,
+    demandOption: false,
+    default: false,
+    type: "boolean",
+  },
   resubmit: {
     describe: `Re-submit branches whose merge bases have changed locally and now differ from their PRs.`,
     demandOption: false,
@@ -53,6 +59,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       force: argv.force,
       resubmit: argv.resubmit,
       delete: argv.delete,
+      showDeleteProgress: argv["show-delete-progress"],
       fixDanglingBranches: argv["show-dangling"],
     });
   });
