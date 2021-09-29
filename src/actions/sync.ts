@@ -19,7 +19,7 @@ import {
   logInfo,
   uncommittedChanges,
 } from "../lib/utils";
-import { logDebug, logNewline } from "../lib/utils/splog";
+import { logDebug, logNewline, logTip } from "../lib/utils/splog";
 import Branch from "../wrapper-classes/branch";
 import MetadataRef from "../wrapper-classes/metadata_ref";
 import { ontoAction } from "./onto";
@@ -40,6 +40,9 @@ export async function syncAction(opts: {
   checkoutBranch(trunk);
 
   if (opts.pull) {
+    logNewline();
+    logInfo(`Pulling in new changes...`);
+    logTip(`Disable this behavior at any point in the future with --no-pull`);
     gpExecSync({ command: `git pull` }, (err) => {
       checkoutBranch(oldBranch.name);
       throw new ExitFailedError(`Failed to pull trunk ${trunk}`, err);
@@ -67,6 +70,10 @@ export async function syncAction(opts: {
 }
 
 async function deleteMergedBranches(force: boolean): Promise<void> {
+  logNewline();
+  logInfo(`Checking if any branches have been merged and can be deleted...`);
+  logTip(`Disable this behavior at any point in the future with --no-delete`);
+
   /**
    * To find and delete all of the merged branches, we traverse all of the
    * stacks off of trunk, greedily deleting the merged-in base branches and
@@ -109,9 +116,8 @@ async function deleteMergedBranches(force: boolean): Promise<void> {
     if (shouldDelete) {
       const children = branch.getChildrenFromMeta();
 
-      // We concat toProcess here to children to kick off a DFS instead of a
-      // BFS which again allows our eager deletion to proceed more eagerly.
-      toProcess = children.concat(toProcess);
+      // We concat here (because we pop above) to make our search a DFS.
+      toProcess = toProcess.concat(children);
 
       branchesToDelete[branch.name] = {
         branch: branch,
@@ -257,11 +263,19 @@ async function fixDanglingBranches(force: boolean): Promise<void> {
       `Detected branches in Graphite without a known parent. Suggesting a fix...`
     )
   );
+  logTip(
+    `Disable this behavior at any point in the future with --no-show-dangling`
+  );
 
   const trunk = getTrunk().name;
   for (const branch of danglingBranches) {
     type TFixStrategy = "parent_trunk" | "ignore_branch" | "no_fix" | undefined;
-    let fixStrategy: TFixStrategy = force ? "parent_trunk" : undefined;
+    let fixStrategy: TFixStrategy | undefined = undefined;
+
+    if (force) {
+      fixStrategy = "parent_trunk";
+      logInfo(`Setting parent of ${branch.name} to ${trunk}.`);
+    }
 
     if (fixStrategy === undefined) {
       const response = await prompts(
@@ -354,15 +368,19 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
       needsResubmission.push(b);
     }
   });
+
   if (needsResubmission.length === 0) {
     return;
   }
+
+  logNewline();
   logInfo(
     [
       `Detected merge bases changes for:`,
       ...needsResubmission.map((b) => `- ${b.name}`),
     ].join("\n")
   );
+  logTip(`Disable this behavior at any point in the future with --no-resubmit`);
 
   // Prompt for resubmission.
   let resubmit: boolean = force;
