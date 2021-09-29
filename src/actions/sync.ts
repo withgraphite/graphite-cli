@@ -67,12 +67,30 @@ export async function syncAction(opts: {
 }
 
 async function deleteMergedBranches(force: boolean): Promise<void> {
-  // To delete all the merged branches, we do a BFS to find all of the
-  // branches that should be deleted and all of the new stack bases.
-  // We then rebase all of the new stack bases and delete all of the merged
-  // branches.
-  const toProcess: Branch[] = getTrunk().getChildrenFromMeta();
-  const toDelete: Branch[] = [];
+  /**
+   * To find and delete all of the merged branches, we traverse all of the
+   * stacks off of trunk, greedily deleting the merged-in base branches and
+   * rebasing the remaining branches.
+   *
+   * To greedily delete the branches, we keep track of the branches we plan
+   * to delete as well as a live snapshot of their children. When a branch
+   * we plan to delete has no more children, we know that it is safe to
+   * eagerly delete.
+   *
+   * This eager deletion doesn't matter much in small repos, but matters
+   * a lot if a repo has a lot of branches to delete. Whereas previously
+   * any error in `repo sync` would throw away all of the work the command did
+   * to determine what could and couldn't be deleted, now we take advantage
+   * of that work as soon as we can.
+   */
+  let toProcess: Branch[] = getTrunk().getChildrenFromMeta();
+  const branchesToDelete: Record<
+    string,
+    {
+      branch: Branch;
+      children: Branch[];
+    }
+  > = {};
 
   do {
     const branch = toProcess.pop();
@@ -80,34 +98,71 @@ async function deleteMergedBranches(force: boolean): Promise<void> {
       break;
     }
 
+    if (branch.name in branchesToDelete) {
+      continue;
+    }
+
     const shouldDelete = await shouldDeleteBranch({
       branch: branch,
       force: force,
     });
     if (shouldDelete) {
-      toDelete.push(branch);
-      branch.getChildrenFromMeta().forEach((child) => toProcess.push(child));
+      const children = branch.getChildrenFromMeta();
+
+      // We concat toProcess here to children to kick off a DFS instead of a
+      // BFS which again allows our eager deletion to proceed more eagerly.
+      toProcess = children.concat(toProcess);
+
+      branchesToDelete[branch.name] = {
+        branch: branch,
+        children: children,
+      };
     } else {
       const parent = branch.getParentFromMeta();
+      const parentName = parent?.name;
 
-      // We only need to upstack if the branch's parent is scheduled to be
-      // deleted.
-      if (
-        parent !== undefined &&
-        toDelete.find((branch) => branch.name === parent.name) !== undefined
-      ) {
+      // If we've reached this point, we know the branch shouldn't be deleted.
+      // This means that we may need to rebase it - if the branch's parent is
+      // going to be deleted.
+      if (parentName !== undefined && parentName in branchesToDelete) {
         checkoutBranch(branch.name);
         logInfo(`upstacking (${branch.name}) onto (${getTrunk().name})`);
         await ontoAction(getTrunk().name);
+
+        branchesToDelete[parentName].children = branchesToDelete[
+          parentName
+        ].children.filter((child) => child.name !== branch.name);
       }
     }
+
+    checkoutBranch(getTrunk().name);
+
+    // With either of the paths above, we may have unblocked a branch that can
+    // be deleted immediately. We recursively check whether we can delete a
+    // branch (until we can't), because the act of deleting one branch may free
+    // up another.
+    let branchToDeleteName;
+    do {
+      branchToDeleteName = Object.keys(branchesToDelete).find(
+        (branchToDelete) =>
+          branchesToDelete[branchToDelete].children.length === 0
+      );
+      if (branchToDeleteName === undefined) {
+        continue;
+      }
+
+      const branch = branchesToDelete[branchToDeleteName].branch;
+      const parentName = branch.getParentFromMeta()?.name;
+      if (parentName !== undefined && parentName in branchesToDelete) {
+        branchesToDelete[parentName].children = branchesToDelete[
+          parentName
+        ].children.filter((child) => child.name !== branch.name);
+      }
+
+      await deleteBranch(branch);
+      delete branchesToDelete[branchToDeleteName];
+    } while (branchToDeleteName !== undefined);
   } while (toProcess.length > 0);
-
-  checkoutBranch(getTrunk().name);
-
-  for (const branch of toDelete) {
-    await deleteBranch(branch);
-  }
 }
 
 async function shouldDeleteBranch(args: {
