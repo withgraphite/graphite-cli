@@ -13,10 +13,10 @@ import {
 } from "../lib/preconditions";
 import {
   checkoutBranch,
+  getTrunk,
   gpExecSync,
   logInfo,
   rebaseInProgress,
-  getTrunk,
 } from "../lib/utils";
 import {
   Branch,
@@ -79,8 +79,12 @@ export async function fixAction(opts: {
   const currentBranch = currentBranchPrecondition();
   uncommittedChangesPrecondition();
 
-  const metaStack = new MetaStackBuilder().fullStackFromBranch(currentBranch);
-  const gitStack = new GitStackBuilder().fullStackFromBranch(currentBranch);
+  const metaStack = new MetaStackBuilder({
+    useMemoizedResults: true,
+  }).fullStackFromBranch(currentBranch);
+  const gitStack = new GitStackBuilder({
+    useMemoizedResults: true,
+  }).fullStackFromBranch(currentBranch);
 
   // Consider noop
   if (metaStack.equals(gitStack)) {
