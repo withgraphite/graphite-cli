@@ -25,10 +25,10 @@ export default class Commit {
     }
   }
 
-  public message(): string {
+  private messageImpl(format: "B" | "b" | "s"): string {
     const message = gpExecSync(
       {
-        command: `git log --format=%s -n 1 ${this.sha}`,
+        command: `git log --format=%${format} -n 1 ${this.sha}`,
       },
       (_) => {
         // just soft-fail if we can't find the commits
@@ -38,5 +38,17 @@ export default class Commit {
       .toString()
       .trim();
     return message;
+  }
+
+  public messageRaw(): string {
+    return this.messageImpl("B");
+  }
+
+  public messageSubject(): string {
+    return this.messageImpl("s");
+  }
+
+  public messageBody(): string {
+    return this.messageImpl("b");
   }
 }

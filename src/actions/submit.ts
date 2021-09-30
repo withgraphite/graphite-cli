@@ -12,18 +12,18 @@ import {
   ExitFailedError,
   KilledError,
   PreconditionsFailedError,
-  ValidationFailedError
+  ValidationFailedError,
 } from "../lib/errors";
 import {
   cliAuthPrecondition,
-  currentBranchPrecondition
+  currentBranchPrecondition,
 } from "../lib/preconditions";
 import {
   gpExecSync,
   logError,
   logInfo,
   logNewline,
-  logSuccess
+  logSuccess,
 } from "../lib/utils";
 import { getDefaultEditor } from "../lib/utils/default_editor";
 import { getPRTemplate } from "../lib/utils/pr_templates";
@@ -353,7 +353,10 @@ async function getPRCreationInfo(args: {
     title = response.title ?? title;
   }
 
-  let body = await getPRTemplate();
+  const template = await getPRTemplate();
+  const inferredBodyFromCommit = inferPRBody(args.branch);
+  let body =
+    inferredBodyFromCommit !== null ? inferredBodyFromCommit : template;
   const hasPRTemplate = body !== undefined;
   if (args.editPRFieldsInline) {
     const defaultEditor = getDefaultEditor();
@@ -418,24 +421,36 @@ async function getPRCreationInfo(args: {
   };
 }
 
-function inferPRTitle(branch: Branch) {
+export function inferPRTitle(branch: Branch): string {
   // Only infer the title from the commit if the branch has just 1 commit.
-  const singleCommitMessage = getSingleCommitMessageOnBranch(branch);
-  if (singleCommitMessage !== null) {
-    return singleCommitMessage;
-  }
+  const singleCommit = getSingleCommitOnBranch(branch);
+  const singleCommitSubject =
+    singleCommit === null ? null : singleCommit.messageSubject().trim();
 
+  if (singleCommitSubject !== null && singleCommitSubject.length > 0) {
+    return singleCommitSubject;
+  }
   return `Merge ${branch.name} into ${branch.getParentFromMeta()!.name}`;
 }
 
-function getSingleCommitMessageOnBranch(branch: Branch): string | null {
+export function inferPRBody(branch: Branch): string | null {
+  // Only infer the title from the commit if the branch has just 1 commit.
+  const singleCommit = getSingleCommitOnBranch(branch);
+  const singleCommitBody =
+    singleCommit === null ? null : singleCommit.messageBody().trim();
+
+  if (singleCommitBody !== null && singleCommitBody.length > 0) {
+    return singleCommitBody;
+  }
+  return null;
+}
+
+function getSingleCommitOnBranch(branch: Branch): Commit | null {
   const commits = branch.getCommitSHAs();
   if (commits.length !== 1) {
     return null;
   }
-  const commit = new Commit(commits[0]);
-  const commitMessage = commit.message();
-  return commitMessage.length > 0 ? commitMessage : null;
+  return new Commit(commits[0]);
 }
 
 async function editPRBody(args: {

@@ -121,7 +121,7 @@ function getBranchInfo(branch: Branch, config: TPrintStackConfig): string[] {
       commits.forEach((commitSHA) => {
         const commit = new Commit(commitSHA);
         branchInfoLines.push(
-          chalk.gray(`* ${commit.sha.slice(0, 6)} - ${commit.message()}`)
+          chalk.gray(`* ${commit.sha.slice(0, 6)} - ${commit.messageSubject()}`)
         );
       });
     }
