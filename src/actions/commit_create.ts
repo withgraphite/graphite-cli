@@ -9,7 +9,7 @@ import { fixAction } from "./fix";
 
 export async function commitCreateAction(opts: {
   addAll: boolean;
-  message: string;
+  message: string | undefined;
 }): Promise<void> {
   if (opts.addAll) {
     gpExecSync(
@@ -24,18 +24,35 @@ export async function commitCreateAction(opts: {
 
   ensureSomeStagedChangesPrecondition();
 
-  gpExecSync(
-    {
-      command: [
-        "git commit",
-        `-m "${opts.message}"`,
-        ...[execStateConfig.noVerify() ? ["--no-verify"] : []],
-      ].join(" "),
-    },
-    (err) => {
-      throw new ExitFailedError("Failed to commit changes. Aborting...", err);
-    }
-  );
+  if (opts.message !== undefined) {
+    gpExecSync(
+      {
+        command: [
+          "git commit",
+          `-m ${opts.message}`,
+          ...[execStateConfig.noVerify() ? ["--no-verify"] : []],
+        ].join(" "),
+      },
+      (err) => {
+        throw new ExitFailedError("Failed to commit changes. Aborting...", err);
+      }
+    );
+  } else {
+    gpExecSync(
+      {
+        command: [
+          "git commit",
+          ...[execStateConfig.noVerify() ? ["--no-verify"] : []],
+        ].join(" "),
+        options: {
+          stdio: "inherit",
+        },
+      },
+      (err) => {
+        throw new ExitFailedError("Failed to commit changes. Aborting...", err);
+      }
+    );
+  }
 
   try {
     uncommittedChangesPrecondition();

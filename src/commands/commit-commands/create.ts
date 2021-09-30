@@ -14,7 +14,7 @@ const args = {
     type: "string",
     alias: "m",
     describe: "The message for the new commit.",
-    required: true,
+    required: false,
   },
 } as const;
 
