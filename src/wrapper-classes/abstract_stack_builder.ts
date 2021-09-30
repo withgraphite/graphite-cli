@@ -14,7 +14,18 @@ export default abstract class AbstractStackBuilder {
     return baseBranches.map(this.fullStackFromBranch);
   }
 
-  public upstackInclusiveFromBranchWithParents(branch: Branch): Stack {
+  private memoizeBranchIfNeeded(branch: Branch): Branch {
+    let b = branch;
+    if (this.useMemoizedResults) {
+      b = new Branch(branch.name, {
+        useMemoizedResults: true,
+      });
+    }
+    return b;
+  }
+
+  public upstackInclusiveFromBranchWithParents(b: Branch): Stack {
+    const branch = this.memoizeBranchIfNeeded(b);
     const stack = this.fullStackFromBranch(branch);
 
     // Traverse to find the source node and set;
@@ -33,7 +44,8 @@ export default abstract class AbstractStackBuilder {
     return stack;
   }
 
-  public upstackInclusiveFromBranchWithoutParents(branch: Branch): Stack {
+  public upstackInclusiveFromBranchWithoutParents(b: Branch): Stack {
+    const branch = this.memoizeBranchIfNeeded(b);
     const sourceNode: StackNode = new StackNode({
       branch,
       parent: undefined,
@@ -106,7 +118,8 @@ export default abstract class AbstractStackBuilder {
     );
   }
 
-  public downstackFromBranch = (branch: Branch): Stack => {
+  public downstackFromBranch = (b: Branch): Stack => {
+    const branch = this.memoizeBranchIfNeeded(b);
     let node = new StackNode({ branch });
     let parent = branch.getParentFromMeta();
     while (parent) {
@@ -118,7 +131,8 @@ export default abstract class AbstractStackBuilder {
     return new Stack(node);
   };
 
-  public fullStackFromBranch = (branch: Branch): Stack => {
+  public fullStackFromBranch = (b: Branch): Stack => {
+    const branch = this.memoizeBranchIfNeeded(b);
     const base = this.getStackBaseBranch(branch, { excludingTrunk: true });
     const stack = this.upstackInclusiveFromBranchWithoutParents(base);
 
