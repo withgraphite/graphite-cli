@@ -6,7 +6,7 @@ import cp from "child_process";
 import { getUserEmail, SHOULD_REPORT_TELEMETRY } from ".";
 import { version } from "../../../package.json";
 import { API_SERVER } from "../api";
-import { messageConfig } from "../config";
+import { messageConfig, repoConfig } from "../config";
 
 function printAndClearOldMessage(): void {
   const oldMessage = messageConfig.getMessage();
@@ -19,6 +19,10 @@ function printAndClearOldMessage(): void {
   }
 }
 export function fetchUpgradePromptInBackground(): void {
+  if (!repoConfig.graphiteInitialized()) {
+    return;
+  }
+
   printAndClearOldMessage();
   cp.spawn("/usr/bin/env", ["node", __filename], {
     detached: true,

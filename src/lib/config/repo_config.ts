@@ -28,6 +28,10 @@ type RepoConfigT = {
 class RepoConfig {
   _data: RepoConfigT;
 
+  public graphiteInitialized(): boolean {
+    return fs.existsSync(CURRENT_REPO_CONFIG_PATH);
+  }
+
   constructor(data: RepoConfigT) {
     this._data = data;
   }

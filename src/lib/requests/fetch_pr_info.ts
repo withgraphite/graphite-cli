@@ -5,15 +5,20 @@ import Branch from "../../wrapper-classes/branch";
 import { repoConfig } from "../config";
 
 export function refreshPRInfoInBackground(): void {
-  // do our potential write before we kick off the child process so that we
-  // don't incur a possible race condition with the write
+  if (!repoConfig.graphiteInitialized()) {
+    return;
+  }
+
   const now = Date.now();
   const lastFetchedMs = repoConfig.getLastFetchedPRInfoMs();
   const msInSecond = 1000;
 
   // rate limit refreshing PR info to once per minute
   if (lastFetchedMs === undefined || now - lastFetchedMs > 60 * msInSecond) {
+    // do our potential write before we kick off the child process so that we
+    // don't incur a possible race condition with the write
     repoConfig.setLastFetchedPRInfoMs(now);
+
     cp.spawn("/usr/bin/env", ["node", __filename], {
       detached: true,
       stdio: "ignore",

@@ -75,10 +75,10 @@ export async function init(
 }
 
 function logWelcomeMessage(): void {
-  if (!fs.existsSync(repoConfig.path())) {
+  if (!repoConfig.graphiteInitialized()) {
     logInfo("Welcome to Graphite!");
   } else {
-    logInfo(`Regenerating "${repoConfig.path()}"`);
+    logInfo(`Regenerating Graphite repo config (${repoConfig.path()})`);
   }
 }
 

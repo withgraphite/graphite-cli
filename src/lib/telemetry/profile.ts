@@ -20,6 +20,7 @@ import {
 import {
   logError,
   logInfo,
+  logNewline,
   logWarn,
   parseArgs,
   VALIDATION_HELPER_MESSAGE,
@@ -37,6 +38,8 @@ export async function profile(
   registerSigintHandler({ commandName: parsedArgs.command, startTime: start });
 
   if (parsedArgs.command !== "repo init" && !repoConfig.getTrunk()) {
+    logInfo(`Graphite has not been initialized, attempting to setup now...`);
+    logNewline();
     await init();
   }
 
