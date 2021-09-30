@@ -12,18 +12,18 @@ import {
   ExitFailedError,
   KilledError,
   PreconditionsFailedError,
-  ValidationFailedError
+  ValidationFailedError,
 } from "../lib/errors";
 import {
   cliAuthPrecondition,
-  currentBranchPrecondition
+  currentBranchPrecondition,
 } from "../lib/preconditions";
 import {
   gpExecSync,
   logError,
   logInfo,
   logNewline,
-  logSuccess
+  logSuccess,
 } from "../lib/utils";
 import { getDefaultEditor } from "../lib/utils/default_editor";
 import { getPRTemplate } from "../lib/utils/pr_templates";
@@ -277,7 +277,13 @@ async function submitPRsForBranches(args: {
 }
 
 function getBranchBaseName(branch: Branch): string {
-  return branch.getParentFromMeta()!.name;
+  const parent = branch.getParentFromMeta();
+  if (parent === undefined) {
+    throw new PreconditionsFailedError(
+      `Could not find parent for branch ${branch.name} to submit PR against. Please checkout ${branch.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
+    );
+  }
+  return parent.name;
 }
 
 /**
