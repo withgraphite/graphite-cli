@@ -17,6 +17,8 @@ type TBranchFilters = {
   sort?: "-committerdate";
 };
 
+let memoizedMetaChildren: Record<string, Branch[]> | undefined;
+
 export default class Branch {
   name: string;
   shouldUseMemoizedResults: boolean;
@@ -98,6 +100,33 @@ export default class Branch {
   }
 
   public getChildrenFromMeta(): Branch[] {
+    if (this.shouldUseMemoizedResults) {
+      if (memoizedMetaChildren === undefined) {
+        const metaChildren: Record<string, Branch[]> = {};
+        const allBranches = Branch.allBranches({
+          useMemoizedResults: this.shouldUseMemoizedResults,
+        });
+
+        allBranches.forEach((branch) => {
+          const parentBranchName = MetadataRef.getMeta(
+            branch.name
+          )?.parentBranchName;
+          if (parentBranchName === undefined) {
+            return;
+          }
+          if (parentBranchName in metaChildren) {
+            metaChildren[parentBranchName].push(branch);
+          } else {
+            metaChildren[parentBranchName] = [branch];
+          }
+        });
+
+        memoizedMetaChildren = metaChildren;
+      }
+
+      return memoizedMetaChildren[this.name] ?? [];
+    }
+
     const children = Branch.allBranches().filter(
       (b) => MetadataRef.getMeta(b.name)?.parentBranchName === this.name
     );
