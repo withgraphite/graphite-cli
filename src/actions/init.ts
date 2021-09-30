@@ -4,7 +4,7 @@ import prompts from "prompts";
 import { repoConfig } from "../lib/config";
 import { PreconditionsFailedError } from "../lib/errors";
 import { currentGitRepoPrecondition } from "../lib/preconditions";
-import { logInfo } from "../lib/utils";
+import { logError, logInfo, logNewline } from "../lib/utils";
 import { inferTrunk } from "../lib/utils/trunk";
 import Branch from "../wrapper-classes/branch";
 export async function init(
@@ -13,7 +13,27 @@ export async function init(
 ): Promise<void> {
   currentGitRepoPrecondition();
   const allBranches = Branch.allBranches();
+
   logWelcomeMessage();
+  logNewline();
+
+  /**
+   * When a branch new repo is created, it technically has 0 branches as a
+   * branch doesn't become 'born' until it has a commit on it. In this case,
+   * we exit early from init - which will continue to run and short-circuit
+   * until the repo has a proper commit.
+   *
+   * https://newbedev.com/git-branch-not-returning-any-results
+   */
+  if (allBranches.length === 0) {
+    logError(
+      `Ouch! We can't setup Graphite in a repo without any branches -- this is likely because you're initializing Graphite in a blank repo. Please create your first commit and then re-run your Graphite command.`
+    );
+    logNewline();
+    throw new PreconditionsFailedError(
+      `No branches found in current repo; cannot initialize Graphite.`
+    );
+  }
 
   // Trunk
   let newTrunkName: string;

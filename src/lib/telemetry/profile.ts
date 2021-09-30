@@ -35,10 +35,8 @@ export async function profile(
   const parsedArgs = parseArgs(args);
   const start = Date.now();
   registerSigintHandler({ commandName: parsedArgs.command, startTime: start });
+
   if (parsedArgs.command !== "repo init" && !repoConfig.getTrunk()) {
-    logInfo(
-      `No trunk branch specified in "${repoConfig.path()}", please choose now.`
-    );
     await init();
   }
 

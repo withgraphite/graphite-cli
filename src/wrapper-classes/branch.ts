@@ -249,7 +249,10 @@ export default class Branch {
       .toString()
       .trim()
       .split("\n")
-      .filter((name) => !repoConfig.getIgnoreBranches().includes(name))
+      .filter(
+        (name) =>
+          !repoConfig.getIgnoreBranches().includes(name) && name.length > 0
+      )
       .map((name) => new Branch(name));
   }
 
