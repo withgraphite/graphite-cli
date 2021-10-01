@@ -15,6 +15,7 @@ import {
   checkoutBranch,
   getTrunk,
   gpExecSync,
+  logDebug,
   logInfo,
   rebaseInProgress,
 } from "../lib/utils";
@@ -79,12 +80,19 @@ export async function fixAction(opts: {
   const currentBranch = currentBranchPrecondition();
   uncommittedChangesPrecondition();
 
+  logDebug(`Determining full meta stack from ${currentBranch.name}`);
   const metaStack = new MetaStackBuilder({
     useMemoizedResults: true,
   }).fullStackFromBranch(currentBranch);
+  logDebug(`Found full meta stack.`);
+  logDebug(metaStack.toString());
+
+  logDebug(`Determining full git stack from ${currentBranch.name}`);
   const gitStack = new GitStackBuilder({
     useMemoizedResults: true,
   }).fullStackFromBranch(currentBranch);
+  logDebug(`Found full git stack`);
+  logDebug(gitStack.toString());
 
   // Consider noop
   if (metaStack.equals(gitStack)) {

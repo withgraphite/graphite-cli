@@ -6,7 +6,7 @@ import {
   getRef,
   otherBranchesWithSameCommit,
 } from "../lib/git-refs";
-import { getCommitterDate, getTrunk, gpExecSync } from "../lib/utils";
+import { getCommitterDate, getTrunk, gpExecSync, logDebug } from "../lib/utils";
 import Commit from "./commit";
 import MetadataRef, { TBranchPRInfo, TMeta } from "./metadata_ref";
 
@@ -100,14 +100,24 @@ export default class Branch {
   }
 
   public getChildrenFromMeta(): Branch[] {
+    logDebug(`Meta Children (${this.name}): start`);
     if (this.shouldUseMemoizedResults) {
       if (memoizedMetaChildren === undefined) {
+        logDebug(
+          `Meta Children (${this.name}): initialize memoization | finding all branches...`
+        );
         const metaChildren: Record<string, Branch[]> = {};
         const allBranches = Branch.allBranches({
           useMemoizedResults: this.shouldUseMemoizedResults,
         });
 
-        allBranches.forEach((branch) => {
+        logDebug(
+          `Meta Children: intiialize memoization | sifting through branches...`
+        );
+        allBranches.forEach((branch, i) => {
+          logDebug(
+            `               Branch ${i}/${allBranches.length} (${branch.name})`
+          );
           const parentBranchName = MetadataRef.getMeta(
             branch.name
           )?.parentBranchName;
@@ -120,16 +130,19 @@ export default class Branch {
             metaChildren[parentBranchName] = [branch];
           }
         });
+        logDebug(`Meta Children (${this.name}): initialize memoization | done`);
 
         memoizedMetaChildren = metaChildren;
       }
 
+      logDebug(`Meta Children (${this.name}): end (memoized)`);
       return memoizedMetaChildren[this.name] ?? [];
     }
 
     const children = Branch.allBranches().filter(
       (b) => MetadataRef.getMeta(b.name)?.parentBranchName === this.name
     );
+    logDebug(`Git Children (${this.name}): end`);
     return children;
   }
 
@@ -392,6 +405,7 @@ export default class Branch {
   }
 
   public getChildrenFromGit(): Branch[] {
+    logDebug(`Git Children (${this.name}): start`);
     const kids = getBranchChildrenOrParentsFromGit(this, {
       direction: "children",
       useMemoizedResults: this.shouldUseMemoizedResults,
@@ -402,6 +416,7 @@ export default class Branch {
     // duplication. This means that the ordering of children must be consistent
     // between git and meta to ensure that our views of their stacks always
     // align.
+    logDebug(`Git Children (${this.name}): end`);
     return kids.sort(this.sortBranchesAlphabetically);
   }
 

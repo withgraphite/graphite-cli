@@ -1,5 +1,5 @@
 import { Stack, StackNode } from ".";
-import { getTrunk } from "../lib/utils";
+import { getTrunk, logDebug } from "../lib/utils";
 import Branch from "./branch";
 
 export default abstract class AbstractStackBuilder {
@@ -88,6 +88,7 @@ export default abstract class AbstractStackBuilder {
 
       visitedBranches.push(curNode.branch.name);
 
+      logDebug(`Looking up children for ${curNode.branch.name}...`);
       const unvisitedChildren = this.getChildrenForBranch(curNode.branch)
         .filter((child) => !visitedBranches.includes(child.name))
         .map((child) => {
@@ -133,7 +134,13 @@ export default abstract class AbstractStackBuilder {
 
   public fullStackFromBranch = (b: Branch): Stack => {
     const branch = this.memoizeBranchIfNeeded(b);
+
+    logDebug(`Finding base branch of stack with ${branch.name}`);
     const base = this.getStackBaseBranch(branch, { excludingTrunk: true });
+
+    logDebug(
+      `Finding rest of stack from base branch of stack with ${branch.name}`
+    );
     const stack = this.upstackInclusiveFromBranchWithoutParents(base);
 
     if (branch.name == getTrunk().name) {
