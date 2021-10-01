@@ -100,7 +100,7 @@ for (const scene of allScenes) {
       expectCommits(scene.repo, "b, squash, 1");
     });
 
-    xit("Can delete two branches off a three-stack", async () => {
+    it("Can delete two branches off a three-stack", async () => {
       scene.repo.createChange("2", "a");
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
