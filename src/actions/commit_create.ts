@@ -2,7 +2,7 @@ import { execStateConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import {
   ensureSomeStagedChangesPrecondition,
-  uncommittedChangesPrecondition,
+  uncommittedChangesPrecondition
 } from "../lib/preconditions";
 import { gpExecSync, logWarn } from "../lib/utils";
 import { fixAction } from "./fix";
@@ -29,7 +29,7 @@ export async function commitCreateAction(opts: {
       {
         command: [
           "git commit",
-          `-m ${opts.message}`,
+          `-m "${opts.message}"`,
           ...[execStateConfig.noVerify() ? ["--no-verify"] : []],
         ].join(" "),
       },

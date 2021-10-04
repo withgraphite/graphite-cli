@@ -14,6 +14,14 @@ for (const scene of allScenes) {
       expectCommits(scene.repo, "2, 1");
     });
 
+    it("Can create a commit with a multi-word commit message", () => {
+      scene.repo.createChange("2");
+      scene.repo.execCliCommand(`commit create -m "a b c" -q`);
+
+      expect(scene.repo.currentBranchName()).to.equal("main");
+      expectCommits(scene.repo, "a b c");
+    });
+
     it("Fails to create a commit if there are no staged changes", () => {
       expect(() =>
         scene.repo.execCliCommand(`commit create -m "a" -q`)
