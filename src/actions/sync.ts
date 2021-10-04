@@ -78,9 +78,8 @@ export async function syncAction(opts: {
 
 function cleanDanglingMetadata(): void {
   const allMetadataRefs = MetadataRef.allMetadataRefs();
-  const allBranches = Branch.allBranches();
   allMetadataRefs.forEach((ref) => {
-    if (!allBranches.find((b) => b.name === ref._branchName)) {
+    if (!Branch.exists(ref._branchName)) {
       logDebug(`Deleting metadata for ${ref._branchName}`);
       ref.delete();
     }
