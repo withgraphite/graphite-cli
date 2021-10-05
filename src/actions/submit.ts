@@ -18,6 +18,7 @@ import {
   cliAuthPrecondition,
   currentBranchPrecondition,
 } from "../lib/preconditions";
+import { syncPRInfoForBranches } from "../lib/sync/pr_info";
 import {
   gpExecSync,
   logError,
@@ -63,6 +64,11 @@ export async function submitAction(args: {
     currentBranch: currentBranchPrecondition(),
     scope: args.scope,
   });
+
+  // Force a sync to link any PRs that have remote equivalents, but weren't
+  // previously tracked with Graphite.
+  await syncPRInfoForBranches(branchesToSubmit);
+
   await submitBranches({
     branchesToSubmit: branchesToSubmit,
     cliAuthToken: cliAuthToken,
