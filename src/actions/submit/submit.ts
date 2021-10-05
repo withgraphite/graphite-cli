@@ -78,28 +78,35 @@ function getBranchesToSubmit(args: {
   currentBranch: Branch;
   scope: TSubmitScope;
 }): Branch[] {
+  let branches: Branch[] = [];
+
   switch (args.scope) {
     case "DOWNSTACK":
-      return new MetaStackBuilder()
+      branches = new MetaStackBuilder()
         .downstackFromBranch(args.currentBranch)
-        .branches()
-        .filter((b) => !b.isTrunk());
+        .branches();
+      break;
     case "FULLSTACK":
-      return new MetaStackBuilder()
+      branches = new MetaStackBuilder()
         .fullStackFromBranch(args.currentBranch)
-        .branches()
-        .filter((b) => !b.isTrunk());
+        .branches();
+      break;
     case "UPSTACK":
-      return new MetaStackBuilder()
+      branches = new MetaStackBuilder()
         .upstackInclusiveFromBranchWithParents(args.currentBranch)
-        .branches()
-        .filter((b) => !b.isTrunk());
+        .branches();
+      break;
     case "BRANCH":
-      return [args.currentBranch];
+      branches = [args.currentBranch];
+      break;
     default:
       assertUnreachable(args.scope);
-      return [];
+      break;
   }
+
+  return branches
+    .filter((b) => !b.isTrunk())
+    .filter((b) => b.getPRInfo()?.state !== "MERGED");
 }
 
 export async function submitBranches(args: {
@@ -190,10 +197,6 @@ async function submitPRsForBranches(args: {
     typeof graphiteCLIRoutes.submitPullRequests.params
   >["prs"] = [];
   for (const branch of args.branches) {
-    if (branch.getPRInfo()?.state === "MERGED") {
-      continue;
-    }
-
     // The branch here should always have a parent - above, the branches we've
     // gathered should exclude trunk which ensures that every branch we're submitting
     // a PR for has a valid parent.
