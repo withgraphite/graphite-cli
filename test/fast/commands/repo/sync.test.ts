@@ -6,7 +6,11 @@ import nock from "nock";
 import { API_SERVER } from "../../../../src/lib/api";
 import { GitRepo } from "../../../../src/lib/utils";
 import { allScenes } from "../../../lib/scenes";
-import { configureTest, expectCommits } from "../../../lib/utils";
+import {
+  configureTest,
+  expectBranches,
+  expectCommits,
+} from "../../../lib/utils";
 
 function fakeGitSquashAndMerge(
   repo: GitRepo,
@@ -23,21 +27,6 @@ function fakeGitSquashAndMerge(
   repo.checkoutBranch("main");
   execSync(`git -C "${repo.dir}" commit -m "${squashedCommitMessage}"`);
   execSync(`git -C "${repo.dir}" branch -D temp`);
-}
-
-function expectBranches(repo: GitRepo, sortedBranches: string) {
-  expect(
-    execSync(
-      `git -C "${repo.dir}" for-each-ref refs/heads/ "--format=%(refname:short)"`
-    )
-      .toString()
-      .trim()
-      .split("\n")
-      .filter((b) => b !== "prod") // scene related branch
-      .filter((b) => b !== "x2") // scene related branch
-      .sort()
-      .join(", ")
-  ).to.equal(sortedBranches);
 }
 
 for (const scene of allScenes) {
