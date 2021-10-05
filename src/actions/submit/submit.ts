@@ -2,39 +2,34 @@ import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
 import * as t from "@screenplaydev/retype";
 import { request } from "@screenplaydev/retyped-routes";
 import chalk from "chalk";
-import { execSync } from "child_process";
-import fs from "fs-extra";
-import prompts from "prompts";
-import tmp from "tmp";
-import { API_SERVER } from "../lib/api";
-import { execStateConfig, repoConfig } from "../lib/config";
+import { API_SERVER } from "../../lib/api";
+import { execStateConfig, repoConfig } from "../../lib/config";
 import {
   ExitFailedError,
-  KilledError,
   PreconditionsFailedError,
   ValidationFailedError,
-} from "../lib/errors";
+} from "../../lib/errors";
 import {
   cliAuthPrecondition,
   currentBranchPrecondition,
-} from "../lib/preconditions";
-import { syncPRInfoForBranches } from "../lib/sync/pr_info";
+} from "../../lib/preconditions";
+import { syncPRInfoForBranches } from "../../lib/sync/pr_info";
 import {
   gpExecSync,
   logError,
   logInfo,
   logNewline,
   logSuccess,
-} from "../lib/utils";
-import { getDefaultEditor } from "../lib/utils/default_editor";
-import { getPRTemplate } from "../lib/utils/pr_templates";
-import { Unpacked } from "../lib/utils/ts_helpers";
-import { MetaStackBuilder } from "../wrapper-classes";
-import Branch from "../wrapper-classes/branch";
-import Commit from "../wrapper-classes/commit";
-import { TBranchPRInfo } from "../wrapper-classes/metadata_ref";
-import { TScope } from "./scope";
-import { validate } from "./validate";
+} from "../../lib/utils";
+import { Unpacked } from "../../lib/utils/ts_helpers";
+import { MetaStackBuilder } from "../../wrapper-classes";
+import Branch from "../../wrapper-classes/branch";
+import { TBranchPRInfo } from "../../wrapper-classes/metadata_ref";
+import { TScope } from "./../scope";
+import { validate } from "./../validate";
+import { getPRBody } from "./pr_body";
+import { getPRDraftStatus } from "./pr_draft";
+import { getPRTitle } from "./pr_title";
 
 type TSubmitScope = TScope | "BRANCH";
 
@@ -347,80 +342,17 @@ async function getPRCreationInfo(args: {
     }:`
   );
 
-  let title = inferPRTitle(args.branch);
-  if (args.editPRFieldsInline) {
-    const response = await prompts(
-      {
-        type: "text",
-        name: "title",
-        message: "Title",
-        initial: title,
-      },
-      {
-        onCancel: () => {
-          throw new KilledError();
-        },
-      }
-    );
-    title = response.title ?? title;
-  }
-
-  const template = await getPRTemplate();
-  const inferredBodyFromCommit = inferPRBody(args.branch);
-  let body =
-    inferredBodyFromCommit !== null ? inferredBodyFromCommit : template;
-  const hasPRTemplate = body !== undefined;
-  if (args.editPRFieldsInline) {
-    const defaultEditor = getDefaultEditor();
-    const response = await prompts(
-      {
-        type: "select",
-        name: "body",
-        message: "Body",
-        choices: [
-          { title: `Edit Body (using ${defaultEditor})`, value: "edit" },
-          {
-            title: `Skip${hasPRTemplate ? ` (just paste template)` : ""}`,
-            value: "skip",
-          },
-        ],
-      },
-      {
-        onCancel: () => {
-          throw new KilledError();
-        },
-      }
-    );
-    if (response.body === "edit") {
-      body = await editPRBody({
-        initial: body ?? "",
-        editor: defaultEditor,
-      });
-    }
-  }
-
-  let draft: boolean;
-  if (args.createNewPRsAsDraft === undefined) {
-    const response = await prompts(
-      {
-        type: "select",
-        name: "draft",
-        message: "Submit",
-        choices: [
-          { title: "Publish Pull Request", value: "publish" },
-          { title: "Create Draft Pull Request", value: "draft" },
-        ],
-      },
-      {
-        onCancel: () => {
-          throw new KilledError();
-        },
-      }
-    );
-    draft = response.draft === "draft" ? true : false;
-  } else {
-    draft = args.createNewPRsAsDraft;
-  }
+  const title = await getPRTitle({
+    branch: args.branch,
+    editPRFieldsInline: args.editPRFieldsInline,
+  });
+  const body = await getPRBody({
+    branch: args.branch,
+    editPRFieldsInline: args.editPRFieldsInline,
+  });
+  const createAsDraft = await getPRDraftStatus({
+    createNewPRsAsDraft: args.createNewPRsAsDraft,
+  });
 
   // Log newline at the end to create some visual separation to the next
   // interactive PR section or status output.
@@ -429,52 +361,8 @@ async function getPRCreationInfo(args: {
   return {
     title: title,
     body: body,
-    draft: draft,
+    draft: createAsDraft,
   };
-}
-
-export function inferPRTitle(branch: Branch): string {
-  // Only infer the title from the commit if the branch has just 1 commit.
-  const singleCommit = getSingleCommitOnBranch(branch);
-  const singleCommitSubject =
-    singleCommit === null ? null : singleCommit.messageSubject().trim();
-
-  if (singleCommitSubject !== null && singleCommitSubject.length > 0) {
-    return singleCommitSubject;
-  }
-  return `Merge ${branch.name} into ${branch.getParentFromMeta()!.name}`;
-}
-
-export function inferPRBody(branch: Branch): string | null {
-  // Only infer the title from the commit if the branch has just 1 commit.
-  const singleCommit = getSingleCommitOnBranch(branch);
-  const singleCommitBody =
-    singleCommit === null ? null : singleCommit.messageBody().trim();
-
-  if (singleCommitBody !== null && singleCommitBody.length > 0) {
-    return singleCommitBody;
-  }
-  return null;
-}
-
-function getSingleCommitOnBranch(branch: Branch): Commit | null {
-  const commits = branch.getCommitSHAs();
-  if (commits.length !== 1) {
-    return null;
-  }
-  return new Commit(commits[0]);
-}
-
-async function editPRBody(args: {
-  initial: string;
-  editor: string;
-}): Promise<string> {
-  const file = tmp.fileSync();
-  fs.writeFileSync(file.name, args.initial);
-  execSync(`${args.editor} ${file.name}`, { stdio: "inherit" });
-  const contents = fs.readFileSync(file.name).toString();
-  file.removeCallback();
-  return contents;
 }
 
 function printSubmittedPRInfo(prs: TSubmittedPR[]): void {

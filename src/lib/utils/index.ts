@@ -9,6 +9,7 @@ import { parseArgs } from "./parse_args";
 import { preprocessCommand } from "./preprocess_command";
 import { rebaseInProgress } from "./rebase_in_progress";
 import { signpostDeprecatedCommands } from "./signpost_deprecated_commands";
+import { getSingleCommitOnBranch } from "./single_commit";
 import {
   logDebug,
   logError,
@@ -43,4 +44,5 @@ export {
   signpostDeprecatedCommands,
   logTip,
   VALIDATION_HELPER_MESSAGE,
+  getSingleCommitOnBranch,
 };
