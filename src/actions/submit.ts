@@ -347,7 +347,9 @@ async function getPRCreationInfo(args: {
     }:`
   );
 
-  let title = inferPRTitle(args.branch);
+  const titleFromPriorSubmit = args.branch.getSubmitInfo()?.title;
+
+  let title = titleFromPriorSubmit ?? inferPRTitle(args.branch);
   if (args.editPRFieldsInline) {
     const response = await prompts(
       {
@@ -364,14 +366,32 @@ async function getPRCreationInfo(args: {
     );
     title = response.title ?? title;
   }
+  args.branch.setSubmitInfo({
+    ...args.branch.getSubmitInfo(),
+    title: title,
+  });
 
-  const template = await getPRTemplate();
-  const inferredBodyFromCommit = inferPRBody(args.branch);
-  let body =
-    inferredBodyFromCommit !== null ? inferredBodyFromCommit : template;
-  const hasPRTemplate = body !== undefined;
+  const inferredBodyInfo = await getPRBody(args.branch);
+  let body = inferredBodyInfo?.body;
+
   if (args.editPRFieldsInline) {
     const defaultEditor = getDefaultEditor();
+
+    let skipText = null;
+    switch (inferredBodyInfo?.source) {
+      case "PRIOR_SUBMIT":
+        skipText = "use prior submit body";
+        break;
+      case "COMMIT_MESSAGE":
+        skipText = "use body inferred from commit message";
+        break;
+      case "TEMPLATE":
+        skipText = "just paste template";
+        break;
+      default:
+        break;
+    }
+
     const response = await prompts(
       {
         type: "select",
@@ -380,7 +400,7 @@ async function getPRCreationInfo(args: {
         choices: [
           { title: `Edit Body (using ${defaultEditor})`, value: "edit" },
           {
-            title: `Skip${hasPRTemplate ? ` (just paste template)` : ""}`,
+            title: `Skip${skipText !== null ? ` (just paste template)` : ""}`,
             value: "skip",
           },
         ],
@@ -398,6 +418,10 @@ async function getPRCreationInfo(args: {
       });
     }
   }
+  args.branch.setSubmitInfo({
+    ...args.branch.getSubmitInfo(),
+    body: body,
+  });
 
   let draft: boolean;
   if (args.createNewPRsAsDraft === undefined) {
@@ -443,6 +467,39 @@ export function inferPRTitle(branch: Branch): string {
     return singleCommitSubject;
   }
   return `Merge ${branch.name} into ${branch.getParentFromMeta()!.name}`;
+}
+
+type TPRBodySource = "PRIOR_SUBMIT" | "COMMIT_MESSAGE" | "TEMPLATE";
+
+async function getPRBody(branch: Branch): Promise<{
+  body: string;
+  source: TPRBodySource;
+} | null> {
+  const bodyFromPriorSubmit = branch.getSubmitInfo()?.body;
+  if (bodyFromPriorSubmit !== undefined) {
+    return {
+      body: bodyFromPriorSubmit,
+      source: "PRIOR_SUBMIT",
+    };
+  }
+
+  const inferredBodyFromCommit = inferPRBody(branch);
+  if (inferredBodyFromCommit !== null) {
+    return {
+      body: inferredBodyFromCommit,
+      source: "COMMIT_MESSAGE",
+    };
+  }
+
+  const template = await getPRTemplate();
+  if (template !== undefined) {
+    return {
+      body: template,
+      source: "TEMPLATE",
+    };
+  }
+
+  return null;
 }
 
 export function inferPRBody(branch: Branch): string | null {

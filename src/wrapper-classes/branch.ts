@@ -8,7 +8,11 @@ import {
 } from "../lib/git-refs";
 import { getCommitterDate, getTrunk, gpExecSync, logDebug } from "../lib/utils";
 import Commit from "./commit";
-import MetadataRef, { TBranchPRInfo, TMeta } from "./metadata_ref";
+import MetadataRef, {
+  TBranchPRInfo,
+  TBranchSubmitInfo,
+  TMeta,
+} from "./metadata_ref";
 
 type TBranchFilters = {
   useMemoizedResults?: boolean;
@@ -465,6 +469,16 @@ export default class Branch {
 
   public branchesWithSameCommit(): Branch[] {
     return otherBranchesWithSameCommit(this);
+  }
+
+  public setSubmitInfo(submitInfo: TBranchSubmitInfo): void {
+    const meta: TMeta = this.getMeta() || {};
+    meta.submitInfo = submitInfo;
+    this.writeMeta(meta);
+  }
+
+  public getSubmitInfo(): TBranchSubmitInfo | undefined {
+    return this.getMeta()?.submitInfo;
   }
 
   public setPRInfo(prInfo: TBranchPRInfo): void {
