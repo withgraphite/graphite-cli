@@ -467,6 +467,32 @@ export default class Branch {
     return otherBranchesWithSameCommit(this);
   }
 
+  public setPriorSubmitTitle(title: string): void {
+    const meta: TMeta = this.getMeta() || {};
+    meta.priorSubmitInfo = {
+      ...meta.priorSubmitInfo,
+      title: title,
+    };
+    this.writeMeta(meta);
+  }
+
+  public getPriorSubmitTitle(): string | undefined {
+    return this.getMeta()?.priorSubmitInfo?.title;
+  }
+
+  public setPriorSubmitBody(body: string): void {
+    const meta: TMeta = this.getMeta() || {};
+    meta.priorSubmitInfo = {
+      ...meta.priorSubmitInfo,
+      body: body,
+    };
+    this.writeMeta(meta);
+  }
+
+  public getPriorSubmitBody(): string | undefined {
+    return this.getMeta()?.priorSubmitInfo?.body;
+  }
+
   public setPRInfo(prInfo: TBranchPRInfo): void {
     const meta: TMeta = this.getMeta() || {};
     meta.prInfo = prInfo;

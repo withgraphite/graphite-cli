@@ -28,6 +28,11 @@ export async function getPRTitle(args: {
 }
 
 export function inferPRTitle(branch: Branch): string {
+  const priorSubmitTitle = branch.getPriorSubmitTitle();
+  if (priorSubmitTitle !== undefined) {
+    return priorSubmitTitle;
+  }
+
   // Only infer the title from the commit if the branch has just 1 commit.
   const singleCommit = getSingleCommitOnBranch(branch);
   const singleCommitSubject =

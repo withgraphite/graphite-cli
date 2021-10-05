@@ -19,10 +19,16 @@ export type TBranchPRInfo = {
   isDraft?: boolean;
 };
 
+export type TBranchPriorSubmitInfo = {
+  title?: string;
+  body?: string;
+};
+
 export type TMeta = {
   parentBranchName?: string;
   prevRef?: string;
   prInfo?: TBranchPRInfo;
+  priorSubmitInfo?: TBranchPriorSubmitInfo;
 };
 
 export default class MetadataRef {

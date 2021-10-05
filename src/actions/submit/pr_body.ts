@@ -61,6 +61,11 @@ async function editPRBody(args: {
 }
 
 export function inferPRBody(branch: Branch): string | null {
+  const priorSubmitBody = branch.getPriorSubmitBody();
+  if (priorSubmitBody !== undefined) {
+    return priorSubmitBody;
+  }
+
   // Only infer the title from the commit if the branch has just 1 commit.
   const singleCommit = getSingleCommitOnBranch(branch);
   const singleCommitBody =

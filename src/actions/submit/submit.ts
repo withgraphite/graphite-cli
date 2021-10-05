@@ -346,10 +346,14 @@ async function getPRCreationInfo(args: {
     branch: args.branch,
     editPRFieldsInline: args.editPRFieldsInline,
   });
+  args.branch.setPriorSubmitTitle(title);
+
   const body = await getPRBody({
     branch: args.branch,
     editPRFieldsInline: args.editPRFieldsInline,
   });
+  args.branch.setPriorSubmitBody(body);
+
   const createAsDraft = await getPRDraftStatus({
     createNewPRsAsDraft: args.createNewPRsAsDraft,
   });
