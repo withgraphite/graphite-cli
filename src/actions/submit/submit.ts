@@ -48,15 +48,21 @@ export async function submitAction(args: {
   const repoOwner = repoConfig.getRepoOwner();
 
   try {
+    // In order to keep the step numbering consistent between the branch and
+    // stack submit cases, always print the below status. We can think of this
+    // as the validation just always passing in the branch case.
+    //
+    // Two spaces between the text and icon is intentional for spacing
+    // purposes.
+    logInfo(
+      chalk.blueBright(
+        `✏️  [1/4] Validating Graphite stack before submitting...`
+      )
+    );
     if (args.scope !== "BRANCH") {
-      // Two spaces between the text and icon is intentional for spacing
-      // purposes.
-      logInfo(
-        chalk.blueBright(`✏️  Validating Graphite stack before submitting...`)
-      );
       validate(args.scope);
-      logNewline();
     }
+    logNewline();
   } catch {
     throw new ValidationFailedError(`Validation failed before submitting.`);
   }
@@ -71,7 +77,9 @@ export async function submitAction(args: {
   await syncPRInfoForBranches(branchesToSubmit);
 
   logInfo(
-    chalk.blueBright("🥞 Preparing to submit PRs for the following branches:")
+    chalk.blueBright(
+      "🥞 [2/4] Preparing to submit PRs for the following branches..."
+    )
   );
   branchesToSubmit.forEach((branch) => {
     let operation;
@@ -237,8 +245,8 @@ async function getPRInfoForBranches(args: {
 function pushBranchesToRemote(branches: Branch[]): Branch[] {
   const branchesPushedToRemote: Branch[] = [];
 
-  logInfo("Pushing branches to remote...");
-  logNewline();
+  // Two spaces between the text and icon is intentional for spacing purposes.
+  logInfo(chalk.blueBright("➡️  [3/4] Pushing branches to remote..."));
 
   branches.forEach((branch) => {
     logInfo(`Pushing ${branch.name}...`);
@@ -298,6 +306,12 @@ async function submitPRsForBranches(args: {
   }
 
   try {
+    logInfo(
+      chalk.blueBright(
+        `📂 [4/4] Opening/updating PRs on GitHub for pushed branches...`
+      )
+    );
+
     const response = await request.requestWithArgs(
       API_SERVER,
       graphiteCLIRoutes.submitPullRequests,
