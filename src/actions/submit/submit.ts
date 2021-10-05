@@ -37,7 +37,17 @@ export async function submitAction(args: {
   scope: TSubmitScope;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
+  dryRun: boolean;
 }): Promise<void> {
+  if (args.dryRun) {
+    logInfo(
+      chalk.yellow(
+        `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
+      )
+    );
+    logNewline();
+  }
+
   if (!execStateConfig.interactive()) {
     args.editPRFieldsInline = false;
     args.createNewPRsAsDraft = true;
@@ -92,14 +102,16 @@ export async function submitAction(args: {
   });
   logNewline();
 
-  await submitBranches({
-    branchesToSubmit: branchesToSubmit,
-    cliAuthToken: cliAuthToken,
-    repoOwner: repoOwner,
-    repoName: repoName,
-    editPRFieldsInline: args.editPRFieldsInline,
-    createNewPRsAsDraft: args.createNewPRsAsDraft,
-  });
+  if (!args.dryRun) {
+    await submitBranches({
+      branchesToSubmit: branchesToSubmit,
+      cliAuthToken: cliAuthToken,
+      repoOwner: repoOwner,
+      repoName: repoName,
+      editPRFieldsInline: args.editPRFieldsInline,
+      createNewPRsAsDraft: args.createNewPRsAsDraft,
+    });
+  }
 }
 
 function getBranchesToSubmit(args: {

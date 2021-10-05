@@ -32,6 +32,12 @@ export const args = {
     default: true,
     alias: "e",
   },
+  "dry-run": {
+    describe:
+      "Reports the PRs that would be submitted and terminates. No branches are pushed and no PRs are opened or updated.",
+    type: "boolean",
+    default: false,
+  },
 } as const;
 
 export const builder = args;
