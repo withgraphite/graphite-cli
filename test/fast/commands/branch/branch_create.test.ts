@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { Branch } from "../../../../src/wrapper-classes";
 import { allScenes } from "../../../lib/scenes";
 import { configureTest } from "../../../lib/utils";
 
@@ -34,9 +35,9 @@ for (const scene of allScenes) {
 
     it("Can create a branch with add all option", () => {
       scene.repo.createChange("23", "test", true);
-      expect(scene.repo.unstagedChanges()).to.be.true
+      expect(scene.repo.unstagedChanges()).to.be.true;
       scene.repo.execCliCommand(`branch create test-branch -m "add all" -a -q`);
-      expect(scene.repo.unstagedChanges()).to.be.false
+      expect(scene.repo.unstagedChanges()).to.be.false;
     });
 
     it("Cant create a branch off an ignored branch", () => {
@@ -45,6 +46,30 @@ for (const scene of allScenes) {
       expect(() => scene.repo.execCliCommand(`branch create test -q`)).to.throw(
         Error
       );
+    });
+
+    it("Create a branch clears any old, stale metadata", async () => {
+      scene.repo.createChange("2");
+      scene.repo.execCliCommand("branch create a -m 'a'");
+
+      const branch = await Branch.branchWithName("a");
+      branch.setPRInfo({
+        number: 1,
+        base: "main",
+      });
+
+      expect((await Branch.branchWithName("a")).getPRInfo() !== undefined).to.be
+        .true;
+
+      scene.repo.checkoutBranch("main");
+      scene.repo.deleteBranch("a");
+
+      scene.repo.createChange("2");
+      scene.repo.execCliCommand("branch create a -m 'a'");
+
+      // Upon recreating the branch, the old PR info should be gone.
+      expect((await Branch.branchWithName("a")).getPRInfo() === undefined).to.be
+        .true;
     });
   });
 }
