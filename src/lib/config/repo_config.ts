@@ -2,8 +2,54 @@ import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
 import { ExitFailedError } from "../../lib/errors";
-import { getRepoRootPath } from "../../lib/utils";
 import { gpExecSync } from "../../lib/utils/exec_sync";
+import { cache } from "../config";
+import { PreconditionsFailedError } from "../errors";
+
+/**
+ * TODO (nicholasyan): It makes more sense to locate this in its own utils
+ * file but Mocha seems to loading that incorrectly.
+ *
+ * 1) Uncaught error outside test suite
+ * 0 passing (284ms)
+ * 1 failing
+ *
+ * 1) Uncaught error outside test suite:
+ *    Uncaught TypeError: utils_1.getRepoRootPath is not a function
+ *     at Object.<anonymous> (src/lib/config/repo_config.ts:9:44)
+ *     at Module._compile (node:internal/modules/cjs/loader:1101:14)
+ *     at Module.m._compile (node_modules/ts-mocha/node_modules/ts-node/src/index.ts:439:23)
+ *     at Module._extensions..js (node:internal/modules/cjs/loader:1153:10)
+ *     at Object.require.extensions.<computed> [as .ts] (node_modules/ts-mocha/node_modules/ts-node/src/index.ts:442:12)
+ *     at Module.load (node:internal/modules/cjs/loader:981:32)
+ *     at Function.Module._load (node:internal/modules/cjs/loader:822:12)
+ *     at Module.require (node:internal/modules/cjs/loader:1005:19)
+ *     at require (node:internal/modules/cjs/helpers:102:18)
+ *     at Object.<anonymous> (src/lib/config/index.ts:6:1)
+ *
+ * Co-locating the method with the logic that is causing this cryptic error.
+ */
+export function getRepoRootPath(): string {
+  const cachedRepoRootPath = cache.getRepoRootPath();
+  if (cachedRepoRootPath) {
+    return cachedRepoRootPath;
+  }
+  const repoRootPath = gpExecSync(
+    {
+      command: `git rev-parse --git-dir`,
+    },
+    () => {
+      return Buffer.alloc(0);
+    }
+  )
+    .toString()
+    .trim();
+  if (!repoRootPath || repoRootPath.length === 0) {
+    throw new PreconditionsFailedError("No .git repository found.");
+  }
+  cache.setRepoRootPath(repoRootPath);
+  return repoRootPath;
+}
 
 const CONFIG_NAME = ".graphite_repo_config";
 const CURRENT_REPO_CONFIG_PATH = path.join(getRepoRootPath(), CONFIG_NAME);
