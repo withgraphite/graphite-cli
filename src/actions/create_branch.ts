@@ -10,18 +10,20 @@ import Branch from "../wrapper-classes/branch";
 export async function createBranchAction(opts: {
   branchName?: string;
   commitMessage?: string;
-  addAll?: boolean
+  addAll?: boolean;
 }): Promise<void> {
   const parentBranch = currentBranchPrecondition();
 
   if (opts.addAll) {
     gpExecSync(
-        {
-          command: "git add --all",
-        },
-        () => {
-          throw new ExitFailedError("Could not add all staged changes. Aborting...");
-        }
+      {
+        command: "git add --all",
+      },
+      () => {
+        throw new ExitFailedError(
+          "Could not add all staged changes. Aborting..."
+        );
+      }
     );
   }
 
@@ -72,7 +74,9 @@ export async function createBranchAction(opts: {
     );
   }
 
-  new Branch(branchName).setParentBranchName(parentBranch.name);
+  // If the branch previously existed and the stale metadata is still around,
+  // make sure that we wipe that stale metadata.
+  new Branch(branchName).clearMetadata().setParentBranchName(parentBranch.name);
 }
 
 function newBranchName(branchName?: string, commitMessage?: string): string {

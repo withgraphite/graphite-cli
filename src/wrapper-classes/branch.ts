@@ -221,6 +221,11 @@ export default class Branch {
     return execSync(`git rev-parse ${this.name}`).toString().trim();
   }
 
+  public clearMetadata(): this {
+    this.writeMeta({});
+    return this;
+  }
+
   public clearParentMetadata(): void {
     const meta: TMeta = this.getMeta() || {};
     delete meta.parentBranchName;
