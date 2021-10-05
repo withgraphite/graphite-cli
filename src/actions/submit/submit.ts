@@ -49,7 +49,13 @@ export async function submitAction(args: {
 
   try {
     if (args.scope !== "BRANCH") {
+      // Two spaces between the text and icon is intentional for spacing
+      // purposes.
+      logInfo(
+        chalk.blueBright(`✏️  Validating Graphite stack before submitting...`)
+      );
       validate(args.scope);
+      logNewline();
     }
   } catch {
     throw new ValidationFailedError(`Validation failed before submitting.`);
@@ -63,6 +69,20 @@ export async function submitAction(args: {
   // Force a sync to link any PRs that have remote equivalents, but weren't
   // previously tracked with Graphite.
   await syncPRInfoForBranches(branchesToSubmit);
+
+  logInfo(
+    chalk.blueBright("🥞 Preparing to submit PRs for the following branches:")
+  );
+  branchesToSubmit.forEach((branch) => {
+    let operation;
+    if (branch.getPRInfo() !== undefined) {
+      operation = "update";
+    } else {
+      operation = "create";
+    }
+    logInfo(`▸ ${chalk.yellow(branch.name)} (${operation})`);
+  });
+  logNewline();
 
   await submitBranches({
     branchesToSubmit: branchesToSubmit,
@@ -101,13 +121,20 @@ function getBranchesToSubmit(args: {
       break;
     default:
       assertUnreachable(args.scope);
-      break;
+      branches = [];
   }
 
   return branches
     .filter((b) => !b.isTrunk())
     .filter((b) => b.getPRInfo()?.state !== "MERGED");
 }
+
+type TPRSubmissionInfo = t.UnwrapSchemaMap<
+  typeof graphiteCLIRoutes.submitPullRequests.params
+>["prs"];
+type TPRSubmissionInfoWithBranch = (Unpacked<TPRSubmissionInfo> & {
+  branch: Branch;
+})[];
 
 export async function submitBranches(args: {
   branchesToSubmit: Branch[];
@@ -117,9 +144,38 @@ export async function submitBranches(args: {
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
 }): Promise<void> {
-  const branchesPushedToRemote = pushBranchesToRemote(args.branchesToSubmit);
-  const submittedPRInfo = await submitPRsForBranches({
-    branches: args.branchesToSubmit,
+  const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
+    await getPRInfoForBranches({
+      branches: args.branchesToSubmit,
+      cliAuthToken: args.cliAuthToken,
+      repoOwner: args.repoOwner,
+      repoName: args.repoName,
+      editPRFieldsInline: args.editPRFieldsInline,
+      createNewPRsAsDraft: args.createNewPRsAsDraft,
+    });
+
+  const branchesPushedToRemote = pushBranchesToRemote(
+    submissionInfoWithBranches.map((info) => info.branch)
+  );
+
+  // Filter out PRs which don't actually need a new submission (i.e. they
+  // had no local code changes and their local base did not change).
+  const submissionInfo: TPRSubmissionInfo = submissionInfoWithBranches.filter(
+    (info) => {
+      const prInfo = info.branch.getPRInfo();
+      if (prInfo === undefined) {
+        return true;
+      }
+      return shouldUpdatePR({
+        branch: info.branch,
+        previousBranchPRInfo: prInfo,
+        branchesPushedToRemote: branchesPushedToRemote,
+      });
+    }
+  );
+
+  const prInfo = await submitPRsForBranches({
+    submissionInfo: submissionInfo,
     branchesPushedToRemote: branchesPushedToRemote,
     cliAuthToken: args.cliAuthToken,
     repoOwner: args.repoOwner,
@@ -127,12 +183,55 @@ export async function submitBranches(args: {
     editPRFieldsInline: args.editPRFieldsInline,
     createNewPRsAsDraft: args.createNewPRsAsDraft,
   });
-  if (submittedPRInfo === null) {
-    throw new ExitFailedError("Failed to submit commits. Please try again.");
+
+  saveBranchPRInfo(prInfo);
+  printSubmittedPRInfo(prInfo);
+}
+
+async function getPRInfoForBranches(args: {
+  branches: Branch[];
+  cliAuthToken: string;
+  repoOwner: string;
+  repoName: string;
+  editPRFieldsInline: boolean;
+  createNewPRsAsDraft: boolean | undefined;
+}): Promise<TPRSubmissionInfoWithBranch> {
+  const branchPRInfo: TPRSubmissionInfoWithBranch = [];
+  for (const branch of args.branches) {
+    // The branch here should always have a parent - above, the branches we've
+    // gathered should exclude trunk which ensures that every branch we're submitting
+    // a PR for has a valid parent.
+    const parentBranchName = getBranchBaseName(branch);
+
+    const previousPRInfo = branch.getPRInfo();
+    if (previousPRInfo === undefined) {
+      const { title, body, draft } = await getPRCreationInfo({
+        branch: branch,
+        parentBranchName: parentBranchName,
+        editPRFieldsInline: args.editPRFieldsInline,
+        createNewPRsAsDraft: args.createNewPRsAsDraft,
+      });
+      branchPRInfo.push({
+        action: "create",
+        head: branch.name,
+        base: parentBranchName,
+        title: title,
+        body: body,
+        draft: draft,
+        branch: branch,
+      });
+    } else {
+      branchPRInfo.push({
+        action: "update",
+        head: branch.name,
+        base: parentBranchName,
+        prNumber: previousPRInfo.number,
+        branch: branch,
+      });
+    }
   }
 
-  printSubmittedPRInfo(submittedPRInfo);
-  saveBranchPRInfo(submittedPRInfo);
+  return branchPRInfo;
 }
 
 function pushBranchesToRemote(branches: Branch[]): Branch[] {
@@ -185,7 +284,7 @@ type TSubmittedPR = {
 };
 
 async function submitPRsForBranches(args: {
-  branches: Branch[];
+  submissionInfo: TPRSubmissionInfo;
   branchesPushedToRemote: Branch[];
   cliAuthToken: string;
   repoOwner: string;
@@ -193,48 +292,8 @@ async function submitPRsForBranches(args: {
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
 }): Promise<TSubmittedPR[]> {
-  const branchPRInfo: t.UnwrapSchemaMap<
-    typeof graphiteCLIRoutes.submitPullRequests.params
-  >["prs"] = [];
-  for (const branch of args.branches) {
-    // The branch here should always have a parent - above, the branches we've
-    // gathered should exclude trunk which ensures that every branch we're submitting
-    // a PR for has a valid parent.
-    const parentBranchName = getBranchBaseName(branch);
-
-    const previousPRInfo = branch.getPRInfo();
-    if (previousPRInfo === undefined) {
-      const { title, body, draft } = await getPRCreationInfo({
-        branch: branch,
-        parentBranchName: parentBranchName,
-        editPRFieldsInline: args.editPRFieldsInline,
-        createNewPRsAsDraft: args.createNewPRsAsDraft,
-      });
-      branchPRInfo.push({
-        action: "create",
-        head: branch.name,
-        base: parentBranchName,
-        title: title,
-        body: body,
-        draft: draft,
-      });
-    } else if (
-      shouldUpdatePR({
-        branch: branch,
-        previousBranchPRInfo: previousPRInfo,
-        branchesPushedToRemote: args.branchesPushedToRemote,
-      })
-    ) {
-      branchPRInfo.push({
-        action: "update",
-        head: branch.name,
-        base: parentBranchName,
-        prNumber: previousPRInfo.number,
-      });
-    }
-  }
-
-  if (branchPRInfo.length === 0) {
+  const submissionInfo = args.submissionInfo;
+  if (submissionInfo.length === 0) {
     return [];
   }
 
@@ -246,13 +305,13 @@ async function submitPRsForBranches(args: {
         authToken: args.cliAuthToken,
         repoOwner: args.repoOwner,
         repoName: args.repoName,
-        prs: branchPRInfo,
+        prs: submissionInfo,
       }
     );
 
     if (response._response.status === 200 && response._response.body !== null) {
       const requests: { [head: string]: TSubmittedPRRequest } = {};
-      branchPRInfo.forEach((prRequest) => {
+      submissionInfo.forEach((prRequest) => {
         requests[prRequest.head] = prRequest;
       });
 
@@ -340,7 +399,7 @@ async function getPRCreationInfo(args: {
   draft: boolean;
 }> {
   logInfo(
-    `Creating Pull Request for ${chalk.yellow(args.branch.name)} ▸ ${
+    `Enter info for new pull request for ${chalk.yellow(args.branch.name)} ▸ ${
       args.parentBranchName
     }:`
   );
