@@ -23,11 +23,11 @@
     "lint": "eslint src --quiet --ext .ts --cache",
     "prepublishOnly": "yarn build",
     "cli": "ts-node ./src/index.ts",
-    "test": "yarn ts-mocha \"test/**/*.test.ts\"  --parallel --jobs 8",
-    "test-fast": "yarn ts-mocha \"test/fast/**/*.test.ts\"  --parallel --jobs 8",
-    "test-slow": "yarn ts-mocha \"test/slow/**/*.test.ts\"",
-    "test-one": "yarn ts-mocha --parallel --jobs 8",
-    "test-grep": "yarn ts-mocha \"test/**/*.test.ts\" -g",
+    "test": "yarn mocha \"dist/test/**/*.test.js\"  --parallel --jobs 8",
+    "test-fast": "yarn mocha \"dist/test/fast/**/*.test.js\"  --parallel --jobs 8",
+    "test-slow": "yarn mocha \"dist/test/slow/**/*.test.js\"",
+    "test-one": "yarn mocha --parallel --jobs 8",
+    "test-grep": "yarn mocha \"dist/test/**/*.test.js\" -g",
     "deploy": "ts-node ./scripts/deploy/deploy.ts",
     "deploy-test": "ts-node ./scripts/deploy/deploy-test.ts",
     "regen-demo": "ts-node ./scripts/demo/index.ts"
@@ -61,7 +61,6 @@
     "eslint": "^7.20.0",
     "husky": "^7.0.1",
     "mocha": "^8.3.2",
-    "ts-mocha": "^8.0.0",
     "ts-node": "^9.0.0",
     "typescript": "^4.2.4"
   }

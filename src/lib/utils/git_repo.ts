@@ -22,7 +22,7 @@ export default class GitRepo {
 
   execCliCommand(command: string): void {
     execSync(
-      `NODE_ENV=development node ${__dirname}/../../../dist/src/index.js ${command}`,
+      `NODE_ENV=development node ${__dirname}/../../../../dist/src/index.js ${command}`,
       {
         stdio: process.env.DEBUG ? "inherit" : "ignore",
         cwd: this.dir,
@@ -32,7 +32,7 @@ export default class GitRepo {
 
   execCliCommandAndGetOutput(command: string): string {
     return execSync(
-      `NODE_ENV=development node ${__dirname}/../../../dist/src/index.js ${command}`,
+      `NODE_ENV=development node ${__dirname}/../../../../dist/src/index.js ${command}`,
       {
         cwd: this.dir,
       }
