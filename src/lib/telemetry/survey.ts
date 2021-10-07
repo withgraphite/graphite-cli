@@ -3,6 +3,7 @@ import { default as t } from "@screenplaydev/retype";
 import { request } from "@screenplaydev/retyped-routes";
 import prompts from "prompts";
 import { API_SERVER } from "../../lib/api";
+import surveyConfig from "../../lib/config/survey_config";
 import { cliAuthPrecondition } from "../../lib/preconditions";
 import { logMessageFromGraphite, logNewline } from "../utils";
 
@@ -165,6 +166,8 @@ async function logAnswers(args: {
   responses: SurveyResponseT;
   completionMessage: string | undefined;
 }): Promise<void> {
+  surveyConfig.setSurveyResponses(args.responses);
+
   if (args.completionMessage !== undefined) {
     logMessageFromGraphite(args.completionMessage);
   }
