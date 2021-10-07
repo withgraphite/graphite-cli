@@ -1,7 +1,11 @@
+import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
+import { request } from "@screenplaydev/retyped-routes";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
-import { SurveyResponseT } from "../telemetry/survey";
+import { API_SERVER } from "../api";
+import { cliAuthPrecondition } from "../preconditions";
+import { SurveyResponseT } from "../telemetry/survey/survey";
 
 const SURVEY_CONFIG_NAME = ".graphite_beta_survey";
 const SURVEY_CONFIG_PATH = path.join(os.homedir(), SURVEY_CONFIG_NAME);
@@ -21,6 +25,55 @@ class SurveyConfig {
   public setSurveyResponses(responses: SurveyResponseT): void {
     this._data.responses = responses;
     this.save();
+  }
+
+  public hasSurveyResponse(): boolean {
+    return this._data.responses !== undefined;
+  }
+
+  public clearPriorSurveyResponse(): void {
+    this._data.responses = undefined;
+    this.save();
+  }
+
+  public async postResponses(): Promise<boolean> {
+    try {
+      const surveyResponse = this._data.responses;
+      if (surveyResponse === undefined) {
+        return false;
+      }
+
+      const authToken = cliAuthPrecondition();
+
+      const response = await request.requestWithArgs(
+        API_SERVER,
+        graphiteCLIRoutes.surveyResponse,
+        {
+          authToken: authToken,
+          responses: {
+            timestamp: surveyResponse.timestamp,
+            responses: Object.keys(surveyResponse.responses).map(
+              (question: string) => {
+                return {
+                  question: question,
+                  response: surveyResponse.responses[question],
+                };
+              }
+            ),
+            exitedEarly: surveyResponse.exitedEarly,
+          },
+        }
+      );
+
+      if (response._response.status === 200) {
+        return true;
+      }
+    } catch (e) {
+      // Ignore any background errors posting the survey; if posting fails,
+      // then we'll try again the next time a user runs a CLI command.
+    }
+
+    return false;
   }
 
   public path(): string {

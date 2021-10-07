@@ -2,10 +2,11 @@ import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
 import { default as t } from "@screenplaydev/retype";
 import { request } from "@screenplaydev/retyped-routes";
 import prompts from "prompts";
-import { API_SERVER } from "../../lib/api";
-import surveyConfig from "../../lib/config/survey_config";
-import { cliAuthPrecondition } from "../../lib/preconditions";
-import { logMessageFromGraphite, logNewline } from "../utils";
+import { API_SERVER } from "../../../lib/api";
+import surveyConfig from "../../../lib/config/survey_config";
+import { cliAuthPrecondition } from "../../../lib/preconditions";
+import { logMessageFromGraphite, logNewline } from "../../utils";
+import { postSurveyResponse } from "./post_survey";
 
 export type SurveyT = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.cliSurvey.response
@@ -167,6 +168,8 @@ async function logAnswers(args: {
   completionMessage: string | undefined;
 }): Promise<void> {
   surveyConfig.setSurveyResponses(args.responses);
+
+  await postSurveyResponse();
 
   if (args.completionMessage !== undefined) {
     logMessageFromGraphite(args.completionMessage);

@@ -14,7 +14,7 @@ import {
   currentBranchPrecondition,
 } from "../../lib/preconditions";
 import { syncPRInfoForBranches } from "../../lib/sync/pr_info";
-import { getSurvey, showSurvey } from "../../lib/telemetry/survey";
+import { getSurvey, showSurvey } from "../../lib/telemetry/survey/survey";
 import {
   gpExecSync,
   logError,
