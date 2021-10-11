@@ -28,11 +28,12 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "fix";
+export const canonical = "repo fix";
 export const description =
   "Search for and remediate common problems in your repo that slow Graphite down and/or cause bugs (e.g. stale branches, branches with unknown parents).";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, canonical, async () => {
     await branchMetadataSanityChecks(argv.force);
     await branchCountSanityCheck({
       force: argv.force,

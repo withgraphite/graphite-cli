@@ -18,11 +18,12 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const aliases = [];
 export const command = "sync";
+export const canoncial = "branch sync";
 export const description =
   "Fetch GitHub PR information for the current branch.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, async () => {
+  return profile(argv, canoncial, async () => {
     const branch = currentBranchPrecondition();
 
     if (argv.reset) {
