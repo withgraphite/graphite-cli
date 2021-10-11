@@ -22,7 +22,7 @@ export const description =
   "The prefix which Graphite will prepend to all auto-generated branch names (i.e. when you don't specify a branch name when calling `gt branch create`).";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, "stack branch-prefix", async () => {
+  return profile(argv, canonical, async () => {
     if (argv.set) {
       userConfig.setBranchPrefix(argv.set);
       logInfo(`Set branch-prefix to "${chalk.green(argv.set)}"`);
