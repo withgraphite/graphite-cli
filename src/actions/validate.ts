@@ -1,12 +1,8 @@
 import { ValidationFailedError } from "../lib/errors";
 import { currentBranchPrecondition } from "../lib/preconditions";
 import { logInfo } from "../lib/utils";
-import {
-  Branch,
-  GitStackBuilder,
-  MetaStackBuilder,
-  Stack,
-} from "../wrapper-classes";
+import { GitStackBuilder, MetaStackBuilder, Stack } from "../wrapper-classes";
+import Branch from "../wrapper-classes/branch";
 import { TScope } from "./scope";
 
 export function validate(scope: TScope): void {

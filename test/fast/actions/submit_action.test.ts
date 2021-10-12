@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { execSync } from "child_process";
 import { inferPRBody, inferPRTitle } from "../../../src/actions/submit";
-import { Branch } from "../../../src/wrapper-classes";
+import Branch from "../../../src/wrapper-classes/branch";
 import { BasicScene } from "../../lib/scenes";
 import { configureTest } from "../../lib/utils";
 

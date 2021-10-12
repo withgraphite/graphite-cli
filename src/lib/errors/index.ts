@@ -1,4 +1,5 @@
-import { Branch } from "../../wrapper-classes";
+import Branch from "../../wrapper-classes/branch";
+
 class ExitError extends Error {}
 class ExitCancelledError extends ExitError {
   constructor(message: string) {

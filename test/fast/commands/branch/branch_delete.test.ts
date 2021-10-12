@@ -1,5 +1,6 @@
 import { expect } from "chai";
-import { Branch, MetadataRef } from "../../../../src/wrapper-classes";
+import { MetadataRef } from "../../../../src/wrapper-classes";
+import Branch from "../../../../src/wrapper-classes/branch";
 import { allScenes } from "../../../lib/scenes";
 import { configureTest } from "../../../lib/utils";
 import { expectBranches } from "../../../lib/utils/expect_branches";

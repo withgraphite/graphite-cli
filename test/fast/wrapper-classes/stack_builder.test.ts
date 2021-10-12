@@ -1,11 +1,11 @@
 import { expect } from "chai";
 import { SiblingBranchError } from "../../../src/lib/errors";
 import {
-  Branch,
   GitStackBuilder,
   MetaStackBuilder,
   Stack,
 } from "../../../src/wrapper-classes";
+import Branch from "../../../src/wrapper-classes/branch";
 import { allScenes } from "../../lib/scenes";
 import { configureTest } from "../../lib/utils";
 

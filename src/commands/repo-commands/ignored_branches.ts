@@ -3,7 +3,7 @@ import { repoConfig } from "../../lib/config";
 import { PreconditionsFailedError } from "../../lib/errors";
 import { profile } from "../../lib/telemetry";
 import { logInfo } from "../../lib/utils";
-import { Branch } from "../../wrapper-classes";
+import Branch from "../../wrapper-classes/branch";
 
 const args = {
   add: {

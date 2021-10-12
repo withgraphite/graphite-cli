@@ -20,12 +20,12 @@ import {
   rebaseInProgress,
 } from "../lib/utils";
 import {
-  Branch,
   GitStackBuilder,
   MetaStackBuilder,
   Stack,
   StackNode,
 } from "../wrapper-classes";
+import Branch from "../wrapper-classes/branch";
 
 async function promptStacks(opts: {
   gitStack: Stack;

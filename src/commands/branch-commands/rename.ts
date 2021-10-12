@@ -5,7 +5,8 @@ import { ExitFailedError } from "../../lib/errors";
 import { currentBranchPrecondition } from "../../lib/preconditions";
 import { profile } from "../../lib/telemetry";
 import { gpExecSync, logInfo } from "../../lib/utils";
-import { Branch, MetadataRef } from "../../wrapper-classes";
+import { MetadataRef } from "../../wrapper-classes";
+import Branch from "../../wrapper-classes/branch";
 
 const args = {
   "new-branch-name": {
