@@ -82,7 +82,7 @@ export class Span {
       trace_id: traceId,
       type: "custom",
       duration: Math.round(currentNanoSeconds() - this.start),
-      ...(this.parentId ? { parent_id: this.parentId } : {}),
+      ...(this.parentId ? { parent_id: this.parentId } : { parent_id: 0 }),
     };
   }
 }
