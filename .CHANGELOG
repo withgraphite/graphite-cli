@@ -1,41 +1,48 @@
-# 0.15.1 2020-10-4
+# 0.16.0 2021-10-12
+- Support for branch autocomplete functionality on gt branch-related commands. Enable this functionality by running `gt completion` and adding the ouputted bash script to your relevant bash profile (e.g. ~/.bashrc, ~/.zshrc).
+- Added functionality to query users for feedback on the Graphite CLI.
+- Refactor the suite of gt submit commands to make them more easily cancellable; re-ordered submit to edit all PRs locally before doing any writes and cancelling mid-submit will save any previously entered data (e.g. title and body).
+- Submit also now includes a `--dry-run` flag to show the user what will be submitted in the invocation.
+- Submit queries GitHub for PRs before submitting, resolving an issue where submit would sometimes try to create a new PR though one already existed for that head branch/base branch combo on GitHub (Graphite just didn't know about it).
+
+# 0.15.1 2021-10-4
 - Fix `gt commit create -m` multi-word commit messages.
 
-# 0.15.0 2020-10-4
+# 0.15.0 2021-10-4
 - Support for `gt stack top` and `gt stack bottom`.
 - Adjusted logic for cleaning metadata in `gt repo sync`.
 
-# 0.14.4 2020-10-1
+# 0.14.4 2021-10-1
 - Improve performance of stack logic on repos with a high number of local branches.
 - Allow `gt commit create` to be used without `-m`, launching the system editor.
 - Infer the body of a PR from the commit message body (if it exists).
 - Add `gt repo trunk --set`.
 
-# 0.14.3 2020-09-30
+# 0.14.3 2021-09-30
 - Improved `gt repo sync` performance when repos have a high number of stale branches. `gt repo sync` now deletes branches more eagerly and has an optional flag to show progress (`--show-delete-progress`).
 - New command `gt repo fix` searches for common problems that cause degraded Graphite performance and suggests common remediations.
 
-# 0.14.2 2020-09-29
+# 0.14.2 2021-09-29
 - Tacit support for merge-based workflows; merges no longer cause exponential branching in `gt log` and hang `gt upstack onto`.
 - Fixes to recreation of debug state in `gt feedback debug-context --recreate`.
 
-# 0.14.1 2020-09-27
+# 0.14.1 2021-09-27
 - Assorted improvements to the `gt repo sync` merged branch deletion logic and options to fix dangling branches.
 - `gt branch parent --reset` resets Graphite's recorded parent for a branch (to undefined).
 - `gt branch sync --reset` resets Graphite's recorded PR info a branch (to undefined).
 
-# 0.14.0 2020-09-16
+# 0.14.0 2021-09-16
 - `gt debug-context` captures debug metadata from your repo and can send that to Screenplay to help troubleshoot issues.
 - `gt repo sync` now pulls in PR information for all local branches from GitHub to link any PRs Graphite doesn't know about/better remove already-merged branches.
 - Re-enable metadata deletion from `repo sync`.
 - Re-enable pull request base pushing from `repo sync`.
 - `gt branch create -m` now has `-a` flag to include staged changes in the commit.
 
-# 0.13.1 2020-09-01
+# 0.13.1 2021-09-01
 - Disable metadata deletion from "repo sync"
 - Disable pull request base pushing from "repo sync"
 
-# 0.13.0 2020-08-31
+# 0.13.0 2021-08-31
 - "stack submit" now checks if update is needed for each branch.
 - Support "upstack submit" and "branch submit"
 - Fixed bug which was preventing "upstack" from having the alias "us"
@@ -50,7 +57,7 @@
 - Show PR and commit info in "log" command
 - Add tip advising against creating branches without commits.
 
-# 0.12.3 2020-08-23
+# 0.12.3 2021-08-23
 - Fix outdated copy reference to gp.
 - Print error stack trace when --debug flag is used.
 - Flag midstack untracked branches in `gt ls` output.
@@ -58,20 +65,20 @@
 - Reduce unnecessary git ref calls to improve performance in large repos.
 - Support graceful handling of sigint.
 
-# 0.12.2 2020-08-23
+# 0.12.2 2021-08-23
 - Fix bug in `gt ls` stack traversal.
 
-# 0.12.1 2020-08-23
+# 0.12.1 2021-08-23
 - Fix bug resulting in always showing tips for `gt ls`.
 
-# 0.12.0 2020-08-23
+# 0.12.0 2021-08-23
 - Disallow branching off an ignored branch.
 - Disallow sibling branches on top of trunk branch.
 - Establish pattern of toggleable CLI tips.
 - Rewrite `gt ls` to improve speed and output formatting.
 - Optimize git ref traversal and memoization.
 
-# 0.11.0 2020-08-18
+# 0.11.0 2021-08-18
 - Support PR templates in "stack submit" command.
 - Update "stack submit" to support interactive title and description setting.
 - Update "stack submit" to support creating draft PRs.
@@ -79,7 +86,7 @@
 - Fix a crash in logging that happened in a edge case involving trailing trunk branches.
 - Hide remote branches in "log long" output.
 
-# 0.10.0 2020-08-17
+# 0.10.0 2021-08-17
 - Fix case where commands fail if a branch's stack parent had been deleted.
 - Fix copy across CLI to use "gt" rather than the old "gp".
 - Add more shortcut aliases for commands such as "s" for "submit"
@@ -91,23 +98,23 @@
 - Throw actionable errors if two branches point at the same commit.
 - Add top level "graphite" alias such that the CLI can be called using both "gt" and "graphite".
 
-# 0.9.1 2020-08-15
+# 0.9.1 2021-08-15
 - Fix "gp" alias deprecation warning for homebrew installations.
 
-# 0.9.0 2020-08-15
+# 0.9.0 2021-08-15
 - Rename graphite CLI alias to "gt" from "gp" per feedback.
 
-# 0.8.2 2020-08-13
+# 0.8.2 2021-08-13
 - Improved performance of `gp stacks` command, particularly in repos with a large number of stale branches.
 - Changed search-space limiting settings to live at the top level and apply to both stacks and log. (`gp repo max-stacks-behind-trunk`, `gp repo max-days-behind-trunk`).
 
-# 0.8.1 2020-08-10
+# 0.8.1 2021-08-10
 - Improved performance of `gp log` command, particularly in repos with a large number of stale branches.
 - Users can now set the maximum number of stacks to show behind trunk in `gp log` (`gp repo log max-stacks-behind-trunk`) as well as the maximum age of stacks to show (`gp repo log max-days-behind-trunk`).
 - `gp log` also now has `--on-trunk` and `--behind-trunk` options.
 - Improved CLI documentation and copy.
 
-## 0.8.0 2020-08-07
+## 0.8.0 2021-08-07
 - Autogenerated branch name date format change.
 - stack fix command now has "stack f" alias.
 - branch create command now has "branch c" alias.
@@ -115,12 +122,12 @@
 - `stack regen` is deprecated, and is now a flag for `stack fix --regen`.
 - `stack fix` now shows an interactive prompt by default.
 
-## 0.7.1 2020-08-06
+## 0.7.1 2021-08-06
 - Dont zero count months when generating branch names.
 - Improve help text for amend.
 - Improve help auth print out.
 
-## 0.7.0 2020-08-05
+## 0.7.0 2021-08-05
 - Refactor `gp log` command, while supporting old behavior with `gp log --commits/-c`
 - Check for updates in orphaned child process, making all commands faster.
 - More helpful validation error messaging.
@@ -132,17 +139,17 @@
 - Added `gp branch parent [--set]` plumbing command for reading and setting a branch parent.
 - Added `gp branch children` plumbing command for reading the children of a branch.
 
-## 0.6.3 2020-08-02
+## 0.6.3 2021-08-02
 - Better telemetry for measuring cli performance.
 - `gp l` alias for log command.
 
-## 0.6.2 2020-08-02
+## 0.6.2 2021-08-02
 - `stack fix` now works for a individual stack. (Upstack inclusive for now)
 
-## 0.6.1 2020-08-02
+## 0.6.1 2021-08-02
 - Fix homebrew release to not include a dev dependency on "chai".
 
-## 0.6.0 2020-08-02
+## 0.6.0 2021-08-02
 - Support `--no-verify` flag when running `branch create` to skip precommit hooks.
 - Validation passes when a branch points to the same commit as trunk HEAD.
 - Add `repo init` command.
@@ -153,62 +160,62 @@
 - `branch next/prev` now traverses based on Graphite's stack metadata.
 - Refactor `gp stacks` print output.
 
-## 0.5.4 2020-07-30
+## 0.5.4 2021-07-30
 - Update `stack regen` to operate across entire stack rather than just upstack.
 - `stack submit` infers PR title from single-commit branches.
 - Using trunk branch inference, ignore trunk parents such as trailing "prod" branches.
 
-## 0.5.3 2020-07-29
+## 0.5.3 2021-07-29
 - Begin infering trunk branch from .git config.
 - Ignore trunk parent branches during validation and other operations.
 
-## 0.5.2 2020-07-28
+## 0.5.2 2021-07-28
 - `upstack onto` can now move branches with no parent branches.
 - `validate` now passes cases where branches point to the same commit.
 - `stack fix` now prints better messaging during rebase conflicts.
 - Removed unused args from `stack submit` and `stack fix`.
 - Updated copy
 
-## 0.5.1 2020-07-28
+## 0.5.1 2021-07-28
 - Dont automatically create repo config file.
 
-## 0.5.0 2020-07-27
+## 0.5.0 2021-07-27
 - Improved `stack submit` command and promoted command out of expermental status.
 
-## 0.4.3 2020-07-27
+## 0.4.3 2021-07-27
 - Update all copy to match new termonology from the 4.0.0 refactor.
 
-## 0.4.2 2020-07-27
+## 0.4.2 2021-07-27
 - Update `branch create` command to accept optional positional argument for branch name.
 
-## 0.4.1 2020-07-27
+## 0.4.1 2021-07-27
 - Fix demo command and downstack string.
 
-## 0.4.0 2020-07-27
+## 0.4.0 2021-07-27
 - Refactor all command names into a noun-verb subcommand pattern.
 - Introduce concept of `upstack` and `downstack`.
 - Simplify documentation.
 - Minor bug fixes.
 
-## 0.3.4 2020-07-25
+## 0.3.4 2021-07-25
 - Fix bug in checking for uncommitted changes.
 
-## 0.3.3 2020-07-25
+## 0.3.3 2021-07-25
 - Self heal if branch metadata parent somehow becomes self.
 - Diff rolls back changes if commit hook fails.
 - Fix bug in metadata stack traversal used by `fix` command.
 - Restack fails fast if there are uncommitted changes.
-## 0.3.2 2020-07-24
+## 0.3.2 2021-07-24
 
 - Slim down size of homebrew artifact.
 
-## 0.3.1 2020-07-24
+## 0.3.1 2021-07-24
 - Diff now only commits staged changes.
 
-## 0.3.0 2020-07-24
+## 0.3.0 2021-07-24
 - Support resolving merge conflicts during a recursive restack.
 - Update `sync` command to be visable in `--help`.
 
-## 0.2.0 2020-07-22
+## 0.2.0 2021-07-22
 - Update unlisted `gp sync` command to support trunk argument.
 - Update unlisted `gp sync` command to prompt before deleting branches.
