@@ -14,6 +14,7 @@ import {
   currentBranchPrecondition,
 } from "../../lib/preconditions";
 import { syncPRInfoForBranches } from "../../lib/sync/pr_info";
+import { getSurvey, showSurvey } from "../../lib/telemetry/survey";
 import {
   gpExecSync,
   logError,
@@ -194,18 +195,25 @@ export async function submitBranches(args: {
     }
   );
 
-  const prInfo = await submitPRsForBranches({
-    submissionInfo: submissionInfo,
-    branchesPushedToRemote: branchesPushedToRemote,
-    cliAuthToken: args.cliAuthToken,
-    repoOwner: args.repoOwner,
-    repoName: args.repoName,
-    editPRFieldsInline: args.editPRFieldsInline,
-    createNewPRsAsDraft: args.createNewPRsAsDraft,
-  });
+  const [prInfo, survey] = await Promise.all([
+    submitPRsForBranches({
+      submissionInfo: submissionInfo,
+      branchesPushedToRemote: branchesPushedToRemote,
+      cliAuthToken: args.cliAuthToken,
+      repoOwner: args.repoOwner,
+      repoName: args.repoName,
+      editPRFieldsInline: args.editPRFieldsInline,
+      createNewPRsAsDraft: args.createNewPRsAsDraft,
+    }),
+    getSurvey(),
+  ]);
 
   saveBranchPRInfo(prInfo);
   printSubmittedPRInfo(prInfo);
+
+  if (survey !== undefined) {
+    await showSurvey(survey);
+  }
 }
 
 async function getPRInfoForBranches(args: {
