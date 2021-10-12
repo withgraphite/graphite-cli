@@ -486,9 +486,6 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
     } else {
       console.log(`${pr.response.prURL} (${status})`);
     }
-
-    logNewline();
-    logInfo(`See your full stack on https://app.graphite.dev`);
   });
 }
 
