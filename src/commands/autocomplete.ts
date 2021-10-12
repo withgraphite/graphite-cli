@@ -58,6 +58,17 @@ function getBranchArg(current: string, argv: Arguments): string | null {
     return current;
   }
 
+  // gt b co
+  if (
+    currentCommand.includes("b co") &&
+    argv["_"].includes("b") &&
+    argv["_"].includes("co") &&
+    argv["_"].length <= 4 &&
+    typeof current === "string"
+  ) {
+    return current;
+  }
+
   // gt upstack onto <branch_name>
   if (
     currentCommand.includes("upstack onto") ||
