@@ -83,8 +83,11 @@ export default class GitRepo {
     return rebaseInProgress({ dir: this.dir });
   }
 
-  finishInteractiveRebase(): void {
+  finishInteractiveRebase(opts?: { mergeStrategy?: "THEIRS" }): void {
     while (this.rebaseInProgress()) {
+      if (opts?.mergeStrategy === "THEIRS") {
+        execSync(`git -C "${this.dir}" checkout --theirs .`);
+      }
       execSync(`git -C "${this.dir}" add .`, { stdio: "ignore" });
       execSync(`GIT_EDITOR="touch $1" git -C ${this.dir} rebase --continue`, {
         stdio: "ignore",
