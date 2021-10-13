@@ -2,6 +2,7 @@ import { execStateConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import { uncommittedChangesPrecondition } from "../lib/preconditions";
 import { gpExecSync, logWarn } from "../lib/utils";
+import Branch from "../wrapper-classes/branch";
 import { fixAction } from "./fix";
 
 export async function commitAmendAction(opts: {
@@ -18,6 +19,14 @@ export async function commitAmendAction(opts: {
         throw new ExitFailedError("Failed to add changes. Aborting...", err);
       }
     );
+  }
+
+  // If we're checked out on a branch, we're going to perform a stack fix later.
+  // In order to allow the stack fix to cut out the old commit, we need to set
+  // the prev ref here.
+  const currentBranch = Branch.getCurrentBranch();
+  if (currentBranch !== null) {
+    currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
   }
 
   gpExecSync(
