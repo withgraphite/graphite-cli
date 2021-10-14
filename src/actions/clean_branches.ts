@@ -5,6 +5,7 @@ import { cache } from "../lib/config";
 import { KilledError } from "../lib/errors";
 import { checkoutBranch, getTrunk, logInfo } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
+import { deleteBranchAction } from "./delete_branch";
 import { ontoAction } from "./onto";
 
 // eslint-disable-next-line max-lines-per-function
@@ -221,6 +222,9 @@ function branchMerged(branch: Branch): boolean {
 
 async function deleteBranch(branch: Branch) {
   logInfo(`Deleting (${chalk.red(branch.name)})`);
-  execSync(`git branch -D ${branch.name}`);
+  await deleteBranchAction({
+    branchName: branch.name,
+    force: true,
+  });
   cache.clearAll();
 }

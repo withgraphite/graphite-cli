@@ -133,9 +133,8 @@ for (const scene of allScenes) {
         `${scene.repo.dir}/.git/refs/branch-metadata`
       );
 
-      // This gets fixed in the next PR.
-      // expect(metadata.includes("a")).to.be.false;
-      // expect(metadata.includes("b")).to.be.false;
+      expect(metadata.includes("a")).to.be.false;
+      expect(metadata.includes("b")).to.be.false;
       expect(metadata.includes("c")).to.be.true;
     });
 
