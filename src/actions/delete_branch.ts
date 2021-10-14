@@ -7,6 +7,9 @@ export function deleteBranchAction(args: {
   force: boolean;
 }): void {
   const meta = new MetadataRef(args.branchName);
+
+  // No need for a try-catch here; this already silently does nothing if the
+  // metadata does not exist.
   meta.delete();
 
   gpExecSync(

@@ -28,5 +28,26 @@ for (const scene of allScenes) {
         )
       ).to.be.undefined;
     });
+
+    it("Can run branch delete on a branch not created/tracked by Graphite", () => {
+      const branchName = "a";
+
+      scene.repo.createAndCheckoutBranch(branchName);
+      scene.repo.createChangeAndCommit("2", "2");
+
+      scene.repo.checkoutBranch("main");
+      scene.repo.execCliCommandAndGetOutput(
+        `branch delete "${branchName}" -D -q`
+      );
+
+      expectBranches(scene.repo, "main");
+      expect(Branch.exists(branchName)).to.be.false;
+
+      expect(
+        MetadataRef.allMetadataRefs().find(
+          (ref) => ref._branchName === branchName
+        )
+      ).to.be.undefined;
+    });
   });
 }
