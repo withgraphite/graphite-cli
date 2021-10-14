@@ -13,9 +13,8 @@ import {
   logInfo,
   uncommittedChanges,
 } from "../lib/utils";
-import { logDebug, logNewline, logTip } from "../lib/utils/splog";
+import { logNewline, logTip } from "../lib/utils/splog";
 import Branch from "../wrapper-classes/branch";
-import MetadataRef from "../wrapper-classes/metadata_ref";
 import { deleteMergedBranches } from "./clean_branches";
 import { fixDanglingBranches } from "./fix_dangling_branches";
 import { submitBranches } from "./submit";
@@ -73,9 +72,16 @@ export async function syncAction(opts: {
   }
 
   checkoutBranch(Branch.exists(oldBranch.name) ? oldBranch.name : trunk);
-  cleanDanglingMetadata();
 }
 
+/**
+ *
+ * Remove for now - users are reporting issues where this is incorrectly
+ * deleting metadata for still-existing branches.
+ *
+ * https://graphite-community.slack.com/archives/C02DRNRA9RA/p1632897956089100
+ * https://graphite-community.slack.com/archives/C02DRNRA9RA/p1634168133170500
+ *
 function cleanDanglingMetadata(): void {
   const allMetadataRefs = MetadataRef.allMetadataRefs();
   allMetadataRefs.forEach((ref) => {
@@ -84,7 +90,7 @@ function cleanDanglingMetadata(): void {
       ref.delete();
     }
   });
-}
+}*/
 
 async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
   const needsResubmission: Branch[] = [];

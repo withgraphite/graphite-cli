@@ -132,12 +132,21 @@ for (const scene of allScenes) {
       const metadata = fs.readdirSync(
         `${scene.repo.dir}/.git/refs/branch-metadata`
       );
-      expect(metadata.includes("a")).to.be.false;
-      expect(metadata.includes("b")).to.be.false;
+
+      // This gets fixed in the next PR.
+      // expect(metadata.includes("a")).to.be.false;
+      // expect(metadata.includes("b")).to.be.false;
       expect(metadata.includes("c")).to.be.true;
     });
 
-    it("Deletes dangling metadata refs", async () => {
+    /**
+     * Removed this functionality for now - users are reporting issues where
+     * this was incorrectly deleting metadata for still-existing branches.
+     *
+     * https://graphite-community.slack.com/archives/C02DRNRA9RA/p1632897956089100
+     * https://graphite-community.slack.com/archives/C02DRNRA9RA/p1634168133170500"
+     */
+    xit("Deletes dangling metadata refs", async () => {
       scene.repo.createChange("a", "a");
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
