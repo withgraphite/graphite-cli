@@ -26,7 +26,23 @@ export type MergeConflictCallstackT =
   | "MERGE_CONFLICT_CALLSTACK_TODO"
   | "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER";
 
-type GraphiteFrameT = StackFixActionStackframeT | RestackNodeStackFrameT;
+type GraphiteFrameT =
+  | StackOntoBaseRebaseStackFrameT
+  | StackOntoFixStackFrameT
+  | StackFixActionStackframeT
+  | RestackNodeStackFrameT;
+
+export type StackOntoBaseRebaseStackFrameT = {
+  op: "STACK_ONTO_BASE_REBASE_CONTINUATION";
+  currentBranchName: string;
+  onto: string;
+};
+
+export type StackOntoFixStackFrameT = {
+  op: "STACK_ONTO_FIX_CONTINUATION";
+  currentBranchName: string;
+  onto: string;
+};
 
 export type StackFixActionStackframeT = {
   op: "STACK_FIX_ACTION_CONTINUATION";

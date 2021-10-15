@@ -2,6 +2,10 @@ import { execSync } from "child_process";
 import yargs from "yargs";
 import { restackBranch, stackFixActionContinuation } from "../actions/fix";
 import {
+  stackOntoBaseRebaseContinuation,
+  stackOntoFixContinuation,
+} from "../actions/onto";
+import {
   clearPersistedMergeConflictCallstack,
   getPersistedMergeConflictCallstack,
   MergeConflictCallstackT,
@@ -58,6 +62,12 @@ async function resolveCallstack(
   }
 
   switch (callstack.frame.op) {
+    case "STACK_ONTO_BASE_REBASE_CONTINUATION":
+      await stackOntoBaseRebaseContinuation(callstack.frame, callstack.parent);
+      break;
+    case "STACK_ONTO_FIX_CONTINUATION":
+      await stackOntoFixContinuation(callstack.frame);
+      break;
     case "STACK_FIX": {
       const branch = await Branch.branchWithName(
         callstack.frame.sourceBranchName

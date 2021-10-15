@@ -152,18 +152,28 @@ export async function restackBranch(args: {
   const metaStack =
     new MetaStackBuilder().upstackInclusiveFromBranchWithParents(args.branch);
 
+  const stackFixActionContinuationFrame = {
+    op: "STACK_FIX_ACTION_CONTINUATION" as const,
+    checkoutBranchName: args.branch.name,
+  };
+
   const mergeConflictCallstack = {
     frame: {
       op: "STACK_FIX" as const,
       sourceBranchName: args.branch.name,
     },
-    parent: args.mergeConflictCallstack,
+    parent: {
+      frame: stackFixActionContinuationFrame,
+      parent: args.mergeConflictCallstack,
+    },
   };
 
   await restackNode({
     node: metaStack.source,
     mergeConflictCallstack: mergeConflictCallstack,
   });
+
+  await stackFixActionContinuation(stackFixActionContinuationFrame);
 }
 
 async function restackNode(args: {

@@ -110,7 +110,10 @@ export async function deleteMergedBranches(opts: {
       if (parentName !== undefined && parentName in branchesToDelete) {
         checkoutBranch(branch.name);
         logInfo(`upstacking (${branch.name}) onto (${getTrunk().name})`);
-        await ontoAction(getTrunk().name);
+        await ontoAction({
+          onto: getTrunk().name,
+          mergeConflictCallstack: "MERGE_CONFLICT_CALLSTACK_TODO",
+        });
 
         branchesToDelete[parentName].children = branchesToDelete[
           parentName
