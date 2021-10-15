@@ -58,7 +58,7 @@ export async function commitCreateAction(opts: {
     uncommittedChangesPrecondition();
     await fixAction({
       action: "rebase",
-      mergeConflictCallstack: "MERGE_CONFLICT_CALLSTACK_TODO" as const,
+      mergeConflictCallstack: "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER" as const,
     });
   } catch {
     logWarn(
