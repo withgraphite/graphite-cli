@@ -24,7 +24,7 @@ export type MergeConflictCallstackT =
       parent: MergeConflictCallstackT;
     }
   | "MERGE_CONFLICT_CALLSTACK_TODO"
-  | "TOP_OF_CALLSTACK";
+  | "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER";
 
 type GraphiteFrameT = StackFixActionStackframeT | RestackNodeStackFrameT;
 

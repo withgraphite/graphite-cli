@@ -51,7 +51,7 @@ async function resolveCallstack(
   callstack: MergeConflictCallstackT
 ): Promise<void> {
   if (
-    callstack === "TOP_OF_CALLSTACK" ||
+    callstack === "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER" ||
     callstack === "MERGE_CONFLICT_CALLSTACK_TODO"
   ) {
     return;
