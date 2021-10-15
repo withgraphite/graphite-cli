@@ -5,7 +5,7 @@ import {
   ExitCancelledError,
   ExitFailedError,
   KilledError,
-  RebaseConflictError,
+  RebaseConflictErrorWithoutContinueSupport,
 } from "../lib/errors";
 import {
   currentBranchPrecondition,
@@ -120,7 +120,7 @@ export async function restackBranch(branch: Branch): Promise<void> {
 
 async function restackNode(node: StackNode): Promise<void> {
   if (rebaseInProgress()) {
-    throw new RebaseConflictError(
+    throw new RebaseConflictErrorWithoutContinueSupport(
       `Interactive rebase in progress, cannot fix (${node.branch.name}). Complete the rebase and re-run fix command.`
     );
   }
@@ -154,7 +154,7 @@ async function restackNode(node: StackNode): Promise<void> {
       },
       () => {
         if (rebaseInProgress()) {
-          throw new RebaseConflictError(
+          throw new RebaseConflictErrorWithoutContinueSupport(
             "Resolve the conflict (via `git rebase --continue`) and then rerun `gt stack fix` to fix the remaining stack."
           );
         }

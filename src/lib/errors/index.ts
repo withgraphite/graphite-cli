@@ -1,4 +1,8 @@
 import Branch from "../../wrapper-classes/branch";
+import {
+  MergeConflictCallstackT,
+  persistMergeConflictCallstack,
+} from "../config/merge_conflict_callstack_config";
 
 class ExitError extends Error {}
 class ExitCancelledError extends ExitError {
@@ -27,10 +31,18 @@ class ExitFailedError extends ExitError {
   }
 }
 
-class RebaseConflictError extends ExitError {
+class RebaseConflictErrorWithoutContinueSupport extends ExitError {
   constructor(message: string) {
     super(message);
     this.name = "RebaseConflict";
+  }
+}
+
+class RebaseConflictError extends ExitError {
+  constructor(message: string, callstack: MergeConflictCallstackT) {
+    super(message);
+    this.name = "RebaseConflict";
+    persistMergeConflictCallstack(callstack);
   }
 }
 
@@ -95,6 +107,7 @@ export {
   ExitFailedError,
   PreconditionsFailedError,
   RebaseConflictError,
+  RebaseConflictErrorWithoutContinueSupport,
   ValidationFailedError,
   ConfigError,
   ExitCancelledError,

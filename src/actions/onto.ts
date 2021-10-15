@@ -3,7 +3,7 @@ import { cache } from "../lib/config";
 import {
   ExitFailedError,
   PreconditionsFailedError,
-  RebaseConflictError,
+  RebaseConflictErrorWithoutContinueSupport,
   ValidationFailedError,
 } from "../lib/errors";
 import {
@@ -48,7 +48,7 @@ async function stackOnto(currentBranch: Branch, onto: string) {
     },
     (err) => {
       if (rebaseInProgress()) {
-        throw new RebaseConflictError(
+        throw new RebaseConflictErrorWithoutContinueSupport(
           "Please resolve the rebase conflict and then continue with your `upstack onto` command."
         );
       } else {

@@ -14,6 +14,7 @@ import {
   MultiParentError,
   PreconditionsFailedError,
   RebaseConflictError,
+  RebaseConflictErrorWithoutContinueSupport,
   SiblingBranchError,
   ValidationFailedError,
 } from "../errors";
@@ -72,6 +73,7 @@ export async function profile(
               logInfo(err.message);
               throw err;
             case RebaseConflictError:
+            case RebaseConflictErrorWithoutContinueSupport:
               logWarn(`Rebase conflict: ${err.message}`);
               return;
             case ValidationFailedError:
