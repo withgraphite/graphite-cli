@@ -51,7 +51,10 @@ export async function commitAmendAction(opts: {
   // Only restack if working tree is now clean.
   try {
     uncommittedChangesPrecondition();
-    await fixAction({ action: "rebase" });
+    await fixAction({
+      action: "rebase",
+      mergeConflictCallstack: "MERGE_CONFLICT_CALLSTACK_TODO" as const,
+    });
   } catch {
     logWarn(
       "Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix --rebase`"

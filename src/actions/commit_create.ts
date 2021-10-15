@@ -2,7 +2,7 @@ import { execStateConfig } from "../lib/config";
 import { ExitFailedError } from "../lib/errors";
 import {
   ensureSomeStagedChangesPrecondition,
-  uncommittedChangesPrecondition
+  uncommittedChangesPrecondition,
 } from "../lib/preconditions";
 import { gpExecSync, logWarn } from "../lib/utils";
 import { fixAction } from "./fix";
@@ -56,7 +56,10 @@ export async function commitCreateAction(opts: {
 
   try {
     uncommittedChangesPrecondition();
-    await fixAction({ action: "rebase" });
+    await fixAction({
+      action: "rebase",
+      mergeConflictCallstack: "MERGE_CONFLICT_CALLSTACK_TODO" as const,
+    });
   } catch {
     logWarn(
       "Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix --rebase`"

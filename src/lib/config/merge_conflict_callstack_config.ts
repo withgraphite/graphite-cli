@@ -18,23 +18,25 @@ const CURRENT_REPO_CONFIG_PATH = path.join(getRepoRootPath(), CONFIG_NAME);
  * The below object helps keep track of these items and persist them across
  * invocations of the CLI.
  */
-export type MergeConflictCallstackT = {
-  interruptedRebase: InterruptedRebaseT;
-  rebaseContinuations: RebaseContinuationsT;
+export type MergeConflictCallstackT =
+  | {
+      frame: GraphiteFrameT;
+      parent: MergeConflictCallstackT;
+    }
+  | "MERGE_CONFLICT_CALLSTACK_TODO"
+  | "TOP_OF_CALLSTACK";
+
+type GraphiteFrameT = StackFixActionStackframeT | RestackNodeStackFrameT;
+
+export type StackFixActionStackframeT = {
+  op: "STACK_FIX_ACTION_CONTINUATION";
+  checkoutBranchName: string;
 };
 
-type InterruptedRebaseT = {
+export type RestackNodeStackFrameT = {
   op: "STACK_FIX";
-  sourceBranch: string;
+  sourceBranchName: string;
 };
-
-type RebaseContinuationMethodT = "STACK_FIX_CONTINUATION";
-
-type RebaseContinuationsT = {
-  method: RebaseContinuationMethodT;
-  args: any;
-  parent: RebaseContinuationsT;
-} | null;
 
 export function persistMergeConflictCallstack(
   callstack: MergeConflictCallstackT

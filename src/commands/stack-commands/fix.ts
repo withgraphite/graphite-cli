@@ -35,6 +35,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     }
     await fixAction({
       action: argv.rebase ? "rebase" : argv.regen ? "regen" : undefined,
+      mergeConflictCallstack: "TOP_OF_CALLSTACK",
     });
   });
 };

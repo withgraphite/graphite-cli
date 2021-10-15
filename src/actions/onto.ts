@@ -65,7 +65,10 @@ async function stackOnto(currentBranch: Branch, onto: string) {
   currentBranch.setParentBranchName(onto);
 
   // Now perform a fix starting from the onto branch:
-  await restackBranch(currentBranch);
+  await restackBranch({
+    branch: currentBranch,
+    mergeConflictCallstack: "MERGE_CONFLICT_CALLSTACK_TODO" as const,
+  });
   logInfo(`Successfully moved (${currentBranch.name}) onto (${onto})`);
 }
 

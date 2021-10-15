@@ -2,10 +2,14 @@ import chalk from "chalk";
 import prompts from "prompts";
 import { cache } from "../lib/config";
 import {
+  MergeConflictCallstackT,
+  StackFixActionStackframeT,
+} from "../lib/config/merge_conflict_callstack_config";
+import {
   ExitCancelledError,
   ExitFailedError,
   KilledError,
-  RebaseConflictErrorWithoutContinueSupport,
+  RebaseConflictError,
 } from "../lib/errors";
 import {
   currentBranchPrecondition,
@@ -76,6 +80,7 @@ async function promptStacks(opts: {
 
 export async function fixAction(opts: {
   action: "regen" | "rebase" | undefined;
+  mergeConflictCallstack: MergeConflictCallstackT;
 }): Promise<void> {
   const currentBranch = currentBranchPrecondition();
   uncommittedChangesPrecondition();
@@ -102,26 +107,75 @@ export async function fixAction(opts: {
 
   const action = opts.action || (await promptStacks({ gitStack, metaStack }));
 
+  const stackFixActionContinuationFrame = {
+    op: "STACK_FIX_ACTION_CONTINUATION" as const,
+    checkoutBranchName: currentBranch.name,
+  };
+
   if (action === "regen") {
     await regen(currentBranch);
   } else {
+    // If we get interrupted and need to continue, first we'll do a stack fix
+    // and then we'll continue the stack fix action.
+    const mergeConflictCallstack = {
+      frame: {
+        op: "STACK_FIX" as const,
+        sourceBranchName: currentBranch.name,
+      },
+      parent: {
+        frame: stackFixActionContinuationFrame,
+        parent: opts.mergeConflictCallstack,
+      },
+    };
+
     for (const child of metaStack.source.children) {
-      await restackNode(child);
+      await restackNode({
+        node: child,
+        mergeConflictCallstack: mergeConflictCallstack,
+      });
     }
   }
-  checkoutBranch(currentBranch.name);
+
+  await stackFixActionContinuation(stackFixActionContinuationFrame);
 }
 
-export async function restackBranch(branch: Branch): Promise<void> {
+export async function stackFixActionContinuation(
+  frame: StackFixActionStackframeT
+): Promise<void> {
+  checkoutBranch(frame.checkoutBranchName);
+}
+
+export async function restackBranch(args: {
+  branch: Branch;
+  mergeConflictCallstack: MergeConflictCallstackT;
+}): Promise<void> {
   const metaStack =
-    new MetaStackBuilder().upstackInclusiveFromBranchWithParents(branch);
-  await restackNode(metaStack.source);
+    new MetaStackBuilder().upstackInclusiveFromBranchWithParents(args.branch);
+
+  const mergeConflictCallstack = {
+    frame: {
+      op: "STACK_FIX" as const,
+      sourceBranchName: args.branch.name,
+    },
+    parent: args.mergeConflictCallstack,
+  };
+
+  await restackNode({
+    node: metaStack.source,
+    mergeConflictCallstack: mergeConflictCallstack,
+  });
 }
 
-async function restackNode(node: StackNode): Promise<void> {
+async function restackNode(args: {
+  node: StackNode;
+  mergeConflictCallstack: MergeConflictCallstackT;
+}): Promise<void> {
+  const node = args.node;
+
   if (rebaseInProgress()) {
-    throw new RebaseConflictErrorWithoutContinueSupport(
-      `Interactive rebase in progress, cannot fix (${node.branch.name}). Complete the rebase and re-run fix command.`
+    throw new RebaseConflictError(
+      `Interactive rebase in progress, cannot fix (${node.branch.name}). Complete the rebase and re-run fix command.`,
+      args.mergeConflictCallstack
     );
   }
   const parentBranch = node.parent?.branch;
@@ -154,8 +208,9 @@ async function restackNode(node: StackNode): Promise<void> {
       },
       () => {
         if (rebaseInProgress()) {
-          throw new RebaseConflictErrorWithoutContinueSupport(
-            "Resolve the conflict (via `git rebase --continue`) and then rerun `gt stack fix` to fix the remaining stack."
+          throw new RebaseConflictError(
+            "Resolve the conflict (via `git rebase --continue`) and then rerun `gt stack fix` to fix the remaining stack.",
+            args.mergeConflictCallstack
           );
         }
       }
@@ -164,7 +219,10 @@ async function restackNode(node: StackNode): Promise<void> {
   }
 
   for (const child of node.children) {
-    await restackNode(child);
+    await restackNode({
+      node: child,
+      mergeConflictCallstack: args.mergeConflictCallstack,
+    });
   }
 }
 
