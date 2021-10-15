@@ -51,7 +51,7 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`commit amend -m "a1" -q`);
 
       scene.repo.finishInteractiveRebase({
-        mergeStrategy: "THEIRS",
+        resolveMergeConflicts: true,
       });
 
       scene.repo.checkoutBranch("b");

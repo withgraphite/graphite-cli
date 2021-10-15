@@ -61,6 +61,12 @@ export default class GitRepo {
     execSync(`git -C "${this.dir}" commit -m "${textValue}"`);
   }
 
+  createChangeAndAmend(textValue: string, prefix?: string): void {
+    this.createChange(textValue, prefix);
+    execSync(`git -C "${this.dir}" add .`);
+    execSync(`git -C "${this.dir}" commit --amend --no-edit`);
+  }
+
   deleteBranch(name: string): void {
     execSync(`git -C "${this.dir}" branch -D ${name}`);
   }
@@ -83,12 +89,20 @@ export default class GitRepo {
     return rebaseInProgress({ dir: this.dir });
   }
 
-  finishInteractiveRebase(opts?: { mergeStrategy?: "THEIRS" }): void {
+  resolveMergeConflicts(): void {
+    execSync(`git -C "${this.dir}" checkout --theirs .`);
+  }
+
+  markMergeConflictsAsResolved(): void {
+    execSync(`git -C "${this.dir}" add .`, { stdio: "ignore" });
+  }
+
+  finishInteractiveRebase(opts?: { resolveMergeConflicts?: boolean }): void {
     while (this.rebaseInProgress()) {
-      if (opts?.mergeStrategy === "THEIRS") {
-        execSync(`git -C "${this.dir}" checkout --theirs .`);
+      if (opts?.resolveMergeConflicts) {
+        this.resolveMergeConflicts();
       }
-      execSync(`git -C "${this.dir}" add .`, { stdio: "ignore" });
+      this.markMergeConflictsAsResolved();
       execSync(`GIT_EDITOR="touch $1" git -C ${this.dir} rebase --continue`, {
         stdio: "ignore",
       });
