@@ -5,6 +5,7 @@ import {
   existsDanglingBranches,
   fixDanglingBranches,
 } from "../../actions/fix_dangling_branches";
+import { RepoFixBranchCountSanityCheckStackFrameT } from "../../lib/config/merge_conflict_callstack_config";
 import { profile } from "../../lib/telemetry";
 import { logInfo, logNewline, logTip } from "../../lib/utils";
 import Branch from "../../wrapper-classes/branch";
@@ -82,15 +83,28 @@ async function branchCountSanityCheck(opts: {
 
   logInfo(`Searching for any stale branches that can be removed...`);
 
+  const continuationFrame = {
+    op: "REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION" as const,
+  };
+
   await deleteMergedBranches({
     frame: {
       op: "DELETE_BRANCHES_CONTINUATION",
       showDeleteProgress: opts.showDeleteProgress,
       force: opts.force,
     },
-    parent: "MERGE_CONFLICT_CALLSTACK_TODO",
+    parent: {
+      frame: continuationFrame,
+      parent: "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER",
+    },
   });
 
+  await branchCountSanityCheckContinuation(continuationFrame);
+}
+
+export async function branchCountSanityCheckContinuation(
+  frame: RepoFixBranchCountSanityCheckStackFrameT
+): Promise<void> {
   logNewline();
   logInfo(
     `Still seeing issues with Graphite? Send us feedback via \`gt feedback '<your_issue'> --with-debug-context\` and we'll dig in!`

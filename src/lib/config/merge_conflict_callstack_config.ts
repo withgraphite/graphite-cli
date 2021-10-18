@@ -31,7 +31,8 @@ type GraphiteFrameT =
   | StackOntoFixStackFrameT
   | StackFixActionStackframeT
   | RestackNodeStackFrameT
-  | DeleteBranchesStackFrameT;
+  | DeleteBranchesStackFrameT
+  | RepoFixBranchCountSanityCheckStackFrameT;
 
 export type StackOntoBaseRebaseStackFrameT = {
   op: "STACK_ONTO_BASE_REBASE_CONTINUATION";
@@ -59,6 +60,10 @@ export type DeleteBranchesStackFrameT = {
   op: "DELETE_BRANCHES_CONTINUATION";
   force: boolean;
   showDeleteProgress: boolean;
+};
+
+export type RepoFixBranchCountSanityCheckStackFrameT = {
+  op: "REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION";
 };
 
 export function persistMergeConflictCallstack(

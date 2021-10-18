@@ -4,30 +4,13 @@ import { execSync } from "child_process";
 import fs from "fs-extra";
 import nock from "nock";
 import { API_SERVER } from "../../../../src/lib/api";
-import { GitRepo } from "../../../../src/lib/utils";
 import { allScenes } from "../../../lib/scenes";
 import {
   configureTest,
   expectBranches,
   expectCommits,
 } from "../../../lib/utils";
-
-function fakeGitSquashAndMerge(
-  repo: GitRepo,
-  branchName: string,
-  squashedCommitMessage: string
-) {
-  // Fake github squash and merge
-  execSync(`git -C "${repo.dir}" switch -q -c temp ${branchName}`);
-  repo.checkoutBranch("temp");
-  execSync(`git -C "${repo.dir}" rebase main -Xtheirs`, { stdio: "ignore" });
-  execSync(
-    `git -C "${repo.dir}" reset --soft $(git -C "${repo.dir}" merge-base HEAD main)`
-  );
-  repo.checkoutBranch("main");
-  execSync(`git -C "${repo.dir}" commit -m "${squashedCommitMessage}"`);
-  execSync(`git -C "${repo.dir}" branch -D temp`);
-}
+import { fakeGitSquashAndMerge } from "../../../lib/utils/fake_squash_and_merge";
 
 for (const scene of allScenes) {
   // eslint-disable-next-line max-lines-per-function

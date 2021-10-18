@@ -15,6 +15,7 @@ import { PreconditionsFailedError } from "../lib/errors";
 import { profile } from "../lib/telemetry";
 import { rebaseInProgress } from "../lib/utils/rebase_in_progress";
 import Branch from "../wrapper-classes/branch";
+import { branchCountSanityCheckContinuation } from "./repo-commands/fix";
 
 const args = {
   edit: {
@@ -87,6 +88,9 @@ async function resolveCallstack(
         frame: callstack.frame,
         parent: callstack.parent,
       });
+      break;
+    case "REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION":
+      await branchCountSanityCheckContinuation(callstack.frame);
       break;
     default:
       assertUnreachable(callstack.frame);
