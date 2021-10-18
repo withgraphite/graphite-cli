@@ -62,8 +62,12 @@ export async function syncAction(opts: {
     logInfo(`Checking if any branches have been merged and can be deleted...`);
     logTip(`Disable this behavior at any point in the future with --no-delete`);
     await deleteMergedBranches({
-      force: opts.force,
-      showDeleteProgress: opts.showDeleteProgress,
+      frame: {
+        op: "DELETE_BRANCHES_CONTINUATION",
+        force: opts.force,
+        showDeleteProgress: opts.showDeleteProgress,
+      },
+      parent: "MERGE_CONFLICT_CALLSTACK_TODO",
     });
   }
 

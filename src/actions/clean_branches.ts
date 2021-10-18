@@ -2,16 +2,25 @@ import chalk from "chalk";
 import { execSync } from "child_process";
 import prompts from "prompts";
 import { cache } from "../lib/config";
+import {
+  DeleteBranchesStackFrameT,
+  MergeConflictCallstackT,
+} from "../lib/config/merge_conflict_callstack_config";
 import { KilledError } from "../lib/errors";
 import { checkoutBranch, getTrunk, logInfo } from "../lib/utils";
 import Branch from "../wrapper-classes/branch";
 import { deleteBranchAction } from "./delete_branch";
 import { ontoAction } from "./onto";
 
+/**
+ * This method is assumed to be idempotent -- if a merge conflict interrupts
+ * execution of this method, we simply restart the method upon running `gt
+ * continue`.
+ */
 // eslint-disable-next-line max-lines-per-function
 export async function deleteMergedBranches(opts: {
-  force: boolean;
-  showDeleteProgress: boolean;
+  frame: DeleteBranchesStackFrameT;
+  parent: MergeConflictCallstackT;
 }): Promise<void> {
   const trunkChildren = getTrunk().getChildrenFromMeta();
 
@@ -48,7 +57,7 @@ export async function deleteMergedBranches(opts: {
    * of trunk (> 50).
    */
   const trunkChildrenProgressMarkers: Record<string, string> = {};
-  if (opts.showDeleteProgress) {
+  if (opts.frame.showDeleteProgress) {
     trunkChildren.forEach((child, i) => {
       // Ignore the first child - don't show 0% progress.
       if (i === 0) {
@@ -75,7 +84,7 @@ export async function deleteMergedBranches(opts: {
     }
 
     if (
-      opts.showDeleteProgress &&
+      opts.frame.showDeleteProgress &&
       branch.name in trunkChildrenProgressMarkers
     ) {
       logInfo(
@@ -87,7 +96,7 @@ export async function deleteMergedBranches(opts: {
 
     const shouldDelete = await shouldDeleteBranch({
       branch: branch,
-      force: opts.force,
+      force: opts.frame.force,
     });
     if (shouldDelete) {
       const children = branch.getChildrenFromMeta();
@@ -112,7 +121,10 @@ export async function deleteMergedBranches(opts: {
         logInfo(`upstacking (${branch.name}) onto (${getTrunk().name})`);
         await ontoAction({
           onto: getTrunk().name,
-          mergeConflictCallstack: "MERGE_CONFLICT_CALLSTACK_TODO",
+          mergeConflictCallstack: {
+            frame: opts.frame,
+            parent: opts.parent,
+          },
         });
 
         branchesToDelete[parentName].children = branchesToDelete[

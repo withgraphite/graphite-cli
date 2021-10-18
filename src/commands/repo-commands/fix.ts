@@ -83,8 +83,12 @@ async function branchCountSanityCheck(opts: {
   logInfo(`Searching for any stale branches that can be removed...`);
 
   await deleteMergedBranches({
-    showDeleteProgress: opts.showDeleteProgress,
-    force: opts.force,
+    frame: {
+      op: "DELETE_BRANCHES_CONTINUATION",
+      showDeleteProgress: opts.showDeleteProgress,
+      force: opts.force,
+    },
+    parent: "MERGE_CONFLICT_CALLSTACK_TODO",
   });
 
   logNewline();

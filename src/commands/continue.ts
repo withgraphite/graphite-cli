@@ -1,5 +1,6 @@
 import { execSync } from "child_process";
 import yargs from "yargs";
+import { deleteMergedBranches } from "../actions/clean_branches";
 import { restackBranch, stackFixActionContinuation } from "../actions/fix";
 import {
   stackOntoBaseRebaseContinuation,
@@ -80,6 +81,12 @@ async function resolveCallstack(
     }
     case "STACK_FIX_ACTION_CONTINUATION":
       await stackFixActionContinuation(callstack.frame);
+      break;
+    case "DELETE_BRANCHES_CONTINUATION":
+      await deleteMergedBranches({
+        frame: callstack.frame,
+        parent: callstack.parent,
+      });
       break;
     default:
       assertUnreachable(callstack.frame);

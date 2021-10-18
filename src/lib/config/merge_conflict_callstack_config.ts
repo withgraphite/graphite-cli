@@ -30,7 +30,8 @@ type GraphiteFrameT =
   | StackOntoBaseRebaseStackFrameT
   | StackOntoFixStackFrameT
   | StackFixActionStackframeT
-  | RestackNodeStackFrameT;
+  | RestackNodeStackFrameT
+  | DeleteBranchesStackFrameT;
 
 export type StackOntoBaseRebaseStackFrameT = {
   op: "STACK_ONTO_BASE_REBASE_CONTINUATION";
@@ -52,6 +53,12 @@ export type StackFixActionStackframeT = {
 export type RestackNodeStackFrameT = {
   op: "STACK_FIX";
   sourceBranchName: string;
+};
+
+export type DeleteBranchesStackFrameT = {
+  op: "DELETE_BRANCHES_CONTINUATION";
+  force: boolean;
+  showDeleteProgress: boolean;
 };
 
 export function persistMergeConflictCallstack(
