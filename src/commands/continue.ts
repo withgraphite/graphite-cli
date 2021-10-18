@@ -6,6 +6,7 @@ import {
   stackOntoBaseRebaseContinuation,
   stackOntoFixContinuation,
 } from "../actions/onto";
+import { repoSyncDeleteMergedBranchesContinuation } from "../actions/sync";
 import {
   clearPersistedMergeConflictCallstack,
   getPersistedMergeConflictCallstack,
@@ -91,6 +92,9 @@ async function resolveCallstack(
       break;
     case "REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION":
       await branchCountSanityCheckContinuation(callstack.frame);
+      break;
+    case "REPO_SYNC_CONTINUATION":
+      await repoSyncDeleteMergedBranchesContinuation(callstack.frame);
       break;
     default:
       assertUnreachable(callstack.frame);
