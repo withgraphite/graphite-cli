@@ -57,10 +57,7 @@ export const handler = async (argv: argsT): Promise<void> => {
 async function resolveCallstack(
   callstack: MergeConflictCallstackT
 ): Promise<void> {
-  if (
-    callstack === "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER" ||
-    callstack === "MERGE_CONFLICT_CALLSTACK_TODO"
-  ) {
+  if (callstack === "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER") {
     return;
   }
 

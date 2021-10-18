@@ -31,13 +31,6 @@ class ExitFailedError extends ExitError {
   }
 }
 
-class RebaseConflictErrorWithoutContinueSupport extends ExitError {
-  constructor(message: string) {
-    super(message);
-    this.name = "RebaseConflict";
-  }
-}
-
 class RebaseConflictError extends ExitError {
   constructor(message: string, callstack: MergeConflictCallstackT) {
     super(message);
@@ -107,7 +100,6 @@ export {
   ExitFailedError,
   PreconditionsFailedError,
   RebaseConflictError,
-  RebaseConflictErrorWithoutContinueSupport,
   ValidationFailedError,
   ConfigError,
   ExitCancelledError,
