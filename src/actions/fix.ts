@@ -184,7 +184,7 @@ async function restackNode(args: {
 
   if (rebaseInProgress()) {
     throw new RebaseConflictError(
-      `Interactive rebase in progress, cannot fix (${node.branch.name}). Complete the rebase and re-run fix command.`,
+      `Interactive rebase in progress, cannot fix (${node.branch.name}). Please resolve the conflict (by editing the files and then marking them as resolved with \`git add\`) and then run \`gt continue\` to continue executing the previously-interrupted Graphite command.`,
       args.mergeConflictCallstack
     );
   }
@@ -219,7 +219,7 @@ async function restackNode(args: {
       () => {
         if (rebaseInProgress()) {
           throw new RebaseConflictError(
-            "Resolve the conflict (via `git rebase --continue`) and then rerun `gt stack fix` to fix the remaining stack.",
+            "Please resolve the conflict (by editing the files and then marking them as resolved with `git add`) and then run `gt continue` to continue executing the previously-interrupted Graphite command.",
             args.mergeConflictCallstack
           );
         }

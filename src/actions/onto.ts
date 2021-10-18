@@ -67,7 +67,7 @@ async function stackOnto(
     (err) => {
       if (rebaseInProgress()) {
         throw new RebaseConflictError(
-          "Please resolve the rebase conflict and then continue with your `upstack onto` command.",
+          "Please resolve the conflict (by editing the files and then marking them as resolved with `git add`) and then run `gt continue` to continue executing the previously-interrupted Graphite command",
           {
             frame: stackOntoContinuationFrame,
             parent: mergeConflictCallstack,
