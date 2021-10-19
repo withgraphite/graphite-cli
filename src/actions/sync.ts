@@ -39,7 +39,7 @@ export async function syncAction(opts: {
     logNewline();
     logInfo(`Pulling in new changes...`);
     logTip(`Disable this behavior at any point in the future with --no-pull`);
-    gpExecSync({ command: `git pull` }, (err) => {
+    gpExecSync({ command: `git pull --prune` }, (err) => {
       checkoutBranch(oldBranch.name);
       throw new ExitFailedError(`Failed to pull trunk ${trunk}`, err);
     });
