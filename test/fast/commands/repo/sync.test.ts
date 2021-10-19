@@ -27,8 +27,8 @@ for (const scene of allScenes) {
       // Querying this endpoint requires a repo owner and name so we set
       // that here too. Note that these values are meaningless (for now)
       // and just need to exist.
-      scene.repo.execCliCommand(`repo owner -s "sweazle"`);
-      scene.repo.execCliCommand(`repo name -s "test-repo"`);
+      scene.repo.execCliCommand(`repo owner -s "integration_test"`);
+      scene.repo.execCliCommand(`repo name -s "integration-test-repo"`);
     });
 
     afterEach(() => {
