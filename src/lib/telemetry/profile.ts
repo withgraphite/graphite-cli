@@ -1,6 +1,7 @@
 // Why does an open source CLI include telemetry?
 // We the creators want to understand how people are using the tool
 // All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
+import chalk from "chalk";
 import yargs from "yargs";
 import { postTelemetryInBackground, registerSigintHandler } from ".";
 import { version } from "../../../package.json";
@@ -25,6 +26,7 @@ import {
   parseArgs,
   VALIDATION_HELPER_MESSAGE,
 } from "../utils";
+import { printGraphiteMergeConflictStatus } from "../utils/merge_conflict_help";
 import { getUserEmail } from "./context";
 import tracer from "./tracer";
 
@@ -72,7 +74,21 @@ export async function profile(
               logInfo(err.message);
               throw err;
             case RebaseConflictError:
-              logWarn(`Rebase conflict: ${err.message}`);
+              logNewline();
+              logError(`Rebase conflict. ${err.message}`);
+              logNewline();
+              printGraphiteMergeConflictStatus();
+              logNewline();
+              logInfo(
+                [
+                  `To fix and continue your previous Graphite command:`,
+                  `(1) resolve the listed merge conflicts`,
+                  `(2) mark them as resolved with "git add"`,
+                  `(3) run "gt continue" to continue executing your previous Graphite command`,
+                ]
+                  .map((line) => chalk.yellow(line))
+                  .join("\n")
+              );
               return;
             case ValidationFailedError:
               logError(`Validation: ${err.message}`);
