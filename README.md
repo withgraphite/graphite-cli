@@ -4,6 +4,9 @@ Graphite is an [open source CLI](https://github.com/screenplaydev/graphite-cli/)
 
 Graphite is designed to be used at work - unfortunately we don't yet support submitting PRs to open-source repos as an external contributor (i.e. without write access) due to limitations of GitHub.
 
+## Graphite beta
+Graphite is currently in closed beta, and you’ll need a Graphite account to submit pull requests with the CLI.  You can sign up for the waitlist for early access - we'll let you skip the line if someone on your team already uses Graphite!
+
 ## User guide
 
 <https://docs.graphite.dev/>
