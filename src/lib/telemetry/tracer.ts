@@ -117,7 +117,7 @@ class Tracer {
     let result;
     try {
       result = handler();
-    } catch (err) {
+    } catch (err: any) {
       span.end(err);
       throw err;
     }
@@ -139,7 +139,7 @@ class Tracer {
     let result;
     try {
       result = await handler();
-    } catch (err) {
+    } catch (err: any) {
       span.end(err);
       throw err;
     }

@@ -73,7 +73,7 @@ export async function showSurvey(survey: SurveyT): Promise<void> {
       responses: responses,
       completionMessage: survey?.completionMessage,
     });
-  } catch (err) {
+  } catch (err: any) {
     switch (err.constructor) {
       case ExitedSurveyError:
         responses.exitedEarly = true;
