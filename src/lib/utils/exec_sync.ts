@@ -13,7 +13,7 @@ export function gpExecSync(
     command: string;
     options?: ExecSyncOptions & GPExecSyncOptions;
   },
-  onError?: (e: Error) => void
+  onError?: (e: any) => void
 ): Buffer {
   try {
     // Only measure if we're with an existing span.

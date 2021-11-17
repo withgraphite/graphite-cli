@@ -368,7 +368,7 @@ async function submitPRsForBranches(args: {
         response._response.status
       }).\n\nResponse: ${JSON.stringify(response)}`
     );
-  } catch (error) {
+  } catch (error: any) {
     throw new ExitFailedError(`Failed to submit PRs`, error);
   }
 }

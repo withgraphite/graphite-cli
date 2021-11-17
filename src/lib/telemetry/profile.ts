@@ -65,7 +65,7 @@ export async function profile(
       async () => {
         try {
           await handler();
-        } catch (err) {
+        } catch (err: any) {
           switch (err.constructor) {
             case ExitFailedError:
               logError(err.message);
@@ -115,7 +115,7 @@ export async function profile(
         }
       }
     );
-  } catch (err) {
+  } catch (err: any) {
     const end = Date.now();
     if (execStateConfig.outputDebugLogs()) {
       logInfo(err);
