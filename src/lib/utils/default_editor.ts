@@ -13,13 +13,13 @@ If those are unavailable, we want to prompt user to set them. If user doesn't wa
 export async function getDefaultEditorOrPrompt(): Promise<string>{
   let editor = userConfig.getEditor();
   if (!editor) {
-    await setDefaultEditorPrompt();
+    await setDefaultEditorOrPrompt();
     editor = userConfig.getEditor();
   }
   return editor || 'nano';
 }
 
-export async function setDefaultEditorPrompt(): Promise<void> {
+async function setDefaultEditorOrPrompt(): Promise<void> {
   if (!userConfig.getEditor()) {
     // Check if any env variable is set.
     const systemEditor = gpExecSync({ command: `echo \${GIT_EDITOR:-$EDITOR}` })

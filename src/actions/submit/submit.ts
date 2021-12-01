@@ -31,7 +31,6 @@ import { validate } from "./../validate";
 import { getPRBody } from "./pr_body";
 import { getPRDraftStatus } from "./pr_draft";
 import { getPRTitle } from "./pr_title";
-import { setDefaultEditorPrompt } from "../../lib/utils/default_editor";
 
 type TSubmitScope = TScope | "BRANCH";
 
@@ -87,9 +86,6 @@ export async function submitAction(args: {
   // Force a sync to link any PRs that have remote equivalents, but weren't
   // previously tracked with Graphite.
   await syncPRInfoForBranches(branchesToSubmit);
-
-  // Check to see if default editor is set, if not ask to set it
-  await setDefaultEditorPrompt();
 
   logInfo(
     chalk.blueBright(
