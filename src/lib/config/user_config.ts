@@ -2,6 +2,7 @@ import chalk from "chalk";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
+import {logInfo} from "../utils";
 
 const DEPRECATED_CONFIG_NAME = ".graphite_repo_config";
 const CONFIG_NAME = ".graphite_user_config";
@@ -52,7 +53,8 @@ class UserConfig {
   }
 
   public tipsEnabled(): boolean {
-    return <boolean>this._data.tips;
+    logInfo(`Value is ${this._data.tips}`);
+    return this._data.tips ?? true;
   }
 
   public toggleTips(enabled: boolean): void {

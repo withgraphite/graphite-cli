@@ -21,6 +21,7 @@ for (const scene of [new BasicScene()]) {
             expect(() =>
                 scene.repo.execCliCommand(`user tips --enable`)
             ).to.not.throw(Error);
+            expect(userConfig.tipsEnabled()).to.equal(true);
             expect(scene.repo.execCliCommandAndGetOutput(`user tips`)).to.equal('tips enabled');
         });
 
@@ -28,6 +29,7 @@ for (const scene of [new BasicScene()]) {
             expect(() =>
                 scene.repo.execCliCommand(`user tips --disable`)
             ).to.not.throw(Error);
+            expect(userConfig.tipsEnabled()).to.equal(false);
             expect(scene.repo.execCliCommandAndGetOutput(`user tips`)).to.equal('tips disabled');
         });
 
