@@ -58,10 +58,14 @@ export async function setDefaultEditorPrompt(): Promise<void> {
       if (yesOrNo.editorPrompt === "yes") {
         const response = await prompts(
           {
-            type: "text",
+            type: "select",
             name: "editor",
             message: "Enter your choice of editor (eg: vim, nano, emacs etc)", // Should this be a selection?
-            initial: "nano",
+            choices: [
+              { title: `vim`, value: "vim" },
+              { title: `emacs`, value: "emacs" },
+              { title: `nano`, value: "nano" },
+            ],
           },
           {
             onCancel: () => {
