@@ -10,7 +10,7 @@ If the editor is not set, we attempt to infer it from environment variables $GIT
 If those are unavailable, we want to prompt user to set them. If user doesn't want to set them, we default to nano.
  */
 
-export async function getDefaultEditorOrPrompt(): Promise<string> {
+export async function getDefaultEditorOrPrompt(): Promise<string>{
   let editor = userConfig.getEditor();
   if (!editor) {
     await setDefaultEditorPrompt();

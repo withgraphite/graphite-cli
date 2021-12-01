@@ -4,7 +4,7 @@ import prompts from "prompts";
 import tmp from "tmp";
 import { KilledError } from "../../lib/errors";
 import { getSingleCommitOnBranch } from "../../lib/utils";
-import { getDefaultEditor } from "../../lib/utils/default_editor";
+import { getDefaultEditorOrPrompt } from "../../lib/utils/default_editor";
 import { getPRTemplate } from "../../lib/utils/pr_templates";
 import Branch from "../../wrapper-classes/branch";
 
@@ -18,7 +18,7 @@ export async function getPRBody(args: {
     inferredBodyFromCommit !== null ? inferredBodyFromCommit : template;
   const hasPRTemplate = body !== undefined;
   if (args.editPRFieldsInline) {
-    const defaultEditor = getDefaultEditor();
+    const defaultEditor = await getDefaultEditorOrPrompt();
     const response = await prompts(
       {
         type: "select",
