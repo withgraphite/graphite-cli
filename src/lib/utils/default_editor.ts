@@ -5,12 +5,15 @@ import prompts from "prompts";
 import { KilledError } from "../errors";
 import { userConfig } from "../../lib/config";
 
-// Find one entry point and set user config editor to the value of GIT_EDITOR or EDITOR if either is set. If neither is set,
-// prompt the user to set it. If they choose to not set it then set it to nano.
+/*
+If the editor is not set, we attempt to infer it from environment variables $GIT_EDITOR or $EDITOR.
+If those are unavailable, we want to prompt user to set them. If user doesn't want to set them, we default to nano.
+ */
+
 export function getDefaultEditor(): string {
   let editor = userConfig.getEditor();
   if (!editor) {
-    editor = "nano"; //This should prompt instead
+    editor = "nano"; //Should this prompt instead?
   }
   return editor;
 }
@@ -73,5 +76,6 @@ export async function setDefaultEditorPrompt(): Promise<void> {
     }
 
     userConfig.setEditor(editorPref);
+    logInfo(`Editor preference set to ${editorPref}.`);
   }
 }
