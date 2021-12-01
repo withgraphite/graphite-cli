@@ -23,6 +23,7 @@ type UserConfigT = {
   branchPrefix?: string;
   authToken?: string;
   tips?: boolean;
+  editor?: string;
 };
 
 class UserConfig {
@@ -56,6 +57,15 @@ class UserConfig {
 
   public toggleTips(enabled: boolean): void {
     this._data.tips = enabled;
+    this.save();
+  }
+
+  public getEditor(): string | undefined {
+    return this._data.editor;
+  }
+
+  public setEditor(editor: string): void {
+    this._data.editor = editor;
     this.save();
   }
 
