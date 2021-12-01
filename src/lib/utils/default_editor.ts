@@ -11,12 +11,8 @@ If those are unavailable, we want to prompt user to set them. If user doesn't wa
  */
 
 export async function getDefaultEditorOrPrompt(): Promise<string>{
-  let editor = userConfig.getEditor();
-  if (!editor) {
     await setDefaultEditorOrPrompt();
-    editor = userConfig.getEditor();
-  }
-  return editor || 'nano';
+    return userConfig.getEditor() || 'nano';
 }
 
 async function setDefaultEditorOrPrompt(): Promise<void> {
@@ -81,6 +77,6 @@ async function setDefaultEditorOrPrompt(): Promise<void> {
     }
 
     userConfig.setEditor(editorPref);
-    logInfo(`Editor preference set to ${editorPref}.`);
+    logInfo(`Graphite editor preference set to ${editorPref}.`);
   }
 }
