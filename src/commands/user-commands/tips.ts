@@ -26,7 +26,6 @@ export const canonical = "user tips";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
-    logInfo(`argv.enabled=${argv.enable} and argv.disabled=${argv.disable}`);
     if (argv.enable) {
       userConfig.toggleTips(true);
       logInfo(`tips enabled`);
