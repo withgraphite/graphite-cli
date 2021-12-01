@@ -1,0 +1,39 @@
+import yargs from "yargs";
+import { userConfig } from "../../lib/config";
+import { profile } from "../../lib/telemetry";
+import { logInfo } from "../../lib/utils";
+
+const args = {
+    set: {
+        demandOption: false,
+        default: 'nano',
+        type: "string",
+        describe: "Set default editor for Graphite",
+    },
+    unset: {
+        demandOption: false,
+        default: true,
+        type: "boolean",
+        describe: "Unset default editor for Graphite",
+    },
+} as const;
+
+type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
+
+export const command = "editor";
+export const description = "Editor used when using Graphite";
+export const canonical = "user editor";
+export const builder = args;
+export const handler = async (argv: argsT): Promise<void> => {
+    return profile(argv, canonical, async () => {
+        if (argv.set) {
+            userConfig.setEditor(argv.set);
+            logInfo(`Editor preference set to: ${argv.set}`);
+        } else if (argv.unset) {
+            userConfig.setEditor('nano')
+            logInfo(`Editor preference erased. Defaulting to Graphite default: nano`);
+        } else {
+            logInfo(`Current editor preference is set to : ${userConfig.getEditor()}`)
+        }
+    });
+};
