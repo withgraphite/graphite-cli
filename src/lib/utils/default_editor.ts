@@ -10,12 +10,13 @@ If the editor is not set, we attempt to infer it from environment variables $GIT
 If those are unavailable, we want to prompt user to set them. If user doesn't want to set them, we default to nano.
  */
 
-export function getDefaultEditor(): string {
+export async function getDefaultEditorOrPrompt(): Promise<string> {
   let editor = userConfig.getEditor();
   if (!editor) {
-    editor = "nano"; //Should this prompt instead?
+    await setDefaultEditorPrompt();
+    editor = userConfig.getEditor();
   }
-  return editor;
+  return editor || 'nano';
 }
 
 export async function setDefaultEditorPrompt(): Promise<void> {
@@ -43,7 +44,7 @@ export async function setDefaultEditorPrompt(): Promise<void> {
           choices: [
             { title: `Yes`, value: "yes" },
             {
-              title: `Skip (just use nano as my default editor)`,
+              title: `Skip and use Graphite default (nano)`,
               value: "no", // Should find a way to remember this selection so we are not repeatedly prompting
             },
           ],
@@ -60,7 +61,7 @@ export async function setDefaultEditorPrompt(): Promise<void> {
           {
             type: "select",
             name: "editor",
-            message: "Enter your choice of editor (eg: vim, nano, emacs etc)", // Should this be a selection?
+            message: "Select an editor:", // Should this be a selection?
             choices: [
               { title: `vim`, value: "vim" },
               { title: `emacs`, value: "emacs" },
