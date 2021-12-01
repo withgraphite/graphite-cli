@@ -1,5 +1,5 @@
 import { gpExecSync } from "./exec_sync";
-import { logInfo } from "./splog";
+import {logInfo, logTip} from "./splog";
 import chalk from "chalk";
 import prompts from "prompts";
 import { KilledError } from "../errors";
@@ -25,6 +25,9 @@ async function setDefaultEditorOrPrompt(): Promise<void> {
     let editorPref;
     if (systemEditor.length) {
       editorPref = systemEditor;
+      logTip(`Graphite will now use ${editorPref} as the default editor setting. 
+      We infer it from your environment variables ($GIT_EDITOR || $EDITOR). 
+      If you wish to change it, use \`gt user editor\` to change this in the future`);
     } else {
       logInfo(
         chalk.yellow(
@@ -77,6 +80,6 @@ async function setDefaultEditorOrPrompt(): Promise<void> {
     }
 
     userConfig.setEditor(editorPref);
-    logInfo(`Graphite editor preference set to ${editorPref}.`);
+    logInfo( chalk.yellow(`Graphite editor preference set to ${editorPref}.`));
   }
 }
