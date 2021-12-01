@@ -6,13 +6,13 @@ import { logInfo } from "../../lib/utils";
 const args = {
     set: {
         demandOption: false,
-        default: 'nano',
+        default: '',
         type: "string",
         describe: "Set default editor for Graphite",
     },
     unset: {
         demandOption: false,
-        default: true,
+        default: false,
         type: "boolean",
         describe: "Unset default editor for Graphite",
     },
