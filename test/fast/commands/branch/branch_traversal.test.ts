@@ -72,5 +72,25 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch bottom --no-interactive`);
       expect(scene.repo.currentBranchName()).to.equal("a");
     });
+
+    it("branch down moves to prev", () => {
+      scene.repo.createChange("a", "a");
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.createChange("b", "b");
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+
+      scene.repo.execCliCommand(`branch down --no-interactive`);
+      expect(scene.repo.currentBranchName()).to.equal("a");
+    });
+
+    it("branch up moves to next", () => {
+      scene.repo.createChange("a", "a");
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.checkoutBranch("main");
+
+      scene.repo.execCliCommand(`branch up --no-interactive`);
+      expect(scene.repo.currentBranchName()).to.equal("a");
+    });
+
   });
 }
