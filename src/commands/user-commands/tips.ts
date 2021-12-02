@@ -6,13 +6,13 @@ import { logInfo } from "../../lib/utils";
 const args = {
   enable: {
     demandOption: false,
-    default: true,
+    default: false,
     type: "boolean",
     describe: "Enable tips.",
   },
   disable: {
     demandOption: false,
-    default: true,
+    default: false,
     type: "boolean",
     describe: "Disable tips.",
   },

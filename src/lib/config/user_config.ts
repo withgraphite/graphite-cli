@@ -52,7 +52,7 @@ class UserConfig {
   }
 
   public tipsEnabled(): boolean {
-    return this._data.tips || true;
+    return this._data.tips ?? true;
   }
 
   public toggleTips(enabled: boolean): void {
