@@ -20,7 +20,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = "next [steps]";
 export const canonical = "branch next";
-export const aliases = ["n"];
+export const aliases = ["n", "up"];
 export const description =
   "If you're in a stack, i.e. Branch A → Branch B (you are here) → Branch C, checkout the branch directly upstack (Branch C). If there are multiple child branches above in the stack, `gt next` will prompt you to choose which branch to checkout.  Pass the `steps` arg to checkout the branch `[steps]` levels above in the stack.";
 export const builder = args;
