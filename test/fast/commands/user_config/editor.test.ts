@@ -2,9 +2,10 @@ import { expect } from "chai";
 import { userConfig } from "../../../../src/lib/config";
 import { BasicScene } from "../../../lib/scenes";
 import { configureTest } from "../../../lib/utils";
+import { logInfo } from "../../../../src/lib/utils";
 
 for (const scene of [new BasicScene()]) {
-    describe(`(${scene}): auth`, function () {
+    describe(`(${scene}): user editor`, function () {
         configureTest(this, scene);
 
         /**
@@ -15,6 +16,7 @@ for (const scene of [new BasicScene()]) {
         let editorPref: string | undefined;
         before(function () {
             editorPref = userConfig.getEditor();
+            logInfo(`Existing user pref: ${editorPref}`);
         });
 
         it("Sanity check - can check editor", () => {
@@ -28,18 +30,14 @@ for (const scene of [new BasicScene()]) {
         });
 
         it("Sanity check - can set editor", () => {
-            expect(() =>
-                scene.repo.execCliCommand(`user editor --set vim`)
-            ).to.not.throw(Error);
+            expect(scene.repo.execCliCommandAndGetOutput(`user editor --set vim`)).to.equal('Editor preference set to: vim')
             expect(scene.repo.execCliCommandAndGetOutput(`user editor`))
                 .to
                 .equal('Current editor preference is set to : vim');
         });
 
         it("Sanity check - can unset editor", () => {
-            expect(() =>
-                scene.repo.execCliCommand(`user editor --unset`)
-            ).to.not.throw(Error);
+            expect(scene.repo.execCliCommandAndGetOutput(`user editor --unset`)).to.equal('Editor preference erased. Defaulting to Graphite default: nano')
             expect(scene.repo.execCliCommandAndGetOutput(`user editor`))
                 .to
                 .equal('Current editor preference is set to : nano');
@@ -48,6 +46,7 @@ for (const scene of [new BasicScene()]) {
         after(function () {
             if (editorPref !== undefined) {
                 userConfig.setEditor(editorPref);
+                logInfo(`Reset user pref: ${editorPref}`);
             }
         });
     });
