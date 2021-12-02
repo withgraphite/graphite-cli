@@ -3,6 +3,7 @@ import { userConfig } from "../../../../src/lib/config";
 import { BasicScene } from "../../../lib/scenes";
 import { configureTest } from "../../../lib/utils";
 import { logInfo } from "../../../../src/lib/utils";
+import { DEFAULT_GRAPHITE_EDITOR } from "../../../../src/commands/user-commands/editor";
 
 for (const scene of [new BasicScene()]) {
     describe(`(${scene}): user editor`, function () {
@@ -37,10 +38,10 @@ for (const scene of [new BasicScene()]) {
         });
 
         it("Sanity check - can unset editor", () => {
-            expect(scene.repo.execCliCommandAndGetOutput(`user editor --unset`)).to.equal('Editor preference erased. Defaulting to Graphite default: nano')
+            expect(scene.repo.execCliCommandAndGetOutput(`user editor --unset`)).to.equal(`Editor preference erased. Defaulting to Graphite default: ${DEFAULT_GRAPHITE_EDITOR}`)
             expect(scene.repo.execCliCommandAndGetOutput(`user editor`))
                 .to
-                .equal('Current editor preference is set to : nano');
+                .equal(`Current editor preference is set to : ${DEFAULT_GRAPHITE_EDITOR}`);
         });
 
         after(function () {

@@ -4,6 +4,7 @@ import chalk from "chalk";
 import prompts from "prompts";
 import { KilledError } from "../errors";
 import { userConfig } from "../../lib/config";
+import { DEFAULT_GRAPHITE_EDITOR } from "../../commands/user-commands/editor";
 
 /*
 If the editor is not set, we attempt to infer it from environment variables $GIT_EDITOR or $EDITOR.
@@ -12,7 +13,7 @@ If those are unavailable, we want to prompt user to set them. If user doesn't wa
 
 export async function getDefaultEditorOrPrompt(): Promise<string>{
     await setDefaultEditorOrPrompt();
-    return userConfig.getEditor() || 'nano';
+    return userConfig.getEditor() || DEFAULT_GRAPHITE_EDITOR;
 }
 
 async function setDefaultEditorOrPrompt(): Promise<void> {
@@ -31,7 +32,7 @@ async function setDefaultEditorOrPrompt(): Promise<void> {
     } else {
       logInfo(
         chalk.yellow(
-          "We did not detect an editor preference in your settings. Do you wish to set it? (Graphite will use `nano` as default.)"
+          `We did not detect an editor preference in your settings. Do you wish to set it? (Graphite will use ${DEFAULT_GRAPHITE_EDITOR} as default.)`
         )
       );
 
@@ -43,7 +44,7 @@ async function setDefaultEditorOrPrompt(): Promise<void> {
           choices: [
             { title: `Yes`, value: "yes" },
             {
-              title: `Skip and use Graphite default (nano)`,
+              title: `Skip and use Graphite default (${DEFAULT_GRAPHITE_EDITOR})`,
               value: "no", // Should find a way to remember this selection so we are not repeatedly prompting
             },
           ],
@@ -75,7 +76,7 @@ async function setDefaultEditorOrPrompt(): Promise<void> {
         );
         editorPref = response.editor;
       } else {
-        editorPref = "nano";
+        editorPref = DEFAULT_GRAPHITE_EDITOR;
       }
     }
 

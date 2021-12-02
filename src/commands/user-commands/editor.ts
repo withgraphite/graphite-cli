@@ -19,7 +19,7 @@ const args = {
 } as const;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
-
+export const DEFAULT_GRAPHITE_EDITOR = 'nano';
 export const command = "editor";
 export const description = "Editor used when using Graphite";
 export const canonical = "user editor";
@@ -30,8 +30,8 @@ export const handler = async (argv: argsT): Promise<void> => {
             userConfig.setEditor(argv.set);
             logInfo(`Editor preference set to: ${argv.set}`);
         } else if (argv.unset) {
-            userConfig.setEditor('nano')
-            logInfo(`Editor preference erased. Defaulting to Graphite default: nano`);
+            userConfig.setEditor(DEFAULT_GRAPHITE_EDITOR);
+            logInfo(`Editor preference erased. Defaulting to Graphite default: ${DEFAULT_GRAPHITE_EDITOR}`);
         } else {
             logInfo(`Current editor preference is set to : ${userConfig.getEditor()}`)
         }
