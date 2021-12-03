@@ -1,3 +1,9 @@
+# 0.16.3 2021-12-3
+- Support up and down aliases for `gt branch` next/prev respectively.
+- Fix issue where `gt tips` could not be disabled.
+- Inherit shell editor preference for user from env ($GIT_EDITOR/$EDITOR) and prompt user to set shell editor preference on submit if env not set.
+- Allow user to change editor preference using `gt user editor`
+
 # 0.16.2 2021-10-25
 - Support for `gt continue` to continue the previous Graphite command when interrupted by a rebase.
 
