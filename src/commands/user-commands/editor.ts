@@ -8,13 +8,13 @@ const args = {
     demandOption: false,
     default: '',
     type: 'string',
-    describe: 'Set default editor for Graphite',
+    describe: 'Set default editor for Graphite. eg --set vim',
   },
   unset: {
     demandOption: false,
     default: false,
     type: 'boolean',
-    describe: 'Unset default editor for Graphite',
+    describe: 'Unset default editor for Graphite. eg --unset',
   },
 } as const;
 
@@ -35,6 +35,9 @@ export const handler = async (argv: argsT): Promise<void> => {
         `Editor preference erased. Defaulting to Graphite default: ${DEFAULT_GRAPHITE_EDITOR}`
       );
     } else {
+      if (!userConfig.getEditor()) {
+        userConfig.setEditor(DEFAULT_GRAPHITE_EDITOR);
+      }
       logInfo(
         `Current editor preference is set to : ${userConfig.getEditor()}`
       );
