@@ -2,6 +2,7 @@ import yargs from 'yargs';
 import { userConfig } from '../../lib/config';
 import { profile } from '../../lib/telemetry';
 import { logInfo } from '../../lib/utils';
+import { setDefaultEditor } from '../../lib/utils/default_editor';
 
 const args = {
   set: {
@@ -36,7 +37,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       );
     } else {
       if (!userConfig.getEditor()) {
-        userConfig.setEditor(DEFAULT_GRAPHITE_EDITOR);
+        setDefaultEditor();
       }
       logInfo(
         `Current editor preference is set to : ${userConfig.getEditor()}`

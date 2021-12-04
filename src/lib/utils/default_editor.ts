@@ -16,6 +16,14 @@ export async function getDefaultEditorOrPrompt(): Promise<string> {
   return userConfig.getEditor() || DEFAULT_GRAPHITE_EDITOR;
 }
 
+export function setDefaultEditor(): void {
+  const editor =
+    gpExecSync({ command: `echo \${GIT_EDITOR:-$EDITOR}` }).toString().trim() ||
+    DEFAULT_GRAPHITE_EDITOR;
+
+  userConfig.setEditor(editor);
+}
+
 async function setDefaultEditorOrPrompt(): Promise<void> {
   if (!userConfig.getEditor()) {
     // Check if any env variable is set.
