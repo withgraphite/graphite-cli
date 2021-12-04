@@ -26,7 +26,6 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = '* <message>';
 export const canonical = 'feedback';
-export const showHelpOnFail = true;
 export const description =
   "Post a string directly to the maintainers' Slack where they can factor in your feedback, laugh at your jokes, cry at your insults, or test the bounds of Slack injection attacks.";
 export const builder = args;
