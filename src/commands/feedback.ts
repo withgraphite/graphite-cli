@@ -8,5 +8,6 @@ export const builder = function (yargs: yargs.Argv): yargs.Argv {
       extensions: ['js'],
     })
     .strict()
+    .showHelpOnFail(false)
     .demandCommand();
 };
