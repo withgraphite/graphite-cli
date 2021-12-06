@@ -33,27 +33,28 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
     const user = getUserEmail();
-    if (argv.message) {
-      const response = await request.requestWithArgs(
-        API_SERVER,
-        graphiteCLIRoutes.feedback,
-        {
-          user: user || 'NotFound',
-          message: argv.message,
-          debugContext: argv.debugContext ? captureState() : undefined,
-        }
-      );
-      if (response._response.status == 200) {
-        console.log(
-          chalk.green(
-            `Feedback received loud and clear (in a team Slack channel) :)`
-          )
-        );
-      } else {
-        throw new ExitFailedError(
-          `Failed to report feedback, network response ${response.status}`
-        );
+    if (!argv.message) {
+      return;
+    }
+    const response = await request.requestWithArgs(
+      API_SERVER,
+      graphiteCLIRoutes.feedback,
+      {
+        user: user || 'NotFound',
+        message: argv.message,
+        debugContext: argv.debugContext ? captureState() : undefined,
       }
+    );
+    if (response._response.status == 200) {
+      console.log(
+        chalk.green(
+          `Feedback received loud and clear (in a team Slack channel) :)`
+        )
+      );
+    } else {
+      throw new ExitFailedError(
+        `Failed to report feedback, network response ${response.status}`
+      );
     }
   });
 };
