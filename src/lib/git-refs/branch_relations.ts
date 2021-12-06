@@ -189,6 +189,7 @@ function branchListFromShowRefOutput(output: string): Record<string, string[]> {
       const parts = line.split(' ');
       const branchName = parts[1].slice('refs/heads/'.length);
       const branchRef = parts[0];
+      //TODO: Replace this with IsIgnoredBranch
       if (!ignorebranches.includes(branchName)) {
         if (branchRef in ret) {
           ret[branchRef].push(branchName);

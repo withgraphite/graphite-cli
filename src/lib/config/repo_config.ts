@@ -81,11 +81,13 @@ class RepoConfig {
     this.setIgnoreBranches(ignoreBranchesToAdd.concat(currentIgnoredBranches));
   }
 
+  // TODO: This should append to the list instead of rewriting the whole blob. Should accept an array
   public setIgnoreBranches(ignoreBranches: string[]): void {
     this._data.ignoreBranches = ignoreBranches;
     this.save();
   }
 
+  // TODO: Should this be a public function?
   public getIgnoreBranches(): string[] {
     return this._data.ignoreBranches || [];
   }
@@ -136,6 +138,7 @@ class RepoConfig {
     this.save();
   }
 
+  // TODO: This could do wildcard matching.
   public branchIsIgnored(branchName: string): boolean {
     return this.getIgnoreBranches().includes(branchName);
   }

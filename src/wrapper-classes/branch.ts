@@ -298,6 +298,7 @@ export default class Branch {
       .split('\n')
       .filter(
         (name) =>
+          //TODO: Replace this with IsIgnoredBranch
           !repoConfig.getIgnoreBranches().includes(name) && name.length > 0
       )
       .map((name) => new Branch(name));

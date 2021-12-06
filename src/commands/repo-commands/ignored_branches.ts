@@ -27,11 +27,13 @@ export const handler = async (argv: argsT): Promise<void> => {
       if (!Branch.exists(argv.add)) {
         throw new PreconditionsFailedError(`Branch (${argv.add}) not found`);
       }
+      // TODO: Refactor setIgnoreBranches to do this implicitly
       repoConfig.setIgnoreBranches(
         repoConfig.getIgnoreBranches().concat([argv.add])
       );
       logInfo(`Added (${argv.add}) to be ignored`);
     } else {
+      // TODO: Why are we printing all the ignored branches?
       logInfo(repoConfig.getIgnoreBranches().join('\n'));
     }
   });
