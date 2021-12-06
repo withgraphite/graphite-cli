@@ -1,23 +1,23 @@
-import { execSync } from "child_process";
-import fs from "fs-extra";
-import path from "path";
-import Branch from "../../wrapper-classes/branch";
-import { repoConfig } from "../config";
-import { ConfigError, ExitFailedError, SiblingBranchError } from "../errors";
+import { execSync } from 'child_process';
+import fs from 'fs-extra';
+import path from 'path';
+import Branch from '../../wrapper-classes/branch';
+import { repoConfig } from '../config';
+import { ConfigError, ExitFailedError, SiblingBranchError } from '../errors';
 
 function findRemoteOriginBranch(): Branch | undefined {
   let config;
   try {
     const gitDir = execSync(`git rev-parse --git-dir`).toString().trim();
-    config = fs.readFileSync(path.join(gitDir, "config")).toString();
+    config = fs.readFileSync(path.join(gitDir, 'config')).toString();
   } catch {
     throw new Error(`Failed to read .git config when determining trunk branch`);
   }
   const originBranchSections = config
-    .split("[")
+    .split('[')
     .filter(
       (section) =>
-        section.includes('branch "') && section.includes("remote = origin")
+        section.includes('branch "') && section.includes('remote = origin')
     );
   if (originBranchSections.length !== 1) {
     return undefined;
@@ -35,7 +35,7 @@ function findRemoteOriginBranch(): Branch | undefined {
 
 function findCommonlyNamedTrunk(): Branch | undefined {
   const potentialTrunks = Branch.allBranches().filter((b) =>
-    ["main", "master", "development", "develop"].includes(b.name)
+    ['main', 'master', 'development', 'develop'].includes(b.name)
   );
   if (potentialTrunks.length === 1) {
     return potentialTrunks[0];

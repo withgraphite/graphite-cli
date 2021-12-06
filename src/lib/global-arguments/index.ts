@@ -1,16 +1,16 @@
-import yargs from "yargs";
-import { execStateConfig } from "../config";
+import yargs from 'yargs';
+import { execStateConfig } from '../config';
 
 const globalArgumentsOptions = {
   interactive: {
-    alias: "i",
+    alias: 'i',
     default: true,
-    type: "boolean",
+    type: 'boolean',
     demandOption: false,
   },
-  quiet: { alias: "q", default: false, type: "boolean", demandOption: false },
-  verify: { default: true, type: "boolean", demandOption: false },
-  debug: { default: false, type: "boolean", demandOption: false },
+  quiet: { alias: 'q', default: false, type: 'boolean', demandOption: false },
+  verify: { default: true, type: 'boolean', demandOption: false },
+  debug: { default: false, type: 'boolean', demandOption: false },
 } as const;
 
 type argsT = yargs.Arguments<

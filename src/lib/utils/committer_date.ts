@@ -1,17 +1,17 @@
-import { ExitFailedError } from "../errors";
-import { gpExecSync } from "../utils";
+import { ExitFailedError } from '../errors';
+import { gpExecSync } from '../utils';
 
 export function getCommitterDate(args: {
   revision: string;
-  timeFormat: "UNIX_TIMESTAMP" | "RELATIVE_READABLE";
+  timeFormat: 'UNIX_TIMESTAMP' | 'RELATIVE_READABLE';
 }): string {
   let logFormat;
   switch (args.timeFormat) {
-    case "UNIX_TIMESTAMP":
-      logFormat = "%ct";
+    case 'UNIX_TIMESTAMP':
+      logFormat = '%ct';
       break;
-    case "RELATIVE_READABLE":
-      logFormat = "%cr";
+    case 'RELATIVE_READABLE':
+      logFormat = '%cr';
       break;
     default:
       assertUnreachable(args.timeFormat);

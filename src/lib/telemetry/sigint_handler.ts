@@ -1,12 +1,12 @@
-import { postTelemetryInBackground, tracer } from ".";
-import { KilledError } from "../errors";
+import { postTelemetryInBackground, tracer } from '.';
+import { KilledError } from '../errors';
 
 export function registerSigintHandler(opts: {
   commandName: string;
   canonicalCommandName: string;
   startTime: number;
 }): void {
-  process.on("SIGINT", () => {
+  process.on('SIGINT', () => {
     console.log(`Gracefully terminating...`);
     const err = new KilledError();
     // End all current traces abruptly.
@@ -18,7 +18,7 @@ export function registerSigintHandler(opts: {
       err: {
         errName: err.name,
         errMessage: err.message,
-        errStack: err.stack || "",
+        errStack: err.stack || '',
       },
     });
     // eslint-disable-next-line no-restricted-syntax

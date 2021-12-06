@@ -1,11 +1,11 @@
-import { execStateConfig, userConfig } from "../lib/config";
-import { ExitFailedError } from "../lib/errors";
+import { execStateConfig, userConfig } from '../lib/config';
+import { ExitFailedError } from '../lib/errors';
 import {
   currentBranchPrecondition,
   ensureSomeStagedChangesPrecondition,
-} from "../lib/preconditions";
-import { checkoutBranch, gpExecSync, logTip } from "../lib/utils";
-import Branch from "../wrapper-classes/branch";
+} from '../lib/preconditions';
+import { checkoutBranch, gpExecSync, logTip } from '../lib/utils';
+import Branch from '../wrapper-classes/branch';
 
 export async function createBranchAction(opts: {
   branchName?: string;
@@ -17,11 +17,11 @@ export async function createBranchAction(opts: {
   if (opts.addAll) {
     gpExecSync(
       {
-        command: "git add --all",
+        command: 'git add --all',
       },
       () => {
         throw new ExitFailedError(
-          "Could not add all staged changes. Aborting..."
+          'Could not add all staged changes. Aborting...'
         );
       }
     );
@@ -44,10 +44,10 @@ export async function createBranchAction(opts: {
     gpExecSync(
       {
         command: `git commit -m "${opts.commitMessage}" ${
-          execStateConfig.noVerify() ? "--no-verify" : ""
+          execStateConfig.noVerify() ? '--no-verify' : ''
         }`,
         options: {
-          stdio: "inherit",
+          stdio: 'inherit',
         },
       },
       (err) => {
@@ -55,9 +55,9 @@ export async function createBranchAction(opts: {
         checkoutBranch(parentBranch.name);
         gpExecSync({
           command: `git branch -d ${branchName}`,
-          options: { stdio: "ignore" },
+          options: { stdio: 'ignore' },
         });
-        throw new ExitFailedError("Failed to commit changes, aborting", err);
+        throw new ExitFailedError('Failed to commit changes, aborting', err);
       }
     );
   } else {
@@ -70,7 +70,7 @@ export async function createBranchAction(opts: {
         `and then simultaneously creating a new branch and committing to it by running either`,
         `> gt branch create <name> -m <message>`,
         `> gt bc -m <message> # Shortcut alias which autogenerates branch name`,
-      ].join("\n")
+      ].join('\n')
     );
   }
 
@@ -93,25 +93,25 @@ function newBranchName(branchName?: string, commitMessage?: string): string {
   const MAX_BRANCH_NAME_LENGTH = 40;
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   let branchMessage = commitMessage!
-    .split("")
+    .split('')
     .map((c) => {
       if (ALLOWED_BRANCH_CHARACTERS.includes(c)) {
         return c;
       }
-      return "_"; // Replace all disallowed characters with _
+      return '_'; // Replace all disallowed characters with _
     })
-    .join("")
-    .replace(/_+/g, "_");
+    .join('')
+    .replace(/_+/g, '_');
 
   if (branchMessage.length <= MAX_BRANCH_NAME_LENGTH - 6) {
     // prepend date if there's room.
     branchMessage =
-      `${("0" + (date.getMonth() + 1)).slice(-2)}-${(
-        "0" + date.getDate()
+      `${('0' + (date.getMonth() + 1)).slice(-2)}-${(
+        '0' + date.getDate()
       ).slice(-2)}-` + branchMessage; // Condence underscores
   }
 
-  const newBranchName = `${userConfig.getBranchPrefix() || ""}${branchMessage}`;
+  const newBranchName = `${userConfig.getBranchPrefix() || ''}${branchMessage}`;
   return newBranchName.slice(0, MAX_BRANCH_NAME_LENGTH);
 }
 
@@ -130,58 +130,58 @@ function checkoutNewBranch(branchName: string): void {
 }
 
 const ALLOWED_BRANCH_CHARACTERS = [
-  "_",
-  "-",
-  "a",
-  "b",
-  "c",
-  "d",
-  "e",
-  "f",
-  "g",
-  "h",
-  "i",
-  "j",
-  "k",
-  "l",
-  "m",
-  "n",
-  "o",
-  "p",
-  "q",
-  "r",
-  "s",
-  "t",
-  "u",
-  "v",
-  "w",
-  "x",
-  "y",
-  "z",
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "G",
-  "H",
-  "I",
-  "J",
-  "K",
-  "L",
-  "M",
-  "N",
-  "O",
-  "P",
-  "Q",
-  "R",
-  "S",
-  "T",
-  "U",
-  "V",
-  "W",
-  "X",
-  "Y",
-  "Z",
+  '_',
+  '-',
+  'a',
+  'b',
+  'c',
+  'd',
+  'e',
+  'f',
+  'g',
+  'h',
+  'i',
+  'j',
+  'k',
+  'l',
+  'm',
+  'n',
+  'o',
+  'p',
+  'q',
+  'r',
+  's',
+  't',
+  'u',
+  'v',
+  'w',
+  'x',
+  'y',
+  'z',
+  'A',
+  'B',
+  'C',
+  'D',
+  'E',
+  'F',
+  'G',
+  'H',
+  'I',
+  'J',
+  'K',
+  'L',
+  'M',
+  'N',
+  'O',
+  'P',
+  'Q',
+  'R',
+  'S',
+  'T',
+  'U',
+  'V',
+  'W',
+  'X',
+  'Y',
+  'Z',
 ];

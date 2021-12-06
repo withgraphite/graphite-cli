@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import cp from "child_process";
-import { syncPRInfoForBranches } from "../../lib/sync/pr_info";
-import Branch from "../../wrapper-classes/branch";
-import { repoConfig } from "../config";
+import cp from 'child_process';
+import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
+import Branch from '../../wrapper-classes/branch';
+import { repoConfig } from '../config';
 
 export function refreshPRInfoInBackground(): void {
   if (!repoConfig.graphiteInitialized()) {
@@ -19,9 +19,9 @@ export function refreshPRInfoInBackground(): void {
     // don't incur a possible race condition with the write
     repoConfig.setLastFetchedPRInfoMs(now);
 
-    cp.spawn("/usr/bin/env", ["node", __filename], {
+    cp.spawn('/usr/bin/env', ['node', __filename], {
       detached: true,
-      stdio: "ignore",
+      stdio: 'ignore',
     });
   }
 }

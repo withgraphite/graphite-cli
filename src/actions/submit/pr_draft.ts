@@ -1,5 +1,5 @@
-import prompts from "prompts";
-import { KilledError } from "../../lib/errors";
+import prompts from 'prompts';
+import { KilledError } from '../../lib/errors';
 
 export async function getPRDraftStatus(args: {
   createNewPRsAsDraft: boolean | undefined;
@@ -8,12 +8,12 @@ export async function getPRDraftStatus(args: {
   if (args.createNewPRsAsDraft === undefined) {
     const response = await prompts(
       {
-        type: "select",
-        name: "draft",
-        message: "Submit",
+        type: 'select',
+        name: 'draft',
+        message: 'Submit',
         choices: [
-          { title: "Publish Pull Request", value: "publish" },
-          { title: "Create Draft Pull Request", value: "draft" },
+          { title: 'Publish Pull Request', value: 'publish' },
+          { title: 'Create Draft Pull Request', value: 'draft' },
         ],
       },
       {
@@ -22,7 +22,7 @@ export async function getPRDraftStatus(args: {
         },
       }
     );
-    draft = response.draft === "draft" ? true : false;
+    draft = response.draft === 'draft' ? true : false;
   } else {
     draft = args.createNewPRsAsDraft;
   }

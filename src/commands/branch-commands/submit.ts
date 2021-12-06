@@ -1,20 +1,20 @@
-import { submitAction } from "../../actions/submit";
-import { profile } from "../../lib/telemetry";
-import { logTip } from "../../lib/utils";
-import type { argsT } from "../shared-commands/submit";
+import { submitAction } from '../../actions/submit';
+import { profile } from '../../lib/telemetry';
+import { logTip } from '../../lib/utils';
+import type { argsT } from '../shared-commands/submit';
 
-export { aliases, args, builder, command } from "../shared-commands/submit";
+export { aliases, args, builder, command } from '../shared-commands/submit';
 export const description =
-  "Idempotently force push the current branch to GitHub, creating or updating a pull request.";
-export const canonical = "branch submit";
+  'Idempotently force push the current branch to GitHub, creating or updating a pull request.';
+export const canonical = 'branch submit';
 
 export const handler = async (argv: argsT): Promise<void> => {
   await profile(argv, canonical, async () => {
     await submitAction({
-      scope: "BRANCH",
+      scope: 'BRANCH',
       editPRFieldsInline: argv.edit,
       createNewPRsAsDraft: argv.draft,
-      dryRun: argv["dry-run"],
+      dryRun: argv['dry-run'],
     });
     logTip(
       [
@@ -23,7 +23,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         `* 'gt stack submit'`,
         `* 'gt downstack submit'`,
         `because these will ensure any downstack changes will be synced to existing PRs.`,
-      ].join("\n")
+      ].join('\n')
     );
   });
 };

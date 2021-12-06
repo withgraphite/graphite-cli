@@ -1,8 +1,8 @@
-import { execSync } from "child_process";
-import fs from "fs-extra";
-import { rebaseInProgress, unstagedChanges } from "./";
+import { execSync } from 'child_process';
+import fs from 'fs-extra';
+import { rebaseInProgress, unstagedChanges } from './';
 
-const TEXT_FILE_NAME = "test.txt";
+const TEXT_FILE_NAME = 'test.txt';
 export default class GitRepo {
   dir: string;
   constructor(
@@ -24,7 +24,7 @@ export default class GitRepo {
     execSync(
       `NODE_ENV=development node ${__dirname}/../../../../dist/src/index.js ${command}`,
       {
-        stdio: process.env.DEBUG ? "inherit" : "ignore",
+        stdio: process.env.DEBUG ? 'inherit' : 'ignore',
         cwd: this.dir,
       }
     );
@@ -47,7 +47,7 @@ export default class GitRepo {
 
   createChange(textValue: string, prefix?: string, unstaged?: boolean): void {
     const filePath = `${this.dir}/${
-      prefix ? prefix + "_" : ""
+      prefix ? prefix + '_' : ''
     }${TEXT_FILE_NAME}`;
     fs.writeFileSync(filePath, textValue);
     if (!unstaged) {
@@ -78,11 +78,11 @@ export default class GitRepo {
   }
 
   createAndCheckoutBranch(name: string): void {
-    execSync(`git -C "${this.dir}" checkout -b "${name}"`, { stdio: "ignore" });
+    execSync(`git -C "${this.dir}" checkout -b "${name}"`, { stdio: 'ignore' });
   }
 
   checkoutBranch(name: string): void {
-    execSync(`git -C "${this.dir}" checkout "${name}"`, { stdio: "ignore" });
+    execSync(`git -C "${this.dir}" checkout "${name}"`, { stdio: 'ignore' });
   }
 
   rebaseInProgress(): boolean {
@@ -94,7 +94,7 @@ export default class GitRepo {
   }
 
   markMergeConflictsAsResolved(): void {
-    execSync(`git -C "${this.dir}" add .`, { stdio: "ignore" });
+    execSync(`git -C "${this.dir}" add .`, { stdio: 'ignore' });
   }
 
   finishInteractiveRebase(opts?: { resolveMergeConflicts?: boolean }): void {
@@ -104,7 +104,7 @@ export default class GitRepo {
       }
       this.markMergeConflictsAsResolved();
       execSync(`GIT_EDITOR="touch $1" git -C ${this.dir} rebase --continue`, {
-        stdio: "ignore",
+        stdio: 'ignore',
       });
     }
   }
@@ -119,7 +119,7 @@ export default class GitRepo {
     return execSync(`git -C "${this.dir}" log --oneline  --format=%B`)
       .toString()
       .trim()
-      .split("\n")
+      .split('\n')
       .filter((line) => line.length > 0);
   }
 
@@ -127,7 +127,7 @@ export default class GitRepo {
     execSync(
       `git -C "${this.dir}" checkout ${args.branch}; git merge ${args.mergeIn}`,
       {
-        stdio: "ignore",
+        stdio: 'ignore',
       }
     );
   }

@@ -1,8 +1,8 @@
-import fs from "fs-extra";
-import path from "path";
-import prompts from "prompts";
-import { KilledError } from "../errors";
-import { currentGitRepoPrecondition } from "../preconditions";
+import fs from 'fs-extra';
+import path from 'path';
+import prompts from 'prompts';
+import { KilledError } from '../errors';
+import { currentGitRepoPrecondition } from '../preconditions';
 
 export async function getPRTemplate(): Promise<string | undefined> {
   const templateFiles = getPRTemplateFilepaths();
@@ -16,8 +16,8 @@ export async function getPRTemplate(): Promise<string | undefined> {
   } else {
     const response = await prompts(
       {
-        type: "select",
-        name: "templateFilepath",
+        type: 'select',
+        name: 'templateFilepath',
         message: `Body Template`,
         choices: templateFiles.map((file) => {
           return {
@@ -39,7 +39,7 @@ export async function getPRTemplate(): Promise<string | undefined> {
 
 function getRelativePathFromRepo(path: string): string {
   const repoPath = currentGitRepoPrecondition();
-  return path.replace(repoPath, "");
+  return path.replace(repoPath, '');
 }
 
 /**
@@ -71,8 +71,8 @@ export function getPRTemplateFilepaths(): string[] {
 
   const prTemplateLocations = [
     repoPath,
-    path.join(repoPath, ".github"),
-    path.join(repoPath, "docs"),
+    path.join(repoPath, '.github'),
+    path.join(repoPath, 'docs'),
   ].filter((location) => {
     return fs.existsSync(location);
   });
@@ -123,5 +123,5 @@ function findMultiplePRTemplates(folderPath: string): string[] {
 }
 
 function isPRTemplateFiletype(filename: string): boolean {
-  return filename.endsWith(".txt") || filename.endsWith(".md");
+  return filename.endsWith('.txt') || filename.endsWith('.md');
 }

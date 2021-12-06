@@ -1,5 +1,5 @@
-import Branch from "./branch";
-import StackNode from "./stack_node";
+import Branch from './branch';
+import StackNode from './stack_node';
 
 export default class Stack {
   source: StackNode;
@@ -19,7 +19,7 @@ export default class Stack {
   public toPromptChoices(indent = 0): { title: string; value: string }[] {
     let choices = [
       {
-        title: `${"  ".repeat(indent)}↳ (${this.source.branch.name})`,
+        title: `${'  '.repeat(indent)}↳ (${this.source.branch.name})`,
         value: this.source.branch.name,
       },
     ];
@@ -32,9 +32,9 @@ export default class Stack {
   public toString(): string {
     const indentMultilineString = (lines: string) =>
       lines
-        .split("\n")
-        .map((l) => "  " + l)
-        .join("\n");
+        .split('\n')
+        .map((l) => '  ' + l)
+        .join('\n');
 
     return [`↳ (${this.source.branch.name})`]
       .concat(
@@ -42,7 +42,7 @@ export default class Stack {
           .map((c) => new Stack(c).toString())
           .map(indentMultilineString)
       )
-      .join("\n");
+      .join('\n');
   }
 
   public toDictionary(): Record<string, any> {

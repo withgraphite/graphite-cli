@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { execSync } from 'child_process';
 export function detectStagedChanges(): boolean {
   try {
     execSync(`git diff --cached --exit-code`);

@@ -1,6 +1,6 @@
-import { PreconditionsFailedError } from "../errors";
-import { gpExecSync } from "../utils/exec_sync";
-import cache from "./cache";
+import { PreconditionsFailedError } from '../errors';
+import { gpExecSync } from '../utils/exec_sync';
+import cache from './cache';
 export function getRepoRootPath(): string {
   const cachedRepoRootPath = cache.getRepoRootPath();
   if (cachedRepoRootPath) {
@@ -17,7 +17,7 @@ export function getRepoRootPath(): string {
     .toString()
     .trim();
   if (!repoRootPath || repoRootPath.length === 0) {
-    throw new PreconditionsFailedError("No .git repository found.");
+    throw new PreconditionsFailedError('No .git repository found.');
   }
   cache.setRepoRootPath(repoRootPath);
   return repoRootPath;

@@ -1,23 +1,23 @@
 #!/usr/bin/env node
-import chalk from "chalk";
-import tmp from "tmp";
-import yargs from "yargs";
+import chalk from 'chalk';
+import tmp from 'tmp';
+import yargs from 'yargs';
 import {
   globalArgumentsOptions,
   processGlobalArgumentsMiddleware,
-} from "./lib/global-arguments";
-import { passthrough } from "./lib/passthrough";
-import { refreshPRInfoInBackground } from "./lib/requests";
+} from './lib/global-arguments';
+import { passthrough } from './lib/passthrough';
+import { refreshPRInfoInBackground } from './lib/requests';
 import {
   fetchUpgradePromptInBackground,
   postTelemetryInBackground,
-} from "./lib/telemetry";
-import { postSurveyResponsesInBackground } from "./lib/telemetry/survey/post_survey";
+} from './lib/telemetry';
+import { postSurveyResponsesInBackground } from './lib/telemetry/survey/post_survey';
 import {
   logError,
   preprocessCommand,
   signpostDeprecatedCommands,
-} from "./lib/utils";
+} from './lib/utils';
 
 fetchUpgradePromptInBackground();
 refreshPRInfoInBackground();
@@ -30,15 +30,15 @@ postSurveyResponsesInBackground();
 // https://www.npmjs.com/package/tmp#graceful-cleanup
 tmp.setGracefulCleanup();
 
-process.on("uncaughtException", (err) => {
+process.on('uncaughtException', (err) => {
   postTelemetryInBackground({
-    canonicalCommandName: "unknown",
-    commandName: "unknown",
+    canonicalCommandName: 'unknown',
+    commandName: 'unknown',
     durationMiliSeconds: 0,
     err: {
       errName: err.name,
       errMessage: err.message,
-      errStack: err.stack || "",
+      errStack: err.stack || '',
     },
   });
   logError(err.message);
@@ -47,7 +47,7 @@ process.on("uncaughtException", (err) => {
 });
 
 function deprecatedGpWarning(argv: yargs.Arguments) {
-  if (argv["$0"].endsWith("gp")) {
+  if (argv['$0'].endsWith('gp')) {
     console.log(
       chalk.red(
         `Warning: Based on feedback, we've update the Graphite CLI alias to "gt". The alias "gp" has been deprecated.`
@@ -62,13 +62,13 @@ signpostDeprecatedCommands(process.argv[2]);
 passthrough(process.argv);
 preprocessCommand();
 yargs(process.argv.slice(2))
-  .commandDir("commands")
+  .commandDir('commands')
   .help()
   .middleware(deprecatedGpWarning)
   .usage(
     [
-      "Graphite is a command line tool that makes working with stacked changes fast & intuitive.",
-    ].join("\n")
+      'Graphite is a command line tool that makes working with stacked changes fast & intuitive.',
+    ].join('\n')
   )
   .options(globalArgumentsOptions)
   .middleware(processGlobalArgumentsMiddleware)

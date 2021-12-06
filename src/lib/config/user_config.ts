@@ -1,10 +1,10 @@
-import chalk from "chalk";
-import fs from "fs-extra";
-import os from "os";
-import path from "path";
+import chalk from 'chalk';
+import fs from 'fs-extra';
+import os from 'os';
+import path from 'path';
 
-const DEPRECATED_CONFIG_NAME = ".graphite_repo_config";
-const CONFIG_NAME = ".graphite_user_config";
+const DEPRECATED_CONFIG_NAME = '.graphite_repo_config';
+const CONFIG_NAME = '.graphite_user_config';
 const DEPRECATED_USER_CONFIG_PATH = path.join(
   os.homedir(),
   DEPRECATED_CONFIG_NAME

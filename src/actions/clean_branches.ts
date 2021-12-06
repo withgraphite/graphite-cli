@@ -1,16 +1,16 @@
-import chalk from "chalk";
-import { execSync } from "child_process";
-import prompts from "prompts";
-import { cache } from "../lib/config";
+import chalk from 'chalk';
+import { execSync } from 'child_process';
+import prompts from 'prompts';
+import { cache } from '../lib/config';
 import {
   DeleteBranchesStackFrameT,
   MergeConflictCallstackT,
-} from "../lib/config/merge_conflict_callstack_config";
-import { KilledError } from "../lib/errors";
-import { checkoutBranch, getTrunk, logInfo } from "../lib/utils";
-import Branch from "../wrapper-classes/branch";
-import { deleteBranchAction } from "./delete_branch";
-import { ontoAction } from "./onto";
+} from '../lib/config/merge_conflict_callstack_config';
+import { KilledError } from '../lib/errors';
+import { checkoutBranch, getTrunk, logInfo } from '../lib/utils';
+import Branch from '../wrapper-classes/branch';
+import { deleteBranchAction } from './delete_branch';
+import { ontoAction } from './onto';
 
 /**
  * This method is assumed to be idempotent -- if a merge conflict interrupts
@@ -177,7 +177,7 @@ async function shouldDeleteBranch(args: {
   }
 
   const githubMergedBase =
-    args.branch.getPRInfo()?.state === "MERGED"
+    args.branch.getPRInfo()?.state === 'MERGED'
       ? args.branch.getPRInfo()?.base
       : undefined;
 
@@ -191,8 +191,8 @@ async function shouldDeleteBranch(args: {
 
   const response = await prompts(
     {
-      type: "confirm",
-      name: "value",
+      type: 'confirm',
+      name: 'value',
       message: `Delete (${chalk.green(
         args.branch.name
       )}), which has been merged into (${mergedBase})?`,
@@ -208,7 +208,7 @@ async function shouldDeleteBranch(args: {
 }
 
 function branchMerged(branch: Branch): boolean {
-  const prMerged = branch.getPRInfo()?.state === "MERGED";
+  const prMerged = branch.getPRInfo()?.state === 'MERGED';
   if (prMerged) {
     return true;
   }
@@ -220,14 +220,14 @@ function branchMerged(branch: Branch): boolean {
   )
     .toString()
     .trim()
-    .startsWith("-");
+    .startsWith('-');
   if (cherryCheckProvesMerged) {
     return true;
   }
 
   const diffCheckProvesMerged =
     execSync(`git diff ${branchName} ${trunk} | wc -l`).toString().trim() ===
-    "0";
+    '0';
   if (diffCheckProvesMerged) {
     return true;
   }

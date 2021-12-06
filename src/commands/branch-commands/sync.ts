@@ -1,26 +1,26 @@
-import chalk from "chalk";
-import yargs from "yargs";
-import { getBranchTitle } from "../../actions/print_stack";
-import { repoConfig } from "../../lib/config";
-import { currentBranchPrecondition } from "../../lib/preconditions";
-import { syncPRInfoForBranches } from "../../lib/sync/pr_info";
-import { profile } from "../../lib/telemetry";
-import { logError } from "../../lib/utils";
+import chalk from 'chalk';
+import yargs from 'yargs';
+import { getBranchTitle } from '../../actions/print_stack';
+import { repoConfig } from '../../lib/config';
+import { currentBranchPrecondition } from '../../lib/preconditions';
+import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
+import { profile } from '../../lib/telemetry';
+import { logError } from '../../lib/utils';
 
 const args = {
   reset: {
     describe: `Removes current GitHub PR information linked to the current branch`,
     demandOption: false,
-    type: "boolean",
+    type: 'boolean',
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const aliases = [];
-export const command = "sync";
-export const canoncial = "branch sync";
+export const command = 'sync';
+export const canoncial = 'branch sync';
 export const description =
-  "Fetch GitHub PR information for the current branch.";
+  'Fetch GitHub PR information for the current branch.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canoncial, async () => {

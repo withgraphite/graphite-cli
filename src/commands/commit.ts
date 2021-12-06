@@ -1,14 +1,14 @@
-import { Argv } from "yargs";
+import { Argv } from 'yargs';
 
-export const command = "commit <command>";
+export const command = 'commit <command>';
 export const desc =
-  "Commands that operate on commits. Run `gt commit --help` to learn more.";
+  'Commands that operate on commits. Run `gt commit --help` to learn more.';
 
-export const aliases = ["c"];
+export const aliases = ['c'];
 export const builder = function (yargs: Argv): Argv {
   return yargs
-    .commandDir("commit-commands", {
-      extensions: ["js"],
+    .commandDir('commit-commands', {
+      extensions: ['js'],
     })
     .strict()
     .demandCommand();

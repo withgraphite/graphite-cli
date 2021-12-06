@@ -1,6 +1,6 @@
-import yargs from "yargs";
+import yargs from 'yargs';
 
-export const command = "submit";
+export const command = 'submit';
 
 /**
  * Primary interaction patterns:
@@ -21,25 +21,25 @@ export const command = "submit";
 export const args = {
   draft: {
     describe:
-      "Creates new PRs in draft mode. If --no-interactive is true, this is automatically set to true.",
-    type: "boolean",
-    alias: "d",
+      'Creates new PRs in draft mode. If --no-interactive is true, this is automatically set to true.',
+    type: 'boolean',
+    alias: 'd',
   },
   edit: {
     describe:
-      "Edit PR fields inline. If --no-interactive is true, this is automatically set to false.",
-    type: "boolean",
+      'Edit PR fields inline. If --no-interactive is true, this is automatically set to false.',
+    type: 'boolean',
     default: true,
-    alias: "e",
+    alias: 'e',
   },
-  "dry-run": {
+  'dry-run': {
     describe:
-      "Reports the PRs that would be submitted and terminates. No branches are pushed and no PRs are opened or updated.",
-    type: "boolean",
+      'Reports the PRs that would be submitted and terminates. No branches are pushed and no PRs are opened or updated.',
+    type: 'boolean',
     default: false,
   },
 } as const;
 
 export const builder = args;
-export const aliases = ["s"];
+export const aliases = ['s'];
 export type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;

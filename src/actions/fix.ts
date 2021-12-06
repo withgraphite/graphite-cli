@@ -1,20 +1,20 @@
-import chalk from "chalk";
-import prompts from "prompts";
-import { cache } from "../lib/config";
+import chalk from 'chalk';
+import prompts from 'prompts';
+import { cache } from '../lib/config';
 import {
   MergeConflictCallstackT,
   StackFixActionStackframeT,
-} from "../lib/config/merge_conflict_callstack_config";
+} from '../lib/config/merge_conflict_callstack_config';
 import {
   ExitCancelledError,
   ExitFailedError,
   KilledError,
   RebaseConflictError,
-} from "../lib/errors";
+} from '../lib/errors';
 import {
   currentBranchPrecondition,
   uncommittedChangesPrecondition,
-} from "../lib/preconditions";
+} from '../lib/preconditions';
 import {
   checkoutBranch,
   getTrunk,
@@ -22,44 +22,44 @@ import {
   logDebug,
   logInfo,
   rebaseInProgress,
-} from "../lib/utils";
+} from '../lib/utils';
 import {
   GitStackBuilder,
   MetaStackBuilder,
   Stack,
   StackNode,
-} from "../wrapper-classes";
-import Branch from "../wrapper-classes/branch";
+} from '../wrapper-classes';
+import Branch from '../wrapper-classes/branch';
 
 async function promptStacks(opts: {
   gitStack: Stack;
   metaStack: Stack;
-}): Promise<"regen" | "rebase"> {
+}): Promise<'regen' | 'rebase'> {
   const response = await prompts({
-    type: "select",
-    name: "value",
+    type: 'select',
+    name: 'value',
     message: `Rebase branches or regenerate stacks metadata?`,
-    choices: ["rebase", "regen"].map(
+    choices: ['rebase', 'regen'].map(
       (r) => {
         return {
           title:
-            r === "rebase"
+            r === 'rebase'
               ? `rebase branches, using Graphite stacks as truth (${chalk.green(
-                  "common choice"
+                  'common choice'
                 )})\n` +
                 opts.metaStack
                   .toString()
-                  .split("\n")
-                  .map((l) => "    " + l)
-                  .join("\n") +
-                "\n"
+                  .split('\n')
+                  .map((l) => '    ' + l)
+                  .join('\n') +
+                '\n'
               : `regen stack metadata, using Git commit tree as truth\n` +
                 opts.gitStack
                   .toString()
-                  .split("\n")
-                  .map((l) => "    " + l)
-                  .join("\n") +
-                "\n",
+                  .split('\n')
+                  .map((l) => '    ' + l)
+                  .join('\n') +
+                '\n',
           value: r,
         };
       },
@@ -72,14 +72,14 @@ async function promptStacks(opts: {
   });
 
   if (!response.value) {
-    throw new ExitCancelledError("No changes made");
+    throw new ExitCancelledError('No changes made');
   }
 
   return response.value;
 }
 
 export async function fixAction(opts: {
-  action: "regen" | "rebase" | undefined;
+  action: 'regen' | 'rebase' | undefined;
   mergeConflictCallstack: MergeConflictCallstackT;
 }): Promise<void> {
   const currentBranch = currentBranchPrecondition();
@@ -108,18 +108,18 @@ export async function fixAction(opts: {
   const action = opts.action || (await promptStacks({ gitStack, metaStack }));
 
   const stackFixActionContinuationFrame = {
-    op: "STACK_FIX_ACTION_CONTINUATION" as const,
+    op: 'STACK_FIX_ACTION_CONTINUATION' as const,
     checkoutBranchName: currentBranch.name,
   };
 
-  if (action === "regen") {
+  if (action === 'regen') {
     await regen(currentBranch);
   } else {
     // If we get interrupted and need to continue, first we'll do a stack fix
     // and then we'll continue the stack fix action.
     const mergeConflictCallstack = {
       frame: {
-        op: "STACK_FIX" as const,
+        op: 'STACK_FIX' as const,
         sourceBranchName: currentBranch.name,
       },
       parent: {
@@ -153,13 +153,13 @@ export async function restackBranch(args: {
     new MetaStackBuilder().upstackInclusiveFromBranchWithParents(args.branch);
 
   const stackFixActionContinuationFrame = {
-    op: "STACK_FIX_ACTION_CONTINUATION" as const,
+    op: 'STACK_FIX_ACTION_CONTINUATION' as const,
     checkoutBranchName: args.branch.name,
   };
 
   const mergeConflictCallstack = {
     frame: {
-      op: "STACK_FIX" as const,
+      op: 'STACK_FIX' as const,
       sourceBranchName: args.branch.name,
     },
     parent: {
@@ -214,7 +214,7 @@ async function restackNode(args: {
     gpExecSync(
       {
         command: `git rebase --onto ${parentBranch.name} ${mergeBase} ${node.branch.name}`,
-        options: { stdio: "ignore" },
+        options: { stdio: 'ignore' },
       },
       () => {
         if (rebaseInProgress()) {
