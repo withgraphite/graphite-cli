@@ -1,9 +1,7 @@
 import yargs from 'yargs';
 import { repoConfig } from '../../lib/config';
-import { PreconditionsFailedError } from '../../lib/errors';
 import { profile } from '../../lib/telemetry';
 import { logInfo } from '../../lib/utils';
-import Branch from '../../wrapper-classes/branch';
 
 const args = {
   add: {
@@ -24,13 +22,11 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
     if (argv.add) {
-      if (!Branch.exists(argv.add)) {
-        throw new PreconditionsFailedError(`Branch (${argv.add}) not found`);
-      }
+      // if (!Branch.exists(argv.add)) {
+      //   throw new PreconditionsFailedError(`Branch (${argv.add}) not found`);
+      // }
       // TODO: Refactor setIgnoreBranches to do this implicitly
-      repoConfig.setIgnoreBranches(
-        repoConfig.getIgnoreBranches().concat([argv.add])
-      );
+      repoConfig.setIgnoreBranches(argv.add);
       logInfo(`Added (${argv.add}) to be ignored`);
     } else {
       // TODO: Why are we printing all the ignored branches?
