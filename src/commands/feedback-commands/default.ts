@@ -15,9 +15,8 @@ const args = {
     describe:
       'Positive or constructive feedback for the Graphite team! Jokes are chill too.',
   },
-  debugContext: {
+  'with-debug-context': {
     type: 'boolean',
-    alias: ['with-debug-context'],
     default: false,
     describe:
       "Include a blob of json describing your repo's state to help with debugging. Run 'gt feedback debug-context' to see what would be included.",
@@ -43,7 +42,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       {
         user: user || 'NotFound',
         message: argv.message,
-        debugContext: argv.debugContext ? captureState() : undefined,
+        debugContext: argv['with-debug-context'] ? captureState() : undefined,
       }
     );
     if (response._response.status == 200) {
