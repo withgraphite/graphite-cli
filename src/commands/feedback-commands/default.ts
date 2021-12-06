@@ -17,9 +17,10 @@ const args = {
   },
   debugContext: {
     type: 'boolean',
+    alias: ['with-debug-context'],
     default: false,
     describe:
-      "Include a blob of json descripting your repo's state to help with debugging. Run 'gt feedback state' to see what would be included.",
+      "Include a blob of json describing your repo's state to help with debugging. Run 'gt feedback debug-context' to see what would be included.",
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
