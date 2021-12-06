@@ -1,11 +1,11 @@
-import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
-import { request } from "@screenplaydev/retyped-routes";
-import chalk from "chalk";
-import yargs from "yargs";
-import { API_SERVER } from "../../lib/api";
-import { captureState } from "../../lib/debug-context";
-import { ExitFailedError } from "../../lib/errors";
-import { getUserEmail, profile } from "../../lib/telemetry";
+import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
+import { request } from '@screenplaydev/retyped-routes';
+import chalk from 'chalk';
+import yargs from 'yargs';
+import { API_SERVER } from '../../lib/api';
+import { captureState } from '../../lib/debug-context';
+import { ExitFailedError } from '../../lib/errors';
+import { getUserEmail, profile } from '../../lib/telemetry';
 
 const args = {
   message: {
