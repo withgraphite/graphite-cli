@@ -2,19 +2,20 @@ import yargs from 'yargs';
 import { userConfig } from '../../lib/config';
 import { profile } from '../../lib/telemetry';
 import { logInfo } from '../../lib/utils';
+import { setDefaultEditor } from '../../lib/utils/default_editor';
 
 const args = {
   set: {
     demandOption: false,
     default: '',
     type: 'string',
-    describe: 'Set default editor for Graphite',
+    describe: 'Set default editor for Graphite. eg --set vim',
   },
   unset: {
     demandOption: false,
     default: false,
     type: 'boolean',
-    describe: 'Unset default editor for Graphite',
+    describe: 'Unset default editor for Graphite. eg --unset',
   },
 } as const;
 
@@ -35,6 +36,9 @@ export const handler = async (argv: argsT): Promise<void> => {
         `Editor preference erased. Defaulting to Graphite default: ${DEFAULT_GRAPHITE_EDITOR}`
       );
     } else {
+      if (!userConfig.getEditor()) {
+        setDefaultEditor();
+      }
       logInfo(
         `Current editor preference is set to : ${userConfig.getEditor()}`
       );
