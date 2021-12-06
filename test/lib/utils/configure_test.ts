@@ -1,5 +1,5 @@
-import { cache } from "../../../src/lib/config";
-import { AbstractScene } from "../scenes/abstract_scene";
+import { cache } from '../../../src/lib/config';
+import { AbstractScene } from '../scenes/abstract_scene';
 
 export function configureTest(suite: Mocha.Suite, scene: AbstractScene): void {
   suite.timeout(600000);

@@ -1,19 +1,19 @@
-import { expect } from "chai";
-import fs from "fs-extra";
+import { expect } from 'chai';
+import fs from 'fs-extra';
 import {
   messageConfig,
   readMessageConfigForTestingOnly,
-} from "../../../../src/lib/config";
-import { BasicScene } from "../../../lib/scenes";
-import { configureTest } from "../../../lib/utils";
+} from '../../../../src/lib/config';
+import { BasicScene } from '../../../lib/scenes';
+import { configureTest } from '../../../lib/utils';
 
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): upgrade message`, function () {
     configureTest(this, scene);
 
-    it("Sanity check - can read previously written message config", () => {
-      const contents = "Hello world!";
-      const cliVersion = "0.0.0";
+    it('Sanity check - can read previously written message config', () => {
+      const contents = 'Hello world!';
+      const cliVersion = '0.0.0';
       messageConfig.setMessage({
         contents: contents,
         cliVersion: cliVersion,
@@ -26,7 +26,7 @@ for (const scene of [new BasicScene()]) {
       expect(wirttenCLIVersion === cliVersion).to.be.true;
     });
 
-    it("If no message, removes message config file", () => {
+    it('If no message, removes message config file', () => {
       messageConfig.setMessage(undefined);
       expect(fs.existsSync(messageConfig.path())).to.be.false;
 

@@ -1,14 +1,14 @@
-import { execSync } from "child_process";
-import fs from "fs-extra";
-import tmp from "tmp";
-import { execStateConfig } from "../../../src/lib/config";
-import { GitRepo } from "../../../src/lib/utils";
+import { execSync } from 'child_process';
+import fs from 'fs-extra';
+import tmp from 'tmp';
+import { execStateConfig } from '../../../src/lib/config';
+import { GitRepo } from '../../../src/lib/utils';
 
 export abstract class AbstractScene {
   tmpDir: tmp.DirResult;
   repo: GitRepo;
   dir: string;
-  oldDir = execSync("pwd").toString().trim();
+  oldDir = execSync('pwd').toString().trim();
 
   constructor() {
     this.tmpDir = tmp.dirSync();
@@ -24,7 +24,7 @@ export abstract class AbstractScene {
     this.repo = new GitRepo(this.dir);
     fs.writeFileSync(
       `${this.dir}/.git/.graphite_repo_config`,
-      JSON.stringify({ trunk: "main" }, null, 2)
+      JSON.stringify({ trunk: 'main' }, null, 2)
     );
     process.chdir(this.dir);
     if (process.env.DEBUG) {
