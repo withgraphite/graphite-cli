@@ -1,4 +1,4 @@
-import Branch from "./branch";
+import Branch from './branch';
 
 export default class StackNode {
   branch: Branch;
@@ -26,11 +26,11 @@ export default class StackNode {
       this.children
         .map((c) => c.branch.name)
         .sort()
-        .join(" ") !==
+        .join(' ') !==
       other.children
         .map((c) => c.branch.name)
         .sort()
-        .join(" ")
+        .join(' ')
     ) {
       return false;
     }

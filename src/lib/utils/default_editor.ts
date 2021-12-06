@@ -1,19 +1,19 @@
-import { gpExecSync } from "./exec_sync";
-import {logInfo, logTip} from "./splog";
-import chalk from "chalk";
-import prompts from "prompts";
-import { KilledError } from "../errors";
-import { userConfig } from "../../lib/config";
-import { DEFAULT_GRAPHITE_EDITOR } from "../../commands/user-commands/editor";
+import { gpExecSync } from './exec_sync';
+import { logInfo, logTip } from './splog';
+import chalk from 'chalk';
+import prompts from 'prompts';
+import { KilledError } from '../errors';
+import { userConfig } from '../../lib/config';
+import { DEFAULT_GRAPHITE_EDITOR } from '../../commands/user-commands/editor';
 
 /*
 If the editor is not set, we attempt to infer it from environment variables $GIT_EDITOR or $EDITOR.
 If those are unavailable, we want to prompt user to set them. If user doesn't want to set them, we default to nano.
  */
 
-export async function getDefaultEditorOrPrompt(): Promise<string>{
-    await setDefaultEditorOrPrompt();
-    return userConfig.getEditor() || DEFAULT_GRAPHITE_EDITOR;
+export async function getDefaultEditorOrPrompt(): Promise<string> {
+  await setDefaultEditorOrPrompt();
+  return userConfig.getEditor() || DEFAULT_GRAPHITE_EDITOR;
 }
 
 async function setDefaultEditorOrPrompt(): Promise<void> {
@@ -38,14 +38,14 @@ async function setDefaultEditorOrPrompt(): Promise<void> {
 
       const yesOrNo = await prompts(
         {
-          type: "select",
-          name: "editorPrompt",
-          message: "Set default editor now?",
+          type: 'select',
+          name: 'editorPrompt',
+          message: 'Set default editor now?',
           choices: [
-            { title: `Yes`, value: "yes" },
+            { title: `Yes`, value: 'yes' },
             {
               title: `Skip and use Graphite default (${DEFAULT_GRAPHITE_EDITOR})`,
-              value: "no", // Should find a way to remember this selection so we are not repeatedly prompting
+              value: 'no', // Should find a way to remember this selection so we are not repeatedly prompting
             },
           ],
         },
@@ -56,16 +56,16 @@ async function setDefaultEditorOrPrompt(): Promise<void> {
         }
       );
 
-      if (yesOrNo.editorPrompt === "yes") {
+      if (yesOrNo.editorPrompt === 'yes') {
         const response = await prompts(
           {
-            type: "select",
-            name: "editor",
-            message: "Select an editor:", // Should this be a selection?
+            type: 'select',
+            name: 'editor',
+            message: 'Select an editor:', // Should this be a selection?
             choices: [
-              { title: `vim`, value: "vim" },
-              { title: `emacs`, value: "emacs" },
-              { title: `nano`, value: "nano" },
+              { title: `vim`, value: 'vim' },
+              { title: `emacs`, value: 'emacs' },
+              { title: `nano`, value: 'nano' },
             ],
           },
           {
@@ -81,6 +81,6 @@ async function setDefaultEditorOrPrompt(): Promise<void> {
     }
 
     userConfig.setEditor(editorPref);
-    logInfo( chalk.yellow(`Graphite editor preference set to ${editorPref}.`));
+    logInfo(chalk.yellow(`Graphite editor preference set to ${editorPref}.`));
   }
 }

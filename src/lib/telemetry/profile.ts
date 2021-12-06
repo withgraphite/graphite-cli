@@ -1,12 +1,12 @@
 // Why does an open source CLI include telemetry?
 // We the creators want to understand how people are using the tool
 // All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
-import chalk from "chalk";
-import yargs from "yargs";
-import { postTelemetryInBackground, registerSigintHandler } from ".";
-import { version } from "../../../package.json";
-import { init } from "../../actions/init";
-import { execStateConfig, repoConfig } from "../config";
+import chalk from 'chalk';
+import yargs from 'yargs';
+import { postTelemetryInBackground, registerSigintHandler } from '.';
+import { version } from '../../../package.json';
+import { init } from '../../actions/init';
+import { execStateConfig, repoConfig } from '../config';
 import {
   ConfigError,
   ExitCancelledError,
@@ -17,7 +17,7 @@ import {
   RebaseConflictError,
   SiblingBranchError,
   ValidationFailedError,
-} from "../errors";
+} from '../errors';
 import {
   logError,
   logInfo,
@@ -25,10 +25,10 @@ import {
   logWarn,
   parseArgs,
   VALIDATION_HELPER_MESSAGE,
-} from "../utils";
-import { printGraphiteMergeConflictStatus } from "../utils/merge_conflict_help";
-import { getUserEmail } from "./context";
-import tracer from "./tracer";
+} from '../utils';
+import { printGraphiteMergeConflictStatus } from '../utils/merge_conflict_help';
+import { getUserEmail } from './context';
+import tracer from './tracer';
 
 export async function profile(
   args: yargs.Arguments,
@@ -44,7 +44,7 @@ export async function profile(
     startTime: start,
   });
 
-  if (parsedArgs.command !== "repo init" && !repoConfig.getTrunk()) {
+  if (parsedArgs.command !== 'repo init' && !repoConfig.getTrunk()) {
     logInfo(`Graphite has not been initialized, attempting to setup now...`);
     logNewline();
     await init();
@@ -53,10 +53,10 @@ export async function profile(
   try {
     await tracer.span(
       {
-        name: "command",
+        name: 'command',
         resource: parsedArgs.command,
         meta: {
-          user: getUserEmail() || "NotFound",
+          user: getUserEmail() || 'NotFound',
           version: version,
           args: parsedArgs.args,
           alias: parsedArgs.alias,
@@ -87,7 +87,7 @@ export async function profile(
                   `(3) run "gt continue" to continue executing your previous Graphite command`,
                 ]
                   .map((line) => chalk.yellow(line))
-                  .join("\n")
+                  .join('\n')
               );
               return;
             case ValidationFailedError:
@@ -128,7 +128,7 @@ export async function profile(
       err: {
         errName: err.name,
         errMessage: err.message,
-        errStack: err.stack || "",
+        errStack: err.stack || '',
       },
     });
     // eslint-disable-next-line no-restricted-syntax

@@ -1,21 +1,21 @@
-import { ValidationFailedError } from "../lib/errors";
-import { currentBranchPrecondition } from "../lib/preconditions";
-import { logInfo } from "../lib/utils";
-import { GitStackBuilder, MetaStackBuilder, Stack } from "../wrapper-classes";
-import Branch from "../wrapper-classes/branch";
-import { TScope } from "./scope";
+import { ValidationFailedError } from '../lib/errors';
+import { currentBranchPrecondition } from '../lib/preconditions';
+import { logInfo } from '../lib/utils';
+import { GitStackBuilder, MetaStackBuilder, Stack } from '../wrapper-classes';
+import Branch from '../wrapper-classes/branch';
+import { TScope } from './scope';
 
 export function validate(scope: TScope): void {
   const branch = currentBranchPrecondition();
 
   switch (scope) {
-    case "UPSTACK":
+    case 'UPSTACK':
       validateBranchUpstackInclusive(branch);
       break;
-    case "DOWNSTACK":
+    case 'DOWNSTACK':
       validateBranchDownstackInclusive(branch);
       break;
-    case "FULLSTACK":
+    case 'FULLSTACK':
       validateBranchFullstack(branch);
       break;
   }
@@ -60,11 +60,11 @@ function compareStacks(metaStack: Stack, gitStack: Stack): void {
     throw new ValidationFailedError(
       [
         `Graphite stack does not match git-derived stack\n`,
-        "\nGraphite Stack:",
+        '\nGraphite Stack:',
         metaStack.toString(),
-        "\nGit Stack:",
+        '\nGit Stack:',
         gitStack.toString(),
-      ].join("\n")
+      ].join('\n')
     );
   }
 }

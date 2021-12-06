@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
-import { request } from "@screenplaydev/retyped-routes";
-import cp from "child_process";
-import fs from "fs-extra";
-import path from "path";
-import tmp from "tmp";
-import { getUserEmail, SHOULD_REPORT_TELEMETRY, tracer } from ".";
-import { version } from "../../../package.json";
-import { userConfig } from "../../lib/config";
-import { API_SERVER } from "../api";
+import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
+import { request } from '@screenplaydev/retyped-routes';
+import cp from 'child_process';
+import fs from 'fs-extra';
+import path from 'path';
+import tmp from 'tmp';
+import { getUserEmail, SHOULD_REPORT_TELEMETRY, tracer } from '.';
+import { version } from '../../../package.json';
+import { userConfig } from '../../lib/config';
+import { API_SERVER } from '../api';
 
 type oldTelemetryT = {
   canonicalCommandName: string;
@@ -20,14 +20,14 @@ type oldTelemetryT = {
 function saveTracesToTmpFile(): string {
   const tmpDir = tmp.dirSync();
   const json = tracer.flushJson();
-  const tracesPath = path.join(tmpDir.name, "traces.json");
+  const tracesPath = path.join(tmpDir.name, 'traces.json');
   fs.writeFileSync(tracesPath, json);
   return tracesPath;
 }
 
 function saveOldTelemetryToFile(data: oldTelemetryT): string {
   const tmpDir = tmp.dirSync();
-  const tracesPath = path.join(tmpDir.name, "oldTelemetry.json");
+  const tracesPath = path.join(tmpDir.name, 'oldTelemetry.json');
   fs.writeFileSync(tracesPath, JSON.stringify(data));
   return tracesPath;
 }
@@ -35,9 +35,9 @@ function saveOldTelemetryToFile(data: oldTelemetryT): string {
 export function postTelemetryInBackground(oldDetails: oldTelemetryT): void {
   const tracesPath = saveTracesToTmpFile();
   const oldTelemetryPath = saveOldTelemetryToFile(oldDetails);
-  cp.spawn("/usr/bin/env", ["node", __filename, tracesPath, oldTelemetryPath], {
+  cp.spawn('/usr/bin/env', ['node', __filename, tracesPath, oldTelemetryPath], {
     detached: true,
-    stdio: "ignore",
+    stdio: 'ignore',
   });
 }
 
@@ -50,14 +50,14 @@ async function logCommand(oldTelemetryFilePath: string): Promise<void> {
       await request.requestWithArgs(API_SERVER, graphiteCLIRoutes.logCommand, {
         commandName: data.commandName,
         durationMiliSeconds: data.durationMiliSeconds,
-        user: getUserEmail() || "NotFound",
+        user: getUserEmail() || 'NotFound',
         auth: userConfig.getAuthToken(),
         version: version,
         err: data.err
           ? {
               name: data.err.errName,
               message: data.err.errMessage,
-              stackTrace: data.err.errStack || "",
+              stackTrace: data.err.errStack || '',
               debugContext: undefined,
             }
           : undefined,

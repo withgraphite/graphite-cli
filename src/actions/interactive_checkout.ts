@@ -1,8 +1,8 @@
-import prompts from "prompts";
-import { ExitCancelledError, ExitFailedError } from "../lib/errors";
-import { getTrunk, gpExecSync } from "../lib/utils";
-import { MetaStackBuilder } from "../wrapper-classes";
-import Branch from "../wrapper-classes/branch";
+import prompts from 'prompts';
+import { ExitCancelledError, ExitFailedError } from '../lib/errors';
+import { getTrunk, gpExecSync } from '../lib/utils';
+import { MetaStackBuilder } from '../wrapper-classes';
+import Branch from '../wrapper-classes/branch';
 
 export async function interactiveCheckout(): Promise<void> {
   const stack = new MetaStackBuilder().fullStackFromBranch(getTrunk());
@@ -24,8 +24,8 @@ async function promptBranches(choices: promptOptionT[]): Promise<void> {
   const chosenBranch = (
     await prompts(
       {
-        type: "select",
-        name: "branch",
+        type: 'select',
+        name: 'branch',
         message: `Checkout a branch`,
         choices: choices,
         ...(currentBranchIndex ? { initial: currentBranchIndex } : {}),
@@ -39,7 +39,7 @@ async function promptBranches(choices: promptOptionT[]): Promise<void> {
   ).branch;
 
   if (!chosenBranch) {
-    throw new ExitCancelledError("No branch selected");
+    throw new ExitCancelledError('No branch selected');
   }
 
   if (chosenBranch && chosenBranch !== currentBranch?.name) {

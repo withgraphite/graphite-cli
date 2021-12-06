@@ -1,38 +1,38 @@
-import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
-import * as t from "@screenplaydev/retype";
-import { request } from "@screenplaydev/retyped-routes";
-import chalk from "chalk";
-import { API_SERVER } from "../../lib/api";
-import { execStateConfig, repoConfig } from "../../lib/config";
+import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
+import * as t from '@screenplaydev/retype';
+import { request } from '@screenplaydev/retyped-routes';
+import chalk from 'chalk';
+import { API_SERVER } from '../../lib/api';
+import { execStateConfig, repoConfig } from '../../lib/config';
 import {
   ExitFailedError,
   PreconditionsFailedError,
   ValidationFailedError,
-} from "../../lib/errors";
+} from '../../lib/errors';
 import {
   cliAuthPrecondition,
   currentBranchPrecondition,
-} from "../../lib/preconditions";
-import { syncPRInfoForBranches } from "../../lib/sync/pr_info";
-import { getSurvey, showSurvey } from "../../lib/telemetry/survey/survey";
+} from '../../lib/preconditions';
+import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
+import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
 import {
   gpExecSync,
   logError,
   logInfo,
   logNewline,
   logSuccess,
-} from "../../lib/utils";
-import { Unpacked } from "../../lib/utils/ts_helpers";
-import { MetaStackBuilder } from "../../wrapper-classes";
-import Branch from "../../wrapper-classes/branch";
-import { TBranchPRInfo } from "../../wrapper-classes/metadata_ref";
-import { TScope } from "./../scope";
-import { validate } from "./../validate";
-import { getPRBody } from "./pr_body";
-import { getPRDraftStatus } from "./pr_draft";
-import { getPRTitle } from "./pr_title";
+} from '../../lib/utils';
+import { Unpacked } from '../../lib/utils/ts_helpers';
+import { MetaStackBuilder } from '../../wrapper-classes';
+import Branch from '../../wrapper-classes/branch';
+import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
+import { TScope } from './../scope';
+import { validate } from './../validate';
+import { getPRBody } from './pr_body';
+import { getPRDraftStatus } from './pr_draft';
+import { getPRTitle } from './pr_title';
 
-type TSubmitScope = TScope | "BRANCH";
+type TSubmitScope = TScope | 'BRANCH';
 
 export async function submitAction(args: {
   scope: TSubmitScope;
@@ -70,7 +70,7 @@ export async function submitAction(args: {
         `✏️  [1/4] Validating Graphite stack before submitting...`
       )
     );
-    if (args.scope !== "BRANCH") {
+    if (args.scope !== 'BRANCH') {
       validate(args.scope);
     }
     logNewline();
@@ -89,15 +89,15 @@ export async function submitAction(args: {
 
   logInfo(
     chalk.blueBright(
-      "🥞 [2/4] Preparing to submit PRs for the following branches..."
+      '🥞 [2/4] Preparing to submit PRs for the following branches...'
     )
   );
   branchesToSubmit.forEach((branch) => {
     let operation;
     if (branch.getPRInfo() !== undefined) {
-      operation = "update";
+      operation = 'update';
     } else {
-      operation = "create";
+      operation = 'create';
     }
     logInfo(`▸ ${chalk.yellow(branch.name)} (${operation})`);
   });
@@ -122,22 +122,22 @@ function getBranchesToSubmit(args: {
   let branches: Branch[] = [];
 
   switch (args.scope) {
-    case "DOWNSTACK":
+    case 'DOWNSTACK':
       branches = new MetaStackBuilder()
         .downstackFromBranch(args.currentBranch)
         .branches();
       break;
-    case "FULLSTACK":
+    case 'FULLSTACK':
       branches = new MetaStackBuilder()
         .fullStackFromBranch(args.currentBranch)
         .branches();
       break;
-    case "UPSTACK":
+    case 'UPSTACK':
       branches = new MetaStackBuilder()
         .upstackInclusiveFromBranchWithParents(args.currentBranch)
         .branches();
       break;
-    case "BRANCH":
+    case 'BRANCH':
       branches = [args.currentBranch];
       break;
     default:
@@ -147,12 +147,12 @@ function getBranchesToSubmit(args: {
 
   return branches
     .filter((b) => !b.isTrunk())
-    .filter((b) => b.getPRInfo()?.state !== "MERGED");
+    .filter((b) => b.getPRInfo()?.state !== 'MERGED');
 }
 
 type TPRSubmissionInfo = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.submitPullRequests.params
->["prs"];
+>['prs'];
 type TPRSubmissionInfoWithBranch = (Unpacked<TPRSubmissionInfo> & {
   branch: Branch;
 })[];
@@ -240,7 +240,7 @@ async function getPRInfoForBranches(args: {
         createNewPRsAsDraft: args.createNewPRsAsDraft,
       });
       branchPRInfo.push({
-        action: "create",
+        action: 'create',
         head: branch.name,
         base: parentBranchName,
         title: title,
@@ -250,7 +250,7 @@ async function getPRInfoForBranches(args: {
       });
     } else {
       branchPRInfo.push({
-        action: "update",
+        action: 'update',
         head: branch.name,
         base: parentBranchName,
         prNumber: previousPRInfo.number,
@@ -266,7 +266,7 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
   const branchesPushedToRemote: Branch[] = [];
 
   // Two spaces between the text and icon is intentional for spacing purposes.
-  logInfo(chalk.blueBright("➡️  [3/4] Pushing branches to remote..."));
+  logInfo(chalk.blueBright('➡️  [3/4] Pushing branches to remote...'));
 
   branches.forEach((branch) => {
     logInfo(`Pushing ${branch.name}...`);
@@ -291,7 +291,7 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
       .toString()
       .trim();
 
-    if (!output.includes("Everything up-to-date")) {
+    if (!output.includes('Everything up-to-date')) {
       branchesPushedToRemote.push(branch);
     }
   });
@@ -300,10 +300,10 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
 }
 
 type TSubmittedPRRequest = Unpacked<
-  t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.params>["prs"]
+  t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.params>['prs']
 >;
 type TSubmittedPRResponse = Unpacked<
-  t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.response>["prs"]
+  t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.response>['prs']
 >;
 
 type TSubmittedPR = {
@@ -359,7 +359,7 @@ async function submitPRsForBranches(args: {
 
     if (response._response.status === 401) {
       throw new PreconditionsFailedError(
-        "invalid/expired Graphite auth token.\n\nPlease obtain a new auth token by visiting https://app.graphite.dev/activate."
+        'invalid/expired Graphite auth token.\n\nPlease obtain a new auth token by visiting https://app.graphite.dev/activate.'
       );
     }
 
@@ -467,7 +467,7 @@ async function getPRCreationInfo(args: {
 
 function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
   if (prs.length === 0) {
-    logInfo("All PRs up-to-date on GitHub; no PR updates necessary.");
+    logInfo('All PRs up-to-date on GitHub; no PR updates necessary.');
     return;
   }
 
@@ -476,20 +476,20 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
 
     let status: string = pr.response.status;
     switch (pr.response.status) {
-      case "updated":
+      case 'updated':
         status = chalk.yellow(status);
         break;
-      case "created":
+      case 'created':
         status = chalk.green(status);
         break;
-      case "error":
+      case 'error':
         status = chalk.red(status);
         break;
       default:
         assertUnreachable(pr.response);
     }
 
-    if ("error" in pr.response) {
+    if ('error' in pr.response) {
       logError(pr.response.error);
     } else {
       console.log(`${pr.response.prURL} (${status})`);
@@ -499,7 +499,7 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
 
 export function saveBranchPRInfo(prs: TSubmittedPR[]): void {
   prs.forEach(async (pr) => {
-    if (pr.response.status === "updated" || pr.response.status === "created") {
+    if (pr.response.status === 'updated' || pr.response.status === 'created') {
       const branch = await Branch.branchWithName(pr.response.head);
       branch.setPRInfo({
         number: pr.response.prNumber,

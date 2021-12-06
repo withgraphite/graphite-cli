@@ -1,20 +1,20 @@
-import { validate } from "../actions/validate";
-import { cache } from "../lib/config";
+import { validate } from '../actions/validate';
+import { cache } from '../lib/config';
 import {
   MergeConflictCallstackT,
   StackOntoBaseRebaseStackFrameT,
   StackOntoFixStackFrameT,
-} from "../lib/config/merge_conflict_callstack_config";
+} from '../lib/config/merge_conflict_callstack_config';
 import {
   ExitFailedError,
   PreconditionsFailedError,
   RebaseConflictError,
   ValidationFailedError,
-} from "../lib/errors";
+} from '../lib/errors';
 import {
   branchExistsPrecondition,
   currentBranchPrecondition,
-} from "../lib/preconditions";
+} from '../lib/preconditions';
 import {
   checkoutBranch,
   getTrunk,
@@ -22,15 +22,15 @@ import {
   logInfo,
   rebaseInProgress,
   uncommittedChanges,
-} from "../lib/utils";
-import Branch from "../wrapper-classes/branch";
-import { restackBranch } from "./fix";
+} from '../lib/utils';
+import Branch from '../wrapper-classes/branch';
+import { restackBranch } from './fix';
 export async function ontoAction(args: {
   onto: string;
   mergeConflictCallstack: MergeConflictCallstackT;
 }): Promise<void> {
   if (uncommittedChanges()) {
-    throw new PreconditionsFailedError("Cannot fix with uncommitted changes");
+    throw new PreconditionsFailedError('Cannot fix with uncommitted changes');
   }
 
   const originalBranch = currentBranchPrecondition();
@@ -53,7 +53,7 @@ async function stackOnto(
   currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
 
   const stackOntoContinuationFrame = {
-    op: "STACK_ONTO_BASE_REBASE_CONTINUATION" as const,
+    op: 'STACK_ONTO_BASE_REBASE_CONTINUATION' as const,
     currentBranchName: currentBranch.name,
     onto: onto,
   };
@@ -62,7 +62,7 @@ async function stackOnto(
   gpExecSync(
     {
       command: `git rebase --onto ${onto} $(git merge-base ${currentBranch.name} ${parent.name}) ${currentBranch.name}`,
-      options: { stdio: "ignore" },
+      options: { stdio: 'ignore' },
     },
     (err) => {
       if (rebaseInProgress()) {
@@ -102,7 +102,7 @@ export async function stackOntoBaseRebaseContinuation(
 
   // Now perform a fix starting from the onto branch:
   const stackOntoContinuationFrame = {
-    op: "STACK_ONTO_FIX_CONTINUATION" as const,
+    op: 'STACK_ONTO_FIX_CONTINUATION' as const,
     currentBranchName: frame.currentBranchName,
     onto: frame.onto,
   };
@@ -138,7 +138,7 @@ function getParentForRebaseOnto(branch: Branch, onto: string): Branch {
 
 function validateStack() {
   try {
-    validate("UPSTACK");
+    validate('UPSTACK');
   } catch {
     throw new ValidationFailedError(
       `Cannot stack "onto", git branches must match stack.`

@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
-import { request } from "@screenplaydev/retyped-routes";
-import cp from "child_process";
-import { getUserEmail, SHOULD_REPORT_TELEMETRY } from ".";
-import { version } from "../../../package.json";
-import { API_SERVER } from "../api";
-import { messageConfig, repoConfig } from "../config";
-import { logMessageFromGraphite } from "../utils";
+import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
+import { request } from '@screenplaydev/retyped-routes';
+import cp from 'child_process';
+import { getUserEmail, SHOULD_REPORT_TELEMETRY } from '.';
+import { version } from '../../../package.json';
+import { API_SERVER } from '../api';
+import { messageConfig, repoConfig } from '../config';
+import { logMessageFromGraphite } from '../utils';
 
 function printAndClearOldMessage(): void {
   const oldMessage = messageConfig.getMessage();
@@ -24,9 +24,9 @@ export function fetchUpgradePromptInBackground(): void {
   }
 
   printAndClearOldMessage();
-  cp.spawn("/usr/bin/env", ["node", __filename], {
+  cp.spawn('/usr/bin/env', ['node', __filename], {
     detached: true,
-    stdio: "ignore",
+    stdio: 'ignore',
   });
 }
 
@@ -41,7 +41,7 @@ async function fetchUpgradePrompt(): Promise<void> {
       graphiteCLIRoutes.upgradePrompt,
       {},
       {
-        user: user || "NotFound",
+        user: user || 'NotFound',
         currentVersion: version,
       }
     );

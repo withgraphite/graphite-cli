@@ -1,14 +1,14 @@
-import yargs from "yargs";
-import { repoConfig } from "../../lib/config";
-import { profile } from "../../lib/telemetry";
-import { logInfo } from "../../lib/utils";
+import yargs from 'yargs';
+import { repoConfig } from '../../lib/config';
+import { profile } from '../../lib/telemetry';
+import { logInfo } from '../../lib/utils';
 
 const args = {
   set: {
     demandOption: false,
     default: false,
-    type: "string",
-    alias: "s",
+    type: 'string',
+    alias: 's',
     describe:
       "Override the value of the repo owner's name in the Graphite config. This is expected to match the name of the repo owner on GitHub and should only be set in cases where Graphite is incorrectly inferring the repo owner's name.",
   },
@@ -16,8 +16,8 @@ const args = {
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
-export const command = "owner";
-export const canonical = "repo owner";
+export const command = 'owner';
+export const canonical = 'repo owner';
 export const description =
   "The current repo owner's name stored in Graphite. e.g. in 'screenplaydev/graphite-cli', this is 'screenplaydev'.";
 export const builder = args;

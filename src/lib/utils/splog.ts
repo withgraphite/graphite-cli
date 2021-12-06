@@ -1,8 +1,8 @@
-import chalk from "chalk";
-import { execStateConfig, userConfig } from "../config";
+import chalk from 'chalk';
+import { execStateConfig, userConfig } from '../config';
 
 export function logMessageFromGraphite(msg: string): void {
-  console.log(chalk.yellow(msg) + "\n\n");
+  console.log(chalk.yellow(msg) + '\n\n');
 }
 
 export function logError(msg: string): void {
@@ -35,10 +35,10 @@ export function logTip(msg: string): void {
     console.log(
       chalk.gray(
         [
-          "",
-          `${chalk.bold("tip")}: ${msg}`,
+          '',
+          `${chalk.bold('tip')}: ${msg}`,
           chalk.italic('Feeling expert? "gt user tips --disable"'),
-        ].join("\n")
+        ].join('\n')
       )
     );
   }
@@ -46,6 +46,6 @@ export function logTip(msg: string): void {
 
 export function logNewline(): void {
   if (!execStateConfig.quiet()) {
-    console.log("");
+    console.log('');
   }
 }

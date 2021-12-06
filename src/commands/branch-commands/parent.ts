@@ -1,32 +1,32 @@
-import chalk from "chalk";
-import yargs from "yargs";
+import chalk from 'chalk';
+import yargs from 'yargs';
 import {
   branchExistsPrecondition,
-  currentBranchPrecondition
-} from "../../lib/preconditions";
-import { profile } from "../../lib/telemetry";
-import { logInfo } from "../../lib/utils";
-import Branch from "../../wrapper-classes/branch";
+  currentBranchPrecondition,
+} from '../../lib/preconditions';
+import { profile } from '../../lib/telemetry';
+import { logInfo } from '../../lib/utils';
+import Branch from '../../wrapper-classes/branch';
 
 const args = {
   set: {
-    type: "string",
+    type: 'string',
     describe:
-      "Manually set the stack parent of the current branch. This operation only modifies Graphite metadata and does not rebase any branches.",
+      'Manually set the stack parent of the current branch. This operation only modifies Graphite metadata and does not rebase any branches.',
     required: false,
   },
   reset: {
-    type: "boolean",
-    describe: "Disassociate the branch from its current tracked parent.",
+    type: 'boolean',
+    describe: 'Disassociate the branch from its current tracked parent.',
     required: false,
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
-export const command = "parent";
-export const canonical = "branch parent";
+export const command = 'parent';
+export const canonical = 'branch parent';
 export const description =
-  "Show the parent branch of your current branch (i.e. directly below the current branch in the stack) as tracked by Graphite. Branch location metadata is stored under `.git/refs/branch-metadata`.";
+  'Show the parent branch of your current branch (i.e. directly below the current branch in the stack) as tracked by Graphite. Branch location metadata is stored under `.git/refs/branch-metadata`.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {

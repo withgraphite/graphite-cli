@@ -1,11 +1,11 @@
-import chalk from "chalk";
-import fs from "fs-extra";
-import path from "path";
-import { ExitFailedError } from "../../lib/errors";
-import { gpExecSync } from "../../lib/utils/exec_sync";
-import { getRepoRootPath } from "./repo_root_path";
+import chalk from 'chalk';
+import fs from 'fs-extra';
+import path from 'path';
+import { ExitFailedError } from '../../lib/errors';
+import { gpExecSync } from '../../lib/utils/exec_sync';
+import { getRepoRootPath } from './repo_root_path';
 
-const CONFIG_NAME = ".graphite_repo_config";
+const CONFIG_NAME = '.graphite_repo_config';
 const CURRENT_REPO_CONFIG_PATH = path.join(getRepoRootPath(), CONFIG_NAME);
 
 type RepoConfigT = {
@@ -227,13 +227,13 @@ function getOwnerAndNameFromURL(originURL: string): {
   // Most of the time these URLs end with '.git', but sometimes they don't. To
   // keep things clean, when we see it we'll just chop it off.
   let url = originURL;
-  if (url.endsWith(".git")) {
-    url = url.slice(0, -".git".length);
+  if (url.endsWith('.git')) {
+    url = url.slice(0, -'.git'.length);
   }
 
-  if (url.startsWith("git@github.com")) {
+  if (url.startsWith('git@github.com')) {
     regex = /git@github.com:([^/]+)\/(.+)/;
-  } else if (url.startsWith("https://")) {
+  } else if (url.startsWith('https://')) {
     regex = /https:\/\/github.com\/([^/]+)\/(.+)/;
   } else {
     return {

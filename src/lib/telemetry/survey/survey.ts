@@ -1,16 +1,16 @@
-import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
-import { default as t } from "@screenplaydev/retype";
-import { request } from "@screenplaydev/retyped-routes";
-import prompts from "prompts";
-import { API_SERVER } from "../../../lib/api";
-import surveyConfig from "../../../lib/config/survey_config";
-import { cliAuthPrecondition } from "../../../lib/preconditions";
-import { logMessageFromGraphite, logNewline } from "../../utils";
-import { postSurveyResponse } from "./post_survey";
+import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
+import { default as t } from '@screenplaydev/retype';
+import { request } from '@screenplaydev/retyped-routes';
+import prompts from 'prompts';
+import { API_SERVER } from '../../../lib/api';
+import surveyConfig from '../../../lib/config/survey_config';
+import { cliAuthPrecondition } from '../../../lib/preconditions';
+import { logMessageFromGraphite, logNewline } from '../../utils';
+import { postSurveyResponse } from './post_survey';
 
 export type SurveyT = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.cliSurvey.response
->["survey"];
+>['survey'];
 
 export async function getSurvey(): Promise<SurveyT | undefined> {
   try {
@@ -36,7 +36,7 @@ export async function getSurvey(): Promise<SurveyT | undefined> {
 class ExitedSurveyError extends Error {
   constructor() {
     super(`User exited Graphite survey early`);
-    this.name = "Killed";
+    this.name = 'Killed';
   }
 }
 
@@ -97,11 +97,11 @@ export async function showSurvey(survey: SurveyT): Promise<void> {
 async function askSurveyQuestions(args: {
   questions: (
     | {
-        type: "TEXT";
+        type: 'TEXT';
         question: string;
       }
     | {
-        type: "OPTIONS";
+        type: 'OPTIONS';
         question: string;
         options: string[];
       }
@@ -121,21 +121,21 @@ async function askSurveyQuestions(args: {
     }`;
 
     switch (question.type) {
-      case "TEXT":
+      case 'TEXT':
         promptResponse = await prompts(
           {
-            type: "text",
-            name: "answer",
+            type: 'text',
+            name: 'answer',
             message: questionText,
           },
           onCancel
         );
         break;
-      case "OPTIONS":
+      case 'OPTIONS':
         promptResponse = await prompts(
           {
-            type: "select",
-            name: "answer",
+            type: 'select',
+            name: 'answer',
             message: questionText,
             choices: question.options.map((option) => {
               return {

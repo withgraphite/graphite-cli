@@ -1,6 +1,6 @@
-import { AbstractStackBuilder } from ".";
-import { MultiParentError, SiblingBranchError } from "../lib/errors";
-import Branch from "./branch";
+import { AbstractStackBuilder } from '.';
+import { MultiParentError, SiblingBranchError } from '../lib/errors';
+import Branch from './branch';
 
 export default class GitStackBuilder extends AbstractStackBuilder {
   protected getBranchParent(branch: Branch): Branch | undefined {

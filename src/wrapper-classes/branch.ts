@@ -1,20 +1,20 @@
-import { execSync } from "child_process";
-import { repoConfig } from "../lib/config";
-import { ExitFailedError } from "../lib/errors";
+import { execSync } from 'child_process';
+import { repoConfig } from '../lib/config';
+import { ExitFailedError } from '../lib/errors';
 import {
   getBranchChildrenOrParentsFromGit,
   getRef,
   otherBranchesWithSameCommit,
-} from "../lib/git-refs";
-import { getCommitterDate, getTrunk, gpExecSync, logDebug } from "../lib/utils";
-import Commit from "./commit";
-import MetadataRef, { TBranchPRInfo, TMeta } from "./metadata_ref";
+} from '../lib/git-refs';
+import { getCommitterDate, getTrunk, gpExecSync, logDebug } from '../lib/utils';
+import Commit from './commit';
+import MetadataRef, { TBranchPRInfo, TMeta } from './metadata_ref';
 
 type TBranchFilters = {
   useMemoizedResults?: boolean;
   maxDaysBehindTrunk?: number;
   maxBranches?: number;
-  sort?: "-committerdate";
+  sort?: '-committerdate';
 };
 
 let memoizedMetaChildren: Record<string, Branch[]> | undefined;
@@ -197,7 +197,7 @@ export default class Branch {
   public static exists(branchName: string): boolean {
     try {
       execSync(`git show-ref --quiet refs/heads/${branchName}`, {
-        stdio: "ignore",
+        stdio: 'ignore',
       });
     } catch {
       return false;
@@ -285,17 +285,17 @@ export default class Branch {
     // When the object we've checked out is a commit (and not a branch),
     // git rev-parse --abbrev-ref HEAD returns 'HEAD'. This isn't a valid
     // branch.
-    return name.length > 0 && name !== "HEAD" ? new Branch(name) : null;
+    return name.length > 0 && name !== 'HEAD' ? new Branch(name) : null;
   }
 
-  private static allBranchesImpl(opts?: { sort?: "-committerdate" }): Branch[] {
-    const sortString = opts?.sort === undefined ? "" : `--sort='${opts?.sort}'`;
+  private static allBranchesImpl(opts?: { sort?: '-committerdate' }): Branch[] {
+    const sortString = opts?.sort === undefined ? '' : `--sort='${opts?.sort}'`;
     return execSync(
       `git for-each-ref --format='%(refname:short)' ${sortString} refs/heads/`
     )
       .toString()
       .trim()
-      .split("\n")
+      .split('\n')
       .filter(
         (name) =>
           !repoConfig.getIgnoreBranches().includes(name) && name.length > 0
@@ -317,7 +317,7 @@ export default class Branch {
     let branches = Branch.allBranchesImpl({
       sort:
         args.opts?.maxDaysBehindTrunk !== undefined
-          ? "-committerdate"
+          ? '-committerdate'
           : args.opts?.sort,
     });
 
@@ -331,7 +331,7 @@ export default class Branch {
       const trunkUnixTimestamp = parseInt(
         getCommitterDate({
           revision: getTrunk().name,
-          timeFormat: "UNIX_TIMESTAMP",
+          timeFormat: 'UNIX_TIMESTAMP',
         })
       );
       const secondsInDay = 24 * 60 * 60;
@@ -352,7 +352,7 @@ export default class Branch {
         const committed = parseInt(
           getCommitterDate({
             revision: branches[i].name,
-            timeFormat: "UNIX_TIMESTAMP",
+            timeFormat: 'UNIX_TIMESTAMP',
           })
         );
         if (committed < minUnixTimestamp) {
@@ -412,7 +412,7 @@ export default class Branch {
   public getChildrenFromGit(): Branch[] {
     logDebug(`Git Children (${this.name}): start`);
     const kids = getBranchChildrenOrParentsFromGit(this, {
-      direction: "children",
+      direction: 'children',
       useMemoizedResults: this.shouldUseMemoizedResults,
     });
 
@@ -452,7 +452,7 @@ export default class Branch {
     // between git and meta to ensure that our views of their stacks always
     // align.
     return getBranchChildrenOrParentsFromGit(this, {
-      direction: "parents",
+      direction: 'parents',
       useMemoizedResults: this.shouldUseMemoizedResults,
     }).sort(this.sortBranchesAlphabetically);
   }

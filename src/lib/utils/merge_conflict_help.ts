@@ -1,4 +1,4 @@
-import { gpExecSync, logInfo, rebaseInProgress } from ".";
+import { gpExecSync, logInfo, rebaseInProgress } from '.';
 
 export function printGraphiteMergeConflictStatus(): void {
   if (!rebaseInProgress()) {
@@ -12,8 +12,8 @@ export function printGraphiteMergeConflictStatus(): void {
     .trim();
 
   const output = [
-    statusOutput.replace("git rebase --continue", "gt continue"),
-  ].join("\n");
+    statusOutput.replace('git rebase --continue', 'gt continue'),
+  ].join('\n');
 
   logInfo(output);
 }

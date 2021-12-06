@@ -1,12 +1,12 @@
-import chalk from "chalk";
-import fs from "fs-extra";
-import prompts from "prompts";
-import { repoConfig } from "../lib/config";
-import { PreconditionsFailedError } from "../lib/errors";
-import { currentGitRepoPrecondition } from "../lib/preconditions";
-import { logError, logInfo, logNewline } from "../lib/utils";
-import { inferTrunk } from "../lib/utils/trunk";
-import Branch from "../wrapper-classes/branch";
+import chalk from 'chalk';
+import fs from 'fs-extra';
+import prompts from 'prompts';
+import { repoConfig } from '../lib/config';
+import { PreconditionsFailedError } from '../lib/errors';
+import { currentGitRepoPrecondition } from '../lib/preconditions';
+import { logError, logInfo, logNewline } from '../lib/utils';
+import { inferTrunk } from '../lib/utils/trunk';
+import Branch from '../wrapper-classes/branch';
 export async function init(
   trunk?: string,
   ignoreBranches?: string[]
@@ -76,7 +76,7 @@ export async function init(
 
 function logWelcomeMessage(): void {
   if (!repoConfig.graphiteInitialized()) {
-    logInfo("Welcome to Graphite!");
+    logInfo('Welcome to Graphite!');
   } else {
     logInfo(`Regenerating Graphite repo config (${repoConfig.path()})`);
   }
@@ -91,10 +91,10 @@ async function selectIgnoreBranches(
     return [];
   }
   const response = await prompts({
-    type: "multiselect",
-    name: "branches",
+    type: 'multiselect',
+    name: 'branches',
     message: `Ignore Branches: select any permanent branches never to be stacked (such as "prod" or "staging"). ${chalk.yellow(
-      "Fine to select none."
+      'Fine to select none.'
     )}`,
     choices: branchesWithoutTrunk.map((b) => {
       return { title: b.name, value: b.name };
@@ -106,10 +106,10 @@ async function selectIgnoreBranches(
 async function selectTrunkBranch(allBranches: Branch[]): Promise<string> {
   const trunk = inferTrunk();
   const response = await prompts({
-    type: "autocomplete",
-    name: "branch",
+    type: 'autocomplete',
+    name: 'branch',
     message: `Select a trunk branch, which you open PR's against${
-      trunk ? ` [infered trunk (${chalk.green(trunk.name)})]` : ""
+      trunk ? ` [infered trunk (${chalk.green(trunk.name)})]` : ''
     }`,
     choices: allBranches.map((b) => {
       return { title: b.name, value: b.name };

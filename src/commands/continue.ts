@@ -1,39 +1,39 @@
-import { execSync } from "child_process";
-import yargs from "yargs";
-import { deleteMergedBranches } from "../actions/clean_branches";
-import { restackBranch, stackFixActionContinuation } from "../actions/fix";
+import { execSync } from 'child_process';
+import yargs from 'yargs';
+import { deleteMergedBranches } from '../actions/clean_branches';
+import { restackBranch, stackFixActionContinuation } from '../actions/fix';
 import {
   stackOntoBaseRebaseContinuation,
   stackOntoFixContinuation,
-} from "../actions/onto";
-import { repoSyncDeleteMergedBranchesContinuation } from "../actions/sync";
+} from '../actions/onto';
+import { repoSyncDeleteMergedBranchesContinuation } from '../actions/sync';
 import {
   clearPersistedMergeConflictCallstack,
   getPersistedMergeConflictCallstack,
   MergeConflictCallstackT,
-} from "../lib/config/merge_conflict_callstack_config";
-import { PreconditionsFailedError } from "../lib/errors";
-import { profile } from "../lib/telemetry";
-import { rebaseInProgress } from "../lib/utils/rebase_in_progress";
-import Branch from "../wrapper-classes/branch";
-import { branchCountSanityCheckContinuation } from "./repo-commands/fix";
+} from '../lib/config/merge_conflict_callstack_config';
+import { PreconditionsFailedError } from '../lib/errors';
+import { profile } from '../lib/telemetry';
+import { rebaseInProgress } from '../lib/utils/rebase_in_progress';
+import Branch from '../wrapper-classes/branch';
+import { branchCountSanityCheckContinuation } from './repo-commands/fix';
 
 const args = {
   edit: {
     describe: `Edit the commit message for an amended, resolved merge conflict. By default true; use --no-edit to set this to false.`,
     demandOption: false,
     default: true,
-    type: "boolean",
+    type: 'boolean',
   },
 } as const;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
-export const command = "continue";
-export const canonical = "continue";
+export const command = 'continue';
+export const canonical = 'continue';
 export const aliases = [];
 export const description =
-  "Continues the most-recent Graphite command halted by a merge conflict.";
+  'Continues the most-recent Graphite command halted by a merge conflict.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
@@ -43,8 +43,8 @@ export const handler = async (argv: argsT): Promise<void> => {
     }
 
     if (rebaseInProgress()) {
-      execSync(`${argv.edit ? "" : "GIT_EDITOR=true"} git rebase --continue`, {
-        stdio: "inherit",
+      execSync(`${argv.edit ? '' : 'GIT_EDITOR=true'} git rebase --continue`, {
+        stdio: 'inherit',
       });
     }
 
@@ -57,18 +57,18 @@ export const handler = async (argv: argsT): Promise<void> => {
 async function resolveCallstack(
   callstack: MergeConflictCallstackT
 ): Promise<void> {
-  if (callstack === "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER") {
+  if (callstack === 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER') {
     return;
   }
 
   switch (callstack.frame.op) {
-    case "STACK_ONTO_BASE_REBASE_CONTINUATION":
+    case 'STACK_ONTO_BASE_REBASE_CONTINUATION':
       await stackOntoBaseRebaseContinuation(callstack.frame, callstack.parent);
       break;
-    case "STACK_ONTO_FIX_CONTINUATION":
+    case 'STACK_ONTO_FIX_CONTINUATION':
       await stackOntoFixContinuation(callstack.frame);
       break;
-    case "STACK_FIX": {
+    case 'STACK_FIX': {
       const branch = await Branch.branchWithName(
         callstack.frame.sourceBranchName
       );
@@ -78,19 +78,19 @@ async function resolveCallstack(
       });
       break;
     }
-    case "STACK_FIX_ACTION_CONTINUATION":
+    case 'STACK_FIX_ACTION_CONTINUATION':
       await stackFixActionContinuation(callstack.frame);
       break;
-    case "DELETE_BRANCHES_CONTINUATION":
+    case 'DELETE_BRANCHES_CONTINUATION':
       await deleteMergedBranches({
         frame: callstack.frame,
         parent: callstack.parent,
       });
       break;
-    case "REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION":
+    case 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION':
       await branchCountSanityCheckContinuation(callstack.frame);
       break;
-    case "REPO_SYNC_CONTINUATION":
+    case 'REPO_SYNC_CONTINUATION':
       await repoSyncDeleteMergedBranchesContinuation(callstack.frame);
       break;
     default:

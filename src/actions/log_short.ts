@@ -1,9 +1,9 @@
-import chalk from "chalk";
-import { ExitFailedError } from "../lib/errors";
-import { currentBranchPrecondition } from "../lib/preconditions";
-import { getTrunk, logTip } from "../lib/utils";
-import { GitStackBuilder, Stack, StackNode } from "../wrapper-classes";
-import Branch from "../wrapper-classes/branch";
+import chalk from 'chalk';
+import { ExitFailedError } from '../lib/errors';
+import { currentBranchPrecondition } from '../lib/preconditions';
+import { getTrunk, logTip } from '../lib/utils';
+import { GitStackBuilder, Stack, StackNode } from '../wrapper-classes';
+import Branch from '../wrapper-classes/branch';
 
 function getStacks(): {
   fallenStacks: Stack[];
@@ -54,7 +54,7 @@ export async function logShortAction(): Promise<void> {
   }
 
   if (stacks.untrackedStacks.length > 0) {
-    console.log("\nuntracked (created without Graphite)");
+    console.log('\nuntracked (created without Graphite)');
     stacks.untrackedStacks.sort(sortStacksByAge).forEach((s) =>
       printStackNode(s.source, {
         indent: 0,
@@ -86,7 +86,7 @@ function printStackNode(
   console.log(
     [
       // indent
-      `${"  ".repeat(opts.indent)}`,
+      `${'  '.repeat(opts.indent)}`,
       // branch name, potentially highlighted
       node.branch.name === opts.currentBranch.name
         ? chalk.cyan(`↳ ${node.branch.name}`)
@@ -94,7 +94,7 @@ function printStackNode(
       // whether it needs a rebase or not
       ...(needsFix ? [chalk.yellow(`(off ${metaParent?.name})`)] : []),
       ...(untracked ? [chalk.yellow(`(untracked)`)] : []),
-    ].join(" ")
+    ].join(' ')
   );
   node.children.forEach((c) => {
     if (!c.branch.isTrunk()) {
@@ -112,22 +112,22 @@ function printStackNode(
 function logRebaseTip(): void {
   logTip(
     [
-      "Some branch merge-bases have fell behind their parent branch latest commit. Consider:",
+      'Some branch merge-bases have fell behind their parent branch latest commit. Consider:',
       `> gt branch checkout ${getTrunk()} && gt stack fix --rebase # fix all stacks`,
       `> gt branch checkout <branch> && gt stack fix --rebase # fix a specific stack`,
       `> gt branch checkout <branch> && gt upstack onto <parent> # fix a stack and update the parent`,
-    ].join("\n")
+    ].join('\n')
   );
 }
 
 function logRegenTip(): void {
   logTip(
     [
-      "Graphite does not know the parent of untracked branches. Consider:",
+      'Graphite does not know the parent of untracked branches. Consider:',
       `> gt branch checkout <branch> && gt upstack onto <parent> # fix a stack and update the parent`,
       `> gt branch checkout <branch> && gt stack fix --regen # generate stack based on current commit tree`,
       `> gt repo ignored-branches --add <branch> # set branch to be ignored by Graphite`,
       `> git branch -D <branch> # delete branch from git`,
-    ].join("\n")
+    ].join('\n')
   );
 }

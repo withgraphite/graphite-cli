@@ -1,40 +1,40 @@
-import chalk from "chalk";
-import yargs from "yargs";
-import { printStack } from "../../actions/print_stack";
-import { repoConfig } from "../../lib/config";
-import { profile } from "../../lib/telemetry";
-import { getTrunk } from "../../lib/utils/trunk";
-import Branch from "../../wrapper-classes/branch";
+import chalk from 'chalk';
+import yargs from 'yargs';
+import { printStack } from '../../actions/print_stack';
+import { repoConfig } from '../../lib/config';
+import { profile } from '../../lib/telemetry';
+import { getTrunk } from '../../lib/utils/trunk';
+import Branch from '../../wrapper-classes/branch';
 
 const args = {
-  "on-trunk": {
+  'on-trunk': {
     describe: `Only show commits on trunk`,
     demandOption: false,
     default: false,
-    type: "boolean",
-    alias: "t",
+    type: 'boolean',
+    alias: 't',
   },
-  "behind-trunk": {
+  'behind-trunk': {
     describe: `Only show commits behind trunk`,
     demandOption: false,
     default: false,
-    type: "boolean",
-    alias: "b",
+    type: 'boolean',
+    alias: 'b',
   },
 } as const;
 
-export const command = "*";
-export const description = "Log all stacks tracked by Graphite.";
+export const command = '*';
+export const description = 'Log all stacks tracked by Graphite.';
 export const builder = args;
-export const canonical = "log";
+export const canonical = 'log';
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
     // Use our custom logging of branches and stacks:
-    if (argv["on-trunk"]) {
+    if (argv['on-trunk']) {
       printTrunkLog();
-    } else if (argv["behind-trunk"]) {
+    } else if (argv['behind-trunk']) {
       await printStacksBehindTrunk();
     } else {
       printTrunkLog();
@@ -68,16 +68,16 @@ async function printStacksBehindTrunk(): Promise<void> {
     return;
   }
 
-  console.log("․");
-  console.log("․");
+  console.log('․');
+  console.log('․');
   console.log(`․  ${chalk.bold(`Stack(s) below trail ${trunk.name}.`)}`);
   console.log(
     `․  To fix a stack, check out the stack and run \`gt stack fix\`.`
   );
-  console.log("․");
+  console.log('․');
 
   branchesWithoutParents.forEach((branch) => {
-    console.log("․");
+    console.log('․');
     printStack({
       baseBranch: branch.useMemoizedResults(),
       indentLevel: 1,
@@ -88,6 +88,6 @@ async function printStacksBehindTrunk(): Promise<void> {
       },
     });
     console.log(`◌──┘`);
-    console.log("․");
+    console.log('․');
   });
 }

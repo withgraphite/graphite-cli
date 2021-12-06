@@ -1,6 +1,6 @@
-import { ExitFailedError } from "../lib/errors";
-import { gpExecSync } from "../lib/utils";
-import { MetadataRef } from "../wrapper-classes";
+import { ExitFailedError } from '../lib/errors';
+import { gpExecSync } from '../lib/utils';
+import { MetadataRef } from '../wrapper-classes';
 
 export function deleteBranchAction(args: {
   branchName: string;
@@ -14,10 +14,10 @@ export function deleteBranchAction(args: {
 
   gpExecSync(
     {
-      command: `git branch ${args.force ? "-D" : "-d"} ${args.branchName}`,
+      command: `git branch ${args.force ? '-D' : '-d'} ${args.branchName}`,
     },
     (err) => {
-      throw new ExitFailedError("Failed to delete branch. Aborting...", err);
+      throw new ExitFailedError('Failed to delete branch. Aborting...', err);
     }
   );
 }

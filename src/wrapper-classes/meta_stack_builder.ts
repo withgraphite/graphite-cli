@@ -1,5 +1,5 @@
-import { AbstractStackBuilder } from ".";
-import Branch from "./branch";
+import { AbstractStackBuilder } from '.';
+import Branch from './branch';
 
 export default class MetaStackBuilder extends AbstractStackBuilder {
   protected getBranchParent(branch: Branch): Branch | undefined {
