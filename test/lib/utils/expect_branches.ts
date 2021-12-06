@@ -1,6 +1,6 @@
-import { expect } from "chai";
-import { execSync } from "child_process";
-import { GitRepo } from "../../../src/lib/utils";
+import { expect } from 'chai';
+import { execSync } from 'child_process';
+import { GitRepo } from '../../../src/lib/utils';
 
 export function expectBranches(repo: GitRepo, sortedBranches: string) {
   expect(
@@ -9,10 +9,10 @@ export function expectBranches(repo: GitRepo, sortedBranches: string) {
     )
       .toString()
       .trim()
-      .split("\n")
-      .filter((b) => b !== "prod") // scene related branch
-      .filter((b) => b !== "x2") // scene related branch
+      .split('\n')
+      .filter((b) => b !== 'prod') // scene related branch
+      .filter((b) => b !== 'x2') // scene related branch
       .sort()
-      .join(", ")
+      .join(', ')
   ).to.equal(sortedBranches);
 }
