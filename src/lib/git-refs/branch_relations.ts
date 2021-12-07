@@ -182,15 +182,14 @@ function traverseGitTreeFromCommitUntilBranch(
 
 function branchListFromShowRefOutput(output: string): Record<string, string[]> {
   const ret: Record<string, string[]> = {};
-  const ignorebranches = repoConfig.getIgnoreBranches();
 
   for (const line of output.split('\n')) {
     if (line.length > 0) {
       const parts = line.split(' ');
       const branchName = parts[1].slice('refs/heads/'.length);
       const branchRef = parts[0];
-      //TODO: Replace this with IsIgnoredBranch
-      if (!ignorebranches.includes(branchName)) {
+      // TODO: Replace this with IsIgnoredBranch
+      if (repoConfig.branchIsIgnored(branchName)) {
         if (branchRef in ret) {
           ret[branchRef].push(branchName);
         } else {

@@ -299,7 +299,7 @@ export default class Branch {
       .filter(
         (name) =>
           //TODO: Replace this with IsIgnoredBranch
-          !repoConfig.getIgnoreBranches().includes(name) && name.length > 0
+          repoConfig.branchIsIgnored(name) && name.length > 0
       )
       .map((name) => new Branch(name));
   }
