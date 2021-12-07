@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
+import { isMatch } from 'micromatch';
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils';
 import { getRepoRootPath } from './repo_root_path';
@@ -78,13 +79,11 @@ class RepoConfig {
   }
 
   public setIgnoreBranches(ignoreBranches: string[]): void {
-    if (!this._data.ignoreBranches || this._data.ignoreBranches.length === 0) {
-      this._data.ignoreBranches = ignoreBranches;
-    } else {
-      this._data.ignoreBranches =
-        this.getIgnoreBranches().concat(ignoreBranches);
+    if (!this._data.ignoreBranches) {
+      this._data.ignoreBranches = [];
     }
 
+    this._data.ignoreBranches = this.getIgnoreBranches().concat(ignoreBranches);
     this.save();
   }
 
@@ -138,21 +137,11 @@ class RepoConfig {
     this.save();
   }
 
+  /*
+   * Branch names are to be matched using glob patterns.
+   */
   public branchIsIgnored(branchName: string): boolean {
-    for (const pattern of this.getIgnoreBranches()) {
-      const reg = new RegExp(pattern);
-      const matched = branchName.match(reg);
-      if (matched && matched.length > 0) {
-        return true;
-      }
-    }
-    return false;
-    // const reg = new RegExp(branchName);
-    // const matched = this.getIgnoreBranches().filter(function (ignoredBranch) {
-    //   return ignoredBranch.match(reg);
-    // });
-    // logDebug(`${branchName} is ignored: ${matched.length > 0}`);
-    // return matched.length > 0;
+    return isMatch(branchName, this.getIgnoreBranches());
   }
 
   /**

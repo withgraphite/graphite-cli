@@ -296,7 +296,7 @@ export default class Branch {
       .toString()
       .trim()
       .split('\n')
-      .filter((name) => !repoConfig.branchIsIgnored(name) && name.length > 0)
+      .filter((name) => name.length > 0 && !repoConfig.branchIsIgnored(name))
       .map((name) => new Branch(name));
   }
 
