@@ -39,6 +39,7 @@ export async function submitAction(args: {
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
+  updatesOnly: boolean;
 }): Promise<void> {
   if (args.dryRun) {
     logInfo(
@@ -93,10 +94,10 @@ export async function submitAction(args: {
     )
   );
   branchesToSubmit.forEach((branch) => {
-    let operation;
+    let operation = '';
     if (branch.getPRInfo() !== undefined) {
       operation = 'update';
-    } else {
+    } else if (!args.updatesOnly) {
       operation = 'create';
     }
     logInfo(`▸ ${chalk.yellow(branch.name)} (${operation})`);
@@ -111,6 +112,7 @@ export async function submitAction(args: {
       repoName: repoName,
       editPRFieldsInline: args.editPRFieldsInline,
       createNewPRsAsDraft: args.createNewPRsAsDraft,
+      updatesOnly: args.updatesOnly,
     });
   }
 }
@@ -164,6 +166,7 @@ export async function submitBranches(args: {
   repoName: string;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
+  updatesOnly: boolean;
 }): Promise<void> {
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
     await getPRInfoForBranches({
@@ -173,6 +176,7 @@ export async function submitBranches(args: {
       repoName: args.repoName,
       editPRFieldsInline: args.editPRFieldsInline,
       createNewPRsAsDraft: args.createNewPRsAsDraft,
+      updatesOnly: args.updatesOnly,
     });
 
   const branchesPushedToRemote = pushBranchesToRemote(
@@ -223,6 +227,7 @@ async function getPRInfoForBranches(args: {
   repoName: string;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
+  updatesOnly: boolean;
 }): Promise<TPRSubmissionInfoWithBranch> {
   const branchPRInfo: TPRSubmissionInfoWithBranch = [];
   for (const branch of args.branches) {
@@ -232,7 +237,7 @@ async function getPRInfoForBranches(args: {
     const parentBranchName = getBranchBaseName(branch);
 
     const previousPRInfo = branch.getPRInfo();
-    if (previousPRInfo === undefined) {
+    if (!args.updatesOnly && previousPRInfo === undefined) {
       const { title, body, draft } = await getPRCreationInfo({
         branch: branch,
         parentBranchName: parentBranchName,
@@ -249,13 +254,15 @@ async function getPRInfoForBranches(args: {
         branch: branch,
       });
     } else {
-      branchPRInfo.push({
-        action: 'update',
-        head: branch.name,
-        base: parentBranchName,
-        prNumber: previousPRInfo.number,
-        branch: branch,
-      });
+      if (previousPRInfo) {
+        branchPRInfo.push({
+          action: 'update',
+          head: branch.name,
+          base: parentBranchName,
+          prNumber: previousPRInfo.number,
+          branch: branch,
+        });
+      }
     }
   }
 

@@ -14,6 +14,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       editPRFieldsInline: argv.edit,
       createNewPRsAsDraft: argv.draft,
       dryRun: argv['dry-run'],
+      updatesOnly: argv['updates-only'],
     });
   });
 };

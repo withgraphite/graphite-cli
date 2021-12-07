@@ -38,6 +38,11 @@ export const args = {
     type: 'boolean',
     default: false,
   },
+  'updates-only': {
+    describe: 'Only update the PRs that have been already been submitted.',
+    type: 'boolean',
+    default: false,
+  },
 } as const;
 
 export const builder = args;
