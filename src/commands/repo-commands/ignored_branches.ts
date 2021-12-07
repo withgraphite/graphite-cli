@@ -11,6 +11,12 @@ const args = {
     type: 'string',
     describe: 'Add a branch to be ignored by Graphite.',
   },
+  remove: {
+    demandOption: false,
+    default: false,
+    type: 'string',
+    describe: 'Remove a branch pattern being ignored by Graphite.',
+  },
 } as const;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -39,6 +45,13 @@ export const handler = async (argv: argsT): Promise<void> => {
       }
       repoConfig.addIgnoreBranchPatterns([argv.add]);
       logInfo(`Added (${argv.add}) to be ignored`);
+    } else if (argv.remove) {
+      if (repoConfig.getIgnoreBranches().includes(argv.remove)) {
+        repoConfig.removeIgnoreBranches(argv.remove);
+        logInfo(`Removed pattern (${argv.remove}) from ignore list`);
+      } else {
+        logInfo(`No pattern matching (${argv.remove}) found.`);
+      }
     } else {
       const ignoredBranches = repoConfig.getIgnoreBranches();
       if (ignoredBranches.length) {
