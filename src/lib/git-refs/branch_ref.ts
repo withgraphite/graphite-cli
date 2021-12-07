@@ -22,7 +22,7 @@ function refreshRefsCache(): void {
       }
       const ref = pair[0];
       const branchName = pair[1].replace('refs/heads/', '');
-      if (repoConfig.isNotIgnoredBranch(branchName)) {
+      if (!repoConfig.branchIsIgnored(branchName)) {
         memoizedRefToBranches[ref]
           ? memoizedRefToBranches[ref].push(branchName)
           : (memoizedRefToBranches[ref] = [branchName]);
