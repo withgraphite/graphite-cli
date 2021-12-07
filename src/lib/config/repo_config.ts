@@ -72,28 +72,21 @@ class RepoConfig {
     return this._data.trunk;
   }
 
-  // TODO: What is this used for? Merge with setIgnoreBranches
   public addIgnoredBranches(ignoreBranchesToAdd: string[]): void {
     const currentIgnoredBranches = this.getIgnoreBranches();
     this.setIgnoreBranches(ignoreBranchesToAdd.concat(currentIgnoredBranches));
   }
 
-  // TODO: This should append to the list instead of rewriting the whole blob. Should accept an array
   public setIgnoreBranches(ignoreBranches: string[]): void {
-    /* TODO: Do I need to sanity check the list of branches provided?
-        Check if branch matching name exists and/or anything matching wildcard
-        exists? Performance drain since it will add tree-walking.
-        Note: Branch.exists uses git show-ref which supports pattern search */
     if (!this._data.ignoreBranches || this._data.ignoreBranches.length === 0) {
       this._data.ignoreBranches = ignoreBranches;
     } else {
-      this._data.ignoreBranches.concat(ignoreBranches); // TODO: Do I need to dedupe?
+      this._data.ignoreBranches.concat(ignoreBranches);
     }
 
     this.save();
   }
 
-  // TODO: Should this be a public function?
   public getIgnoreBranches(): string[] {
     return this._data.ignoreBranches || [];
   }
@@ -144,7 +137,6 @@ class RepoConfig {
     this.save();
   }
 
-  // TODO: This could do wildcard matching.
   public branchIsIgnored(branchName: string): boolean {
     const reg = new RegExp(branchName);
     const matched = this.getIgnoreBranches().filter(function (ignoredBranch) {

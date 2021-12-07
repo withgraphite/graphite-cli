@@ -48,5 +48,5 @@ export const handler = async (argv: argsT): Promise<void> => {
 function findMatches(branchName: string): string {
   return gpExecSync({ command: `git branch --list '${branchName}'` })
     .toString()
-    .trim(); //TODO: Return array instead?
+    .trim();
 }
