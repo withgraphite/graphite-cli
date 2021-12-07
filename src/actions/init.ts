@@ -61,14 +61,14 @@ export async function init(
         );
       }
     });
-    repoConfig.addIgnoreBranches(ignoreBranches);
+    repoConfig.addIgnoreBranchPatterns(ignoreBranches);
   } else {
     const ignoreBranches = await selectIgnoreBranches(
       allBranches,
       newTrunkName
     );
     logInfo(`Selected following branches to ignore: ${ignoreBranches}`);
-    repoConfig.addIgnoreBranches(ignoreBranches);
+    repoConfig.addIgnoreBranchPatterns(ignoreBranches);
   }
 
   logInfo(`Graphite repo config saved at "${repoConfig.path()}"`);

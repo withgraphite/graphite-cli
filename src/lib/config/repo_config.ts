@@ -73,7 +73,7 @@ class RepoConfig {
     return this._data.trunk;
   }
 
-  public setIgnoreBranches(ignoreBranches: string[]): void {
+  public addIgnoreBranchPatterns(ignoreBranches: string[]): void {
     if (!this._data.ignoreBranches) {
       this._data.ignoreBranches = [];
     }
