@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import { repoConfig } from '../../lib/config';
 import { profile } from '../../lib/telemetry';
-import { logInfo } from '../../lib/utils';
+import { gpExecSync, logInfo, logWarn } from '../../lib/utils';
 
 const args = {
   add: {
@@ -22,15 +22,31 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
     if (argv.add) {
-      // if (!Branch.exists(argv.add)) {
-      //   throw new PreconditionsFailedError(`Branch (${argv.add}) not found`);
-      // }
-      // TODO: Refactor setIgnoreBranches to do this implicitly
+      const foundBranches = findMatches(argv.add);
+      if (foundBranches.length) {
+        logInfo(`The following branches were found matching your pattern:`);
+        logInfo(`${foundBranches}`);
+      } else {
+        logWarn(
+          `No branches were found matching your pattern. Please make sure the pattern is correct.`
+        );
+      }
       repoConfig.setIgnoreBranches([argv.add]);
       logInfo(`Added (${argv.add}) to be ignored`);
     } else {
-      // TODO: Why are we printing all the ignored branches?
-      logInfo(repoConfig.getIgnoreBranches().join('\n'));
+      const ignoredBranches = repoConfig.getIgnoreBranches();
+      if (ignoredBranches.length) {
+        logInfo(`The following patterns are being ignored by Graphite:`);
+        logInfo(ignoredBranches.join('\n'));
+      } else {
+        logInfo('No ignored branches');
+      }
     }
   });
 };
+
+function findMatches(branchName: string): string {
+  return gpExecSync({ command: `git branch --list '${branchName}'` })
+    .toString()
+    .trim(); //TODO: Return array instead?
+}

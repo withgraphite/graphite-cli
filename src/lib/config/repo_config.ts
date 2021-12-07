@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
 import { ExitFailedError } from '../errors';
-import { gpExecSync, logInfo } from '../utils';
+import { gpExecSync } from '../utils';
 import { getRepoRootPath } from './repo_root_path';
 
 const CONFIG_NAME = '.graphite_repo_config';
@@ -76,6 +76,7 @@ class RepoConfig {
     return this._data.trunk;
   }
 
+  // TODO: What is this used for? Merge with setIgnoreBranches
   public addIgnoredBranches(ignoreBranchesToAdd: string[]): void {
     const currentIgnoredBranches = this.getIgnoreBranches();
     this.setIgnoreBranches(ignoreBranchesToAdd.concat(currentIgnoredBranches));
@@ -89,7 +90,6 @@ class RepoConfig {
         Note: Branch.exists uses git show-ref which supports pattern search */
     if (!this._data.ignoreBranches || this._data.ignoreBranches.length === 0) {
       this._data.ignoreBranches = ignoreBranches;
-      logInfo(`Branches to ignore: ${ignoreBranches}`);
     } else {
       this._data.ignoreBranches.concat(ignoreBranches); // TODO: Do I need to dedupe?
     }
