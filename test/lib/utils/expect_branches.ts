@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { execSync } from 'child_process';
 import { GitRepo } from '../../../src/lib/utils';
 
-export function expectBranches(repo: GitRepo, sortedBranches: string) {
+export function expectBranches(repo: GitRepo, sortedBranches: string): void {
   expect(
     execSync(
       `git -C "${repo.dir}" for-each-ref refs/heads/ "--format=%(refname:short)"`
