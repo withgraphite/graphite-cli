@@ -4,7 +4,7 @@ import { repoConfig } from '../config';
 import cache from '../config/cache';
 import { tracer } from '../telemetry';
 import { gpExecSync } from '../utils';
-import { logDebug } from '../utils/splog';
+import { logDebug } from '../utils';
 import { getRef } from './branch_ref';
 
 export function getBranchChildrenOrParentsFromGit(
@@ -139,7 +139,7 @@ function traverseGitTreeFromCommitUntilBranch(
     };
   }
 
-  // Limit the seach
+  // Limit the search
   const maxBranchLength = repoConfig.getMaxBranchLength();
   if (n > maxBranchLength) {
     return {
@@ -188,8 +188,8 @@ function branchListFromShowRefOutput(output: string): Record<string, string[]> {
       const parts = line.split(' ');
       const branchName = parts[1].slice('refs/heads/'.length);
       const branchRef = parts[0];
-      // TODO: Replace this with IsIgnoredBranch
-      if (repoConfig.branchIsIgnored(branchName)) {
+
+      if (!repoConfig.branchIsIgnored(branchName)) {
         if (branchRef in ret) {
           ret[branchRef].push(branchName);
         } else {
