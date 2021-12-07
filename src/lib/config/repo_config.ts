@@ -81,7 +81,8 @@ class RepoConfig {
     if (!this._data.ignoreBranches || this._data.ignoreBranches.length === 0) {
       this._data.ignoreBranches = ignoreBranches;
     } else {
-      this._data.ignoreBranches.concat(ignoreBranches);
+      this._data.ignoreBranches =
+        this.getIgnoreBranches().concat(ignoreBranches);
     }
 
     this.save();

@@ -67,6 +67,7 @@ export async function init(
       allBranches,
       newTrunkName
     );
+    logInfo(`Selected following branches to ignore: ${ignoreBranches}`);
     repoConfig.setIgnoreBranches(ignoreBranches);
   }
 
