@@ -112,7 +112,7 @@ function printStackNode(
 function logRebaseTip(): void {
   logTip(
     [
-      'Some branch merge-bases have fell behind their parent branch latest commit. Consider:',
+      `Some branch merge-bases have fallen behind their parent branch's latest commit. Consider:`,
       `> gt branch checkout ${getTrunk()} && gt stack fix --rebase # fix all stacks`,
       `> gt branch checkout <branch> && gt stack fix --rebase # fix a specific stack`,
       `> gt branch checkout <branch> && gt upstack onto <parent> # fix a stack and update the parent`,
