@@ -82,6 +82,14 @@ class RepoConfig {
     this.save();
   }
 
+  public removeIgnoreBranches(branchPatternToRemove: string): void {
+    const ignoredBranches = this.getIgnoreBranches();
+    this._data.ignoreBranches = ignoredBranches.filter(function (pattern) {
+      return pattern != branchPatternToRemove;
+    });
+    this.save();
+  }
+
   public getIgnoreBranches(): string[] {
     return this._data.ignoreBranches || [];
   }
