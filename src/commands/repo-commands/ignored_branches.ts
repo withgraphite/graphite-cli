@@ -35,7 +35,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         logInfo(
           chalk.gray(`The following branches were found matching your pattern:`)
         );
-        foundBranches.forEach((branch) => {
+        foundBranches.split('/n').forEach((branch) => {
           logInfo(chalk.gray(branch.trim()));
         });
       } else {
@@ -64,8 +64,8 @@ export const handler = async (argv: argsT): Promise<void> => {
   });
 };
 
-function findMatches(branchName: string): string[] {
+function findMatches(branchName: string): string {
   return gpExecSync({ command: `git branch --list '${branchName}'` })
     .toString()
-    .split('\n');
+    .trim();
 }
