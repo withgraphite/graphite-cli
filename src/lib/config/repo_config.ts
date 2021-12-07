@@ -139,11 +139,20 @@ class RepoConfig {
   }
 
   public branchIsIgnored(branchName: string): boolean {
-    const reg = new RegExp(branchName);
-    const matched = this.getIgnoreBranches().filter(function (ignoredBranch) {
-      return ignoredBranch.match(reg);
-    });
-    return matched.length > 0;
+    for (const pattern of this.getIgnoreBranches()) {
+      const reg = new RegExp(pattern);
+      const matched = branchName.match(reg);
+      if (matched && matched.length > 0) {
+        return true;
+      }
+    }
+    return false;
+    // const reg = new RegExp(branchName);
+    // const matched = this.getIgnoreBranches().filter(function (ignoredBranch) {
+    //   return ignoredBranch.match(reg);
+    // });
+    // logDebug(`${branchName} is ignored: ${matched.length > 0}`);
+    // return matched.length > 0;
   }
 
   /**

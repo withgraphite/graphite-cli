@@ -190,6 +190,7 @@ function branchListFromShowRefOutput(output: string): Record<string, string[]> {
       const branchRef = parts[0];
 
       if (!repoConfig.branchIsIgnored(branchName)) {
+        logDebug(`branch ${branchName} is not ignored`);
         if (branchRef in ret) {
           ret[branchRef].push(branchName);
         } else {
