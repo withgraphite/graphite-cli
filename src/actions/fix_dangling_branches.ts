@@ -74,7 +74,7 @@ export async function fixDanglingBranches(force: boolean): Promise<void> {
         branch.setParentBranchName(trunk);
         break;
       case 'ignore_branch':
-        repoConfig.addIgnoredBranches([branch.name]);
+        repoConfig.setIgnoreBranches([branch.name]);
         break;
       case 'no_fix':
         break;
