@@ -145,7 +145,8 @@ export async function switchBranchAction(
   } else {
     logInfo(
       `Already at the ${
-        direction === TraversalDirection.Previous || TraversalDirection.Bottom
+        direction === TraversalDirection.Previous ||
+        direction === TraversalDirection.Bottom
           ? 'bottom most'
           : 'top most'
       } branch in the stack. Exiting.`
