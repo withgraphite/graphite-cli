@@ -12,7 +12,7 @@ const args = {
     demandOption: false,
     default: 1,
     type: 'number',
-    alias: 'n',
+    alias: 'down',
   },
 } as const;
 
