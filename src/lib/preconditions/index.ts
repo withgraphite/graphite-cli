@@ -29,7 +29,7 @@ function currentBranchPrecondition(): Branch {
     throw new PreconditionsFailedError(
       [
         `Cannot use graphite atop (${branch.name}) which is explicitly ignored in your repo config.`,
-        `If you'd like to edit your ignored branches, consider running "gt repo init", or manually editing your ".git/.graphite_repo_config" file.`,
+        `If you'd like to edit your ignored branches, consider running "gt repo ignored-branches --help" for options, or manually editing your ".git/.graphite_repo_config" file.`,
       ].join('\n')
     );
   }
