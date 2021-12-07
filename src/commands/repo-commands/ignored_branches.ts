@@ -37,7 +37,7 @@ export const handler = async (argv: argsT): Promise<void> => {
           `No branches were found matching the provided pattern. Please make sure it is correct.`
         );
       }
-      repoConfig.setIgnoreBranches([argv.add]);
+      repoConfig.addIgnoreBranches([argv.add]);
       logInfo(`Added (${argv.add}) to be ignored`);
     } else {
       const ignoredBranches = repoConfig.getIgnoreBranches();
