@@ -19,7 +19,7 @@ export function getCommitterDate(args: {
 
   return gpExecSync(
     {
-      command: `git log -1 --format=${logFormat} -n 1 ${args.revision}`,
+      command: `git log -1 --format=${logFormat} -n 1 ${args.revision} --`,
     },
     (err) => {
       throw new ExitFailedError(

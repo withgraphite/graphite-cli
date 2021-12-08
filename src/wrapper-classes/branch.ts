@@ -252,7 +252,7 @@ export default class Branch {
 
   public lastCommitTime(): number {
     return parseInt(
-      gpExecSync({ command: `git log ${this.name} -1 --format=%ct` })
+      gpExecSync({ command: `git log -1 --format=%ct ${this.name} --` })
         .toString()
         .trim()
     );
