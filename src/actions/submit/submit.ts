@@ -277,7 +277,8 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
         // of the push command to stderr 2) we want to analyze it but Node's
         // execSync makes analyzing stderr extremely challenging
         command: [
-          `git push origin -f ${branch.name} 2>&1`,
+          `git push origin`,
+          `-f ${branch.name} 2>&1`,
           ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
         ].join(' '),
         options: {
