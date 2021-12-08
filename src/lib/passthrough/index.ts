@@ -1,28 +1,28 @@
-import chalk from "chalk";
-import cp from "child_process";
-import { logError, logInfo } from "../utils";
+import chalk from 'chalk';
+import cp from 'child_process';
+import { logError, logInfo } from '../utils';
 
 const GIT_COMMAND_ALLOWLIST = [
-  "status",
-  "clone",
-  "add",
-  "mv",
-  "restore",
-  "rm",
-  "sparse-checkout",
-  "bisect",
-  "diff",
-  "grep",
-  "show",
-  "status",
-  "merge",
-  "rebase",
-  "reset",
-  "switch",
-  "tag",
-  "fetch",
-  "pull",
-  "push",
+  'status',
+  'clone',
+  'add',
+  'mv',
+  'restore',
+  'rm',
+  'sparse-checkout',
+  'bisect',
+  'diff',
+  'grep',
+  'show',
+  'status',
+  'merge',
+  'rebase',
+  'reset',
+  'switch',
+  'tag',
+  'fetch',
+  'pull',
+  'push',
 ];
 
 export function passthrough(args: string[]): void {
@@ -41,13 +41,13 @@ export function passthrough(args: string[]): void {
         `Command: "${chalk.yellow(
           command
         )}" is not a Graphite command, but is supported by git. Passing command through to git...`,
-        `Running: "${chalk.yellow(`git ${args.slice(2).join(" ")}`)}"\n`,
-      ].join("\n")
+        `Running: "${chalk.yellow(`git ${args.slice(2).join(' ')}`)}"\n`,
+      ].join('\n')
     )
   );
 
   try {
-    cp.spawnSync("git", args.slice(2), { stdio: "inherit" });
+    cp.spawnSync('git', args.slice(2), { stdio: 'inherit' });
   } catch (err: any) {
     logError(err);
     // eslint-disable-next-line no-restricted-syntax

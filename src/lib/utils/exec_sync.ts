@@ -1,5 +1,5 @@
-import { execSync, ExecSyncOptions } from "child_process";
-import tracer from "../telemetry/tracer";
+import { execSync, ExecSyncOptions } from 'child_process';
+import tracer from '../telemetry/tracer';
 
 export type GPExecSyncOptions = {
   // Both 1) capture the output from stdout and return it (like normal execSync)
@@ -20,8 +20,8 @@ export function gpExecSync(
     if (tracer.currentSpanId) {
       return tracer.spanSync(
         {
-          name: "execSync",
-          resource: "gpExecSync",
+          name: 'execSync',
+          resource: 'gpExecSync',
           meta: { command: command.command },
         },
         () => {

@@ -1,3 +1,3 @@
-import { refreshPRInfoInBackground } from "./fetch_pr_info";
+import { refreshPRInfoInBackground } from './fetch_pr_info';
 
 export { refreshPRInfoInBackground };

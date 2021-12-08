@@ -1,11 +1,11 @@
-import { execStateConfig } from "../lib/config";
-import { ExitFailedError } from "../lib/errors";
+import { execStateConfig } from '../lib/config';
+import { ExitFailedError } from '../lib/errors';
 import {
   ensureSomeStagedChangesPrecondition,
   uncommittedChangesPrecondition,
-} from "../lib/preconditions";
-import { gpExecSync, logWarn } from "../lib/utils";
-import { fixAction } from "./fix";
+} from '../lib/preconditions';
+import { gpExecSync, logWarn } from '../lib/utils';
+import { fixAction } from './fix';
 
 export async function commitCreateAction(opts: {
   addAll: boolean;
@@ -14,10 +14,10 @@ export async function commitCreateAction(opts: {
   if (opts.addAll) {
     gpExecSync(
       {
-        command: "git add --all",
+        command: 'git add --all',
       },
       (err) => {
-        throw new ExitFailedError("Failed to add changes. Aborting...", err);
+        throw new ExitFailedError('Failed to add changes. Aborting...', err);
       }
     );
   }
@@ -28,28 +28,28 @@ export async function commitCreateAction(opts: {
     gpExecSync(
       {
         command: [
-          "git commit",
+          'git commit',
           `-m "${opts.message}"`,
-          ...[execStateConfig.noVerify() ? ["--no-verify"] : []],
-        ].join(" "),
+          ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
+        ].join(' '),
       },
       (err) => {
-        throw new ExitFailedError("Failed to commit changes. Aborting...", err);
+        throw new ExitFailedError('Failed to commit changes. Aborting...', err);
       }
     );
   } else {
     gpExecSync(
       {
         command: [
-          "git commit",
-          ...[execStateConfig.noVerify() ? ["--no-verify"] : []],
-        ].join(" "),
+          'git commit',
+          ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
+        ].join(' '),
         options: {
-          stdio: "inherit",
+          stdio: 'inherit',
         },
       },
       (err) => {
-        throw new ExitFailedError("Failed to commit changes. Aborting...", err);
+        throw new ExitFailedError('Failed to commit changes. Aborting...', err);
       }
     );
   }
@@ -57,12 +57,12 @@ export async function commitCreateAction(opts: {
   try {
     uncommittedChangesPrecondition();
     await fixAction({
-      action: "rebase",
-      mergeConflictCallstack: "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER" as const,
+      action: 'rebase',
+      mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER' as const,
     });
   } catch {
     logWarn(
-      "Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix --rebase`"
+      'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix --rebase`'
     );
   }
 }

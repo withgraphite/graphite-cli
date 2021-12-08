@@ -1,16 +1,16 @@
-import chalk from "chalk";
-import Branch from "../../wrapper-classes/branch";
-import { repoConfig } from "../config";
-import cache from "../config/cache";
-import { tracer } from "../telemetry";
-import { gpExecSync } from "../utils";
-import { logDebug } from "../utils/splog";
-import { getRef } from "./branch_ref";
+import chalk from 'chalk';
+import Branch from '../../wrapper-classes/branch';
+import { repoConfig } from '../config';
+import cache from '../config/cache';
+import { tracer } from '../telemetry';
+import { gpExecSync } from '../utils';
+import { logDebug } from '../utils';
+import { getRef } from './branch_ref';
 
 export function getBranchChildrenOrParentsFromGit(
   branch: Branch,
   opts: {
-    direction: "children" | "parents";
+    direction: 'children' | 'parents';
     useMemoizedResults?: boolean;
   }
 ): Branch[] {
@@ -18,8 +18,8 @@ export function getBranchChildrenOrParentsFromGit(
   const useMemoizedResults = opts.useMemoizedResults ?? false;
   return tracer.spanSync(
     {
-      name: "function",
-      resource: "branch.getChildrenOrParents",
+      name: 'function',
+      resource: 'branch.getChildrenOrParents',
       meta: { direction: direction },
     },
     () => {
@@ -63,26 +63,26 @@ export function getBranchChildrenOrParentsFromGit(
 
 export function getRevListGitTree(opts: {
   useMemoizedResults: boolean;
-  direction: "parents" | "children";
+  direction: 'parents' | 'children';
 }): Record<string, string[]> {
   const cachedParentsRevList = cache.getParentsRevList();
   const cachedChildrenRevList = cache.getChildrenRevList();
   if (
     opts.useMemoizedResults &&
-    opts.direction === "parents" &&
+    opts.direction === 'parents' &&
     cachedParentsRevList
   ) {
     return cachedParentsRevList;
   } else if (
     opts.useMemoizedResults &&
-    opts.direction === "children" &&
+    opts.direction === 'children' &&
     cachedChildrenRevList
   ) {
     return cachedChildrenRevList;
   }
   const allBranches = Branch.allBranches()
     .map((b) => b.name)
-    .join(" ");
+    .join(' ');
   const revList = gitTreeFromRevListOutput(
     gpExecSync({
       command:
@@ -95,9 +95,9 @@ export function getRevListGitTree(opts: {
       .toString()
       .trim()
   );
-  if (opts.direction === "parents") {
+  if (opts.direction === 'parents') {
     cache.setParentsRevList(revList);
-  } else if (opts.direction === "children") {
+  } else if (opts.direction === 'children') {
     cache.setChildrenRevList(revList);
   }
   return revList;
@@ -113,7 +113,7 @@ function getBranchList(opts: {
 
   memoizedBranchList = branchListFromShowRefOutput(
     gpExecSync({
-      command: "git show-ref --heads",
+      command: 'git show-ref --heads',
       options: { maxBuffer: 1024 * 1024 * 1024 },
     })
       .toString()
@@ -139,7 +139,7 @@ function traverseGitTreeFromCommitUntilBranch(
     };
   }
 
-  // Limit the seach
+  // Limit the search
   const maxBranchLength = repoConfig.getMaxBranchLength();
   if (n > maxBranchLength) {
     return {
@@ -182,14 +182,15 @@ function traverseGitTreeFromCommitUntilBranch(
 
 function branchListFromShowRefOutput(output: string): Record<string, string[]> {
   const ret: Record<string, string[]> = {};
-  const ignorebranches = repoConfig.getIgnoreBranches();
 
-  for (const line of output.split("\n")) {
+  for (const line of output.split('\n')) {
     if (line.length > 0) {
-      const parts = line.split(" ");
-      const branchName = parts[1].slice("refs/heads/".length);
+      const parts = line.split(' ');
+      const branchName = parts[1].slice('refs/heads/'.length);
       const branchRef = parts[0];
-      if (!ignorebranches.includes(branchName)) {
+
+      if (!repoConfig.branchIsIgnored(branchName)) {
+        logDebug(`branch ${branchName} is not ignored`);
         if (branchRef in ret) {
           ret[branchRef].push(branchName);
         } else {
@@ -204,9 +205,9 @@ function branchListFromShowRefOutput(output: string): Record<string, string[]> {
 
 function gitTreeFromRevListOutput(output: string): Record<string, string[]> {
   const ret: Record<string, string[]> = {};
-  for (const line of output.split("\n")) {
+  for (const line of output.split('\n')) {
     if (line.length > 0) {
-      const shas = line.split(" ");
+      const shas = line.split(' ');
       ret[shas[0]] = shas.slice(1);
     }
   }

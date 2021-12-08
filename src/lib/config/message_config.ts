@@ -1,9 +1,9 @@
-import chalk from "chalk";
-import fs from "fs-extra";
-import os from "os";
-import path from "path";
+import chalk from 'chalk';
+import fs from 'fs-extra';
+import os from 'os';
+import path from 'path';
 
-const CONFIG_NAME = ".graphite_upgrade_message";
+const CONFIG_NAME = '.graphite_upgrade_message';
 const MESSAGE_CONFIG_PATH = path.join(os.homedir(), CONFIG_NAME);
 
 type TMessageConfig = {

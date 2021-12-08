@@ -1,10 +1,10 @@
 // https://docs.datadoghq.com/api/latest/tracing/
-import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
-import { request } from "@screenplaydev/retyped-routes";
-import { version } from "../../../package.json";
-import { API_SERVER } from "../api";
+import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
+import { request } from '@screenplaydev/retyped-routes';
+import { version } from '../../../package.json';
+import { API_SERVER } from '../api';
 
-type spanNameT = "function" | "execSync" | "command";
+type spanNameT = 'function' | 'execSync' | 'command';
 
 type spanT = {
   duration: number;
@@ -14,11 +14,11 @@ type spanT = {
   name: spanNameT;
   parent_id?: number;
   resource: string;
-  service: "graphite-cli";
+  service: 'graphite-cli';
   span_id: number;
   start: number;
   trace_id: number;
-  type: "custom";
+  type: 'custom';
 };
 
 const traceId = generateId();
@@ -67,20 +67,20 @@ export class Span {
       error: err ? 1 : 0,
       meta: err
         ? {
-            "error.msg": err.message,
-            "error.type": err.constructor.name,
-            ...(err.stack ? { "error.stack": err.stack } : {}),
+            'error.msg': err.message,
+            'error.type': err.constructor.name,
+            ...(err.stack ? { 'error.stack': err.stack } : {}),
             ...this.meta,
           }
         : this.meta,
       metrics: {},
       name: this.name,
       resource: this.resource,
-      service: "graphite-cli",
+      service: 'graphite-cli',
       span_id: this.spanId,
       start: Math.round(this.start),
       trace_id: traceId,
-      type: "custom",
+      type: 'custom',
       duration: Math.round(currentNanoSeconds() - this.start),
       ...(this.parentId ? { parent_id: this.parentId } : { parent_id: 0 }),
     };
@@ -154,7 +154,7 @@ class Tracer {
       .filter(notUndefined);
 
     // Set the parent id to the command if any are unset
-    const rootSpanId = trace.find((span) => span.name == "command");
+    const rootSpanId = trace.find((span) => span.name == 'command');
     if (rootSpanId) {
       trace = trace.map((s) => {
         return {
@@ -172,7 +172,7 @@ class Tracer {
   }
 
   public async flush(): Promise<void> {
-    if (process.env.NODE_ENV !== "development") {
+    if (process.env.NODE_ENV !== 'development') {
       await request.requestWithArgs(API_SERVER, graphiteCLIRoutes.traces, {
         cliVersion: version,
         jsonTraces: this.flushJson(),

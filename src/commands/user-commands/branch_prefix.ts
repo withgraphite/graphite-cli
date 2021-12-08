@@ -1,23 +1,23 @@
-import chalk from "chalk";
-import yargs from "yargs";
-import { userConfig } from "../../lib/config";
-import { profile } from "../../lib/telemetry";
-import { logInfo } from "../../lib/utils";
+import chalk from 'chalk';
+import yargs from 'yargs';
+import { userConfig } from '../../lib/config';
+import { profile } from '../../lib/telemetry';
+import { logInfo } from '../../lib/utils';
 
 const args = {
   set: {
     demandOption: false,
     default: false,
-    type: "string",
-    alias: "s",
-    describe: "Override the value of the branch-prefix in the Graphite config.",
+    type: 'string',
+    alias: 's',
+    describe: 'Override the value of the branch-prefix in the Graphite config.',
   },
 } as const;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
-export const command = "branch-prefix";
-export const canonical = "user branch-prefix";
+export const command = 'branch-prefix';
+export const canonical = 'user branch-prefix';
 export const description =
   "The prefix which Graphite will prepend to all auto-generated branch names (i.e. when you don't specify a branch name when calling `gt branch create`).";
 export const builder = args;
@@ -29,7 +29,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     } else {
       logInfo(
         userConfig.getBranchPrefix() ||
-          "branch-prefix is not set. Try running `gt user branch-prefix --set <prefix>` to update the value."
+          'branch-prefix is not set. Try running `gt user branch-prefix --set <prefix>` to update the value.'
       );
     }
   });

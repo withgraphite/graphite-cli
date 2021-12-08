@@ -1,12 +1,13 @@
-import yargs from "yargs";
+import yargs from 'yargs';
 
-export const command = "feedback <command>";
-export const desc = "Commands for providing feedback and debug state.";
+export const command = 'feedback <command>';
+export const desc = 'Commands for providing feedback and debug state.';
 export const builder = function (yargs: yargs.Argv): yargs.Argv {
   return yargs
-    .commandDir("feedback-commands", {
-      extensions: ["js"],
+    .commandDir('feedback-commands', {
+      extensions: ['js'],
     })
     .strict()
+    .showHelpOnFail(false, `Use 'gt feedback --help' for usage`)
     .demandCommand();
 };

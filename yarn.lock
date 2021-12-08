@@ -348,6 +348,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/braces@npm:*":
+  version: 3.0.1
+  resolution: "@types/braces@npm:3.0.1"
+  checksum: 728ee4ac8a525fd0ba62a20cac82e1ed8d6c933a50430fd9f5e60816110f79ef49696b7ed751475eac27ffde7230e07cf181a44791d45639b7cd1c912c9ce0e8
+  languageName: node
+  linkType: hard
+
 "@types/cacheable-request@npm:^6.0.1":
   version: 6.0.2
   resolution: "@types/cacheable-request@npm:6.0.2"
@@ -428,6 +435,15 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: e9a442bd9ed7070fa1740cf1c298939c8b8dc65dfe01aa87125d1fda0b944a0ba3132da2550b2ab5e76e67abc1e6d55fd7a7e572601d75061575e6002e372ca5
+  languageName: node
+  linkType: hard
+
+"@types/micromatch@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "@types/micromatch@npm:4.0.2"
+  dependencies:
+    "@types/braces": "*"
+  checksum: d7d2fc173926ea77c0f46b3708265f506cd97cfbaa504cacb4c0267eaaea0d0164235ba9a0b60ac369b4f73ff5fe74973a9ce12e4b160ed681ef351fcae34d41
   languageName: node
   linkType: hard
 
@@ -2265,6 +2281,7 @@ fsevents@~2.3.1:
     "@types/chai-as-promised": ^7.1.4
     "@types/chalk": ^2.2.0
     "@types/fs-extra": ^9.0.1
+    "@types/micromatch": ^4.0.2
     "@types/mocha": ^8.2.3
     "@types/node": ^14.14.37
     "@types/node-fetch": ^2.5.11
@@ -2280,9 +2297,11 @@ fsevents@~2.3.1:
     eslint: ^7.20.0
     fs-extra: ^9.0.1
     husky: ^7.0.1
+    micromatch: ^4.0.4
     mocha: ^8.3.2
     nock: ^13.1.3
     node-fetch: ^2.6.1
+    prettier: 2.3.2
     prompts: ^2.4.1
     tmp: ^0.2.1
     ts-node: ^9.0.0
@@ -3582,6 +3601,15 @@ fsevents@~2.3.1:
   version: 1.2.1
   resolution: "prelude-ls@npm:1.2.1"
   checksum: bc1649f521e8928cde0e1b349b224de2e6f00b71361a4a44f2e4a615342b6e1ae30366c32d26412dabe74d999a40f79c0ae044ae6b17cf19af935e74d12ea4fa
+  languageName: node
+  linkType: hard
+
+"prettier@npm:2.3.2":
+  version: 2.3.2
+  resolution: "prettier@npm:2.3.2"
+  bin:
+    prettier: bin-prettier.js
+  checksum: 4fd89a7f6a12b13456d359fba2b1dd0fc0a17cf33f8f15953ab9f43b21ea9b09b5a2861d63b558ca0577274ce606d390e70628cf93e26d19d6cb7f19c9eebc31
   languageName: node
   linkType: hard
 

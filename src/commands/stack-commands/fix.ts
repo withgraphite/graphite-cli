@@ -1,10 +1,10 @@
-import yargs from "yargs";
-import { fixAction } from "../../actions/fix";
-import { ExitFailedError } from "../../lib/errors";
-import { profile } from "../../lib/telemetry";
+import yargs from 'yargs';
+import { fixAction } from '../../actions/fix';
+import { ExitFailedError } from '../../lib/errors';
+import { profile } from '../../lib/telemetry';
 
-export const command = "fix";
-export const canonical = "stack fix";
+export const command = 'fix';
+export const canonical = 'stack fix';
 export const description =
   "Fix your stack of changes, either by recursively rebasing branches onto their parents, or by regenerating Graphite's stack metadata from the branch relationships in the git commit tree.";
 
@@ -13,18 +13,18 @@ const args = {
     describe: `Fix your stack by recursively rebasing branches onto their parents, as recorded in Graphite's stack metadata.`,
     demandOption: false,
     default: false,
-    type: "boolean",
+    type: 'boolean',
   },
   regen: {
     describe: `Regenerate Graphite's stack metadata from the branch relationships in the git commit tree, overwriting the previous Graphite stack metadata.`,
     demandOption: false,
     default: false,
-    type: "boolean",
+    type: 'boolean',
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const builder = args;
-export const aliases = ["f"];
+export const aliases = ['f'];
 
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
@@ -34,8 +34,8 @@ export const handler = async (argv: argsT): Promise<void> => {
       );
     }
     await fixAction({
-      action: argv.rebase ? "rebase" : argv.regen ? "regen" : undefined,
-      mergeConflictCallstack: "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER",
+      action: argv.rebase ? 'rebase' : argv.regen ? 'regen' : undefined,
+      mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
     });
   });
 };

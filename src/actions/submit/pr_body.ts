@@ -1,12 +1,12 @@
-import { execSync } from "child_process";
-import fs from "fs-extra";
-import prompts from "prompts";
-import tmp from "tmp";
-import { KilledError } from "../../lib/errors";
-import { getSingleCommitOnBranch } from "../../lib/utils";
-import { getDefaultEditorOrPrompt } from "../../lib/utils/default_editor";
-import { getPRTemplate } from "../../lib/utils/pr_templates";
-import Branch from "../../wrapper-classes/branch";
+import { execSync } from 'child_process';
+import fs from 'fs-extra';
+import prompts from 'prompts';
+import tmp from 'tmp';
+import { KilledError } from '../../lib/errors';
+import { getSingleCommitOnBranch } from '../../lib/utils';
+import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
+import { getPRTemplate } from '../../lib/utils/pr_templates';
+import Branch from '../../wrapper-classes/branch';
 
 export async function getPRBody(args: {
   branch: Branch;
@@ -21,14 +21,14 @@ export async function getPRBody(args: {
     const defaultEditor = await getDefaultEditorOrPrompt();
     const response = await prompts(
       {
-        type: "select",
-        name: "body",
-        message: "Body",
+        type: 'select',
+        name: 'body',
+        message: 'Body',
         choices: [
-          { title: `Edit Body (using ${defaultEditor})`, value: "edit" },
+          { title: `Edit Body (using ${defaultEditor})`, value: 'edit' },
           {
-            title: `Skip${hasPRTemplate ? ` (just paste template)` : ""}`,
-            value: "skip",
+            title: `Skip${hasPRTemplate ? ` (just paste template)` : ''}`,
+            value: 'skip',
           },
         ],
       },
@@ -38,14 +38,14 @@ export async function getPRBody(args: {
         },
       }
     );
-    if (response.body === "edit") {
+    if (response.body === 'edit') {
       body = await editPRBody({
-        initial: body ?? "",
+        initial: body ?? '',
         editor: defaultEditor,
       });
     }
   }
-  return body ?? "";
+  return body ?? '';
 }
 
 async function editPRBody(args: {
@@ -54,7 +54,7 @@ async function editPRBody(args: {
 }): Promise<string> {
   const file = tmp.fileSync();
   fs.writeFileSync(file.name, args.initial);
-  execSync(`${args.editor} ${file.name}`, { stdio: "inherit" });
+  execSync(`${args.editor} ${file.name}`, { stdio: 'inherit' });
   const contents = fs.readFileSync(file.name).toString();
   file.removeCallback();
   return contents;

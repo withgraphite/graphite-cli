@@ -1,10 +1,10 @@
-import chalk from "chalk";
-import fs from "fs-extra";
-import path from "path";
-import { logDebug } from "../utils";
-import { getRepoRootPath } from "./repo_root_path";
+import chalk from 'chalk';
+import fs from 'fs-extra';
+import path from 'path';
+import { logDebug } from '../utils';
+import { getRepoRootPath } from './repo_root_path';
 
-const CONFIG_NAME = ".graphite_merge_conflict";
+const CONFIG_NAME = '.graphite_merge_conflict';
 const CURRENT_REPO_CONFIG_PATH = path.join(getRepoRootPath(), CONFIG_NAME);
 
 /**
@@ -23,7 +23,7 @@ export type MergeConflictCallstackT =
       frame: GraphiteFrameT;
       parent: MergeConflictCallstackT;
     }
-  | "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER";
+  | 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER';
 
 type GraphiteFrameT =
   | StackOntoBaseRebaseStackFrameT
@@ -35,39 +35,39 @@ type GraphiteFrameT =
   | RepoSyncStackFrameT;
 
 export type StackOntoBaseRebaseStackFrameT = {
-  op: "STACK_ONTO_BASE_REBASE_CONTINUATION";
+  op: 'STACK_ONTO_BASE_REBASE_CONTINUATION';
   currentBranchName: string;
   onto: string;
 };
 
 export type StackOntoFixStackFrameT = {
-  op: "STACK_ONTO_FIX_CONTINUATION";
+  op: 'STACK_ONTO_FIX_CONTINUATION';
   currentBranchName: string;
   onto: string;
 };
 
 export type StackFixActionStackframeT = {
-  op: "STACK_FIX_ACTION_CONTINUATION";
+  op: 'STACK_FIX_ACTION_CONTINUATION';
   checkoutBranchName: string;
 };
 
 export type RestackNodeStackFrameT = {
-  op: "STACK_FIX";
+  op: 'STACK_FIX';
   sourceBranchName: string;
 };
 
 export type DeleteBranchesStackFrameT = {
-  op: "DELETE_BRANCHES_CONTINUATION";
+  op: 'DELETE_BRANCHES_CONTINUATION';
   force: boolean;
   showDeleteProgress: boolean;
 };
 
 export type RepoFixBranchCountSanityCheckStackFrameT = {
-  op: "REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION";
+  op: 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION';
 };
 
 export type RepoSyncStackFrameT = {
-  op: "REPO_SYNC_CONTINUATION";
+  op: 'REPO_SYNC_CONTINUATION';
   force: boolean;
   resubmit: boolean;
   oldBranchName: string;

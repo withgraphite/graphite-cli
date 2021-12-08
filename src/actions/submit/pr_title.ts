@@ -1,7 +1,7 @@
-import prompts from "prompts";
-import { KilledError } from "../../lib/errors";
-import { getSingleCommitOnBranch } from "../../lib/utils";
-import Branch from "../../wrapper-classes/branch";
+import prompts from 'prompts';
+import { KilledError } from '../../lib/errors';
+import { getSingleCommitOnBranch } from '../../lib/utils';
+import Branch from '../../wrapper-classes/branch';
 
 export async function getPRTitle(args: {
   branch: Branch;
@@ -11,9 +11,9 @@ export async function getPRTitle(args: {
   if (args.editPRFieldsInline) {
     const response = await prompts(
       {
-        type: "text",
-        name: "title",
-        message: "Title",
+        type: 'text',
+        name: 'title',
+        message: 'Title',
         initial: title,
       },
       {

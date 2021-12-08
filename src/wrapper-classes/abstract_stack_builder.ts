@@ -1,6 +1,6 @@
-import { Stack, StackNode } from ".";
-import { getTrunk, logDebug } from "../lib/utils";
-import Branch from "./branch";
+import { Stack, StackNode } from '.';
+import { getTrunk, logDebug } from '../lib/utils';
+import Branch from './branch';
 
 export default abstract class AbstractStackBuilder {
   useMemoizedResults: boolean;
@@ -33,7 +33,7 @@ export default abstract class AbstractStackBuilder {
     while (possibleSourceNodes.length > 0) {
       const node = possibleSourceNodes.pop();
       if (!node) {
-        throw new Error("Stack missing source node, shouldnt happen");
+        throw new Error('Stack missing source node, shouldnt happen');
       }
       if (node.branch.name === branch.name) {
         stack.source = node;

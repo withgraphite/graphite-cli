@@ -1,8 +1,8 @@
-import Branch from "../../wrapper-classes/branch";
-import { repoConfig } from "../config";
-import cache from "../config/cache";
-import { ExitFailedError } from "../errors";
-import { gpExecSync } from "../utils";
+import Branch from '../../wrapper-classes/branch';
+import { repoConfig } from '../config';
+import cache from '../config/cache';
+import { ExitFailedError } from '../errors';
+import { gpExecSync } from '../utils';
 
 function refreshRefsCache(): void {
   cache.clearBranchRefs();
@@ -13,16 +13,16 @@ function refreshRefsCache(): void {
   })
     .toString()
     .trim()
-    .split("\n")
+    .split('\n')
     .filter((line) => line.length > 0)
     .forEach((line) => {
-      const pair = line.split(" ");
+      const pair = line.split(' ');
       if (pair.length !== 2) {
-        throw new ExitFailedError("Unexpected git ref output");
+        throw new ExitFailedError('Unexpected git ref output');
       }
       const ref = pair[0];
-      const branchName = pair[1].replace("refs/heads/", "");
-      if (repoConfig.isNotIgnoredBranch(branchName)) {
+      const branchName = pair[1].replace('refs/heads/', '');
+      if (!repoConfig.branchIsIgnored(branchName)) {
         memoizedRefToBranches[ref]
           ? memoizedRefToBranches[ref].push(branchName)
           : (memoizedRefToBranches[ref] = [branchName]);

@@ -1,24 +1,24 @@
-import prompts from "prompts";
-import { repoConfig } from "../lib/config";
-import { RepoSyncStackFrameT } from "../lib/config/merge_conflict_callstack_config";
-import { ExitFailedError, PreconditionsFailedError } from "../lib/errors";
+import prompts from 'prompts';
+import { repoConfig } from '../lib/config';
+import { RepoSyncStackFrameT } from '../lib/config/merge_conflict_callstack_config';
+import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
 import {
   cliAuthPrecondition,
   currentBranchPrecondition,
-} from "../lib/preconditions";
-import { syncPRInfoForBranches } from "../lib/sync/pr_info";
+} from '../lib/preconditions';
+import { syncPRInfoForBranches } from '../lib/sync/pr_info';
 import {
   checkoutBranch,
   getTrunk,
   gpExecSync,
   logInfo,
   uncommittedChanges,
-} from "../lib/utils";
-import { logNewline, logTip } from "../lib/utils/splog";
-import Branch from "../wrapper-classes/branch";
-import { deleteMergedBranches } from "./clean_branches";
-import { fixDanglingBranches } from "./fix_dangling_branches";
-import { submitBranches } from "./submit";
+} from '../lib/utils';
+import { logNewline, logTip } from '../lib/utils/splog';
+import Branch from '../wrapper-classes/branch';
+import { deleteMergedBranches } from './clean_branches';
+import { fixDanglingBranches } from './fix_dangling_branches';
+import { submitBranches } from './submit';
 
 export async function syncAction(opts: {
   pull: boolean;
@@ -29,7 +29,7 @@ export async function syncAction(opts: {
   fixDanglingBranches: boolean;
 }): Promise<void> {
   if (uncommittedChanges()) {
-    throw new PreconditionsFailedError("Cannot sync with uncommitted changes");
+    throw new PreconditionsFailedError('Cannot sync with uncommitted changes');
   }
   const oldBranch = currentBranchPrecondition();
   const trunk = getTrunk().name;
@@ -59,7 +59,7 @@ export async function syncAction(opts: {
   }
 
   const deleteMergedBranchesContinuation = {
-    op: "REPO_SYNC_CONTINUATION" as const,
+    op: 'REPO_SYNC_CONTINUATION' as const,
     force: opts.force,
     resubmit: opts.resubmit,
     oldBranchName: oldBranch.name,
@@ -71,13 +71,13 @@ export async function syncAction(opts: {
     logTip(`Disable this behavior at any point in the future with --no-delete`);
     await deleteMergedBranches({
       frame: {
-        op: "DELETE_BRANCHES_CONTINUATION",
+        op: 'DELETE_BRANCHES_CONTINUATION',
         force: opts.force,
         showDeleteProgress: opts.showDeleteProgress,
       },
       parent: {
         frame: deleteMergedBranchesContinuation,
-        parent: "TOP_OF_CALLSTACK_WITH_NOTHING_AFTER",
+        parent: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
       },
     });
   }
@@ -126,8 +126,8 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
       return (
         !b.isTrunk() &&
         b.getParentFromMeta() !== undefined &&
-        prState !== "MERGED" &&
-        prState !== "CLOSED"
+        prState !== 'MERGED' &&
+        prState !== 'CLOSED'
       );
     },
   }).forEach((b) => {
@@ -146,25 +146,26 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
   logNewline();
   logInfo(
     [
-      `Detected merge bases changes for:`,
+      `The following branches appear to have been rebased (or cherry-picked) in your local repo but changes have not yet propagated to PR (remote):`,
       ...needsResubmission.map((b) => `- ${b.name}`),
-    ].join("\n")
+    ].join('\n')
   );
-  logTip(`Disable this behavior at any point in the future with --no-resubmit`);
+
+  logTip(`Disable this check at any point in the future with --no-resubmit`);
 
   // Prompt for resubmission.
   let resubmit: boolean = force;
   if (!force) {
     const response = await prompts({
-      type: "confirm",
-      name: "value",
-      message: `Update remote PR mergebases to match local?`,
+      type: 'confirm',
+      name: 'value',
+      message: `Update PR to propagate local rebase changes? (PR will be re-submitted)`,
       initial: true,
     });
     resubmit = response.value;
   }
   if (resubmit) {
-    logInfo(`Updating outstanding PR mergebases...`);
+    logInfo(`Updating PR to propagate local rebase changes...`);
     const cliAuthToken = cliAuthPrecondition();
     const repoName = repoConfig.getRepoName();
     const repoOwner = repoConfig.getRepoOwner();

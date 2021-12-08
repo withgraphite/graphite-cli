@@ -1,5 +1,5 @@
-import { execSync } from "child_process";
-import { gpExecSync } from "../lib/utils";
+import { execSync } from 'child_process';
+import { gpExecSync } from '../lib/utils';
 
 export default class Commit {
   sha: string;
@@ -18,14 +18,14 @@ export default class Commit {
       return execSync(`git rev-parse ${this.sha}`)
         .toString()
         .trim()
-        .split("\n")
+        .split('\n')
         .map((parentSha) => new Commit(parentSha));
     } catch (e) {
       return [];
     }
   }
 
-  private messageImpl(format: "B" | "b" | "s"): string {
+  private messageImpl(format: 'B' | 'b' | 's'): string {
     const message = gpExecSync(
       {
         command: `git log --format=%${format} -n 1 ${this.sha} --`,
@@ -41,14 +41,14 @@ export default class Commit {
   }
 
   public messageRaw(): string {
-    return this.messageImpl("B");
+    return this.messageImpl('B');
   }
 
   public messageSubject(): string {
-    return this.messageImpl("s");
+    return this.messageImpl('s');
   }
 
   public messageBody(): string {
-    return this.messageImpl("b");
+    return this.messageImpl('b');
   }
 }

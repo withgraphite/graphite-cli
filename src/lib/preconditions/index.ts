@@ -1,13 +1,19 @@
-import Branch from "../../wrapper-classes/branch";
-import { repoConfig, userConfig } from "../config";
-import { PreconditionsFailedError } from "../errors";
-import {detectStagedChanges, gpExecSync, logTip, uncommittedChanges, unstagedChanges} from "../utils";
-import {trackedUncommittedChanges} from "../utils/git_status_utils";
+import Branch from '../../wrapper-classes/branch';
+import { repoConfig, userConfig } from '../config';
+import { PreconditionsFailedError } from '../errors';
+import {
+  detectStagedChanges,
+  gpExecSync,
+  logTip,
+  uncommittedChanges,
+  unstagedChanges,
+} from '../utils';
+import { trackedUncommittedChanges } from '../utils/git_status_utils';
 
 function addAllAvailableTip(): void {
   if (unstagedChanges()) {
     logTip(
-        "There are unstaged changes. Use -a option to stage all unstaged changes."
+      'There are unstaged changes. Use -a option to stage all unstaged changes.'
     );
   }
 }
@@ -23,8 +29,8 @@ function currentBranchPrecondition(): Branch {
     throw new PreconditionsFailedError(
       [
         `Cannot use graphite atop (${branch.name}) which is explicitly ignored in your repo config.`,
-        `If you'd like to edit your ignored branches, consider running "gt repo init", or manually editing your ".git/.graphite_repo_config" file.`,
-      ].join("\n")
+        `If you'd like to edit your ignored branches, consider running "gt repo ignored-branches --help" for options, or manually editing your ".git/.graphite_repo_config" file.`,
+      ].join('\n')
     );
   }
   return branch;
@@ -41,8 +47,8 @@ function branchExistsPrecondition(branchName: string): void {
 function uncommittedTrackedChangesPrecondition(): void {
   if (trackedUncommittedChanges()) {
     throw new PreconditionsFailedError(
-        `There are tracked changes that have not been committed. Please resolve and then retry.`
-    )
+      `There are tracked changes that have not been committed. Please resolve and then retry.`
+    );
   }
 }
 
@@ -54,9 +60,11 @@ function uncommittedChangesPrecondition(): void {
   }
 }
 
-function ensureSomeStagedChangesPrecondition(addAllLogTipEnabled?: boolean): void {
+function ensureSomeStagedChangesPrecondition(
+  addAllLogTipEnabled?: boolean
+): void {
   if (!detectStagedChanges()) {
-    gpExecSync({ command: `git status`, options: { stdio: "ignore" } });
+    gpExecSync({ command: `git status`, options: { stdio: 'ignore' } });
     if (addAllLogTipEnabled) {
       addAllAvailableTip();
     }
@@ -68,7 +76,7 @@ function cliAuthPrecondition(): string {
   const token = userConfig.getAuthToken();
   if (!token || token.length === 0) {
     throw new PreconditionsFailedError(
-      "Please authenticate your Graphite CLI by visiting https://app.graphite.dev/activate."
+      'Please authenticate your Graphite CLI by visiting https://app.graphite.dev/activate.'
     );
   }
   return token;
@@ -86,7 +94,7 @@ function currentGitRepoPrecondition(): string {
     .toString()
     .trim();
   if (!repoRootPath || repoRootPath.length === 0) {
-    throw new PreconditionsFailedError("No .git repository found.");
+    throw new PreconditionsFailedError('No .git repository found.');
   }
   return repoRootPath;
 }

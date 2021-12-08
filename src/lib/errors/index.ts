@@ -1,14 +1,14 @@
-import Branch from "../../wrapper-classes/branch";
+import Branch from '../../wrapper-classes/branch';
 import {
   MergeConflictCallstackT,
   persistMergeConflictCallstack,
-} from "../config/merge_conflict_callstack_config";
+} from '../config/merge_conflict_callstack_config';
 
 class ExitError extends Error {}
 class ExitCancelledError extends ExitError {
   constructor(message: string) {
     super(message);
-    this.name = "ExitCancelled";
+    this.name = 'ExitCancelled';
   }
 }
 
@@ -21,20 +21,20 @@ class ExitFailedError extends ExitError {
             err
               .toString()
               .trim()
-              .split("\n")
+              .split('\n')
               .map((line) => `> ${line}`)
-              .join("\n"),
-          ].join("\n")
+              .join('\n'),
+          ].join('\n')
         )
       : super(message);
-    this.name = "ExitFailed";
+    this.name = 'ExitFailed';
   }
 }
 
 class RebaseConflictError extends ExitError {
   constructor(message: string, callstack: MergeConflictCallstackT) {
     super(message);
-    this.name = "RebaseConflict";
+    this.name = 'RebaseConflict';
     persistMergeConflictCallstack(callstack);
   }
 }
@@ -42,28 +42,28 @@ class RebaseConflictError extends ExitError {
 class ValidationFailedError extends ExitError {
   constructor(message: string) {
     super(message);
-    this.name = "ValidationFailed";
+    this.name = 'ValidationFailed';
   }
 }
 
 class PreconditionsFailedError extends ExitError {
   constructor(message: string) {
     super(message);
-    this.name = "PreconditionsFailed";
+    this.name = 'PreconditionsFailed';
   }
 }
 
 class ConfigError extends ExitError {
   constructor(message: string) {
     super(message);
-    this.name = "Config";
+    this.name = 'Config';
   }
 }
 
 class KilledError extends ExitError {
   constructor() {
     super(`User killed Graphite early`);
-    this.name = "Killed";
+    this.name = 'Killed';
   }
 }
 
@@ -75,7 +75,7 @@ class SiblingBranchError extends ExitError {
         `Graphite cannot infer parent-child relationships between identical branches.`,
         `Please add a commit to one, or delete one to continue:`,
         ...branches.map((b) => `-> (${b.name})`),
-      ].join("\n")
+      ].join('\n')
     );
     this.name = `SiblingBranchError`;
   }
@@ -89,7 +89,7 @@ class MultiParentError extends ExitError {
         `Graphite does not support multi-parent branches in stacks.`,
         `Please adjust the git commit tree or delete one of the parents:`,
         ...parents.map((b) => `-> (${b.name})`),
-      ].join("\n")
+      ].join('\n')
     );
     this.name = `ParentBranchError`;
   }

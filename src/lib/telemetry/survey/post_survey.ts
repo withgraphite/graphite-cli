@@ -1,12 +1,12 @@
-import cp from "child_process";
-import surveyConfig from "../../config/survey_config";
+import cp from 'child_process';
+import surveyConfig from '../../config/survey_config';
 
 export function postSurveyResponsesInBackground(): void {
   // We don't worry about race conditions here - we can dedup on the server.
   if (surveyConfig.hasSurveyResponse()) {
-    cp.spawn("/usr/bin/env", ["node", __filename], {
+    cp.spawn('/usr/bin/env', ['node', __filename], {
       detached: true,
-      stdio: "ignore",
+      stdio: 'ignore',
     });
   }
 }

@@ -12,3 +12,34 @@ Graphite is currently in closed beta, and you’ll need a Graphite account to su
 <https://docs.graphite.dev/>
 
 Everything is still a little early, so please add comments to our user guide if you have any questions, feedback, or suggestions!
+
+
+## Developing and Running tests
+
+Interested in contributing to graphite CLI? Here's how to get started.
+
+You'll need to install yarn on your machine
+```
+npm install --global yarn
+```
+
+Build the CLI
+```
+yarn install
+yarn build
+```
+
+Running tests
+```
+DEBUG=1 yarn test --full-trace
+```
+
+Running a subset of tests
+```
+DEBUG=1 yarn test --full-trace -g "test pattern"
+```
+
+Running one test
+```
+DEBUG=1 yarn test-one "<path to .js test file in dist folder>"
+```

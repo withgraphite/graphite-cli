@@ -1,13 +1,13 @@
-import graphiteCLIRoutes from "@screenplaydev/graphite-cli-routes";
-import { request } from "@screenplaydev/retyped-routes";
-import fs from "fs-extra";
-import os from "os";
-import path from "path";
-import { API_SERVER } from "../api";
-import { cliAuthPrecondition } from "../preconditions";
-import { SurveyResponseT } from "../telemetry/survey/survey";
+import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
+import { request } from '@screenplaydev/retyped-routes';
+import fs from 'fs-extra';
+import os from 'os';
+import path from 'path';
+import { API_SERVER } from '../api';
+import { cliAuthPrecondition } from '../preconditions';
+import { SurveyResponseT } from '../telemetry/survey/survey';
 
-const SURVEY_CONFIG_NAME = ".graphite_beta_survey";
+const SURVEY_CONFIG_NAME = '.graphite_beta_survey';
 const SURVEY_CONFIG_PATH = path.join(os.homedir(), SURVEY_CONFIG_NAME);
 
 type TSurveyConfig = {

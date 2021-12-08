@@ -1,24 +1,24 @@
-import { expect } from "chai";
-import fs from "fs-extra";
-import { GitRepo } from "../../../../src/lib/utils";
-import { TrailingProdScene } from "../../../lib/scenes";
-import { configureTest } from "../../../lib/utils";
+import { expect } from 'chai';
+import fs from 'fs-extra';
+import { GitRepo } from '../../../../src/lib/utils';
+import { TrailingProdScene } from '../../../lib/scenes';
+import { configureTest } from '../../../lib/utils';
 
 for (const scene of [new TrailingProdScene()]) {
   describe(`(${scene}): feedback debug-context`, function () {
     configureTest(this, scene);
 
-    it("Can create debug-context", () => {
+    it('Can create debug-context', () => {
       expect(() =>
         scene.repo.execCliCommand(`feedback debug-context`)
       ).to.not.throw(Error);
     });
 
-    it("Can recreate a tmp repo based on debug context", () => {
-      scene.repo.createChange("a", "a");
+    it('Can recreate a tmp repo based on debug context', () => {
+      scene.repo.createChange('a', 'a');
       scene.repo.execCliCommand(`branch create a -m "a"`);
 
-      scene.repo.createChange("b", "b");
+      scene.repo.createChange('b', 'b');
       scene.repo.execCliCommand(`branch create b -m "b"`);
 
       const context = scene.repo.execCliCommandAndGetOutput(
@@ -31,16 +31,16 @@ for (const scene of [new TrailingProdScene()]) {
         )
         .toString()
         .trim()
-        .split("\n");
+        .split('\n');
 
       const tmpDir = outputLines[outputLines.length - 1];
 
       const newRepo = new GitRepo(tmpDir);
-      newRepo.checkoutBranch("b");
-      expect(newRepo.currentBranchName()).to.eq("b");
+      newRepo.checkoutBranch('b');
+      expect(newRepo.currentBranchName()).to.eq('b');
 
       newRepo.execCliCommand(`bp`);
-      expect(newRepo.currentBranchName()).to.eq("a");
+      expect(newRepo.currentBranchName()).to.eq('a');
 
       fs.emptyDirSync(tmpDir);
       fs.removeSync(tmpDir);

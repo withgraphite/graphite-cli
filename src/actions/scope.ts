@@ -1,1 +1,1 @@
-export type TScope = "UPSTACK" | "DOWNSTACK" | "FULLSTACK";
+export type TScope = 'UPSTACK' | 'DOWNSTACK' | 'FULLSTACK';

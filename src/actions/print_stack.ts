@@ -1,9 +1,9 @@
-import chalk from "chalk";
-import { getCommitterDate } from "../lib/utils";
-import { getTrunk } from "../lib/utils/trunk";
-import { Commit } from "../wrapper-classes";
-import Branch from "../wrapper-classes/branch";
-import { TBranchPRInfo } from "../wrapper-classes/metadata_ref";
+import chalk from 'chalk';
+import { getCommitterDate } from '../lib/utils';
+import { getTrunk } from '../lib/utils/trunk';
+import { Commit } from '../wrapper-classes';
+import Branch from '../wrapper-classes/branch';
+import { TBranchPRInfo } from '../wrapper-classes/metadata_ref';
 
 type TPrintStackConfig = {
   currentBranch: Branch | null;
@@ -54,18 +54,18 @@ export function printStack(args: {
   //    horizontally
   const numChildren = unvisitedChildren.length;
   if (numChildren > 1) {
-    let newBranchOffshoots = "│";
+    let newBranchOffshoots = '│';
     // we only need to draw numChildren - 1 offshots since the first child
     // continues the parent's main stem
     for (let i = 1; i < numChildren; i++) {
       if (i < numChildren - 1) {
-        newBranchOffshoots += "──┴";
+        newBranchOffshoots += '──┴';
       } else {
-        newBranchOffshoots += "──┘";
+        newBranchOffshoots += '──┘';
       }
     }
     console.log(currPrefix + newBranchOffshoots);
-    console.log(currPrefix + "│");
+    console.log(currPrefix + '│');
   }
 
   // print lines of branch info
@@ -77,19 +77,19 @@ export function printStack(args: {
   console.log(
     currPrefix +
       (!args.config.offTrunk && args.baseBranch.name === getTrunk().name
-        ? "․"
-        : "│")
+        ? '․'
+        : '│')
   );
 }
 
 function getPrefix(indentLevel: number, config: TPrintStackConfig): string {
-  let prefix = "";
+  let prefix = '';
   for (let i = 0; i < indentLevel; i++) {
     // if we're behind trunk, the stem of trunk's branch should be dotted
     if (i === 0) {
-      prefix += config.offTrunk ? "│  " : "․  ";
+      prefix += config.offTrunk ? '│  ' : '․  ';
     } else {
-      prefix += "│  ";
+      prefix += '│  ';
     }
   }
   return prefix;
@@ -110,7 +110,7 @@ function getBranchInfo(branch: Branch, config: TPrintStackConfig): string[] {
     `${chalk.dim(
       getCommitterDate({
         revision: branch.name,
-        timeFormat: "RELATIVE_READABLE",
+        timeFormat: 'RELATIVE_READABLE',
       })
     )}`
   );
@@ -150,36 +150,36 @@ export function getBranchTitle(
     config.currentBranch?.name === branch.name
       ? chalk.cyan(`${branch.name} (current)`)
       : branch.name;
-  const prNumber = prInfo !== undefined ? `PR #${prInfo.number}` : "";
+  const prNumber = prInfo !== undefined ? `PR #${prInfo.number}` : '';
 
-  if (prInfo?.state === "MERGED") {
-    return `${branchName} ${prNumber} ${getPRState(prInfo) ?? ""}`;
-  } else if (prInfo?.state === "CLOSED") {
+  if (prInfo?.state === 'MERGED') {
+    return `${branchName} ${prNumber} ${getPRState(prInfo) ?? ''}`;
+  } else if (prInfo?.state === 'CLOSED') {
     return `${chalk.strikethrough(`${branchName} ${prNumber}`)} ${
-      getPRState(prInfo) ?? ""
+      getPRState(prInfo) ?? ''
     }`;
   } else {
     return `${chalk.blueBright(branchName)} ${chalk.yellow(prNumber)} ${
-      getPRState(prInfo) ?? ""
+      getPRState(prInfo) ?? ''
     }`;
   }
 }
 
 function getPRState(prInfo: TBranchPRInfo | undefined): string | undefined {
   if (prInfo === undefined) {
-    return "";
+    return '';
   }
 
   if (prInfo.state === undefined && prInfo.reviewDecision === undefined) {
-    return chalk.dim("Syncing PR Info...");
+    return chalk.dim('Syncing PR Info...');
   }
 
   if (getMergedOrClosed(prInfo)) {
     switch (prInfo.state) {
-      case "CLOSED":
-        return chalk.gray("(Abandoned)");
-      case "MERGED":
-        return chalk.gray("(Merged)");
+      case 'CLOSED':
+        return chalk.gray('(Abandoned)');
+      case 'MERGED':
+        return chalk.gray('(Merged)');
       default:
       // Intentional fallthrough - if not closed/merged, we want to display
       // the current review status.
@@ -187,23 +187,23 @@ function getPRState(prInfo: TBranchPRInfo | undefined): string | undefined {
   }
 
   if (prInfo.isDraft) {
-    return chalk.gray("(Draft)");
+    return chalk.gray('(Draft)');
   }
 
   const reviewDecision = prInfo.reviewDecision;
   switch (reviewDecision) {
-    case "APPROVED":
-      return chalk.green("(Approved)");
-    case "CHANGES_REQUESTED":
-      return chalk.magenta("(Changes Requested)");
-    case "REVIEW_REQUIRED":
-      return chalk.yellow("(Review Required)");
+    case 'APPROVED':
+      return chalk.green('(Approved)');
+    case 'CHANGES_REQUESTED':
+      return chalk.magenta('(Changes Requested)');
+    case 'REVIEW_REQUIRED':
+      return chalk.yellow('(Review Required)');
     default:
     // Intentional fallthrough - if there's no review decision, that means that
     // review isn't required and we can skip displaying a review status.
   }
 
-  return "";
+  return '';
 }
 
 /**
@@ -231,7 +231,7 @@ function prefixWithBranchStem(args: {
   config: TPrintStackConfig;
 }): string[] {
   const isCurrentBranch = args.config.currentBranch?.name === args.branch.name;
-  const dot = isCurrentBranch ? chalk.cyan("◉") : "◯";
+  const dot = isCurrentBranch ? chalk.cyan('◉') : '◯';
   return args.lines.map((line, index) =>
     index === 0 ? `${dot} ${line}` : `│ ${line}`
   );
@@ -250,5 +250,5 @@ function dimMergedOrClosedBranches(args: {
 
 function getMergedOrClosed(prInfo: TBranchPRInfo | undefined): boolean {
   const state = prInfo?.state;
-  return state === "MERGED" || state === "CLOSED";
+  return state === 'MERGED' || state === 'CLOSED';
 }
