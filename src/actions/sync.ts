@@ -146,7 +146,7 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
   logNewline();
   logInfo(
     [
-      `The following branches appear to have been rebased (or cherry-picked) in your local but changes were not propagated to PR (remote):`,
+      `The following branches appear to have been rebased (or cherry-picked) in your local repo but changes have not yet propagated to PR (remote):`,
       ...needsResubmission.map((b) => `- ${b.name}`),
     ].join('\n')
   );
