@@ -146,11 +146,12 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
   logNewline();
   logInfo(
     [
-      `Detected merge bases changes for:`,
+      `The following branches appear to have been rebased (or cherry-picked) in your local repo but changes have not yet propagated to PR (remote):`,
       ...needsResubmission.map((b) => `- ${b.name}`),
     ].join('\n')
   );
-  logTip(`Disable this behavior at any point in the future with --no-resubmit`);
+
+  logTip(`Disable this check at any point in the future with --no-resubmit`);
 
   // Prompt for resubmission.
   let resubmit: boolean = force;
@@ -158,13 +159,13 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
     const response = await prompts({
       type: 'confirm',
       name: 'value',
-      message: `Update remote PR mergebases to match local?`,
+      message: `Update PR to propagate local rebase changes? (PR will be re-submitted)`,
       initial: true,
     });
     resubmit = response.value;
   }
   if (resubmit) {
-    logInfo(`Updating outstanding PR mergebases...`);
+    logInfo(`Updating PR to propagate local rebase changes...`);
     const cliAuthToken = cliAuthPrecondition();
     const repoName = repoConfig.getRepoName();
     const repoOwner = repoConfig.getRepoOwner();
