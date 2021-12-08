@@ -276,7 +276,10 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
         // redirecting stderr to stdout here because 1) git prints the output
         // of the push command to stderr 2) we want to analyze it but Node's
         // execSync makes analyzing stderr extremely challenging
-        command: `git push origin -f ${branch.name} 2>&1`,
+        command: [
+          `git push origin -f ${branch.name} 2>&1`,
+          ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
+        ].join(' '),
         options: {
           printStdout: true,
         },
