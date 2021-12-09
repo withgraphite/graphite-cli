@@ -7,6 +7,7 @@ import { currentGitRepoPrecondition } from '../lib/preconditions';
 import { logError, logInfo, logNewline } from '../lib/utils';
 import { inferTrunk } from '../lib/utils/trunk';
 import Branch from '../wrapper-classes/branch';
+
 export async function init(
   trunk?: string,
   ignoreBranches?: string[]
@@ -87,17 +88,18 @@ async function selectIgnoreBranches(
   allBranches: Branch[],
   trunk: string
 ): Promise<string[]> {
-  const branchesWithoutTrunk = allBranches.filter((b) => b.name != trunk);
-  if (branchesWithoutTrunk.length === 0) {
+  const branchesExclTrunk = allBranches.filter((b) => b.name != trunk);
+  if (branchesExclTrunk.length === 0) {
     return [];
   }
+
   const response = await prompts({
     type: 'multiselect',
     name: 'branches',
     message: `Ignore Branches: select any permanent branches never to be stacked (such as "prod" or "staging"). ${chalk.yellow(
       'Fine to select none.'
     )}`,
-    choices: branchesWithoutTrunk.map((b) => {
+    choices: branchesExclTrunk.map((b) => {
       return { title: b.name, value: b.name };
     }),
   });
@@ -110,7 +112,7 @@ async function selectTrunkBranch(allBranches: Branch[]): Promise<string> {
     type: 'autocomplete',
     name: 'branch',
     message: `Select a trunk branch, which you open PR's against${
-      trunk ? ` [infered trunk (${chalk.green(trunk.name)})]` : ''
+      trunk ? ` [inferred trunk (${chalk.green(trunk.name)})]` : ''
     }`,
     choices: allBranches.map((b) => {
       return { title: b.name, value: b.name };
