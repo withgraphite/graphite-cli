@@ -1,4 +1,3 @@
-
 # Contributing to Graphite CLI
 
 Fun things. This will introduce merge conflicts
@@ -39,6 +38,16 @@ You may need to create an alias to the local installation found at `<graphite_cl
 ## Submitting PRs
 
 Please provide clear context of your change and reasonable details around your solution for the team to do a quick and effective review. We try to be as quick as possible, however, clearly articulated PRs which tell a clear story will be given precedence.
+
+1. Follow instructions to install, run and test the CLI locally.
+2. Ensure that it passes the test-suite
+3. Maintain code-style (We use `prettier`).
+4. For commit-messages, we loosely follow the format recommended by [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
+5. Please provide clear context of your change and reasonable details around your solution for the team to do a quick and effective review. We try to be as quick as possible, however, clearly articulated PRs which tell a clear story will be given precedence.
+
+## Bug Reports and Feature Requests
+
+We maintain a list of bug-reports and feature-requests on the [feature-board](https://app.graphite.dev/changes-requested) (requests auth).
 
 
 
