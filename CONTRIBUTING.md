@@ -1,4 +1,5 @@
-# Contributing to Graphite CLI
+Contributing to Graphite CLI
+--------------------------------
 
 Fun things. This will introduce merge conflicts
 =======
