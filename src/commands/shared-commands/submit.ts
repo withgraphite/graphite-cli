@@ -38,10 +38,11 @@ export const args = {
     type: 'boolean',
     default: false,
   },
-  'updates-only': {
+  'update-only': {
     describe: 'Only update the PRs that have been already been submitted.',
     type: 'boolean',
     default: false,
+    alias: 'u',
   },
 } as const;
 
