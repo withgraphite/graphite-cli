@@ -26,8 +26,8 @@ import { Unpacked } from '../../lib/utils/ts_helpers';
 import { MetaStackBuilder } from '../../wrapper-classes';
 import Branch from '../../wrapper-classes/branch';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
-import { TScope } from './../scope';
-import { validate } from './../validate';
+import { TScope } from '../scope';
+import { validate } from '../validate';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
@@ -94,7 +94,7 @@ export async function submitAction(args: {
     )
   );
   branchesToSubmit.forEach((branch) => {
-    let operation = '';
+    let operation;
     if (branch.getPRInfo() !== undefined) {
       operation = 'update';
     } else if (!args.updateOnly) {
@@ -239,7 +239,15 @@ async function getPRInfoForBranches(args: {
     const parentBranchName = getBranchBaseName(branch);
 
     const previousPRInfo = branch.getPRInfo();
-    if (!args.updateOnly && previousPRInfo === undefined) {
+    if (previousPRInfo) {
+      branchPRInfo.push({
+        action: 'update',
+        head: branch.name,
+        base: parentBranchName,
+        prNumber: previousPRInfo.number,
+        branch: branch,
+      });
+    } else if (!args.updateOnly) {
       const { title, body, draft } = await getPRCreationInfo({
         branch: branch,
         parentBranchName: parentBranchName,
@@ -255,16 +263,6 @@ async function getPRInfoForBranches(args: {
         draft: draft,
         branch: branch,
       });
-    } else {
-      if (previousPRInfo) {
-        branchPRInfo.push({
-          action: 'update',
-          head: branch.name,
-          base: parentBranchName,
-          prNumber: previousPRInfo.number,
-          branch: branch,
-        });
-      }
     }
   }
 
