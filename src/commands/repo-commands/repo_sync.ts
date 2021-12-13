@@ -51,7 +51,7 @@ export const command = 'sync';
 export const canonical = 'repo sync';
 export const aliases = ['s'];
 export const description =
-  'Delete any branches that have been merged or squashed into the trunk branch, and fix their upstack branches recursively.';
+  'Delete any branches that have been merged or squashed into the trunk branch, and recursively check for stack states against main.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
