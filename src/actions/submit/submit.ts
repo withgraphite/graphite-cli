@@ -297,10 +297,9 @@ export async function submitBranches(args: {
       });
     }
   );
-
   logInfo(
     chalk.blueBright(
-      `📂 [4/4] Opening/updating PRs on GitHub for pushed branches...`
+      `📂 [Step 4] Opening/updating PRs on GitHub for pushed branches...`
     )
   );
   const [prInfo, survey] = await Promise.all([
