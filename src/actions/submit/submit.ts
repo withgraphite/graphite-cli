@@ -413,7 +413,7 @@ function shouldUpdatePR(args: {
   // base was updated
   if (getBranchBaseName(args.branch) !== args.previousBranchPRInfo.base) {
     logInfo(
-      chalk.yellow(`Base for ${args.branch.name} was updated: will update PR`)
+      chalk.yellow(`Branch ${args.branch.name} was rebased: will update PR`)
     );
     return true;
   }
