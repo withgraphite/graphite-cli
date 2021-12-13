@@ -157,6 +157,7 @@ export async function newSubmitAction(args: {
     createNewPRsAsDraft: args.createNewPRsAsDraft,
   });
 
+  logNewline();
   const survey = await getSurvey();
   if (survey) {
     await showSurvey(survey);
@@ -282,9 +283,10 @@ export async function submitBranches(args: {
       });
     }
   );
+
   logInfo(
     chalk.blueBright(
-      `📂 [Step 4] Opening/updating PRs on GitHub for pushed branches...`
+      `📂 [4/4] Opening/updating PRs on GitHub for pushed branches...`
     )
   );
   const [prInfo, survey] = await Promise.all([
@@ -360,7 +362,6 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
 
   if (!branches.length) {
     logInfo(`No eligible branches to push.`);
-    logNewline();
     return [];
   }
 
@@ -625,6 +626,7 @@ async function getPRCreationInfo(args: {
 
 function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
   if (!prs.length) {
+    logNewline();
     logInfo(
       chalk.blueBright('✅ All PRs up-to-date on GitHub; no updates necessary.')
     );
