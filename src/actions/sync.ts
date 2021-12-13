@@ -176,6 +176,7 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
       repoName: repoName,
       editPRFieldsInline: false,
       createNewPRsAsDraft: false,
+      updateOnly: false,
     });
   }
 }

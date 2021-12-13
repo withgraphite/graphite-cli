@@ -26,8 +26,8 @@ import { Unpacked } from '../../lib/utils/ts_helpers';
 import { MetaStackBuilder } from '../../wrapper-classes';
 import Branch from '../../wrapper-classes/branch';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
-import { TScope } from './../scope';
-import { validate } from './../validate';
+import { TScope } from '../scope';
+import { validate } from '../validate';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
@@ -39,6 +39,7 @@ export async function submitAction(args: {
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
+  updateOnly: boolean;
 }): Promise<void> {
   if (args.dryRun) {
     logInfo(
@@ -96,8 +97,10 @@ export async function submitAction(args: {
     let operation;
     if (branch.getPRInfo() !== undefined) {
       operation = 'update';
-    } else {
+    } else if (!args.updateOnly) {
       operation = 'create';
+    } else {
+      operation = 'no-op';
     }
     logInfo(`▸ ${chalk.yellow(branch.name)} (${operation})`);
   });
@@ -111,6 +114,7 @@ export async function submitAction(args: {
       repoName: repoName,
       editPRFieldsInline: args.editPRFieldsInline,
       createNewPRsAsDraft: args.createNewPRsAsDraft,
+      updateOnly: args.updateOnly,
     });
   }
 }
@@ -164,6 +168,7 @@ export async function submitBranches(args: {
   repoName: string;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
+  updateOnly: boolean;
 }): Promise<void> {
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
     await getPRInfoForBranches({
@@ -173,6 +178,7 @@ export async function submitBranches(args: {
       repoName: args.repoName,
       editPRFieldsInline: args.editPRFieldsInline,
       createNewPRsAsDraft: args.createNewPRsAsDraft,
+      updateOnly: args.updateOnly,
     });
 
   const branchesPushedToRemote = pushBranchesToRemote(
@@ -223,6 +229,7 @@ async function getPRInfoForBranches(args: {
   repoName: string;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
+  updateOnly: boolean;
 }): Promise<TPRSubmissionInfoWithBranch> {
   const branchPRInfo: TPRSubmissionInfoWithBranch = [];
   for (const branch of args.branches) {
@@ -232,7 +239,15 @@ async function getPRInfoForBranches(args: {
     const parentBranchName = getBranchBaseName(branch);
 
     const previousPRInfo = branch.getPRInfo();
-    if (previousPRInfo === undefined) {
+    if (previousPRInfo) {
+      branchPRInfo.push({
+        action: 'update',
+        head: branch.name,
+        base: parentBranchName,
+        prNumber: previousPRInfo.number,
+        branch: branch,
+      });
+    } else if (!args.updateOnly) {
       const { title, body, draft } = await getPRCreationInfo({
         branch: branch,
         parentBranchName: parentBranchName,
@@ -246,14 +261,6 @@ async function getPRInfoForBranches(args: {
         title: title,
         body: body,
         draft: draft,
-        branch: branch,
-      });
-    } else {
-      branchPRInfo.push({
-        action: 'update',
-        head: branch.name,
-        base: parentBranchName,
-        prNumber: previousPRInfo.number,
         branch: branch,
       });
     }
