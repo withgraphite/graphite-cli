@@ -412,6 +412,9 @@ function shouldUpdatePR(args: {
 }): boolean {
   // base was updated
   if (getBranchBaseName(args.branch) !== args.previousBranchPRInfo.base) {
+    logInfo(
+      chalk.yellow(`Branch ${args.branch.name} was rebased: will update PR`)
+    );
     return true;
   }
 
@@ -421,6 +424,11 @@ function shouldUpdatePR(args: {
       (branchPushedToRemote) => branchPushedToRemote.name === args.branch.name
     )
   ) {
+    logInfo(
+      chalk.yellow(
+        `Code changes detected for ${args.branch.name}: will update PR`
+      )
+    );
     return true;
   }
 
