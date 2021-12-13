@@ -17,22 +17,107 @@ import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
 import {
   gpExecSync,
+  logDebug,
   logError,
   logInfo,
   logNewline,
   logSuccess,
+  logWarn,
 } from '../../lib/utils';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { MetaStackBuilder } from '../../wrapper-classes';
 import Branch from '../../wrapper-classes/branch';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
 import { TScope } from '../scope';
-import { validate } from '../validate';
+import { validate, validateSubmit } from '../validate';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 
-type TSubmitScope = TScope | 'BRANCH';
+export type TSubmitScope = TScope | 'BRANCH';
+
+export async function newSubmitAction(args: {
+  scope: TSubmitScope;
+  editPRFieldsInline: boolean;
+  createNewPRsAsDraft: boolean | undefined;
+  dryRun: boolean;
+  updateOnly: boolean;
+}): Promise<void> {
+  // Check CLI pre-condition
+  const cliAuthToken = cliAuthPrecondition();
+
+  if (args.dryRun) {
+    logInfo(
+      chalk.yellow(
+        `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
+      )
+    );
+    logNewline();
+  }
+
+  if (!execStateConfig.interactive()) {
+    args.editPRFieldsInline = false;
+    args.createNewPRsAsDraft = true;
+  }
+
+  // Step 1: Validate
+  try {
+    logInfo(
+      chalk.blueBright(
+        `✏️  [Step 1] Validating Graphite stack before submitting...`
+      )
+    );
+    validateSubmit(args.scope);
+    logNewline();
+  } catch {
+    throw new ValidationFailedError(`Validation failed before submitting.`);
+  }
+
+  // Step 2: Prepare
+  // TODO (nehasri): Why do we get branches here and not above since validation also traverses the stack anyway. Optimize
+  const branchesToSubmit = getBranchesToSubmit({
+    currentBranch: currentBranchPrecondition(),
+    scope: args.scope,
+  });
+
+  // Force a sync to link any PRs that have remote equivalents, but weren't
+  // previously tracked with Graphite.
+  await syncPRInfoForBranches(branchesToSubmit);
+
+  logInfo(
+    chalk.blueBright(
+      '🥞 [Step 2] Preparing to submit PRs for the following branches...'
+    )
+  );
+  branchesToSubmit.forEach((branch) => {
+    let operation;
+    if (branch.getPRInfo() !== undefined) {
+      operation = 'update';
+    } else if (!args.updateOnly) {
+      operation = 'create';
+    } else {
+      operation = 'no-op';
+    }
+    logInfo(`▸ ${chalk.yellow(branch.name)} (${operation})`);
+  });
+  logNewline();
+
+  if (args.dryRun) {
+    logInfo(chalk.blueBright('✅ Dry Run complete.'));
+    return;
+  }
+
+  // Step 3: Pushing branches to remote
+  await submitBranches({
+    branchesToSubmit: branchesToSubmit,
+    cliAuthToken: cliAuthToken,
+    repoOwner: repoConfig.getRepoOwner(),
+    repoName: repoConfig.getRepoName(),
+    editPRFieldsInline: args.editPRFieldsInline,
+    createNewPRsAsDraft: args.createNewPRsAsDraft,
+    updateOnly: args.updateOnly,
+  });
+}
 
 export async function submitAction(args: {
   scope: TSubmitScope;
@@ -149,9 +234,22 @@ function getBranchesToSubmit(args: {
       branches = [];
   }
 
+  for (const branch of branches) {
+    const state = branch.getPRInfo()?.state;
+    logDebug(`${branch.name} is in ${state}`);
+    if (state === 'MERGED' || state === 'CLOSED') {
+      logWarn(
+        `${branch.name} has been merged or closed. This can potentially break the submit process. Please fix.`
+      );
+    }
+  }
+
   return branches
     .filter((b) => !b.isTrunk())
-    .filter((b) => b.getPRInfo()?.state !== 'MERGED');
+    .filter(
+      (b) =>
+        b.getPRInfo()?.state !== 'MERGED' && b.getPRInfo()?.state !== 'CLOSED'
+    );
 }
 
 type TPRSubmissionInfo = t.UnwrapSchemaMap<
