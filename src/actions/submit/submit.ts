@@ -249,73 +249,6 @@ function getBranchesToSubmit(args: {
     );
 }
 
-export async function submitBranches(args: {
-  branchesToSubmit: Branch[];
-  cliAuthToken: string;
-  repoOwner: string;
-  repoName: string;
-  editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean | undefined;
-  updateOnly: boolean;
-}): Promise<void> {
-  // Step 3: Pushing branches to remote
-  const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
-    await getPRInfoForBranches({
-      branches: args.branchesToSubmit,
-      cliAuthToken: args.cliAuthToken,
-      repoOwner: args.repoOwner,
-      repoName: args.repoName,
-      editPRFieldsInline: args.editPRFieldsInline,
-      createNewPRsAsDraft: args.createNewPRsAsDraft,
-      updateOnly: args.updateOnly,
-    });
-
-  logInfo(chalk.blueBright('➡️  [3/3] Pushing branches to remote...'));
-  const branchesPushedToRemote = pushBranchesToRemote(
-    submissionInfoWithBranches.map((info) => info.branch)
-  );
-  // Filter out PRs which don't actually need a new submission (i.e. they
-  // had no local code changes and their local base did not change).
-  const submissionInfo: TPRSubmissionInfo = submissionInfoWithBranches.filter(
-    (info) => {
-      const prInfo = info.branch.getPRInfo();
-      if (prInfo === undefined) {
-        return true;
-      }
-      return shouldUpdatePR({
-        branch: info.branch,
-        previousBranchPRInfo: prInfo,
-        branchesPushedToRemote: branchesPushedToRemote,
-      });
-    }
-  );
-
-  logInfo(
-    chalk.blueBright(
-      `📂 [4/4] Opening/updating PRs on GitHub for pushed branches...`
-    )
-  );
-  const [prInfo, survey] = await Promise.all([
-    submitPRsForBranches({
-      submissionInfo: submissionInfo,
-      branchesPushedToRemote: branchesPushedToRemote,
-      cliAuthToken: args.cliAuthToken,
-      repoOwner: args.repoOwner,
-      repoName: args.repoName,
-      editPRFieldsInline: args.editPRFieldsInline,
-      createNewPRsAsDraft: args.createNewPRsAsDraft,
-    }),
-    getSurvey(),
-  ]);
-
-  saveBranchPRInfo(prInfo);
-  printSubmittedPRInfo(prInfo);
-
-  if (survey !== undefined) {
-    await showSurvey(survey);
-  }
-}
-
 async function getPRInfoForBranches(args: {
   branches: Branch[];
   cliAuthToken: string;
@@ -469,62 +402,6 @@ async function submitPRsForStack(args: {
         }).\n\nResponse: ${JSON.stringify(response)}`
       );
     }
-  } catch (error: any) {
-    throw new ExitFailedError(`Failed to submit PRs`, error);
-  }
-}
-
-async function submitPRsForBranches(args: {
-  submissionInfo: TPRSubmissionInfo;
-  branchesPushedToRemote: Branch[];
-  cliAuthToken: string;
-  repoOwner: string;
-  repoName: string;
-  editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean | undefined;
-}): Promise<TSubmittedPR[]> {
-  const submissionInfo = args.submissionInfo;
-  if (submissionInfo.length === 0) {
-    return [];
-  }
-
-  try {
-    const response = await request.requestWithArgs(
-      API_SERVER,
-      graphiteCLIRoutes.submitPullRequests,
-      {
-        authToken: args.cliAuthToken,
-        repoOwner: args.repoOwner,
-        repoName: args.repoName,
-        prs: submissionInfo,
-      }
-    );
-
-    if (response._response.status === 200 && response._response.body !== null) {
-      const requests: { [head: string]: TSubmittedPRRequest } = {};
-      submissionInfo.forEach((prRequest) => {
-        requests[prRequest.head] = prRequest;
-      });
-
-      return response.prs.map((prResponse) => {
-        return {
-          request: requests[prResponse.head],
-          response: prResponse,
-        };
-      });
-    }
-
-    if (response._response.status === 401) {
-      throw new PreconditionsFailedError(
-        'invalid/expired Graphite auth token.\n\nPlease obtain a new auth token by visiting https://app.graphite.dev/activate.'
-      );
-    }
-
-    throw new ExitFailedError(
-      `unexpected server response (${
-        response._response.status
-      }).\n\nResponse: ${JSON.stringify(response)}`
-    );
   } catch (error: any) {
     throw new ExitFailedError(`Failed to submit PRs`, error);
   }
