@@ -62,14 +62,16 @@ export async function submitAction(args: {
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
   updateOnly: boolean;
-  branchesToSubmit?: Branch[];
+  branchesToSubmit?: Branch[]; // passed in case of resubmit
 }): Promise<void> {
   let branchesToSubmit;
 
-  // Check CLI pre-condition early to warn early
+  // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
 
-  if (!args.branchesToSubmit) {
+  if (args.branchesToSubmit) {
+    branchesToSubmit = args.branchesToSubmit;
+  } else {
     if (args.dryRun) {
       logInfo(
         chalk.yellow(
@@ -125,8 +127,6 @@ export async function submitAction(args: {
       return;
     }
     branchesToSubmit = validBranches.submittableBranches;
-  } else {
-    branchesToSubmit = args.branchesToSubmit;
   }
 
   // Step 3: Pushing branches to remote
