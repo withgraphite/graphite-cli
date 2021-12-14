@@ -65,7 +65,7 @@ export async function submitAction(args: {
 }): Promise<void> {
   let branchesToSubmit;
 
-  // Check CLI pre-condition
+  // Check CLI pre-condition early to warn early
   const cliAuthToken = cliAuthPrecondition();
 
   if (!args.branchesToSubmit) {
@@ -129,14 +129,9 @@ export async function submitAction(args: {
     branchesToSubmit = args.branchesToSubmit;
   }
   // Step 3: Pushing branches to remote
-  const repoName = repoConfig.getRepoName();
-  const repoOwner = repoConfig.getRepoOwner();
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
     await getPRInfoForBranches({
       branches: branchesToSubmit,
-      cliAuthToken: cliAuthToken,
-      repoOwner: repoOwner,
-      repoName: repoName,
       editPRFieldsInline: args.editPRFieldsInline,
       createNewPRsAsDraft: args.createNewPRsAsDraft,
       updateOnly: args.updateOnly,
@@ -157,8 +152,6 @@ export async function submitAction(args: {
     submissionInfoWithBranches: submissionInfoWithBranches,
     branchesPushedToRemote: branchesPushedToRemote,
     cliAuthToken: cliAuthToken,
-    repoOwner: repoOwner,
-    repoName: repoName,
     editPRFieldsInline: args.editPRFieldsInline,
     createNewPRsAsDraft: args.createNewPRsAsDraft,
   });
@@ -176,8 +169,6 @@ async function submitPullRequests(args: {
   })[];
   branchesPushedToRemote: Branch[];
   cliAuthToken: string;
-  repoOwner: string;
-  repoName: string;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
 }) {
@@ -191,8 +182,6 @@ async function submitPullRequests(args: {
     submissionInfoWithBranches: args.submissionInfoWithBranches,
     branchesPushedToRemote: args.branchesPushedToRemote,
     cliAuthToken: args.cliAuthToken,
-    repoOwner: args.repoOwner,
-    repoName: args.repoName,
     editPRFieldsInline: args.editPRFieldsInline,
     createNewPRsAsDraft: args.createNewPRsAsDraft,
   });
@@ -205,7 +194,7 @@ function getBranchesToSubmit(args: {
   currentBranch: Branch;
   scope: TSubmitScope;
 }): Branch[] {
-  let branches: Branch[] = [];
+  let branches: Branch[];
 
   switch (args.scope) {
     case 'DOWNSTACK':
@@ -251,9 +240,6 @@ function getBranchesToSubmit(args: {
 
 async function getPRInfoForBranches(args: {
   branches: Branch[];
-  cliAuthToken: string;
-  repoOwner: string;
-  repoName: string;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
   updateOnly: boolean;
@@ -339,12 +325,61 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
   return branchesPushedToRemote;
 }
 
+const SUCCESS_RESPONSE_CODE = 200;
+
+const UNAUTHORIZED_RESPONSE_CODE = 401;
+
+async function requestServerToSubmitPRs(
+  cliAuthToken: string,
+  submissionInfo: TPRSubmissionInfo
+) {
+  try {
+    const response = await request.requestWithArgs(
+      API_SERVER,
+      graphiteCLIRoutes.submitPullRequests,
+      {
+        authToken: cliAuthToken,
+        repoOwner: repoConfig.getRepoOwner(),
+        repoName: repoConfig.getRepoName(),
+        prs: submissionInfo,
+      }
+    );
+
+    if (
+      response._response.status === SUCCESS_RESPONSE_CODE &&
+      response._response.body
+    ) {
+      const requests: { [head: string]: TSubmittedPRRequest } = {};
+      submissionInfo.forEach((prRequest) => {
+        requests[prRequest.head] = prRequest;
+      });
+
+      return response.prs.map((prResponse) => {
+        return {
+          request: requests[prResponse.head],
+          response: prResponse,
+        };
+      });
+    } else if (response._response.status === UNAUTHORIZED_RESPONSE_CODE) {
+      throw new PreconditionsFailedError(
+        'Your Graphite auth token is invalid/expired.\n\nPlease obtain a new auth token by visiting https://app.graphite.dev/activate.'
+      );
+    } else {
+      throw new ExitFailedError(
+        `unexpected server response (${
+          response._response.status
+        }).\n\nResponse: ${JSON.stringify(response)}`
+      );
+    }
+  } catch (error: any) {
+    throw new ExitFailedError(`Failed to submit PRs`, error);
+  }
+}
+
 async function submitPRsForStack(args: {
   submissionInfoWithBranches: TPRSubmissionInfoWithBranch;
   branchesPushedToRemote: Branch[];
   cliAuthToken: string;
-  repoOwner: string;
-  repoName: string;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
 }): Promise<TSubmittedPR[]> {
@@ -366,45 +401,7 @@ async function submitPRsForStack(args: {
   if (!submissionInfo.length) {
     return [];
   }
-
-  try {
-    const response = await request.requestWithArgs(
-      API_SERVER,
-      graphiteCLIRoutes.submitPullRequests,
-      {
-        authToken: args.cliAuthToken,
-        repoOwner: args.repoOwner,
-        repoName: args.repoName,
-        prs: submissionInfo,
-      }
-    );
-
-    if (response._response.status === 200 && response._response.body !== null) {
-      const requests: { [head: string]: TSubmittedPRRequest } = {};
-      submissionInfo.forEach((prRequest) => {
-        requests[prRequest.head] = prRequest;
-      });
-
-      return response.prs.map((prResponse) => {
-        return {
-          request: requests[prResponse.head],
-          response: prResponse,
-        };
-      });
-    } else if (response._response.status === 401) {
-      throw new PreconditionsFailedError(
-        'Your Graphite auth token is invalid/expired.\n\nPlease obtain a new auth token by visiting https://app.graphite.dev/activate.'
-      );
-    } else {
-      throw new ExitFailedError(
-        `unexpected server response (${
-          response._response.status
-        }).\n\nResponse: ${JSON.stringify(response)}`
-      );
-    }
-  } catch (error: any) {
-    throw new ExitFailedError(`Failed to submit PRs`, error);
-  }
+  return await requestServerToSubmitPRs(args.cliAuthToken, submissionInfo);
 }
 
 function getBranchBaseName(branch: Branch): string {
