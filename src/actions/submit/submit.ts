@@ -61,67 +61,73 @@ export async function submitAction(args: {
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
   updateOnly: boolean;
+  branchesToSubmit?: Branch[];
 }): Promise<void> {
+  let branchesToSubmit;
+
   // Check CLI pre-condition
   const cliAuthToken = cliAuthPrecondition();
 
-  if (args.dryRun) {
+  if (!args.branchesToSubmit) {
+    if (args.dryRun) {
+      logInfo(
+        chalk.yellow(
+          `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
+        )
+      );
+      logNewline();
+    }
+
+    if (!execStateConfig.interactive()) {
+      args.editPRFieldsInline = false;
+      args.createNewPRsAsDraft = true;
+    }
+
+    // Step 1: Validate
+    try {
+      logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
+      validateSubmit(args.scope);
+      logNewline();
+    } catch {
+      throw new ValidationFailedError(`Validation failed. Will not submit.`);
+    }
+
+    // Step 2: Prepare
+    // TODO (nehasri): Why do we get branches here and not above since validation also traverses the stack anyway. Optimize
+    branchesToSubmit = getBranchesToSubmit({
+      currentBranch: currentBranchPrecondition(),
+      scope: args.scope,
+    });
+
+    // Force a sync to link any PRs that have remote equivalents, but weren't
+    // previously tracked with Graphite.
+    await syncPRInfoForBranches(branchesToSubmit);
+
     logInfo(
-      chalk.yellow(
-        `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
+      chalk.blueBright(
+        '🥞 [Step 2] Preparing to submit PRs for the following branches...'
       )
     );
+    branchesToSubmit.forEach((branch) => {
+      let operation;
+      if (branch.getPRInfo() !== undefined) {
+        operation = 'update';
+      } else if (!args.updateOnly) {
+        operation = 'create';
+      } else {
+        operation = 'no-op';
+      }
+      logInfo(`▸ ${chalk.yellow(branch.name)} (${operation})`);
+    });
     logNewline();
-  }
 
-  if (!execStateConfig.interactive()) {
-    args.editPRFieldsInline = false;
-    args.createNewPRsAsDraft = true;
-  }
-
-  // Step 1: Validate
-  try {
-    logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
-    validateSubmit(args.scope);
-    logNewline();
-  } catch {
-    throw new ValidationFailedError(`Validation failed. Will not submit.`);
-  }
-
-  // Step 2: Prepare
-  // TODO (nehasri): Why do we get branches here and not above since validation also traverses the stack anyway. Optimize
-  const branchesToSubmit = getBranchesToSubmit({
-    currentBranch: currentBranchPrecondition(),
-    scope: args.scope,
-  });
-
-  // Force a sync to link any PRs that have remote equivalents, but weren't
-  // previously tracked with Graphite.
-  await syncPRInfoForBranches(branchesToSubmit);
-
-  logInfo(
-    chalk.blueBright(
-      '🥞 [Step 2] Preparing to submit PRs for the following branches...'
-    )
-  );
-  branchesToSubmit.forEach((branch) => {
-    let operation;
-    if (branch.getPRInfo() !== undefined) {
-      operation = 'update';
-    } else if (!args.updateOnly) {
-      operation = 'create';
-    } else {
-      operation = 'no-op';
+    if (args.dryRun) {
+      logInfo(chalk.blueBright('✅ Dry Run complete.'));
+      return;
     }
-    logInfo(`▸ ${chalk.yellow(branch.name)} (${operation})`);
-  });
-  logNewline();
-
-  if (args.dryRun) {
-    logInfo(chalk.blueBright('✅ Dry Run complete.'));
-    return;
+  } else {
+    branchesToSubmit = args.branchesToSubmit;
   }
-
   // Step 3: Pushing branches to remote
   const repoName = repoConfig.getRepoName();
   const repoOwner = repoConfig.getRepoOwner();
