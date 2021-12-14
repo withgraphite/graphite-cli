@@ -1,6 +1,6 @@
-import { submitAction } from '../../actions/submit';
 import { profile } from '../../lib/telemetry';
 import { argsT } from '../shared-commands/submit';
+import { newSubmitAction } from '../../actions/submit/submit';
 
 export { aliases, args, builder, command } from '../shared-commands/submit';
 export const description =
@@ -9,7 +9,7 @@ export const canonical = 'upstack submit';
 
 export const handler = async (argv: argsT): Promise<void> => {
   await profile(argv, canonical, async () => {
-    await submitAction({
+    await newSubmitAction({
       scope: 'UPSTACK',
       editPRFieldsInline: argv.edit,
       createNewPRsAsDraft: argv.draft,
