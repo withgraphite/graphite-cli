@@ -66,7 +66,7 @@ export async function submitAction(args: {
 }): Promise<void> {
   let branchesToSubmit;
 
-  // Check CLI pre-condition to warn early
+  // Check CLI pre-condition early to warn early
   const cliAuthToken = cliAuthPrecondition();
 
   if (!args.branchesToSubmit) {
@@ -129,6 +129,7 @@ export async function submitAction(args: {
     branchesToSubmit = args.branchesToSubmit;
   }
 
+  // Step 3: Pushing branches to remote
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
     await getPRInfoForBranches({
       branches: branchesToSubmit,
