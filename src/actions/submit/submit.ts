@@ -63,20 +63,23 @@ export async function submitAction(args: {
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
   updateOnly: boolean;
+  branchesToSubmit?: Branch[];
 }): Promise<void> {
   let branchesToSubmit;
+
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
 
-  if (args.dryRun) {
-    logInfo(
-      chalk.yellow(
-        `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
-      )
-    );
-    logNewline();
-    args.editPRFieldsInline = false;
-  }
+  if (!args.branchesToSubmit) {
+    if (args.dryRun) {
+      logInfo(
+        chalk.yellow(
+          `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
+        )
+      );
+      logNewline();
+      args.editPRFieldsInline = false;
+    }
 
   if (!execStateConfig.interactive()) {
     logInfo(
@@ -123,6 +126,9 @@ export async function submitAction(args: {
     return;
   }
   branchesToSubmit = validBranches.submittableBranches;
+  } else {
+    branchesToSubmit = args.branchesToSubmit;
+  }
 
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
     await getPRInfoForBranches({
