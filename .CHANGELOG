@@ -1,3 +1,10 @@
+# 0.16.4 2021-12-13
+- Wildcard matching for ignored branches (`gt repo ignored-branches --set`) now accepts glob-patterns
+- Option to remove a branch from ignored list (`gt repo ignored-branches --unset`)
+- Submit now supports --update-only option which will only update-existing PRs and not create new ones.
+- Bugfix: Submit to honor the --no-verify flag
+- Better logging and documentation to clarify behavior
+
 # 0.16.3 2021-12-3
 - Support up and down aliases for `gt branch` next/prev respectively.
 - Fix issue where `gt tips` could not be disabled.
