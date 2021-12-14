@@ -1,6 +1,6 @@
+import { submitAction } from '../../actions/submit';
 import { profile } from '../../lib/telemetry';
 import { argsT } from '../shared-commands/submit';
-import { submitAction } from '../../actions/submit/submit';
 
 export { aliases, args, builder, command } from '../shared-commands/submit';
 export const description =
