@@ -3,6 +3,7 @@ Contributing to Graphite CLI
 
 Test - 1 (to be removed) - 1
 Test - 2 (to be removed)
+Test - 3 (to be removed)
 
 Fun things. This will introduce merge conflicts
 =======
