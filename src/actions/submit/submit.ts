@@ -29,7 +29,7 @@ import { MetaStackBuilder } from '../../wrapper-classes';
 import Branch from '../../wrapper-classes/branch';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
 import { TScope } from '../scope';
-import { validate, validateSubmit } from '../validate';
+import { validateSubmit } from '../validate';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
@@ -55,7 +55,7 @@ type TSubmittedPR = {
   response: TSubmittedPRResponse;
 };
 
-export async function newSubmitAction(args: {
+export async function submitAction(args: {
   scope: TSubmitScope;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
@@ -674,88 +674,3 @@ export function saveBranchPRInfo(prs: TSubmittedPR[]): void {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 function assertUnreachable(arg: never): void {}
-
-export async function submitAction(args: {
-  scope: TSubmitScope;
-  editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean | undefined;
-  dryRun: boolean;
-  updateOnly: boolean;
-}): Promise<void> {
-  if (args.dryRun) {
-    logInfo(
-      chalk.yellow(
-        `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
-      )
-    );
-    logNewline();
-  }
-
-  if (!execStateConfig.interactive()) {
-    args.editPRFieldsInline = false;
-    args.createNewPRsAsDraft = true;
-  }
-
-  const cliAuthToken = cliAuthPrecondition();
-  const repoName = repoConfig.getRepoName();
-  const repoOwner = repoConfig.getRepoOwner();
-
-  try {
-    // In order to keep the step numbering consistent between the branch and
-    // stack submit cases, always print the below status. We can think of this
-    // as the validation just always passing in the branch case.
-    //
-    // Two spaces between the text and icon is intentional for spacing
-    // purposes.
-    logInfo(
-      chalk.blueBright(
-        `✏️  [1/4] Validating Graphite stack before submitting...`
-      )
-    );
-    if (args.scope !== 'BRANCH') {
-      validate(args.scope);
-    }
-    logNewline();
-  } catch {
-    throw new ValidationFailedError(`Validation failed before submitting.`);
-  }
-
-  const branchesToSubmit = getBranchesToSubmit({
-    currentBranch: currentBranchPrecondition(),
-    scope: args.scope,
-  });
-
-  // Force a sync to link any PRs that have remote equivalents, but weren't
-  // previously tracked with Graphite.
-  await syncPRInfoForBranches(branchesToSubmit);
-
-  logInfo(
-    chalk.blueBright(
-      '🥞 [2/4] Preparing to submit PRs for the following branches...'
-    )
-  );
-  branchesToSubmit.forEach((branch) => {
-    let operation;
-    if (branch.getPRInfo() !== undefined) {
-      operation = 'update';
-    } else if (!args.updateOnly) {
-      operation = 'create';
-    } else {
-      operation = 'no-op';
-    }
-    logInfo(`▸ ${chalk.yellow(branch.name)} (${operation})`);
-  });
-  logNewline();
-
-  if (!args.dryRun) {
-    await submitBranches({
-      branchesToSubmit: branchesToSubmit,
-      cliAuthToken: cliAuthToken,
-      repoOwner: repoOwner,
-      repoName: repoName,
-      editPRFieldsInline: args.editPRFieldsInline,
-      createNewPRsAsDraft: args.createNewPRsAsDraft,
-      updateOnly: args.updateOnly,
-    });
-  }
-}

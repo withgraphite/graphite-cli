@@ -1,7 +1,7 @@
 import { profile } from '../../lib/telemetry';
 import { logTip } from '../../lib/utils';
 import type { argsT } from '../shared-commands/submit';
-import { newSubmitAction } from '../../actions/submit/submit';
+import { submitAction } from '../../actions/submit/submit';
 
 export { aliases, args, builder, command } from '../shared-commands/submit';
 export const description =
@@ -10,7 +10,7 @@ export const canonical = 'branch submit';
 
 export const handler = async (argv: argsT): Promise<void> => {
   await profile(argv, canonical, async () => {
-    await newSubmitAction({
+    await submitAction({
       scope: 'BRANCH',
       editPRFieldsInline: argv.edit,
       createNewPRsAsDraft: argv.draft,

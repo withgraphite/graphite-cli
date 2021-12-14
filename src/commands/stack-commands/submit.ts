@@ -1,6 +1,6 @@
 import { profile } from '../../lib/telemetry';
 import type { argsT } from '../shared-commands/submit';
-import { newSubmitAction } from '../../actions/submit/submit';
+import { submitAction } from '../../actions/submit/submit';
 
 export { aliases, args, builder, command } from '../shared-commands/submit';
 export const canonical = 'stack submit';
@@ -9,7 +9,7 @@ export const description =
 
 export const handler = async (argv: argsT): Promise<void> => {
   await profile(argv, canonical, async () => {
-    await newSubmitAction({
+    await submitAction({
       scope: 'FULLSTACK',
       editPRFieldsInline: argv.edit,
       createNewPRsAsDraft: argv.draft,
