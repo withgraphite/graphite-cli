@@ -1,31 +1,6 @@
 Contributing to Graphite CLI
 --------------------------------
 
-Test - 1 (to be removed) - 1
-Test - 2 (to be removed)
-Test - 3 (to be removed)
-Test - 4 (to be removed)
-Test - 5 (to be removed)
-Test - 6 (to be removed)
-Test - 7 (to be removed)
-Test - 8 (to be removed)
-Test - 9 (to be removed)
-Test - 10 (to be removed)
-Test - 11 (to be removed)
-Test - 12 (to be removed)
-Test - 13 (to be removed)
-Test - 14 (to be removed)
-Test - 15 (to be removed)
-Test - 16 (to be removed)
-Test - 17 (to be removed)
-Test - 18 (to be removed)
-Test - 19 (to be removed)
-Test - 20 (to be removed) -1
-
-Fun things. This will introduce merge conflicts
-=======
-
-
 Thank you for taking the time to make Graphite CLI better. These are mostly guidelines, not rules so use your best judgement and feel free to propose changes to this document in a PR.
 We value contributions from anyone but we do not yet maintain an open queue of issues on Github. Our ideal contributors are our passionate users who have the most context around ongoing issues and features we are working on. 
 Please join the growing community of Graphite users (see README) and interact with us directly using our Slack Community.
@@ -71,6 +46,3 @@ Please provide clear context of your change and reasonable details around your s
 
 We maintain a list of bug-reports and feature-requests on the [feature-board](https://app.graphite.dev/changes-requested) (requests auth).
 
-
-
-Fun things. This will introduce merge conflicts. this is for testing
