@@ -8,8 +8,5 @@ export const VALIDATION_HELPER_MESSAGE = [
   )}' (MOST COMMON SOLUTION) to rebase stacked branches onto their parent's HEAD commits`,
   `-> '${chalk.yellow(
     'gt upstack onto <parent-branch>'
-  )}' to move a specific branch (and it's stacked children) onto another branch`,
-  `-> '${chalk.yellow(
-    'gt branch parent --set <parent-branch>'
-  )}' to manually set the parent of a branch`,
+  )}' to move a specific branch (and it's stacked children) onto another branch to manually set the parent of a branch`,
 ].join('\n');
