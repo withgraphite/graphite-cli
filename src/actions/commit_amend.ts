@@ -1,6 +1,6 @@
 import { execStateConfig } from '../lib/config';
 import { ExitFailedError } from '../lib/errors';
-import { uncommittedChangesPrecondition } from '../lib/preconditions';
+import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
 import { gpExecSync, logWarn } from '../lib/utils';
 import Branch from '../wrapper-classes/branch';
 import { fixAction } from './fix';
@@ -50,7 +50,7 @@ export async function commitAmendAction(opts: {
   );
   // Only restack if working tree is now clean.
   try {
-    uncommittedChangesPrecondition();
+    uncommittedTrackedChangesPrecondition();
     await fixAction({
       action: 'rebase',
       mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER' as const,

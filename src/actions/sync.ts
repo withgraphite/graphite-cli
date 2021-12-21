@@ -10,7 +10,7 @@ import {
   logInfo,
   logNewline,
   logTip,
-  uncommittedChanges,
+  trackedUncommittedChanges,
 } from '../lib/utils';
 import Branch from '../wrapper-classes/branch';
 import { deleteMergedBranches } from './clean_branches';
@@ -25,7 +25,7 @@ export async function syncAction(opts: {
   resubmit: boolean;
   fixDanglingBranches: boolean;
 }): Promise<void> {
-  if (uncommittedChanges()) {
+  if (trackedUncommittedChanges()) {
     throw new PreconditionsFailedError('Cannot sync with uncommitted changes');
   }
   const oldBranch = currentBranchPrecondition();
