@@ -112,8 +112,8 @@ async function selectTrunkBranch(allBranches: Branch[]): Promise<string> {
   const response = await prompts({
     type: 'autocomplete',
     name: 'branch',
-    message: `Select a trunk branch, which you open PR's against${
-      trunk ? ` [infered trunk (${chalk.green(trunk.name)})]` : ''
+    message: `Select a trunk branch, which you open pull requests against${
+      trunk ? ` [inferred trunk (${chalk.green(trunk.name)})]` : ''
     }`,
     choices: allBranches.map((b) => {
       return { title: b.name, value: b.name };
