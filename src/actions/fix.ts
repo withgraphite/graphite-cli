@@ -13,7 +13,7 @@ import {
 } from '../lib/errors';
 import {
   currentBranchPrecondition,
-  uncommittedChangesPrecondition,
+  uncommittedTrackedChangesPrecondition,
 } from '../lib/preconditions';
 import {
   checkoutBranch,
@@ -83,7 +83,7 @@ export async function fixAction(opts: {
   mergeConflictCallstack: MergeConflictCallstackT;
 }): Promise<void> {
   const currentBranch = currentBranchPrecondition();
-  uncommittedChangesPrecondition();
+  uncommittedTrackedChangesPrecondition();
 
   logDebug(`Determining full meta stack from ${currentBranch.name}`);
   const metaStack = new MetaStackBuilder({

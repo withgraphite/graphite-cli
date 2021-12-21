@@ -21,7 +21,7 @@ import {
   gpExecSync,
   logInfo,
   rebaseInProgress,
-  uncommittedChanges,
+  trackedUncommittedChanges,
 } from '../lib/utils';
 import Branch from '../wrapper-classes/branch';
 import { restackBranch } from './fix';
@@ -29,7 +29,7 @@ export async function ontoAction(args: {
   onto: string;
   mergeConflictCallstack: MergeConflictCallstackT;
 }): Promise<void> {
-  if (uncommittedChanges()) {
+  if (trackedUncommittedChanges()) {
     throw new PreconditionsFailedError('Cannot fix with uncommitted changes');
   }
 
