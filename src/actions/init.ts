@@ -63,11 +63,14 @@ export async function init(
     });
     repoConfig.addIgnoreBranchPatterns(ignoreBranches);
   } else {
-    const ignoreBranches = await selectIgnoreBranches(
+    let ignoreBranches = await selectIgnoreBranches(
       allBranches,
       newTrunkName
     );
     logInfo(`Selected following branches to ignore: ${ignoreBranches}`);
+    if (!ignoreBranches) {
+      ignoreBranches = [];
+    }
     repoConfig.addIgnoreBranchPatterns(ignoreBranches);
   }
 
