@@ -41,7 +41,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         console.log(parent.name);
       } else {
         logInfo(
-          `Current branch (${branch}) has no parent branch set in Graphite. Consider running \`gt branch parent --set <parent>\`, \`gt stack fix\`, or \`gt upstack onto <parent>\` to set a parent branch in Graphite.`
+          `Current branch (${branch}) has no parent branch set in Graphite. Consider running \`gt stack fix\`, or \`gt upstack onto <parent>\` to set a parent branch in Graphite.`
         );
       }
     }
