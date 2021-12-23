@@ -2,7 +2,7 @@ Contributing to Graphite CLI
 --------------------------------
 
 Thank you for taking the time to make Graphite CLI better. These are mostly guidelines, not rules so use your best judgement and feel free to propose changes to this document in a PR.
-We value contributions from anyone but we do not yet maintain an open queue of issues on Github. Our ideal contributors are our passionate users who have the most context around ongoing issues and features we are working on. 
+We value contributions from anyone, however we do not yet maintain an open queue of issues on Github. Our ideal contributors are our passionate users who have the most context around ongoing issues and features we are working on. 
 Please join the growing community of Graphite users (see README) and interact with us directly using our Slack Community.
 
 To install the latest version of our CLI: `brew install graphite`
