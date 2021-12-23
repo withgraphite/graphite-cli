@@ -1,7 +1,7 @@
 Contributing to Graphite CLI
 --------------------------------
 
-Test - 1 (to be removed)
+Test - 1 (to be removed) - 1
 
 Fun things. This will introduce merge conflicts
 =======
