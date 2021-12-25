@@ -68,6 +68,7 @@ export async function submitAction(args: {
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
 
+  // This supports the use case in sync.ts. Skips Steps 1 and 2
   if (args.branchesToSubmit) {
     branchesToSubmit = args.branchesToSubmit;
   } else {
@@ -110,6 +111,9 @@ export async function submitAction(args: {
         '🥞 [Step 2] Preparing to submit PRs for the following branches...'
       )
     );
+    // TODO (nehasri): What is the point of this? The actual test of which
+    //  branches will be updated happens at the time of `shouldUpdatePR`.
+    //  Its a very crude check and can be streamlined.
     branchesToSubmit.forEach((branch) => {
       let operation;
       if (branch.getPRInfo() !== undefined) {
