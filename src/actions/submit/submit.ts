@@ -69,6 +69,7 @@ export async function submitAction(args: {
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
 
+  // This supports the use case in sync.ts. Skips Steps 1 and 2
   if (args.branchesToSubmit) {
     branchesToSubmit = args.branchesToSubmit;
   } else {
