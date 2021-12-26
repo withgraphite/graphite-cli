@@ -178,14 +178,13 @@ async function submitPullRequests(args: {
 
 function getStack(args: { currentBranch: Branch; scope: TScope }): Stack {
   switch (args.scope) {
-    case 'DOWNSTACK':
-      return new MetaStackBuilder().downstackFromBranch(args.currentBranch);
-    case 'FULLSTACK':
-      return new MetaStackBuilder().fullStackFromBranch(args.currentBranch);
     case 'UPSTACK':
+    case 'DOWNSTACK':
       return new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
         args.currentBranch
-      );
+      ); //TODO (nehasri): Check if this is correct. Previously for 'downstack' we were validating upstack and submitting downstack
+    case 'FULLSTACK':
+      return new MetaStackBuilder().fullStackFromBranch(args.currentBranch);
   }
 }
 
