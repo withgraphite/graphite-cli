@@ -29,7 +29,7 @@ import { MetaStackBuilder } from '../../wrapper-classes';
 import Branch from '../../wrapper-classes/branch';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
 import { TScope } from '../scope';
-import { validateSubmit } from '../validate';
+import { validate } from '../validate';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
@@ -61,7 +61,7 @@ export async function submitAction(args: {
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
   updateOnly: boolean;
-  branchesToSubmit?: Branch[]; // passed in case of resubmit
+  branchesToSubmit?: Branch[]; // passed in case of sync
 }): Promise<void> {
   let branchesToSubmit;
 
@@ -89,7 +89,9 @@ export async function submitAction(args: {
     // Step 1: Validate
     try {
       logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
-      validateSubmit(args.scope);
+      if (args.scope !== 'BRANCH') {
+        validate(args.scope);
+      }
       logNewline();
     } catch {
       throw new ValidationFailedError(`Validation failed. Will not submit.`);
