@@ -4,6 +4,25 @@ import { logInfo } from '../lib/utils';
 import { GitStackBuilder, MetaStackBuilder, Stack } from '../wrapper-classes';
 import Branch from '../wrapper-classes/branch';
 import { TScope } from './scope';
+import { TSubmitScope } from './submit/submit';
+
+export function validateStack(scope: TSubmitScope, stack: Stack): void {
+  const branch = currentBranchPrecondition();
+  let gitStack;
+
+  if (scope === 'FULLSTACK') {
+    gitStack = new GitStackBuilder().fullStackFromBranch(branch);
+  } else {
+    gitStack = new GitStackBuilder().upstackInclusiveFromBranchWithParents(
+      branch
+    );
+    stack.source.parent = undefined;
+    gitStack.source.parent = undefined;
+  }
+
+  compareStacks(stack, gitStack);
+  logInfo(`Submitted stack is valid`);
+}
 
 export function validate(scope: TScope): void {
   const branch = currentBranchPrecondition();
