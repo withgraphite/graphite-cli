@@ -71,25 +71,49 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('a');
       expect(() => validate('DOWNSTACK')).to.not.throw(Error);
       branch = currentBranchPrecondition();
+<<<<<<< HEAD
       metaStack = new MetaStackBuilder().downstackFromBranch(branch);
+=======
+      metaStack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
+        branch
+      );
+>>>>>>> 9d28226 (fix(validate): add tests to validateStack)
       expect(() => validateStack('DOWNSTACK', metaStack)).to.not.throw(Error);
 
       scene.repo.checkoutBranch('b');
       expect(() => validate('DOWNSTACK')).to.throw(Error);
       branch = currentBranchPrecondition();
+<<<<<<< HEAD
       metaStack = new MetaStackBuilder().downstackFromBranch(branch);
+=======
+      metaStack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
+        branch
+      );
+>>>>>>> 9d28226 (fix(validate): add tests to validateStack)
       expect(() => validateStack('DOWNSTACK', metaStack)).to.throw(Error);
 
       scene.repo.checkoutBranch('c');
       expect(() => validate('DOWNSTACK')).to.throw(Error);
       branch = currentBranchPrecondition();
+<<<<<<< HEAD
       metaStack = new MetaStackBuilder().downstackFromBranch(branch);
+=======
+      metaStack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
+        branch
+      );
+>>>>>>> 9d28226 (fix(validate): add tests to validateStack)
       expect(() => validateStack('DOWNSTACK', metaStack)).to.throw(Error);
 
       scene.repo.checkoutBranch('d');
       expect(() => validate('DOWNSTACK')).to.throw(Error);
       branch = currentBranchPrecondition();
+<<<<<<< HEAD
       metaStack = new MetaStackBuilder().downstackFromBranch(branch);
+=======
+      metaStack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
+        branch
+      );
+>>>>>>> 9d28226 (fix(validate): add tests to validateStack)
       expect(() => validateStack('DOWNSTACK', metaStack)).to.throw(Error);
     });
 
@@ -116,6 +140,10 @@ for (const scene of allScenes) {
       scene.repo.createChangeAndCommit('c');
       cache.clearAll();
       expect(() => validate('FULLSTACK')).to.throw(Error);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9d28226 (fix(validate): add tests to validateStack)
       branch = currentBranchPrecondition();
       metaStack = new MetaStackBuilder().fullStackFromBranch(branch);
       expect(() => validateStack('FULLSTACK', metaStack)).to.throw(Error);

@@ -16,14 +16,6 @@ import {
 } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
-import { Unpacked } from '../../lib/utils/ts_helpers';
-import { MetaStackBuilder, Stack } from '../../wrapper-classes';
-import Branch from '../../wrapper-classes/branch';
-import { TScope } from '../scope';
-import { validateStack } from '../validate';
-import { getPRBody } from './pr_body';
-import { getPRDraftStatus } from './pr_draft';
-import { getPRTitle } from './pr_title';
 import prompts from 'prompts';
 import {
   detectUnsubmittedChanges,
@@ -32,9 +24,8 @@ import {
   logInfo,
   logNewline,
   logSuccess,
+  logWarn,
 } from '../../lib/utils';
-<<<<<<< HEAD
-=======
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { MetaStackBuilder, Stack } from '../../wrapper-classes';
 import Branch from '../../wrapper-classes/branch';
@@ -44,7 +35,6 @@ import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
->>>>>>> 4549c4c (fix(validate): validate submitted stack)
 
 export type TSubmitScope = TScope | 'BRANCH';
 
@@ -97,13 +87,10 @@ export async function submitAction(args: {
     args.createNewPRsAsDraft = true;
   }
 
-<<<<<<< HEAD
   // This supports the use case in sync.ts. Skips Steps 1 and 2
   if (args.branchesToSubmit) {
     branchesToSubmit = args.branchesToSubmit;
   } else {
-=======
->>>>>>> 4549c4c (fix(validate): validate submitted stack)
     // Step 1: Validate
     try {
       logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
@@ -131,7 +118,6 @@ export async function submitAction(args: {
       )
     );
 
-<<<<<<< HEAD
     // Force a sync to link any PRs that have remote equivalents, but weren't
     // previously tracked with Graphite.
     await syncPRInfoForBranches(branchesToSubmit);
@@ -140,12 +126,6 @@ export async function submitAction(args: {
     if (validBranches.abort) {
       return;
     }
-=======
-    // Step 2: Prepare
-    // Force a sync to link any PRs that have remote equivalents, but weren't
-    // previously tracked with Graphite.
-    await syncPRInfoForBranches(branchesToSubmit);
->>>>>>> 4549c4c (fix(validate): validate submitted stack)
 
     branchesToSubmit = validBranches.submittableBranches;
   }
@@ -274,26 +254,14 @@ async function submitPullRequests(args: {
 
 function getStack(args: { currentBranch: Branch; scope: TScope }): Stack {
   switch (args.scope) {
-<<<<<<< HEAD
     case 'UPSTACK':
       return new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
         args.currentBranch
       );
-=======
->>>>>>> 4549c4c (fix(validate): validate submitted stack)
     case 'DOWNSTACK':
       return new MetaStackBuilder().downstackFromBranch(args.currentBranch);
     case 'FULLSTACK':
       return new MetaStackBuilder().fullStackFromBranch(args.currentBranch);
-<<<<<<< HEAD
-  }
-}
-
-=======
-    case 'UPSTACK':
-      return new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
-        args.currentBranch
-      );
   }
 }
 
@@ -455,7 +423,6 @@ function shouldUpdatePR(args: {
   return false;
 }
 
->>>>>>> 4549c4c (fix(validate): validate submitted stack)
 /**
  * For now, we only allow users to update the following PR properties which
  * necessitate a PR update:

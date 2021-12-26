@@ -13,24 +13,35 @@ import { TSubmitScope } from './submit/submit';
 export function validateStack(scope: TSubmitScope, stack: Stack): void {
   const branch = currentBranchPrecondition();
   let gitStack;
-
-  if (scope === 'FULLSTACK') {
-    gitStack = new GitStackBuilder().fullStackFromBranch(branch);
-  } else {
-    gitStack = new GitStackBuilder().upstackInclusiveFromBranchWithParents(
-      branch
-    );
-    stack.source.parent = undefined;
-    gitStack.source.parent = undefined;
+  switch (scope) {
+    case 'FULLSTACK':
+      gitStack = new GitStackBuilder().fullStackFromBranch(branch);
+      compareStacks(stack, gitStack);
+      break;
+    case 'UPSTACK':
+      gitStack = new GitStackBuilder().upstackInclusiveFromBranchWithParents(
+        branch
+      );
+      stack.source.parent = undefined;
+      gitStack.source.parent = undefined;
+      compareStacks(stack, gitStack);
+      break;
+    case 'DOWNSTACK':
+      gitStack = new GitStackBuilder().upstackInclusiveFromBranchWithParents(
+        branch
+      );
+      stack.source.children = [];
+      gitStack.source.children = [];
+      compareStacks(stack, gitStack);
+      break;
   }
-
-  compareStacks(stack, gitStack);
   logInfo(`Submitted stack is valid`);
 }
 >>>>>>> 4549c4c (fix(validate): validate submitted stack)
 
 export function validateStack(scope: TSubmitScope, stack: Stack): void {
   const branch = currentBranchPrecondition();
+<<<<<<< HEAD
   let gitStack;
   switch (scope) {
     case 'FULLSTACK':
@@ -59,6 +70,8 @@ export function validateStack(scope: TSubmitScope, stack: Stack): void {
 
 export function validate(scope: TScope): void {
   const branch = currentBranchPrecondition();
+=======
+>>>>>>> 9d28226 (fix(validate): add tests to validateStack)
   switch (scope) {
     case 'UPSTACK':
       validateBranchUpstackInclusive(branch);
