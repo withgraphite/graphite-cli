@@ -62,7 +62,7 @@ export async function submitAction(args: {
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
   updateOnly: boolean;
-  branchesToSubmit?: Branch[]; // passed in case of resubmit
+  branchesToSubmit?: Branch[]; // passed in case of sync
 }): Promise<void> {
   let branchesToSubmit;
 
@@ -106,7 +106,6 @@ export async function submitAction(args: {
         validateStack(args.scope, stack);
         branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
       }
-
       logNewline();
     } catch {
       throw new ValidationFailedError(`Validation failed. Will not submit.`);

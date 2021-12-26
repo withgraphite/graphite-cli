@@ -4,6 +4,7 @@ import { logInfo } from '../lib/utils';
 import { GitStackBuilder, MetaStackBuilder, Stack } from '../wrapper-classes';
 import Branch from '../wrapper-classes/branch';
 import { TScope } from './scope';
+<<<<<<< HEAD
 import { TSubmitScope } from './submit/submit';
 
 export function validateStack(scope: TSubmitScope, stack: Stack): void {
@@ -31,6 +32,8 @@ export function validateStack(scope: TSubmitScope, stack: Stack): void {
   }
   logInfo(`Validation for current stack: passed`);
 }
+=======
+>>>>>>> 786e277 (fix(submit): undo validate changes)
 
 export function validate(scope: TScope): void {
   const branch = currentBranchPrecondition();
