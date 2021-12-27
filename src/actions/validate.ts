@@ -27,15 +27,13 @@ export function validateStack(scope: TSubmitScope, stack: Stack): void {
       compareStacks(stack, gitStack);
       break;
     case 'DOWNSTACK':
-      gitStack = new GitStackBuilder().upstackInclusiveFromBranchWithParents(
-        branch
-      );
+      gitStack = new GitStackBuilder().downstackFromBranch(branch);
       stack.source.children = [];
       gitStack.source.children = [];
       compareStacks(stack, gitStack);
       break;
   }
-  logInfo(`Submitted stack is valid`);
+  logInfo(`Validation for current stack: passed`);
 }
 >>>>>>> 4549c4c (fix(validate): validate submitted stack)
 
@@ -90,6 +88,9 @@ function validateBranchFullstack(branch: Branch): void {
   const metaStack = new MetaStackBuilder().fullStackFromBranch(branch);
   const gitStack = new GitStackBuilder().fullStackFromBranch(branch);
 
+  // logInfo(
+  //   `FullStack --> metaStack is ${metaStack} and gitStack is ${gitStack}`
+  // );
   compareStacks(metaStack, gitStack);
 }
 
@@ -109,6 +110,7 @@ function validateBranchUpstackInclusive(branch: Branch): void {
   metaStack.source.parent = undefined;
   gitStack.source.parent = undefined;
 
+  // logInfo(`Upstack --> metaStack is ${metaStack} and gitStack is ${gitStack}`);
   compareStacks(metaStack, gitStack);
 }
 
