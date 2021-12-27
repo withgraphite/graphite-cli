@@ -34,6 +34,7 @@ import { validate } from '../validate';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
+import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
 
 export type TSubmitScope = TScope | 'BRANCH';
 
@@ -62,98 +63,90 @@ export async function submitAction(args: {
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
   updateOnly: boolean;
-  branchesToSubmit?: Branch[]; // passed in case of sync
 }): Promise<void> {
-  let branchesToSubmit;
-
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
 
-  // This supports the use case in sync.ts. Skips Steps 1 and 2
-  if (args.branchesToSubmit) {
-    branchesToSubmit = args.branchesToSubmit;
-  } else {
-    if (args.dryRun) {
-      logInfo(
-        chalk.yellow(
-          `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
-        )
-      );
-      logNewline();
-    }
-
-    if (!execStateConfig.interactive()) {
-      logInfo(
-        `Running in interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
-      );
-      args.editPRFieldsInline = false;
-      args.createNewPRsAsDraft = true;
-    }
-
-    // Step 1: Validate
-    try {
-      logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
-      if (args.scope !== 'BRANCH') {
-        validate(args.scope);
-      }
-
-      logNewline();
-    } catch {
-      throw new ValidationFailedError(`Validation failed. Will not submit.`);
-    }
-
-    // Step 2: Prepare
-    branchesToSubmit = getBranchesToSubmit({
-      currentBranch: currentBranchPrecondition(),
-      scope: args.scope,
-    });
-
-    // Force a sync to link any PRs that have remote equivalents, but weren't
-    // previously tracked with Graphite.
-    await syncPRInfoForBranches(branchesToSubmit);
-
+  if (args.dryRun) {
     logInfo(
-      chalk.blueBright(
-        '🥞 [Step 2] Preparing to submit PRs for the following branches...'
+      chalk.yellow(
+        `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
       )
     );
+    logNewline();
+  }
 
-    const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
-      await getPRInfoForBranches({
-        branches: branchesToSubmit,
-        editPRFieldsInline: args.editPRFieldsInline,
-        createNewPRsAsDraft: args.createNewPRsAsDraft,
-        updateOnly: args.updateOnly,
-      });
-
-    if (args.dryRun) {
-      logInfo(chalk.blueBright('✅ Dry Run complete.'));
-      return;
-    }
-
-    // Step 3: Pushing branches to remote
-    logInfo(chalk.blueBright('➡️  [Step 3] Pushing branches to remote...'));
-    const branchesPushedToRemote = pushBranchesToRemote(
-      submissionInfoWithBranches.map((info) => info.branch)
-    );
-
+  if (!execStateConfig.interactive()) {
     logInfo(
-      chalk.blueBright(
-        `📂 [Step 4] Opening/updating PRs on GitHub for pushed branches...`
-      )
+      `Running in interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
     );
+    args.editPRFieldsInline = false;
+    args.createNewPRsAsDraft = true;
+  }
 
-    await submitPullRequests({
-      submissionInfoWithBranches: submissionInfoWithBranches,
-      branchesPushedToRemote: branchesPushedToRemote,
-      cliAuthToken: cliAuthToken,
-    });
+  // Step 1: Validate
+  try {
+    logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
+    if (args.scope !== 'BRANCH') {
+      validate(args.scope);
+    }
 
     logNewline();
-    const survey = await getSurvey();
-    if (survey) {
-      await showSurvey(survey);
-    }
+  } catch {
+    throw new ValidationFailedError(`Validation failed. Will not submit.`);
+  }
+
+  // Step 2: Prepare
+  const branchesToSubmit = getBranchesToSubmit({
+    currentBranch: currentBranchPrecondition(),
+    scope: args.scope,
+  });
+
+  // Force a sync to link any PRs that have remote equivalents, but weren't
+  // previously tracked with Graphite.
+  await syncPRInfoForBranches(branchesToSubmit);
+
+  logInfo(
+    chalk.blueBright(
+      '🥞 [Step 2] Preparing to submit PRs for the following branches...'
+    )
+  );
+
+  const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
+    await getPRInfoForBranches({
+      branches: branchesToSubmit,
+      editPRFieldsInline: args.editPRFieldsInline,
+      createNewPRsAsDraft: args.createNewPRsAsDraft,
+      updateOnly: args.updateOnly,
+    });
+
+  if (args.dryRun) {
+    logInfo(chalk.blueBright('✅ Dry Run complete.'));
+    return;
+  }
+
+  // Step 3: Pushing branches to remote
+  logInfo(chalk.blueBright('➡️  [Step 3] Pushing branches to remote...'));
+  const branchesPushedToRemote = pushBranchesToRemote(
+    submissionInfoWithBranches.map((info) => info.branch)
+  );
+
+  logInfo(
+    chalk.blueBright(
+      `📂 [Step 4] Opening/updating PRs on GitHub for pushed branches...`
+    )
+  );
+
+  await submitPullRequests({
+    submissionInfoWithBranches: submissionInfoWithBranches,
+    branchesPushedToRemote: branchesPushedToRemote,
+    cliAuthToken: cliAuthToken,
+  });
+
+  logNewline();
+  const survey = await getSurvey();
+  if (survey) {
+    await showSurvey(survey);
   }
 }
 
@@ -177,6 +170,162 @@ async function submitPullRequests(args: {
 
   saveBranchPRInfo(prInfo);
   printSubmittedPRInfo(prInfo);
+}
+
+export async function submitBranches(args: {
+  branchesToSubmit: Branch[];
+  cliAuthToken: string;
+  repoOwner: string;
+  repoName: string;
+  editPRFieldsInline: boolean;
+  createNewPRsAsDraft: boolean | undefined;
+  updateOnly: boolean;
+}): Promise<void> {
+  // Step 3: Pushing branches to remote
+  const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
+    await getPRInfoForBranches({
+      branches: args.branchesToSubmit,
+      editPRFieldsInline: args.editPRFieldsInline,
+      createNewPRsAsDraft: args.createNewPRsAsDraft,
+      updateOnly: args.updateOnly,
+    });
+
+  logInfo(chalk.blueBright('➡️  [3/3] Pushing branches to remote...'));
+  const branchesPushedToRemote = pushBranchesToRemote(
+    submissionInfoWithBranches.map((info) => info.branch)
+  );
+  // Filter out PRs which don't actually need a new submission (i.e. they
+  // had no local code changes and their local base did not change).
+  const submissionInfo: TPRSubmissionInfo = submissionInfoWithBranches.filter(
+    (info) => {
+      const prInfo = info.branch.getPRInfo();
+      if (prInfo === undefined) {
+        return true;
+      }
+      return shouldUpdatePR({
+        branch: info.branch,
+        previousBranchPRInfo: prInfo,
+        branchesPushedToRemote: branchesPushedToRemote,
+      });
+    }
+  );
+
+  logInfo(
+    chalk.blueBright(
+      `📂 [4/4] Opening/updating PRs on GitHub for pushed branches...`
+    )
+  );
+  const [prInfo, survey] = await Promise.all([
+    submitPRsForBranches({
+      submissionInfo: submissionInfo,
+      branchesPushedToRemote: branchesPushedToRemote,
+      cliAuthToken: args.cliAuthToken,
+      repoOwner: args.repoOwner,
+      repoName: args.repoName,
+      editPRFieldsInline: args.editPRFieldsInline,
+      createNewPRsAsDraft: args.createNewPRsAsDraft,
+    }),
+    getSurvey(),
+  ]);
+
+  saveBranchPRInfo(prInfo);
+  printSubmittedPRInfo(prInfo);
+
+  if (survey !== undefined) {
+    await showSurvey(survey);
+  }
+}
+
+async function submitPRsForBranches(args: {
+  submissionInfo: TPRSubmissionInfo;
+  branchesPushedToRemote: Branch[];
+  cliAuthToken: string;
+  repoOwner: string;
+  repoName: string;
+  editPRFieldsInline: boolean;
+  createNewPRsAsDraft: boolean | undefined;
+}): Promise<TSubmittedPR[]> {
+  const submissionInfo = args.submissionInfo;
+  if (submissionInfo.length === 0) {
+    return [];
+  }
+
+  try {
+    const response = await request.requestWithArgs(
+      API_SERVER,
+      graphiteCLIRoutes.submitPullRequests,
+      {
+        authToken: args.cliAuthToken,
+        repoOwner: args.repoOwner,
+        repoName: args.repoName,
+        prs: submissionInfo,
+      }
+    );
+
+    if (response._response.status === 200 && response._response.body !== null) {
+      const requests: { [head: string]: TSubmittedPRRequest } = {};
+      submissionInfo.forEach((prRequest) => {
+        requests[prRequest.head] = prRequest;
+      });
+
+      return response.prs.map((prResponse) => {
+        return {
+          request: requests[prResponse.head],
+          response: prResponse,
+        };
+      });
+    }
+
+    if (response._response.status === 401) {
+      throw new PreconditionsFailedError(
+        'invalid/expired Graphite auth token.\n\nPlease obtain a new auth token by visiting https://app.graphite.dev/activate.'
+      );
+    }
+
+    throw new ExitFailedError(
+      `unexpected server response (${
+        response._response.status
+      }).\n\nResponse: ${JSON.stringify(response)}`
+    );
+  } catch (error: any) {
+    throw new ExitFailedError(`Failed to submit PRs`, error);
+  }
+}
+
+function shouldUpdatePR(args: {
+  branch: Branch;
+  previousBranchPRInfo: TBranchPRInfo;
+  branchesPushedToRemote: Branch[];
+}): boolean {
+  // base was updated
+  if (getBranchBaseName(args.branch) !== args.previousBranchPRInfo.base) {
+    logInfo(
+      chalk.yellow(`Branch ${args.branch.name} was rebased: will update PR`)
+    );
+    return true;
+  }
+
+  // code was updated
+  if (
+    args.branchesPushedToRemote.find(
+      (branchPushedToRemote) => branchPushedToRemote.name === args.branch.name
+    )
+  ) {
+    logInfo(
+      chalk.yellow(
+        `Code changes detected for ${args.branch.name}: will update PR`
+      )
+    );
+    return true;
+  }
+
+  if (execStateConfig.outputDebugLogs()) {
+    logInfo(
+      `No PR update needed for ${args.branch.name}: PR base and code unchanged.`
+    );
+  }
+
+  return false;
 }
 
 function getBranchesToSubmit(args: {
