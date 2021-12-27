@@ -106,6 +106,7 @@ export async function submitAction(args: {
         validateStack(args.scope, stack);
         branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
       }
+
       logNewline();
     } catch {
       throw new ValidationFailedError(`Validation failed. Will not submit.`);
@@ -126,6 +127,7 @@ export async function submitAction(args: {
     if (validBranches.abort) {
       return;
     }
+
     branchesToSubmit = validBranches.submittableBranches;
   }
 
@@ -312,11 +314,8 @@ async function getPRInfoForBranches(args: {
         prNumber: previousPRInfo.number,
         branch: branch,
       });
-    } else if (!previousPRInfo && !args.updateOnly) {
-      status = 'Create';
-      newPrBranches.push(branch);
     } else {
-      status = `no-op`;
+      logInfo(`▸ ${chalk.dim(chalk.cyan(branch.name))} (no-op)`);
     }
     logInfo(
       `▸ ${chalk.cyan(branch.name)} (${status}${reason ? ' - ' + reason : ''})`
@@ -343,6 +342,7 @@ async function getPRInfoForBranches(args: {
       branch: branch,
     });
   }
+
   logNewline();
   return branchPRInfo;
 }
