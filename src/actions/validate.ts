@@ -74,7 +74,6 @@ function validateBranchUpstackInclusive(branch: Branch): void {
   metaStack.source.parent = undefined;
   gitStack.source.parent = undefined;
 
-  // logInfo(`Upstack --> metaStack is ${metaStack} and gitStack is ${gitStack}`);
   compareStacks(metaStack, gitStack);
 }
 
