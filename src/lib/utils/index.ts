@@ -1,6 +1,8 @@
 import { checkoutBranch } from './checkout_branch';
 import { getCommitterDate } from './committer_date';
 import { detectStagedChanges } from './detect_staged_changes';
+import { detectUnpushedChanges } from './detect_unpushed_changes';
+import { isBranchRebased } from './is_branch_rebased';
 import { gpExecSync } from './exec_sync';
 import GitRepo from './git_repo';
 import { uncommittedChanges, unstagedChanges } from './git_status_utils';
@@ -35,6 +37,8 @@ export {
   checkoutBranch,
   rebaseInProgress,
   detectStagedChanges,
+  detectUnpushedChanges,
+  isBranchRebased,
   uncommittedChanges,
   unstagedChanges,
   getTrunk,

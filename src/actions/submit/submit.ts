@@ -16,7 +16,9 @@ import {
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
 import {
+  detectUnpushedChanges,
   gpExecSync,
+  isBranchRebased,
   logDebug,
   logError,
   logInfo,
@@ -27,7 +29,6 @@ import {
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { MetaStackBuilder } from '../../wrapper-classes';
 import Branch from '../../wrapper-classes/branch';
-import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
 import { TScope } from '../scope';
 import { validate } from '../validate';
 import { getPRBody } from './pr_body';
@@ -82,6 +83,9 @@ export async function submitAction(args: {
     }
 
     if (!execStateConfig.interactive()) {
+      logInfo(
+        `Running in interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
+      );
       args.editPRFieldsInline = false;
       args.createNewPRsAsDraft = true;
     }
@@ -143,8 +147,6 @@ export async function submitAction(args: {
       submissionInfoWithBranches: submissionInfoWithBranches,
       branchesPushedToRemote: branchesPushedToRemote,
       cliAuthToken: cliAuthToken,
-      editPRFieldsInline: args.editPRFieldsInline,
-      createNewPRsAsDraft: args.createNewPRsAsDraft,
     });
 
     logNewline();
@@ -161,8 +163,6 @@ async function submitPullRequests(args: {
   })[];
   branchesPushedToRemote: Branch[];
   cliAuthToken: string;
-  editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean | undefined;
 }) {
   if (!args.submissionInfoWithBranches.length) {
     logInfo(`No eligible branches to create PRs for.`);
@@ -170,13 +170,10 @@ async function submitPullRequests(args: {
     return;
   }
 
-  const prInfo = await submitPRsForStack({
-    submissionInfoWithBranches: args.submissionInfoWithBranches,
-    branchesPushedToRemote: args.branchesPushedToRemote,
-    cliAuthToken: args.cliAuthToken,
-    editPRFieldsInline: args.editPRFieldsInline,
-    createNewPRsAsDraft: args.createNewPRsAsDraft,
-  });
+  const prInfo = await requestServerToSubmitPRs(
+    args.cliAuthToken,
+    args.submissionInfoWithBranches
+  );
 
   saveBranchPRInfo(prInfo);
   printSubmittedPRInfo(prInfo);
@@ -230,6 +227,17 @@ function getBranchesToSubmit(args: {
     );
 }
 
+/**
+ * For now, we only allow users to update the following PR properties which
+ * necessitate a PR update:
+ * - the PR base
+ * - the PR's code contents
+ *
+ * Notably, we do not yet allow users to update the PR title, body, etc.
+ *
+ * Therefore, we should only update the PR iff either of these properties
+ * differ from our stored data on the previous PR submission.
+ */
 async function getPRInfoForBranches(args: {
   branches: Branch[];
   editPRFieldsInline: boolean;
@@ -245,14 +253,29 @@ async function getPRInfoForBranches(args: {
 
     const previousPRInfo = branch.getPRInfo();
     if (previousPRInfo) {
-      logInfo(`▸ ${chalk.dim(chalk.cyan(branch.name))} (update)`);
-      branchPRInfo.push({
-        action: 'update',
-        head: branch.name,
-        base: parentBranchName,
-        prNumber: previousPRInfo.number,
-        branch: branch,
-      });
+      let status;
+      if (detectUnpushedChanges(branch)) {
+        status = `update - code changes`;
+        branchPRInfo.push({
+          action: 'update',
+          head: branch.name,
+          base: parentBranchName,
+          prNumber: previousPRInfo.number,
+          branch: branch,
+        });
+      } else if (isBranchRebased(branch)) {
+        status = `update - rebased`;
+        branchPRInfo.push({
+          action: 'update',
+          head: branch.name,
+          base: parentBranchName,
+          prNumber: previousPRInfo.number,
+          branch: branch,
+        });
+      } else {
+        status = `no-op`;
+      }
+      logInfo(`▸ ${chalk.dim(chalk.cyan(branch.name))} (${status})`);
     } else if (!args.updateOnly) {
       const { title, body, draft } = await getPRCreationInfo({
         branch: branch,
@@ -372,34 +395,6 @@ async function requestServerToSubmitPRs(
   }
 }
 
-async function submitPRsForStack(args: {
-  submissionInfoWithBranches: TPRSubmissionInfoWithBranch;
-  branchesPushedToRemote: Branch[];
-  cliAuthToken: string;
-  editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean | undefined;
-}): Promise<TSubmittedPR[]> {
-  // Filter out PRs which don't actually need a new submission (i.e. they
-  // had no local code changes and their local base did not change).
-  const submissionInfo: TPRSubmissionInfo =
-    args.submissionInfoWithBranches.filter((info) => {
-      const prInfo = info.branch.getPRInfo();
-      if (prInfo === undefined) {
-        return true;
-      }
-      return shouldUpdatePR({
-        branch: info.branch,
-        previousBranchPRInfo: prInfo,
-        branchesPushedToRemote: args.branchesPushedToRemote,
-      });
-    });
-
-  if (!submissionInfo.length) {
-    return [];
-  }
-  return await requestServerToSubmitPRs(args.cliAuthToken, submissionInfo);
-}
-
 function getBranchBaseName(branch: Branch): string {
   const parent = branch.getParentFromMeta();
   if (parent === undefined) {
@@ -408,53 +403,6 @@ function getBranchBaseName(branch: Branch): string {
     );
   }
   return parent.name;
-}
-
-/**
- * For now, we only allow users to update the following PR properties which
- * necessitate a PR update:
- * - the PR base
- * - the PR's code contents
- *
- * Notably, we do not yet allow users to update the PR title, body, etc.
- *
- * Therefore, we should only update the PR iff either of these properties
- * differ from our stored data on the previous PR submission.
- */
-function shouldUpdatePR(args: {
-  branch: Branch;
-  previousBranchPRInfo: TBranchPRInfo;
-  branchesPushedToRemote: Branch[];
-}): boolean {
-  // base was updated
-  if (getBranchBaseName(args.branch) !== args.previousBranchPRInfo.base) {
-    logInfo(
-      chalk.yellow(`Branch ${args.branch.name} was rebased: will update PR`)
-    );
-    return true;
-  }
-
-  // code was updated
-  if (
-    args.branchesPushedToRemote.find(
-      (branchPushedToRemote) => branchPushedToRemote.name === args.branch.name
-    )
-  ) {
-    logInfo(
-      chalk.yellow(
-        `Code changes detected for ${args.branch.name}: will update PR`
-      )
-    );
-    return true;
-  }
-
-  if (execStateConfig.outputDebugLogs()) {
-    logInfo(
-      `No PR update needed for ${args.branch.name}: PR base and code unchanged.`
-    );
-  }
-
-  return false;
 }
 
 async function getPRCreationInfo(args: {
