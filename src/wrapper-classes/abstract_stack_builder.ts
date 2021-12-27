@@ -33,7 +33,7 @@ export default abstract class AbstractStackBuilder {
     while (possibleSourceNodes.length > 0) {
       const node = possibleSourceNodes.pop();
       if (!node) {
-        throw new Error('Stack missing source node, shouldnt happen');
+        throw new Error('Stack missing source node, should not happen');
       }
       if (node.branch.name === branch.name) {
         stack.source = node;
@@ -44,6 +44,10 @@ export default abstract class AbstractStackBuilder {
     return stack;
   }
 
+  /*
+    This function traverses the tree upstack, ie, from the branch to all its
+    children until it hits leaf nodes (which have no children)
+   */
   public upstackInclusiveFromBranchWithoutParents(b: Branch): Stack {
     const branch = this.memoizeBranchIfNeeded(b);
     const sourceNode: StackNode = new StackNode({
@@ -119,15 +123,18 @@ export default abstract class AbstractStackBuilder {
     );
   }
 
+  /*
+    This function traverses the tree downstack, ie, from the branch to all its
+    ancestors until it hits trunk (which has no parent)
+   */
   public downstackFromBranch = (b: Branch): Stack => {
     const branch = this.memoizeBranchIfNeeded(b);
     let node = new StackNode({ branch });
-    let parent = branch.getParentFromMeta();
+    let parent = this.getBranchParent(node.branch);
     while (parent) {
-      node.parent = new StackNode({ branch: parent });
-      node.parent.children = [node];
+      node.parent = new StackNode({ branch: parent, children: [node] });
       node = node.parent;
-      parent = parent.getParentFromMeta();
+      parent = this.getBranchParent(node.branch);
     }
     return new Stack(node);
   };
