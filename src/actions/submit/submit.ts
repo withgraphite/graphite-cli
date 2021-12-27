@@ -177,11 +177,15 @@ async function getSubmitReadyBranches(branches: Branch[]) {
   );
   let abort = false;
   if (closedBranches.length) {
+    logWarn(`PRs for the following branches in the stack have been closed:`);
+    closedBranches.forEach((b) => logWarn(`▸ ${chalk.gray(b.name)} `));
+    logWarn(`This can cause unexpected issues.`);
+
     const response = await prompts(
       {
-        type: 'confirm',
+        type: 'select',
         name: 'closed_branches_options',
-        message: `PRs for the following branches in the stack have been closed: \n ${closedBranches.toString()} This can cause unexpected issues.`,
+        message: `How would you like to proceed?`,
         choices: [
           {
             title: `Abort "stack submit" and fix manually`,
@@ -201,13 +205,16 @@ async function getSubmitReadyBranches(branches: Branch[]) {
     );
     if (response.closed_branches_options === 'fix_manually') {
       abort = true;
+      logInfo(`Aborting...`);
     } //TODO (nehasri): Fix branches automatically in the else option and modify submittableBranches
   }
+  logNewline();
   if (mergedBranches.length) {
     logWarn(
       `PRs for the following branches in the stack have been merged. \n ${mergedBranches.toString()}`
     );
   }
+  logNewline();
   return {
     submittableBranches: submittableBranches,
     closedBranches: closedBranches,
