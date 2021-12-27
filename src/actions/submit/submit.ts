@@ -6,6 +6,7 @@ import { API_SERVER } from '../../lib/api';
 import { execStateConfig, repoConfig } from '../../lib/config';
 import {
   ExitFailedError,
+  KilledError,
   PreconditionsFailedError,
   ValidationFailedError,
 } from '../../lib/errors';
@@ -22,6 +23,7 @@ import {
   logInfo,
   logNewline,
   logSuccess,
+  logWarn,
 } from '../../lib/utils';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { MetaStackBuilder, Stack } from '../../wrapper-classes';
@@ -32,6 +34,7 @@ import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
+import prompts from 'prompts';
 
 export type TSubmitScope = TScope | 'BRANCH';
 
@@ -105,15 +108,22 @@ export async function submitAction(args: {
   }
 
     // Step 2: Prepare
+    logInfo(
+      chalk.blueBright(
+        '🥞 [Step 2] Preparing to submit PRs for the following branches...'
+      )
+    );
+
     // Force a sync to link any PRs that have remote equivalents, but weren't
     // previously tracked with Graphite.
     await syncPRInfoForBranches(branchesToSubmit);
 
-  logInfo(
-    chalk.blueBright(
-      '🥞 [Step 2] Preparing to submit PRs for the following branches...'
-    )
-  );
+
+    const submitReady = await getSubmitReadyBranches(branchesToSubmit);
+    if (submitReady.abort) {
+      return;
+    }
+    branchesToSubmit = submitReady.submittableBranches;
 
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
     await getPRInfoForBranches({
@@ -152,6 +162,58 @@ export async function submitAction(args: {
   if (survey) {
     await showSurvey(survey);
   }
+}
+
+async function getSubmitReadyBranches(branches: Branch[]) {
+  const closedBranches = branches.filter(
+    (b) => b.getPRInfo()?.state === 'CLOSED'
+  );
+  const mergedBranches = branches.filter(
+    (b) => b.getPRInfo()?.state === 'MERGED'
+  );
+  const submittableBranches = branches.filter(
+    (b) =>
+      b.getPRInfo()?.state !== 'CLOSED' || b.getPRInfo()?.state !== 'CLOSED'
+  );
+  let abort = false;
+  if (closedBranches.length) {
+    const response = await prompts(
+      {
+        type: 'confirm',
+        name: 'closed_branches_options',
+        message: `PRs for the following branches in the stack have been closed: \n ${closedBranches.toString()} This can cause unexpected issues.`,
+        choices: [
+          {
+            title: `Abort "stack submit" and fix manually`,
+            value: 'fix_manually',
+          },
+          {
+            title: `Continue with closed branches (best effort)`,
+            value: 'continue_without_fix',
+          },
+        ],
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    );
+    if (response.closed_branches_options === 'fix_manually') {
+      abort = true;
+    } //TODO (nehasri): Fix branches automatically in the else option and modify submittableBranches
+  }
+  if (mergedBranches.length) {
+    logWarn(
+      `PRs for the following branches in the stack have been merged. \n ${mergedBranches.toString()}`
+    );
+  }
+  return {
+    submittableBranches: submittableBranches,
+    closedBranches: closedBranches,
+    mergedBranches: mergedBranches,
+    abort: abort,
+  };
 }
 
 async function submitPullRequests(args: {
