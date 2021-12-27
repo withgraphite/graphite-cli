@@ -222,6 +222,7 @@ async function processBranchesInInvalidState(branches: Branch[]) {
     }
     logNewline();
   }
+  logNewline();
   return {
     submittableBranches: submittableBranches,
     closedBranches: closedBranches,
