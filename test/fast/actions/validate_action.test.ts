@@ -71,33 +71,25 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('a');
       expect(() => validate('DOWNSTACK')).to.not.throw(Error);
       branch = currentBranchPrecondition();
-      metaStack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
-        branch
-      );
+      metaStack = new MetaStackBuilder().downstackFromBranch(branch);
       expect(() => validateStack('DOWNSTACK', metaStack)).to.not.throw(Error);
 
       scene.repo.checkoutBranch('b');
       expect(() => validate('DOWNSTACK')).to.throw(Error);
       branch = currentBranchPrecondition();
-      metaStack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
-        branch
-      );
+      metaStack = new MetaStackBuilder().downstackFromBranch(branch);
       expect(() => validateStack('DOWNSTACK', metaStack)).to.throw(Error);
 
       scene.repo.checkoutBranch('c');
       expect(() => validate('DOWNSTACK')).to.throw(Error);
       branch = currentBranchPrecondition();
-      metaStack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
-        branch
-      );
+      metaStack = new MetaStackBuilder().downstackFromBranch(branch);
       expect(() => validateStack('DOWNSTACK', metaStack)).to.throw(Error);
 
       scene.repo.checkoutBranch('d');
       expect(() => validate('DOWNSTACK')).to.throw(Error);
       branch = currentBranchPrecondition();
-      metaStack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
-        branch
-      );
+      metaStack = new MetaStackBuilder().downstackFromBranch(branch);
       expect(() => validateStack('DOWNSTACK', metaStack)).to.throw(Error);
     });
 
@@ -124,7 +116,6 @@ for (const scene of allScenes) {
       scene.repo.createChangeAndCommit('c');
       cache.clearAll();
       expect(() => validate('FULLSTACK')).to.throw(Error);
-
       branch = currentBranchPrecondition();
       metaStack = new MetaStackBuilder().fullStackFromBranch(branch);
       expect(() => validateStack('FULLSTACK', metaStack)).to.throw(Error);
