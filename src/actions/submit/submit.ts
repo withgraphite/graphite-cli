@@ -4,8 +4,16 @@ import { request } from '@screenplaydev/retyped-routes';
 import chalk from 'chalk';
 import { API_SERVER } from '../../lib/api';
 import { execStateConfig, repoConfig } from '../../lib/config';
-import { ExitFailedError, KilledError, PreconditionsFailedError, ValidationFailedError } from '../../lib/errors';
-import { cliAuthPrecondition, currentBranchPrecondition } from '../../lib/preconditions';
+import {
+  ExitFailedError,
+  KilledError,
+  PreconditionsFailedError,
+  ValidationFailedError,
+} from '../../lib/errors';
+import {
+  cliAuthPrecondition,
+  currentBranchPrecondition,
+} from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
 import { Unpacked } from '../../lib/utils/ts_helpers';
@@ -20,11 +28,6 @@ import prompts from 'prompts';
 import {
   detectUnsubmittedChanges,
   gpExecSync,
-<<<<<<< HEAD
-=======
-  isBranchRestacked,
-  logDebug,
->>>>>>> 24ec3ea (fix(submit): rename methods/better logging)
   logError,
   logInfo,
   logNewline,
@@ -59,35 +62,33 @@ export async function submitAction(args: {
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
   updateOnly: boolean;
-  branchesToSubmit?: Branch[]; // passed in case of sync
+  branchesToSubmit: Branch[];
 }): Promise<void> {
   let branchesToSubmit;
-
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
+
+  if (args.dryRun) {
+    logInfo(
+      chalk.yellow(
+        `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
+      )
+    );
+    logNewline();
+  }
+
+  if (!execStateConfig.interactive()) {
+    logInfo(
+      `Running in interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
+    );
+    args.editPRFieldsInline = false;
+    args.createNewPRsAsDraft = true;
+  }
 
   // This supports the use case in sync.ts. Skips Steps 1 and 2
   if (args.branchesToSubmit) {
     branchesToSubmit = args.branchesToSubmit;
   } else {
-    if (args.dryRun) {
-      logInfo(
-        chalk.yellow(
-          `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
-        )
-      );
-      logNewline();
-      args.editPRFieldsInline = false;
-    }
-
-    if (!execStateConfig.interactive()) {
-      logInfo(
-        `Running in interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
-      );
-      args.editPRFieldsInline = false;
-      args.createNewPRsAsDraft = true;
-    }
-
     // Step 1: Validate
     try {
       logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
@@ -108,7 +109,6 @@ export async function submitAction(args: {
     } catch {
       throw new ValidationFailedError(`Validation failed. Will not submit.`);
     }
-
     // Step 2: Prepare
     logInfo(
       chalk.blueBright(

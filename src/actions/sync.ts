@@ -1,7 +1,10 @@
 import prompts from 'prompts';
 import { RepoSyncStackFrameT } from '../lib/config/merge_conflict_callstack_config';
 import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
-import { currentBranchPrecondition } from '../lib/preconditions';
+import {
+  cliAuthPrecondition,
+  currentBranchPrecondition,
+} from '../lib/preconditions';
 import { syncPRInfoForBranches } from '../lib/sync/pr_info';
 import {
   checkoutBranch,
@@ -15,7 +18,8 @@ import {
 import Branch from '../wrapper-classes/branch';
 import { deleteMergedBranches } from './clean_branches';
 import { fixDanglingBranches } from './fix_dangling_branches';
-import { submitAction } from './submit';
+import { submitBranches } from './submit/submit';
+import { repoConfig } from '../lib/config';
 
 export async function syncAction(opts: {
   pull: boolean;
@@ -163,13 +167,17 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
   }
   if (resubmit) {
     logInfo(`Updating PR to propagate local rebase changes...`);
-    await submitAction({
-      scope: 'FULLSTACK',
+    const cliAuthToken = cliAuthPrecondition();
+    const repoName = repoConfig.getRepoName();
+    const repoOwner = repoConfig.getRepoOwner();
+    await submitBranches({
+      branchesToSubmit: needsResubmission,
+      cliAuthToken: cliAuthToken,
+      repoOwner: repoOwner,
+      repoName: repoName,
       editPRFieldsInline: false,
       createNewPRsAsDraft: false,
-      dryRun: false,
       updateOnly: false,
-      branchesToSubmit: needsResubmission,
     });
   }
 }
