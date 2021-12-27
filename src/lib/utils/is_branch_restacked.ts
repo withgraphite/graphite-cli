@@ -1,7 +1,7 @@
 import Branch from '../../wrapper-classes/branch';
 import { PreconditionsFailedError } from '../errors';
 
-export function isBranchRebased(branch: Branch): boolean {
+export function isBranchRestacked(branch: Branch): boolean {
   return getBranchBaseName(branch) !== branch.getPRInfo()?.base;
 }
 

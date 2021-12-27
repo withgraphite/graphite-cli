@@ -4,27 +4,10 @@ import { request } from '@screenplaydev/retyped-routes';
 import chalk from 'chalk';
 import { API_SERVER } from '../../lib/api';
 import { execStateConfig, repoConfig } from '../../lib/config';
-import {
-  ExitFailedError,
-  KilledError,
-  PreconditionsFailedError,
-  ValidationFailedError,
-} from '../../lib/errors';
-import {
-  cliAuthPrecondition,
-  currentBranchPrecondition,
-} from '../../lib/preconditions';
+import { ExitFailedError, KilledError, PreconditionsFailedError, ValidationFailedError } from '../../lib/errors';
+import { cliAuthPrecondition, currentBranchPrecondition } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
-import {
-  detectUnsubmittedChanges,
-  gpExecSync,
-  logError,
-  logInfo,
-  logNewline,
-  logSuccess,
-  logWarn,
-} from '../../lib/utils';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { MetaStackBuilder, Stack } from '../../wrapper-classes';
 import Branch from '../../wrapper-classes/branch';
@@ -34,6 +17,20 @@ import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import prompts from 'prompts';
+import {
+  detectUnsubmittedChanges,
+  gpExecSync,
+<<<<<<< HEAD
+=======
+  isBranchRestacked,
+  logDebug,
+>>>>>>> 24ec3ea (fix(submit): rename methods/better logging)
+  logError,
+  logInfo,
+  logNewline,
+  logSuccess,
+  logWarn,
+} from '../../lib/utils';
 
 export type TSubmitScope = TScope | 'BRANCH';
 
@@ -528,13 +525,9 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
     }
 
     if ('error' in pr.response) {
-      logError(`Error in submitting ${pr.response.head}: ${pr.response.error}`);
+      logError(`Error in ${pr.response.head}: ${pr.response.error}`);
     } else {
-      logSuccess(
-        `${pr.response.head}: ${chalk.reset(pr.response.prURL)} ${
-          '(' + status + ')'
-        }`
-      );
+      logSuccess(`${pr.response.head} : ${pr.response.prURL} (${status})`);
     }
   });
 }
