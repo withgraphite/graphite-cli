@@ -16,7 +16,6 @@ import {
 } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
-import prompts from 'prompts';
 import {
   detectUnsubmittedChanges,
   gpExecSync,
@@ -35,6 +34,7 @@ import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
+import prompts from 'prompts';
 
 export type TSubmitScope = TScope | 'BRANCH';
 
