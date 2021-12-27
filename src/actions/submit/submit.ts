@@ -16,9 +16,9 @@ import {
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
 import {
-  detectUnpushedChanges,
+  detectUnsubmittedChanges,
   gpExecSync,
-  isBranchRebased,
+  isBranchRestacked,
   logDebug,
   logError,
   logInfo,
@@ -254,8 +254,8 @@ async function getPRInfoForBranches(args: {
     const previousPRInfo = branch.getPRInfo();
     if (previousPRInfo) {
       let status;
-      if (detectUnpushedChanges(branch)) {
-        status = `update - code changes`;
+      if (isBranchRestacked(branch)) {
+        status = `update - restacked`;
         branchPRInfo.push({
           action: 'update',
           head: branch.name,
@@ -263,8 +263,8 @@ async function getPRInfoForBranches(args: {
           prNumber: previousPRInfo.number,
           branch: branch,
         });
-      } else if (isBranchRebased(branch)) {
-        status = `update - rebased`;
+      } else if (detectUnsubmittedChanges(branch)) {
+        status = `update - code changes/rebase`;
         branchPRInfo.push({
           action: 'update',
           head: branch.name,
@@ -458,8 +458,6 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
   }
 
   prs.forEach((pr) => {
-    logSuccess(pr.response.head);
-
     let status: string = pr.response.status;
     switch (pr.response.status) {
       case 'updated':
@@ -476,9 +474,9 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
     }
 
     if ('error' in pr.response) {
-      logError(pr.response.error);
+      logError(`Error in ${pr.response.head}: ${pr.response.error}`);
     } else {
-      console.log(`${pr.response.prURL} (${status})`);
+      logSuccess(`${pr.response.head} : ${pr.response.prURL} (${status})`);
     }
   });
 }
