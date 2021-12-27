@@ -118,7 +118,6 @@ export async function submitAction(args: {
     // previously tracked with Graphite.
     await syncPRInfoForBranches(branchesToSubmit);
 
-
     const submitReady = await getSubmitReadyBranches(branchesToSubmit);
     if (submitReady.abort) {
       return;
@@ -173,7 +172,7 @@ async function getSubmitReadyBranches(branches: Branch[]) {
   );
   const submittableBranches = branches.filter(
     (b) =>
-      b.getPRInfo()?.state !== 'CLOSED' || b.getPRInfo()?.state !== 'CLOSED'
+      b.getPRInfo()?.state !== 'CLOSED' || b.getPRInfo()?.state !== 'MERGED'
   );
   let abort = false;
   if (closedBranches.length) {
@@ -210,10 +209,37 @@ async function getSubmitReadyBranches(branches: Branch[]) {
   }
   logNewline();
   if (mergedBranches.length) {
-    logWarn(
-      `PRs for the following branches in the stack have been merged. \n ${mergedBranches.toString()}`
+    logWarn(`PRs for the following branches in the stack have been closed:`);
+    mergedBranches.forEach((b) => logWarn(`▸ ${chalk.gray(b.name)} `));
+    logWarn(`This can cause unexpected issues.`);
+    const response = await prompts(
+      {
+        type: 'select',
+        name: 'merged_branches_options',
+        message: `How would you like to proceed?`,
+        choices: [
+          {
+            title: `Abort "stack submit" and fix manually`,
+            value: 'fix_manually',
+          },
+          {
+            title: `Continue with merged branches (best effort)`,
+            value: 'continue_without_fix',
+          },
+        ],
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
     );
+    if (response.merged_branches_options === 'fix_manually') {
+      abort = true;
+      logInfo(`Aborting...`);
+    } //TODO (nehasri): Fix branches automatically in the else option and modify submittableBranches
   }
+
   logNewline();
   return {
     submittableBranches: submittableBranches,
