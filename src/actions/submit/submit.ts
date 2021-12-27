@@ -92,13 +92,13 @@ export async function submitAction(args: {
       if (args.scope !== 'BRANCH') {
         validate(args.scope);
       }
+
       logNewline();
     } catch {
       throw new ValidationFailedError(`Validation failed. Will not submit.`);
     }
 
     // Step 2: Prepare
-    // TODO (nehasri): Why do we get branches here and not above since validation also traverses the stack anyway. Optimize
     branchesToSubmit = getBranchesToSubmit({
       currentBranch: currentBranchPrecondition(),
       scope: args.scope,
@@ -113,59 +113,45 @@ export async function submitAction(args: {
         '🥞 [Step 2] Preparing to submit PRs for the following branches...'
       )
     );
-    // TODO (nehasri): What is the point of this? The actual test of which
-    //  branches will be updated happens at the time of `shouldUpdatePR`.
-    //  Its a very crude check and can be streamlined.
-    branchesToSubmit.forEach((branch) => {
-      let operation;
-      if (branch.getPRInfo() !== undefined) {
-        operation = 'update';
-      } else if (!args.updateOnly) {
-        operation = 'create';
-      } else {
-        operation = 'no-op';
-      }
-      logInfo(`▸ ${chalk.yellow(branch.name)} (${operation})`);
-    });
-    logNewline();
+
+    const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
+      await getPRInfoForBranches({
+        branches: branchesToSubmit,
+        editPRFieldsInline: args.editPRFieldsInline,
+        createNewPRsAsDraft: args.createNewPRsAsDraft,
+        updateOnly: args.updateOnly,
+      });
 
     if (args.dryRun) {
       logInfo(chalk.blueBright('✅ Dry Run complete.'));
       return;
     }
-  }
-  // Step 3: Pushing branches to remote
-  const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
-    await getPRInfoForBranches({
-      branches: branchesToSubmit,
+
+    // Step 3: Pushing branches to remote
+    logInfo(chalk.blueBright('➡️  [Step 3] Pushing branches to remote...'));
+    const branchesPushedToRemote = pushBranchesToRemote(
+      submissionInfoWithBranches.map((info) => info.branch)
+    );
+
+    logInfo(
+      chalk.blueBright(
+        `📂 [Step 4] Opening/updating PRs on GitHub for pushed branches...`
+      )
+    );
+
+    await submitPullRequests({
+      submissionInfoWithBranches: submissionInfoWithBranches,
+      branchesPushedToRemote: branchesPushedToRemote,
+      cliAuthToken: cliAuthToken,
       editPRFieldsInline: args.editPRFieldsInline,
       createNewPRsAsDraft: args.createNewPRsAsDraft,
-      updateOnly: args.updateOnly,
     });
 
-  logInfo(chalk.blueBright('➡️  [Step 3] Pushing branches to remote...'));
-  const branchesPushedToRemote = pushBranchesToRemote(
-    submissionInfoWithBranches.map((info) => info.branch)
-  );
-
-  logInfo(
-    chalk.blueBright(
-      `📂 [Step 4] Opening/updating PRs on GitHub for pushed branches...`
-    )
-  );
-
-  await submitPullRequests({
-    submissionInfoWithBranches: submissionInfoWithBranches,
-    branchesPushedToRemote: branchesPushedToRemote,
-    cliAuthToken: cliAuthToken,
-    editPRFieldsInline: args.editPRFieldsInline,
-    createNewPRsAsDraft: args.createNewPRsAsDraft,
-  });
-
-  logNewline();
-  const survey = await getSurvey();
-  if (survey) {
-    await showSurvey(survey);
+    logNewline();
+    const survey = await getSurvey();
+    if (survey) {
+      await showSurvey(survey);
+    }
   }
 }
 
@@ -259,6 +245,7 @@ async function getPRInfoForBranches(args: {
 
     const previousPRInfo = branch.getPRInfo();
     if (previousPRInfo) {
+      logInfo(`▸ ${chalk.dim(chalk.cyan(branch.name))} (update)`);
       branchPRInfo.push({
         action: 'update',
         head: branch.name,
@@ -273,6 +260,7 @@ async function getPRInfoForBranches(args: {
         editPRFieldsInline: args.editPRFieldsInline,
         createNewPRsAsDraft: args.createNewPRsAsDraft,
       });
+      logInfo(`▸ ${chalk.dim(chalk.cyan(branch.name))} (create)`);
       branchPRInfo.push({
         action: 'create',
         head: branch.name,
@@ -282,9 +270,11 @@ async function getPRInfoForBranches(args: {
         draft: draft,
         branch: branch,
       });
+    } else {
+      logInfo(`▸ ${chalk.dim(chalk.cyan(branch.name))} (no-op)`);
     }
   }
-
+  logNewline();
   return branchPRInfo;
 }
 
