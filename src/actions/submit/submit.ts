@@ -399,6 +399,7 @@ async function getPRInfoForBranches(args: {
   dryRun: boolean;
 }): Promise<TPRSubmissionInfoWithBranch> {
   const branchPRInfo: TPRSubmissionInfoWithBranch = [];
+  const newPrBranches: Branch[] = [];
   for (const branch of args.branches) {
     // The branch here should always have a parent - above, the branches we've
     // gathered should exclude trunk which ensures that every branch we're submitting
@@ -406,51 +407,57 @@ async function getPRInfoForBranches(args: {
     const parentBranchName = getBranchBaseName(branch);
 
     const previousPRInfo = branch.getPRInfo();
-    if (previousPRInfo) {
-      let status;
-      if (isBranchRestacked(branch)) {
-        status = `update - restacked`;
-        branchPRInfo.push({
-          action: 'update',
-          head: branch.name,
-          base: parentBranchName,
-          prNumber: previousPRInfo.number,
-          branch: branch,
-        });
-      } else if (detectUnsubmittedChanges(branch)) {
-        status = `update - code changes/rebase`;
-        branchPRInfo.push({
-          action: 'update',
-          head: branch.name,
-          base: parentBranchName,
-          prNumber: previousPRInfo.number,
-          branch: branch,
-        });
-      } else {
-        status = `no-op`;
-      }
-      logInfo(`▸ ${chalk.dim(chalk.cyan(branch.name))} (${status})`);
-    } else if (!args.updateOnly) {
-      const { title, body, draft } = await getPRCreationInfo({
-        branch: branch,
-        parentBranchName: parentBranchName,
-        editPRFieldsInline: args.editPRFieldsInline,
-        createNewPRsAsDraft: args.createNewPRsAsDraft,
-        dryRun: args.dryRun,
-      });
-      logInfo(`▸ ${chalk.dim(chalk.cyan(branch.name))} (create)`);
+    let status, reason;
+    if (previousPRInfo && isBranchRestacked(branch)) {
+      status = 'update';
+      reason = 'restacked';
       branchPRInfo.push({
-        action: 'create',
+        action: 'update',
         head: branch.name,
         base: parentBranchName,
-        title: title,
-        body: body,
-        draft: draft,
+        prNumber: previousPRInfo.number,
         branch: branch,
       });
+    } else if (previousPRInfo && detectUnsubmittedChanges(branch)) {
+      status = 'update';
+      reason = 'code changes/rebase';
+      branchPRInfo.push({
+        action: 'update',
+        head: branch.name,
+        base: parentBranchName,
+        prNumber: previousPRInfo.number,
+        branch: branch,
+      });
+    } else if (!previousPRInfo && !args.updateOnly) {
+      status = 'create';
+      newPrBranches.push(branch);
     } else {
-      logInfo(`▸ ${chalk.dim(chalk.cyan(branch.name))} (no-op)`);
+      status = `no-op`;
     }
+    logInfo(
+      `▸ ${chalk.cyan(branch.name)} (${status}${reason ? ' - ' + reason : ''})`
+    );
+  }
+
+  // Prompt for PR creation info separately after printing
+  for (const branch of newPrBranches) {
+    const parentBranchName = getBranchBaseName(branch);
+    const { title, body, draft } = await getPRCreationInfo({
+      branch: branch,
+      parentBranchName: parentBranchName,
+      editPRFieldsInline: args.editPRFieldsInline,
+      createNewPRsAsDraft: args.createNewPRsAsDraft,
+      dryRun: args.dryRun,
+    });
+    branchPRInfo.push({
+      action: 'create',
+      head: branch.name,
+      base: parentBranchName,
+      title: title,
+      body: body,
+      draft: draft,
+      branch: branch,
+    });
   }
   logNewline();
   return branchPRInfo;
@@ -571,24 +578,28 @@ async function getPRCreationInfo(args: {
   body: string | undefined;
   draft: boolean;
 }> {
-  if (!args.dryRun) {
-    logInfo(
-      `Enter info for new pull request for ${chalk.yellow(
-        args.branch.name
-      )} ▸ ${args.parentBranchName}:`
-    );
+  if (args.dryRun) {
+    return {
+      title: '',
+      body: '',
+      draft: true,
+    };
   }
+  logInfo(
+    `Enter info for new pull request for ${chalk.yellow(args.branch.name)} ▸ ${
+      args.parentBranchName
+    }:`
+  );
+
   const title = await getPRTitle({
     branch: args.branch,
     editPRFieldsInline: args.editPRFieldsInline,
-    dryRun: args.dryRun,
   });
   args.branch.setPriorSubmitTitle(title);
 
   const body = await getPRBody({
     branch: args.branch,
     editPRFieldsInline: args.editPRFieldsInline,
-    dryRun: args.dryRun,
   });
   args.branch.setPriorSubmitBody(body);
 
