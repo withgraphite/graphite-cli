@@ -36,7 +36,7 @@ DEBUG=1 yarn test --full-trace
 
 Running fast suite of test
 ```
-DEBUG=1 yarn test --full-trace
+DEBUG=1 yarn test-fast --full-trace
 ```
 
 Running a subset of tests
