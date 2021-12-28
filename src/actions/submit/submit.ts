@@ -75,6 +75,7 @@ export async function submitAction(args: {
       )
     );
     logNewline();
+    args.editPRFieldsInline = false;
   }
 
   if (!execStateConfig.interactive()) {
@@ -475,12 +476,14 @@ async function getPRCreationInfo(args: {
   const title = await getPRTitle({
     branch: args.branch,
     editPRFieldsInline: args.editPRFieldsInline,
+    dryRun: args.dryRun,
   });
   args.branch.setPriorSubmitTitle(title);
 
   const body = await getPRBody({
     branch: args.branch,
     editPRFieldsInline: args.editPRFieldsInline,
+    dryRun: args.dryRun,
   });
   args.branch.setPriorSubmitBody(body);
 
