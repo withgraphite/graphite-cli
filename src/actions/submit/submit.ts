@@ -67,6 +67,7 @@ export async function submitAction(args: {
   let branchesToSubmit;
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
+
   if (args.dryRun) {
     logInfo(
       chalk.yellow(
