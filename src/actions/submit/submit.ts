@@ -363,7 +363,9 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
   }
 
   branches.forEach((branch) => {
-    logInfo(`Pushing ${branch.name}...`);
+    logInfo(
+      `Pushing ${branch.name} with force-with-lease (will not override external commits to remote)...`
+    );
 
     const output = gpExecSync(
       {
@@ -372,7 +374,7 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
         // execSync makes analyzing stderr extremely challenging
         command: [
           `git push origin`,
-          `-f ${branch.name} 2>&1`,
+          `--force-with-lease ${branch.name} 2>&1`,
           ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
         ].join(' '),
         options: {
