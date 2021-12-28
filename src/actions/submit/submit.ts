@@ -86,43 +86,43 @@ export async function submitAction(args: {
     args.createNewPRsAsDraft = true;
   }
 
-    // Step 1: Validate
-    try {
-      logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
+  // Step 1: Validate
+  try {
+    logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
 
-      if (args.scope === 'BRANCH') {
-        const currentBranch = currentBranchPrecondition();
-        branchesToSubmit = [currentBranch];
-      } else {
-        const stack = getStack({
-          currentBranch: currentBranchPrecondition(),
-          scope: args.scope,
-        });
-        validateStack(args.scope, stack);
-        branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
-      }
+    if (args.scope === 'BRANCH') {
+      const currentBranch = currentBranchPrecondition();
+      branchesToSubmit = [currentBranch];
+    } else {
+      const stack = getStack({
+        currentBranch: currentBranchPrecondition(),
+        scope: args.scope,
+      });
+      validateStack(args.scope, stack);
+      branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
+    }
 
     logNewline();
   } catch {
     throw new ValidationFailedError(`Validation failed. Will not submit.`);
   }
 
-    // Step 2: Prepare
-    logInfo(
-      chalk.blueBright(
-        '🥞 [Step 2] Preparing to submit PRs for the following branches...'
-      )
-    );
+  // Step 2: Prepare
+  logInfo(
+    chalk.blueBright(
+      '🥞 [Step 2] Preparing to submit PRs for the following branches...'
+    )
+  );
 
-    // Force a sync to link any PRs that have remote equivalents, but weren't
-    // previously tracked with Graphite.
-    await syncPRInfoForBranches(branchesToSubmit);
+  // Force a sync to link any PRs that have remote equivalents, but weren't
+  // previously tracked with Graphite.
+  await syncPRInfoForBranches(branchesToSubmit);
 
-    const submitReady = await getSubmitReadyBranches(branchesToSubmit);
-    if (submitReady.abort) {
-      return;
-    }
-    branchesToSubmit = submitReady.submittableBranches;
+  const submitReady = await getSubmitReadyBranches(branchesToSubmit);
+  if (submitReady.abort) {
+    return;
+  }
+  branchesToSubmit = submitReady.submittableBranches;
 
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
     await getPRInfoForBranches({
@@ -175,9 +175,12 @@ async function getSubmitReadyBranches(branches: Branch[]) {
       b.getPRInfo()?.state !== 'CLOSED' || b.getPRInfo()?.state !== 'MERGED'
   );
   let abort = false;
-  if (closedBranches.length) {
-    logWarn(`PRs for the following branches in the stack have been closed:`);
-    closedBranches.forEach((b) => logWarn(`▸ ${chalk.gray(b.name)} `));
+  if (closedBranches.length || mergedBranches.length) {
+    logWarn(
+      `PRs for the following branches in the stack have been closed or merged:`
+    );
+    closedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (closed)`));
+    mergedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (merged)`));
     logWarn(`This can cause unexpected issues.`);
 
     const response = await prompts(
@@ -207,39 +210,6 @@ async function getSubmitReadyBranches(branches: Branch[]) {
       logInfo(`Aborting...`);
     } //TODO (nehasri): Fix branches automatically in the else option and modify submittableBranches
   }
-  logNewline();
-  if (mergedBranches.length) {
-    logWarn(`PRs for the following branches in the stack have been closed:`);
-    mergedBranches.forEach((b) => logWarn(`▸ ${chalk.gray(b.name)} `));
-    logWarn(`This can cause unexpected issues.`);
-    const response = await prompts(
-      {
-        type: 'select',
-        name: 'merged_branches_options',
-        message: `How would you like to proceed?`,
-        choices: [
-          {
-            title: `Abort "stack submit" and fix manually`,
-            value: 'fix_manually',
-          },
-          {
-            title: `Continue with merged branches (best effort)`,
-            value: 'continue_without_fix',
-          },
-        ],
-      },
-      {
-        onCancel: () => {
-          throw new KilledError();
-        },
-      }
-    );
-    if (response.merged_branches_options === 'fix_manually') {
-      abort = true;
-      logInfo(`Aborting...`);
-    } //TODO (nehasri): Fix branches automatically in the else option and modify submittableBranches
-  }
-
   logNewline();
   return {
     submittableBranches: submittableBranches,
