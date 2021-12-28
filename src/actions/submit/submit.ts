@@ -74,6 +74,7 @@ export async function submitAction(args: {
       )
     );
     logNewline();
+    args.editPRFieldsInline = false;
   }
 
   if (!execStateConfig.interactive()) {
@@ -118,6 +119,7 @@ export async function submitAction(args: {
       editPRFieldsInline: args.editPRFieldsInline,
       createNewPRsAsDraft: args.createNewPRsAsDraft,
       updateOnly: args.updateOnly,
+      dryRun: args.dryRun,
     });
 
   if (args.dryRun) {
@@ -180,6 +182,7 @@ export async function submitBranches(args: {
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
   updateOnly: boolean;
+  dryRun: boolean;
 }): Promise<void> {
   // Step 3: Pushing branches to remote
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
@@ -188,6 +191,7 @@ export async function submitBranches(args: {
       editPRFieldsInline: args.editPRFieldsInline,
       createNewPRsAsDraft: args.createNewPRsAsDraft,
       updateOnly: args.updateOnly,
+      dryRun: args.dryRun,
     });
 
   logInfo(chalk.blueBright('➡️  [3/3] Pushing branches to remote...'));
@@ -392,6 +396,7 @@ async function getPRInfoForBranches(args: {
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
   updateOnly: boolean;
+  dryRun: boolean;
 }): Promise<TPRSubmissionInfoWithBranch> {
   const branchPRInfo: TPRSubmissionInfoWithBranch = [];
   for (const branch of args.branches) {
@@ -431,6 +436,7 @@ async function getPRInfoForBranches(args: {
         parentBranchName: parentBranchName,
         editPRFieldsInline: args.editPRFieldsInline,
         createNewPRsAsDraft: args.createNewPRsAsDraft,
+        dryRun: args.dryRun,
       });
       logInfo(`▸ ${chalk.dim(chalk.cyan(branch.name))} (create)`);
       branchPRInfo.push({
@@ -559,26 +565,30 @@ async function getPRCreationInfo(args: {
   parentBranchName: string;
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
+  dryRun: boolean;
 }): Promise<{
   title: string;
   body: string | undefined;
   draft: boolean;
 }> {
-  logInfo(
-    `Enter info for new pull request for ${chalk.yellow(args.branch.name)} ▸ ${
-      args.parentBranchName
-    }:`
-  );
-
+  if (!args.dryRun) {
+    logInfo(
+      `Enter info for new pull request for ${chalk.yellow(
+        args.branch.name
+      )} ▸ ${args.parentBranchName}:`
+    );
+  }
   const title = await getPRTitle({
     branch: args.branch,
     editPRFieldsInline: args.editPRFieldsInline,
+    dryRun: args.dryRun,
   });
   args.branch.setPriorSubmitTitle(title);
 
   const body = await getPRBody({
     branch: args.branch,
     editPRFieldsInline: args.editPRFieldsInline,
+    dryRun: args.dryRun,
   });
   args.branch.setPriorSubmitBody(body);
 

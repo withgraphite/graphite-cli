@@ -6,8 +6,12 @@ import Branch from '../../wrapper-classes/branch';
 export async function getPRTitle(args: {
   branch: Branch;
   editPRFieldsInline: boolean;
+  dryRun: boolean;
 }): Promise<string> {
   let title = inferPRTitle(args.branch);
+  if (args.dryRun) {
+    return title;
+  }
   if (args.editPRFieldsInline) {
     const response = await prompts(
       {
