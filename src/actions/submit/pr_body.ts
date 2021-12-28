@@ -12,9 +12,8 @@ export async function getPRBody(args: {
   branch: Branch;
   editPRFieldsInline: boolean;
 }): Promise<string> {
-  const inferredBodyFromCommit = inferPRBody(args.branch);
-
   const template = await getPRTemplate();
+  const inferredBodyFromCommit = inferPRBody(args.branch);
   let body =
     inferredBodyFromCommit !== null ? inferredBodyFromCommit : template;
   const hasPRTemplate = body !== undefined;
