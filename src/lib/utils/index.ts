@@ -10,8 +10,11 @@ import { isBranchRebased } from './is_branch_rebased';
 >>>>>>> c8c5c65 (fix(submit): detect changes/rebase early)
 =======
 import { detectUnsubmittedChanges } from './detect_unsubmitted_changes';
+<<<<<<< HEAD
 import { isBranchRestacked } from './is_branch_restacked';
 >>>>>>> 24ec3ea (fix(submit): rename methods/better logging)
+=======
+>>>>>>> 1da1f3e (fix(submit): move fn to branch wrapper class)
 import { gpExecSync } from './exec_sync';
 import GitRepo from './git_repo';
 import { uncommittedChanges, unstagedChanges } from './git_status_utils';
@@ -55,8 +58,11 @@ export {
 >>>>>>> c8c5c65 (fix(submit): detect changes/rebase early)
 =======
   detectUnsubmittedChanges,
+<<<<<<< HEAD
   isBranchRestacked,
 >>>>>>> 24ec3ea (fix(submit): rename methods/better logging)
+=======
+>>>>>>> 1da1f3e (fix(submit): move fn to branch wrapper class)
   uncommittedChanges,
   unstagedChanges,
   getTrunk,

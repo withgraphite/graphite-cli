@@ -313,7 +313,7 @@ async function getPRInfoForBranches(args: {
         branch: branch,
       });
     } else if (!previousPRInfo && !args.updateOnly) {
-      status = 'create';
+      status = 'Create';
       newPrBranches.push(branch);
     } else {
       status = `no-op`;
