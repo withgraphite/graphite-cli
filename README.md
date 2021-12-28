@@ -34,6 +34,11 @@ Running tests
 DEBUG=1 yarn test --full-trace
 ```
 
+Running fast suite of test
+```
+DEBUG=1 yarn test --full-trace
+```
+
 Running a subset of tests
 ```
 DEBUG=1 yarn test --full-trace -g "test pattern"
