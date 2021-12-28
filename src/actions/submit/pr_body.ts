@@ -11,12 +11,8 @@ import Branch from '../../wrapper-classes/branch';
 export async function getPRBody(args: {
   branch: Branch;
   editPRFieldsInline: boolean;
-  dryRun: boolean;
 }): Promise<string> {
   const inferredBodyFromCommit = inferPRBody(args.branch);
-  if (args.dryRun) {
-    return inferredBodyFromCommit ?? '';
-  }
 
   const template = await getPRTemplate();
   let body =

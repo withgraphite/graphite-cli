@@ -312,8 +312,11 @@ async function getPRInfoForBranches(args: {
         prNumber: previousPRInfo.number,
         branch: branch,
       });
+    } else if (!previousPRInfo && !args.updateOnly) {
+      status = 'create';
+      newPrBranches.push(branch);
     } else {
-      logInfo(`▸ ${chalk.dim(chalk.cyan(branch.name))} (no-op)`);
+      status = `no-op`;
     }
     logInfo(
       `▸ ${chalk.cyan(branch.name)} (${status}${reason ? ' - ' + reason : ''})`
@@ -476,14 +479,12 @@ async function getPRCreationInfo(args: {
   const title = await getPRTitle({
     branch: args.branch,
     editPRFieldsInline: args.editPRFieldsInline,
-    dryRun: args.dryRun,
   });
   args.branch.setPriorSubmitTitle(title);
 
   const body = await getPRBody({
     branch: args.branch,
     editPRFieldsInline: args.editPRFieldsInline,
-    dryRun: args.dryRun,
   });
   args.branch.setPriorSubmitBody(body);
 
