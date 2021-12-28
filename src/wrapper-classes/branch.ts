@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 import { repoConfig } from '../lib/config';
-import { ExitFailedError } from '../lib/errors';
+import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
 import {
   getBranchChildrenOrParentsFromGit,
   getRef,
@@ -504,6 +504,16 @@ export default class Branch {
 
   public getPRInfo(): TBranchPRInfo | undefined {
     return this.getMeta()?.prInfo;
+  }
+
+  public isBaseSameAsRemotePr(): boolean {
+    const parent = this.getParentFromMeta();
+    if (parent === undefined) {
+      throw new PreconditionsFailedError(
+        `Could not find parent for branch ${this.name} to submit PR against. Please checkout ${this.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
+      );
+    }
+    return parent.name !== this.getPRInfo()?.base;
   }
 
   // Due to deprecate in favor of other functions.

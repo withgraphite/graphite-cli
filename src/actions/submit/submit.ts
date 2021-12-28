@@ -18,7 +18,6 @@ import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
 import {
   detectUnsubmittedChanges,
   gpExecSync,
-  isBranchRestacked,
   logDebug,
   logError,
   logInfo,
@@ -408,8 +407,8 @@ async function getPRInfoForBranches(args: {
 
     const previousPRInfo = branch.getPRInfo();
     let status, reason;
-    if (previousPRInfo && isBranchRestacked(branch)) {
-      status = 'update';
+    if (previousPRInfo && branch.isBaseSameAsRemotePr()) {
+      status = 'Update';
       reason = 'restacked';
       branchPRInfo.push({
         action: 'update',
@@ -419,7 +418,7 @@ async function getPRInfoForBranches(args: {
         branch: branch,
       });
     } else if (previousPRInfo && detectUnsubmittedChanges(branch)) {
-      status = 'update';
+      status = 'Update';
       reason = 'code changes/rebase';
       branchPRInfo.push({
         action: 'update',
@@ -429,7 +428,7 @@ async function getPRInfoForBranches(args: {
         branch: branch,
       });
     } else if (!previousPRInfo && !args.updateOnly) {
-      status = 'create';
+      status = 'Create';
       newPrBranches.push(branch);
     } else {
       status = `no-op`;
