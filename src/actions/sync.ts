@@ -178,6 +178,7 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
       editPRFieldsInline: false,
       createNewPRsAsDraft: false,
       updateOnly: false,
+      dryRun: false,
     });
   }
 }
