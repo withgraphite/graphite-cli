@@ -532,7 +532,9 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
       logError(`Error in submitting ${pr.response.head}: ${pr.response.error}`);
     } else {
       logSuccess(
-        `${pr.response.head}: ${chalk.reset(pr.response.prURL)} (${status})`
+        `${pr.response.head}: ${chalk.reset(pr.response.prURL)} ${
+          '(' + status + ')'
+        }`
       );
     }
   });
