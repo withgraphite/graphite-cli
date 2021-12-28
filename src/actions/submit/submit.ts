@@ -23,6 +23,7 @@ import {
   logInfo,
   logNewline,
   logSuccess,
+  logTip,
   logWarn,
 } from '../../lib/utils';
 import { Unpacked } from '../../lib/utils/ts_helpers';
@@ -382,10 +383,13 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
         },
       },
       (err) => {
-        throw new ExitFailedError(
-          `Failed to push changes for ${branch.name} to origin. Aborting...`,
-          err
+        logError(`Failed to push changes for ${branch.name} to remote.`);
+
+        logTip(
+          `There maybe external commits on remote that were not overwritten with the attempted push. 
+          \n Use 'git pull' to pull external changes and retry.`
         );
+        throw new ExitFailedError(err);
       }
     )
       .toString()
