@@ -182,7 +182,6 @@ async function processBranchesInInvalidState(branches: Branch[]) {
       b.getPRInfo()?.state !== 'CLOSED' || b.getPRInfo()?.state !== 'MERGED'
   );
   let abort = false;
-
   if (closedBranches.length > 0 || mergedBranches.length > 0) {
     logWarn(
       `PRs for the following branches in the stack have been closed or merged:`
