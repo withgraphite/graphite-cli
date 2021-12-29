@@ -88,9 +88,6 @@ function validateBranchFullstack(branch: Branch): void {
   const metaStack = new MetaStackBuilder().fullStackFromBranch(branch);
   const gitStack = new GitStackBuilder().fullStackFromBranch(branch);
 
-  // logInfo(
-  //   `FullStack --> metaStack is ${metaStack} and gitStack is ${gitStack}`
-  // );
   compareStacks(metaStack, gitStack);
 }
 
