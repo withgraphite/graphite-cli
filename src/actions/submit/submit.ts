@@ -118,7 +118,7 @@ export async function submitAction(args: {
   // previously tracked with Graphite.
   await syncPRInfoForBranches(branchesToSubmit);
 
-  const submitReady = await getSubmitReadyBranches(branchesToSubmit);
+  const submitReady = await processBranchesInInvalidState(branchesToSubmit);
   if (submitReady.abort) {
     return;
   }
@@ -163,7 +163,7 @@ export async function submitAction(args: {
   }
 }
 
-async function getSubmitReadyBranches(branches: Branch[]) {
+async function processBranchesInInvalidState(branches: Branch[]) {
   const closedBranches = branches.filter(
     (b) => b.getPRInfo()?.state === 'CLOSED'
   );
@@ -175,7 +175,7 @@ async function getSubmitReadyBranches(branches: Branch[]) {
       b.getPRInfo()?.state !== 'CLOSED' || b.getPRInfo()?.state !== 'MERGED'
   );
   let abort = false;
-  if (closedBranches.length || mergedBranches.length) {
+  if (closedBranches.length > 0 || mergedBranches.length > 0) {
     logWarn(
       `PRs for the following branches in the stack have been closed or merged:`
     );
