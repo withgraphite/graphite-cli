@@ -118,11 +118,11 @@ export async function submitAction(args: {
   // previously tracked with Graphite.
   await syncPRInfoForBranches(branchesToSubmit);
 
-  const submitReady = await processBranchesInInvalidState(branchesToSubmit);
-  if (submitReady.abort) {
+  const validBranches = await processBranchesInInvalidState(branchesToSubmit);
+  if (validBranches.abort) {
     return;
   }
-  branchesToSubmit = submitReady.submittableBranches;
+  branchesToSubmit = validBranches.submittableBranches;
 
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
     await getPRInfoForBranches({
