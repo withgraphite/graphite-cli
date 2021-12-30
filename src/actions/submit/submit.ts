@@ -67,6 +67,23 @@ export async function submitAction(args: {
   let branchesToSubmit;
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
+  if (args.dryRun) {
+    logInfo(
+      chalk.yellow(
+        `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
+      )
+    );
+    logNewline();
+    args.editPRFieldsInline = false;
+  }
+
+  if (!execStateConfig.interactive()) {
+    logInfo(
+      `Running in interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
+    );
+    args.editPRFieldsInline = false;
+    args.createNewPRsAsDraft = true;
+  }
 
   if (args.dryRun) {
     logInfo(
@@ -525,13 +542,13 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
     let status: string = pr.response.status;
     switch (pr.response.status) {
       case 'updated':
-        status = chalk.yellow(status);
+        status = `${chalk.yellow('(' + status + ')')}`;
         break;
       case 'created':
-        status = chalk.green(status);
+        status = `${chalk.green('(' + status + ')')}`;
         break;
       case 'error':
-        status = chalk.red(status);
+        status = `${chalk.red('(' + status + ')')}`;
         break;
       default:
         assertUnreachable(pr.response);
@@ -541,9 +558,7 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
       logError(`Error in submitting ${pr.response.head}: ${pr.response.error}`);
     } else {
       logSuccess(
-        `${pr.response.head}: ${chalk.reset(pr.response.prURL)} ${
-          '(' + status + ')'
-        }`
+        `${pr.response.head}: ${chalk.reset(pr.response.prURL)} ${status}`
       );
     }
   });
