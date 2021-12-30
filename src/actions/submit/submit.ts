@@ -182,35 +182,39 @@ async function processBranchesInInvalidState(branches: Branch[]) {
     closedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (closed)`));
     mergedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (merged)`));
     logWarn(`This can cause unexpected issues.`);
-
-    const response = await prompts(
-      {
-        type: 'select',
-        name: 'closed_branches_options',
-        message: `How would you like to proceed?`,
-        choices: [
-          {
-            title: `Abort "stack submit" and fix manually`,
-            value: 'fix_manually',
-          },
-          {
-            title: `Continue with closed branches (best effort)`,
-            value: 'continue_without_fix',
-          },
-        ],
-      },
-      {
-        onCancel: () => {
-          throw new KilledError();
-        },
-      }
-    );
-    if (response.closed_branches_options === 'fix_manually') {
+    if (!execStateConfig.interactive()) {
       abort = true;
-      logInfo(`Aborting...`);
-    } //TODO (nehasri): Fix branches automatically in the else option and modify submittableBranches
+      logInfo(`Aborting.`);
+    } else {
+      const response = await prompts(
+        {
+          type: 'select',
+          name: 'closed_branches_options',
+          message: `How would you like to proceed?`,
+          choices: [
+            {
+              title: `Abort "stack submit" and fix manually`,
+              value: 'fix_manually',
+            },
+            {
+              title: `Continue with closed branches (best effort)`,
+              value: 'continue_without_fix',
+            },
+          ],
+        },
+        {
+          onCancel: () => {
+            throw new KilledError();
+          },
+        }
+      );
+      if (response.closed_branches_options === 'fix_manually') {
+        abort = true;
+        logInfo(`Aborting...`);
+      } //TODO (nehasri): Fix branches automatically in the else option and modify submittableBranches
+    }
+    logNewline();
   }
-  logNewline();
   return {
     submittableBranches: submittableBranches,
     closedBranches: closedBranches,
