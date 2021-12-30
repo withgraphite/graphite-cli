@@ -67,66 +67,46 @@ export async function submitAction(args: {
   let branchesToSubmit;
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
+  if (args.dryRun) {
+    logInfo(
+      chalk.yellow(
+        `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
+      )
+    );
+    logNewline();
+    args.editPRFieldsInline = false;
+  }
+
+  if (!execStateConfig.interactive()) {
+    logInfo(
+      `Running in interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
+    );
+    args.editPRFieldsInline = false;
+    args.createNewPRsAsDraft = true;
+  }
 
   if (args.branchesToSubmit) {
     branchesToSubmit = args.branchesToSubmit;
   } else {
-    if (args.dryRun) {
-      logInfo(
-        chalk.yellow(
-          `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
-        )
-      );
-      logNewline();
-      args.editPRFieldsInline = false;
-    }
-
-    if (!execStateConfig.interactive()) {
-      logInfo(
-        `Running in interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
-      );
-      args.editPRFieldsInline = false;
-      args.createNewPRsAsDraft = true;
-    }
-
     // Step 1: Validate
-    try {
-      logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
-
-      if (args.scope === 'BRANCH') {
-        const currentBranch = currentBranchPrecondition();
-        branchesToSubmit = [currentBranch];
-      } else {
-        const stack = getStack({
-          currentBranch: currentBranchPrecondition(),
-          scope: args.scope,
-        });
-        validateStack(args.scope, stack);
-        branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
-      }
-
-      logNewline();
-    } catch {
-      throw new ValidationFailedError(`Validation failed. Will not submit.`);
-    }
-
-    // Step 2: Prepare
     logInfo(
       chalk.blueBright(
-        '🥞 [Step 2] Preparing to submit PRs for the following branches...'
+        `✏️  [Step 1] Validating that this Graphite stack is ready to submit...`
       )
     );
-
-    // Force a sync to link any PRs that have remote equivalents, but weren't
-    // previously tracked with Graphite.
-    await syncPRInfoForBranches(branchesToSubmit);
-
-    const validBranches = await processBranchesInInvalidState(branchesToSubmit);
-    if (validBranches.abort) {
+    const validationResult = await getValidBranchesToSubmit(args.scope);
+    if (validationResult.abort) {
       return;
     }
-    branchesToSubmit = validBranches.submittableBranches;
+    branchesToSubmit = validationResult.submittableBranches;
   }
+  // Step 2: Prepare
+  logInfo(
+    chalk.blueBright(
+      '🥞 [Step 2] Preparing to submit PRs for the following branches...'
+    )
+  );
+
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
     await getPRInfoForBranches({
       branches: branchesToSubmit,
@@ -164,6 +144,36 @@ export async function submitAction(args: {
   if (survey) {
     await showSurvey(survey);
   }
+}
+
+async function getValidBranchesToSubmit(scope: TSubmitScope): Promise<{
+  submittableBranches: Branch[];
+  closedBranches: Branch[];
+  mergedBranches: Branch[];
+  abort: boolean;
+}> {
+  let branchesToSubmit;
+  try {
+    if (scope === 'BRANCH') {
+      const currentBranch = currentBranchPrecondition();
+      branchesToSubmit = [currentBranch];
+    } else {
+      const stack = getStack({
+        currentBranch: currentBranchPrecondition(),
+        scope: scope,
+      });
+      validateStack(scope, stack);
+      branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
+    }
+    logNewline();
+  } catch {
+    throw new ValidationFailedError(`Validation failed. Will not submit.`);
+  }
+  // Force a sync to link any PRs that have remote equivalents but weren't
+  // previously tracked with Graphite.
+  await syncPRInfoForBranches(branchesToSubmit);
+
+  return await processBranchesInInvalidState(branchesToSubmit);
 }
 
 async function processBranchesInInvalidState(branches: Branch[]) {
@@ -512,13 +522,13 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
     let status: string = pr.response.status;
     switch (pr.response.status) {
       case 'updated':
-        status = chalk.yellow(status);
+        status = `${chalk.yellow('(' + status + ')')}`;
         break;
       case 'created':
-        status = chalk.green(status);
+        status = `${chalk.green('(' + status + ')')}`;
         break;
       case 'error':
-        status = chalk.red(status);
+        status = `${chalk.red('(' + status + ')')}`;
         break;
       default:
         assertUnreachable(pr.response);
@@ -528,9 +538,7 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
       logError(`Error in submitting ${pr.response.head}: ${pr.response.error}`);
     } else {
       logSuccess(
-        `${pr.response.head}: ${chalk.reset(pr.response.prURL)} ${
-          '(' + status + ')'
-        }`
+        `${pr.response.head}: ${chalk.reset(pr.response.prURL)} ${status}`
       );
     }
   });
