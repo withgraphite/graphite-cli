@@ -522,13 +522,13 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
     let status: string = pr.response.status;
     switch (pr.response.status) {
       case 'updated':
-        status = `${chalk.yellow('(' + status + ')')}`;
+        status = chalk.yellow(status);
         break;
       case 'created':
-        status = `${chalk.green('(' + status + ')')}`;
+        status = chalk.green(status);
         break;
       case 'error':
-        status = `${chalk.red('(' + status + ')')}`;
+        status = chalk.red(status);
         break;
       default:
         assertUnreachable(pr.response);
@@ -538,7 +538,9 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
       logError(`Error in submitting ${pr.response.head}: ${pr.response.error}`);
     } else {
       logSuccess(
-        `${pr.response.head}: ${chalk.reset(pr.response.prURL)} ${status}`
+        `${pr.response.head}: ${chalk.reset(pr.response.prURL)} ${
+          '(' + status + ')'
+        }`
       );
     }
   });
