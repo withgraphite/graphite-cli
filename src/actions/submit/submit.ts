@@ -33,7 +33,6 @@ import { validateStack } from '../validate';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
-import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
 import prompts from 'prompts';
 
 export type TSubmitScope = TScope | 'BRANCH';
@@ -63,11 +62,11 @@ export async function submitAction(args: {
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
   updateOnly: boolean;
+  branchesToSubmit?: Branch[];
 }): Promise<void> {
   let branchesToSubmit;
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
-
   if (args.dryRun) {
     logInfo(
       chalk.yellow(
@@ -86,43 +85,28 @@ export async function submitAction(args: {
     args.createNewPRsAsDraft = true;
   }
 
-  // Step 1: Validate
-  try {
-    logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
-
-    if (args.scope === 'BRANCH') {
-      const currentBranch = currentBranchPrecondition();
-      branchesToSubmit = [currentBranch];
-    } else {
-      const stack = getStack({
-        currentBranch: currentBranchPrecondition(),
-        scope: args.scope,
-      });
-      validateStack(args.scope, stack);
-      branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
+  // This supports the use case in sync.ts. Skips Steps 1 and 2
+  if (args.branchesToSubmit) {
+    branchesToSubmit = args.branchesToSubmit;
+  } else {
+    // Step 1: Validate
+    logInfo(
+      chalk.blueBright(
+        `✏️  [Step 1] Validating that this Graphite stack is ready to submit...`
+      )
+    );
+    const validationResult = await getValidBranchesToSubmit(args.scope);
+    if (validationResult.abort) {
+      return;
     }
-
-    logNewline();
-  } catch {
-    throw new ValidationFailedError(`Validation failed. Will not submit.`);
+    branchesToSubmit = validationResult.submittableBranches;
   }
-
   // Step 2: Prepare
   logInfo(
     chalk.blueBright(
       '🥞 [Step 2] Preparing to submit PRs for the following branches...'
     )
   );
-
-  // Force a sync to link any PRs that have remote equivalents, but weren't
-  // previously tracked with Graphite.
-  await syncPRInfoForBranches(branchesToSubmit);
-
-  const validBranches = await processBranchesInInvalidState(branchesToSubmit);
-  if (validBranches.abort) {
-    return;
-  }
-  branchesToSubmit = validBranches.submittableBranches;
 
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
     await getPRInfoForBranches({
@@ -161,6 +145,36 @@ export async function submitAction(args: {
   if (survey) {
     await showSurvey(survey);
   }
+}
+
+async function getValidBranchesToSubmit(scope: TSubmitScope): Promise<{
+  submittableBranches: Branch[];
+  closedBranches: Branch[];
+  mergedBranches: Branch[];
+  abort: boolean;
+}> {
+  let branchesToSubmit;
+  try {
+    if (scope === 'BRANCH') {
+      const currentBranch = currentBranchPrecondition();
+      branchesToSubmit = [currentBranch];
+    } else {
+      const stack = getStack({
+        currentBranch: currentBranchPrecondition(),
+        scope: scope,
+      });
+      validateStack(scope, stack);
+      branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
+    }
+    logNewline();
+  } catch {
+    throw new ValidationFailedError(`Validation failed. Will not submit.`);
+  }
+  // Force a sync to link any PRs that have remote equivalents but weren't
+  // previously tracked with Graphite.
+  await syncPRInfoForBranches(branchesToSubmit);
+
+  return await processBranchesInInvalidState(branchesToSubmit);
 }
 
 async function processBranchesInInvalidState(branches: Branch[]) {
@@ -258,164 +272,6 @@ function getStack(args: { currentBranch: Branch; scope: TScope }): Stack {
   }
 }
 
-export async function submitBranches(args: {
-  branchesToSubmit: Branch[];
-  cliAuthToken: string;
-  repoOwner: string;
-  repoName: string;
-  editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean | undefined;
-  updateOnly: boolean;
-  dryRun: boolean;
-}): Promise<void> {
-  // Step 3: Pushing branches to remote
-  const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
-    await getPRInfoForBranches({
-      branches: args.branchesToSubmit,
-      editPRFieldsInline: args.editPRFieldsInline,
-      createNewPRsAsDraft: args.createNewPRsAsDraft,
-      updateOnly: args.updateOnly,
-      dryRun: args.dryRun,
-    });
-
-  logInfo(chalk.blueBright('➡️  [3/3] Pushing branches to remote...'));
-  const branchesPushedToRemote = pushBranchesToRemote(
-    submissionInfoWithBranches.map((info) => info.branch)
-  );
-  // Filter out PRs which don't actually need a new submission (i.e. they
-  // had no local code changes and their local base did not change).
-  const submissionInfo: TPRSubmissionInfo = submissionInfoWithBranches.filter(
-    (info) => {
-      const prInfo = info.branch.getPRInfo();
-      if (prInfo === undefined) {
-        return true;
-      }
-      return shouldUpdatePR({
-        branch: info.branch,
-        previousBranchPRInfo: prInfo,
-        branchesPushedToRemote: branchesPushedToRemote,
-      });
-    }
-  );
-
-  logInfo(
-    chalk.blueBright(
-      `📂 [4/4] Opening/updating PRs on GitHub for pushed branches...`
-    )
-  );
-  const [prInfo, survey] = await Promise.all([
-    submitPRsForBranches({
-      submissionInfo: submissionInfo,
-      branchesPushedToRemote: branchesPushedToRemote,
-      cliAuthToken: args.cliAuthToken,
-      repoOwner: args.repoOwner,
-      repoName: args.repoName,
-      editPRFieldsInline: args.editPRFieldsInline,
-      createNewPRsAsDraft: args.createNewPRsAsDraft,
-    }),
-    getSurvey(),
-  ]);
-
-  saveBranchPRInfo(prInfo);
-  printSubmittedPRInfo(prInfo);
-
-  if (survey !== undefined) {
-    await showSurvey(survey);
-  }
-}
-
-async function submitPRsForBranches(args: {
-  submissionInfo: TPRSubmissionInfo;
-  branchesPushedToRemote: Branch[];
-  cliAuthToken: string;
-  repoOwner: string;
-  repoName: string;
-  editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean | undefined;
-}): Promise<TSubmittedPR[]> {
-  const submissionInfo = args.submissionInfo;
-  if (submissionInfo.length === 0) {
-    return [];
-  }
-
-  try {
-    const response = await request.requestWithArgs(
-      API_SERVER,
-      graphiteCLIRoutes.submitPullRequests,
-      {
-        authToken: args.cliAuthToken,
-        repoOwner: args.repoOwner,
-        repoName: args.repoName,
-        prs: submissionInfo,
-      }
-    );
-
-    if (response._response.status === 200 && response._response.body !== null) {
-      const requests: { [head: string]: TSubmittedPRRequest } = {};
-      submissionInfo.forEach((prRequest) => {
-        requests[prRequest.head] = prRequest;
-      });
-
-      return response.prs.map((prResponse) => {
-        return {
-          request: requests[prResponse.head],
-          response: prResponse,
-        };
-      });
-    }
-
-    if (response._response.status === 401) {
-      throw new PreconditionsFailedError(
-        'invalid/expired Graphite auth token.\n\nPlease obtain a new auth token by visiting https://app.graphite.dev/activate.'
-      );
-    }
-
-    throw new ExitFailedError(
-      `unexpected server response (${
-        response._response.status
-      }).\n\nResponse: ${JSON.stringify(response)}`
-    );
-  } catch (error: any) {
-    throw new ExitFailedError(`Failed to submit PRs`, error);
-  }
-}
-
-function shouldUpdatePR(args: {
-  branch: Branch;
-  previousBranchPRInfo: TBranchPRInfo;
-  branchesPushedToRemote: Branch[];
-}): boolean {
-  // base was updated
-  if (getBranchBaseName(args.branch) !== args.previousBranchPRInfo.base) {
-    logInfo(
-      chalk.yellow(`Branch ${args.branch.name} was rebased: will update PR`)
-    );
-    return true;
-  }
-
-  // code was updated
-  if (
-    args.branchesPushedToRemote.find(
-      (branchPushedToRemote) => branchPushedToRemote.name === args.branch.name
-    )
-  ) {
-    logInfo(
-      chalk.yellow(
-        `Code changes detected for ${args.branch.name}: will update PR`
-      )
-    );
-    return true;
-  }
-
-  if (execStateConfig.outputDebugLogs()) {
-    logInfo(
-      `No PR update needed for ${args.branch.name}: PR base and code unchanged.`
-    );
-  }
-
-  return false;
-}
-
 /**
  * For now, we only allow users to update the following PR properties which
  * necessitate a PR update:
@@ -495,6 +351,7 @@ async function getPRInfoForBranches(args: {
       branch: branch,
     });
   }
+
   logNewline();
   return branchPRInfo;
 }
