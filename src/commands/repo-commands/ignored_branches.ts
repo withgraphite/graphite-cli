@@ -9,13 +9,13 @@ const args = {
     demandOption: false,
     default: false,
     type: 'string',
-    describe: 'Add a branch to be ignored by Graphite.',
+    describe: 'Add a branch or glob pattern to be ignored by Graphite.',
   },
   remove: {
     demandOption: false,
     default: false,
     type: 'string',
-    describe: 'Remove a branch pattern being ignored by Graphite.',
+    describe: 'Remove a branch or glob pattern from being ignored by Graphite.',
   },
 } as const;
 
