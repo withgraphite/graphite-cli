@@ -62,7 +62,7 @@ export async function submitAction(args: {
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
   updateOnly: boolean;
-  branchesToSubmit: Branch[];
+  branchesToSubmit?: Branch[];
 }): Promise<void> {
   let branchesToSubmit;
   // Check CLI pre-condition to warn early
