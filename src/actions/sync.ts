@@ -1,5 +1,4 @@
 import prompts from 'prompts';
-import { repoConfig } from '../lib/config';
 import { RepoSyncStackFrameT } from '../lib/config/merge_conflict_callstack_config';
 import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
 import {
@@ -12,13 +11,15 @@ import {
   getTrunk,
   gpExecSync,
   logInfo,
+  logNewline,
+  logTip,
   uncommittedChanges,
 } from '../lib/utils';
-import { logNewline, logTip } from '../lib/utils/splog';
 import Branch from '../wrapper-classes/branch';
 import { deleteMergedBranches } from './clean_branches';
 import { fixDanglingBranches } from './fix_dangling_branches';
-import { submitBranches } from './submit';
+import { submitBranches } from './submit/submit';
+import { repoConfig } from '../lib/config';
 
 export async function syncAction(opts: {
   pull: boolean;
@@ -177,6 +178,7 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
       editPRFieldsInline: false,
       createNewPRsAsDraft: false,
       updateOnly: false,
+      dryRun: false,
     });
   }
 }

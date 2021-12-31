@@ -22,7 +22,7 @@ export async function getPRDraftStatus(args: {
         },
       }
     );
-    draft = response.draft === 'draft' ? true : false;
+    draft = response.draft === 'draft';
   } else {
     draft = args.createNewPRsAsDraft;
   }
