@@ -6,6 +6,7 @@ import { API_SERVER } from '../../lib/api';
 import { execStateConfig, repoConfig } from '../../lib/config';
 import {
   ExitFailedError,
+  KilledError,
   PreconditionsFailedError,
   ValidationFailedError,
 } from '../../lib/errors';
@@ -22,6 +23,7 @@ import {
   logInfo,
   logNewline,
   logSuccess,
+  logWarn,
 } from '../../lib/utils';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { MetaStackBuilder, Stack } from '../../wrapper-classes';
@@ -32,6 +34,7 @@ import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
+import prompts from 'prompts';
 
 export type TSubmitScope = TScope | 'BRANCH';
 
@@ -83,37 +86,43 @@ export async function submitAction(args: {
     args.createNewPRsAsDraft = true;
   }
 
-    // Step 1: Validate
-    try {
-      logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
+  // Step 1: Validate
+  try {
+    logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
 
-      if (args.scope === 'BRANCH') {
-        const currentBranch = currentBranchPrecondition();
-        branchesToSubmit = [currentBranch];
-      } else {
-        const stack = getStack({
-          currentBranch: currentBranchPrecondition(),
-          scope: args.scope,
-        });
-        validateStack(args.scope, stack);
-        branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
-      }
+    if (args.scope === 'BRANCH') {
+      const currentBranch = currentBranchPrecondition();
+      branchesToSubmit = [currentBranch];
+    } else {
+      const stack = getStack({
+        currentBranch: currentBranchPrecondition(),
+        scope: args.scope,
+      });
+      validateStack(args.scope, stack);
+      branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
+    }
 
     logNewline();
   } catch {
     throw new ValidationFailedError(`Validation failed. Will not submit.`);
   }
 
-    // Step 2: Prepare
-    // Force a sync to link any PRs that have remote equivalents, but weren't
-    // previously tracked with Graphite.
-    await syncPRInfoForBranches(branchesToSubmit);
-
+  // Step 2: Prepare
   logInfo(
     chalk.blueBright(
       '🥞 [Step 2] Preparing to submit PRs for the following branches...'
     )
   );
+
+  // Force a sync to link any PRs that have remote equivalents, but weren't
+  // previously tracked with Graphite.
+  await syncPRInfoForBranches(branchesToSubmit);
+
+  const validBranches = await processBranchesInInvalidState(branchesToSubmit);
+  if (validBranches.abort) {
+    return;
+  }
+  branchesToSubmit = validBranches.submittableBranches;
 
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
     await getPRInfoForBranches({
@@ -152,6 +161,66 @@ export async function submitAction(args: {
   if (survey) {
     await showSurvey(survey);
   }
+}
+
+async function processBranchesInInvalidState(branches: Branch[]) {
+  const closedBranches = branches.filter(
+    (b) => b.getPRInfo()?.state === 'CLOSED'
+  );
+  const mergedBranches = branches.filter(
+    (b) => b.getPRInfo()?.state === 'MERGED'
+  );
+  const submittableBranches = branches.filter(
+    (b) =>
+      b.getPRInfo()?.state !== 'CLOSED' || b.getPRInfo()?.state !== 'MERGED'
+  );
+  let abort = false;
+  if (closedBranches.length > 0 || mergedBranches.length > 0) {
+    logWarn(
+      `PRs for the following branches in the stack have been closed or merged:`
+    );
+    closedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (closed)`));
+    mergedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (merged)`));
+    logWarn(`This can cause unexpected issues.`);
+    if (!execStateConfig.interactive()) {
+      abort = true;
+      logInfo(`Aborting.`);
+    } else {
+      const response = await prompts(
+        {
+          type: 'select',
+          name: 'closed_branches_options',
+          message: `How would you like to proceed?`,
+          choices: [
+            {
+              title: `Abort "stack submit" and fix manually`,
+              value: 'fix_manually',
+            },
+            {
+              title: `Continue with closed branches (best effort)`,
+              value: 'continue_without_fix',
+            },
+          ],
+        },
+        {
+          onCancel: () => {
+            throw new KilledError();
+          },
+        }
+      );
+      if (response.closed_branches_options === 'fix_manually') {
+        abort = true;
+        logInfo(`Aborting...`);
+      } //TODO (nehasri): Fix branches automatically in the else option and modify submittableBranches
+    }
+    logNewline();
+  }
+  return {
+    submittableBranches: submittableBranches,
+    closedBranches: closedBranches,
+    mergedBranches: mergedBranches,
+    abort: abort,
+  };
 }
 
 async function submitPullRequests(args: {
