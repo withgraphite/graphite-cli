@@ -4,10 +4,36 @@ import { logInfo } from '../lib/utils';
 import { GitStackBuilder, MetaStackBuilder, Stack } from '../wrapper-classes';
 import Branch from '../wrapper-classes/branch';
 import { TScope } from './scope';
+import { TSubmitScope } from './submit/submit';
+
+export function validateStack(scope: TSubmitScope, stack: Stack): void {
+  const branch = currentBranchPrecondition();
+  let gitStack;
+  switch (scope) {
+    case 'FULLSTACK':
+      gitStack = new GitStackBuilder().fullStackFromBranch(branch);
+      compareStacks(stack, gitStack);
+      break;
+    case 'UPSTACK':
+      gitStack = new GitStackBuilder().upstackInclusiveFromBranchWithParents(
+        branch
+      );
+      stack.source.parent = undefined;
+      gitStack.source.parent = undefined;
+      compareStacks(stack, gitStack);
+      break;
+    case 'DOWNSTACK':
+      gitStack = new GitStackBuilder().downstackFromBranch(branch);
+      stack.source.children = [];
+      gitStack.source.children = [];
+      compareStacks(stack, gitStack);
+      break;
+  }
+  logInfo(`Validation for current stack: passed`);
+}
 
 export function validate(scope: TScope): void {
   const branch = currentBranchPrecondition();
-
   switch (scope) {
     case 'UPSTACK':
       validateBranchUpstackInclusive(branch);
@@ -30,14 +56,8 @@ function validateBranchFullstack(branch: Branch): void {
 }
 
 function validateBranchDownstackInclusive(branch: Branch): void {
-  const metaStack =
-    new MetaStackBuilder().upstackInclusiveFromBranchWithParents(branch);
-  const gitStack = new GitStackBuilder().upstackInclusiveFromBranchWithParents(
-    branch
-  );
-
-  metaStack.source.children = [];
-  gitStack.source.children = [];
+  const metaStack = new MetaStackBuilder().downstackFromBranch(branch);
+  const gitStack = new GitStackBuilder().downstackFromBranch(branch);
 
   compareStacks(metaStack, gitStack);
 }
@@ -48,7 +68,6 @@ function validateBranchUpstackInclusive(branch: Branch): void {
   const gitStack = new GitStackBuilder().upstackInclusiveFromBranchWithParents(
     branch
   );
-
   metaStack.source.parent = undefined;
   gitStack.source.parent = undefined;
 

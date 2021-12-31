@@ -18,18 +18,16 @@ import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
 import {
   detectUnsubmittedChanges,
   gpExecSync,
-  logDebug,
   logError,
   logInfo,
   logNewline,
   logSuccess,
-  logWarn,
 } from '../../lib/utils';
 import { Unpacked } from '../../lib/utils/ts_helpers';
-import { MetaStackBuilder } from '../../wrapper-classes';
+import { MetaStackBuilder, Stack } from '../../wrapper-classes';
 import Branch from '../../wrapper-classes/branch';
 import { TScope } from '../scope';
-import { validate } from '../validate';
+import { validateStack } from '../validate';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
@@ -63,6 +61,7 @@ export async function submitAction(args: {
   dryRun: boolean;
   updateOnly: boolean;
 }): Promise<void> {
+  let branchesToSubmit;
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
 
@@ -84,27 +83,31 @@ export async function submitAction(args: {
     args.createNewPRsAsDraft = true;
   }
 
-  // Step 1: Validate
-  try {
-    logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
-    if (args.scope !== 'BRANCH') {
-      validate(args.scope);
-    }
+    // Step 1: Validate
+    try {
+      logInfo(chalk.blueBright(`✏️  [Step 1] Validating Graphite stack ...`));
+
+      if (args.scope === 'BRANCH') {
+        const currentBranch = currentBranchPrecondition();
+        branchesToSubmit = [currentBranch];
+      } else {
+        const stack = getStack({
+          currentBranch: currentBranchPrecondition(),
+          scope: args.scope,
+        });
+        validateStack(args.scope, stack);
+        branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
+      }
 
     logNewline();
   } catch {
     throw new ValidationFailedError(`Validation failed. Will not submit.`);
   }
 
-  // Step 2: Prepare
-  const branchesToSubmit = getBranchesToSubmit({
-    currentBranch: currentBranchPrecondition(),
-    scope: args.scope,
-  });
-
-  // Force a sync to link any PRs that have remote equivalents, but weren't
-  // previously tracked with Graphite.
-  await syncPRInfoForBranches(branchesToSubmit);
+    // Step 2: Prepare
+    // Force a sync to link any PRs that have remote equivalents, but weren't
+    // previously tracked with Graphite.
+    await syncPRInfoForBranches(branchesToSubmit);
 
   logInfo(
     chalk.blueBright(
@@ -171,6 +174,19 @@ async function submitPullRequests(args: {
 
   saveBranchPRInfo(prInfo);
   printSubmittedPRInfo(prInfo);
+}
+
+function getStack(args: { currentBranch: Branch; scope: TScope }): Stack {
+  switch (args.scope) {
+    case 'UPSTACK':
+      return new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
+        args.currentBranch
+      );
+    case 'DOWNSTACK':
+      return new MetaStackBuilder().downstackFromBranch(args.currentBranch);
+    case 'FULLSTACK':
+      return new MetaStackBuilder().fullStackFromBranch(args.currentBranch);
+  }
 }
 
 export async function submitBranches(args: {
@@ -329,54 +345,6 @@ function shouldUpdatePR(args: {
   }
 
   return false;
-}
-
-function getBranchesToSubmit(args: {
-  currentBranch: Branch;
-  scope: TSubmitScope;
-}): Branch[] {
-  let branches: Branch[];
-
-  switch (args.scope) {
-    case 'DOWNSTACK':
-      branches = new MetaStackBuilder()
-        .downstackFromBranch(args.currentBranch)
-        .branches();
-      break;
-    case 'FULLSTACK':
-      branches = new MetaStackBuilder()
-        .fullStackFromBranch(args.currentBranch)
-        .branches();
-      break;
-    case 'UPSTACK':
-      branches = new MetaStackBuilder()
-        .upstackInclusiveFromBranchWithParents(args.currentBranch)
-        .branches();
-      break;
-    case 'BRANCH':
-      branches = [args.currentBranch];
-      break;
-    default:
-      assertUnreachable(args.scope);
-      branches = [];
-  }
-
-  for (const branch of branches) {
-    const state = branch.getPRInfo()?.state;
-    logDebug(`${branch.name} is in ${state}`);
-    if (state === 'MERGED' || state === 'CLOSED') {
-      logWarn(
-        `${branch.name} has been merged or closed. This can potentially break the submit process. Please fix.`
-      );
-    }
-  }
-
-  return branches
-    .filter((b) => !b.isTrunk())
-    .filter(
-      (b) =>
-        b.getPRInfo()?.state !== 'MERGED' && b.getPRInfo()?.state !== 'CLOSED'
-    );
 }
 
 /**
