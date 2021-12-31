@@ -23,6 +23,7 @@ import {
   logInfo,
   logNewline,
   logSuccess,
+  logTip,
   logWarn,
 } from '../../lib/utils';
 import { Unpacked } from '../../lib/utils/ts_helpers';
@@ -67,6 +68,24 @@ export async function submitAction(args: {
   let branchesToSubmit;
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
+  if (args.dryRun) {
+    logInfo(
+      chalk.yellow(
+        `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
+      )
+    );
+    logNewline();
+    args.editPRFieldsInline = false;
+  }
+
+  if (!execStateConfig.interactive()) {
+    logInfo(
+      `Running in interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
+    );
+    args.editPRFieldsInline = false;
+    args.createNewPRsAsDraft = true;
+  }
+
   if (args.dryRun) {
     logInfo(
       chalk.yellow(
@@ -365,7 +384,9 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
   }
 
   branches.forEach((branch) => {
-    logInfo(`Pushing ${branch.name}...`);
+    logInfo(
+      `Pushing ${branch.name} with force-with-lease (will not override external commits to remote)...`
+    );
 
     const output = gpExecSync(
       {
@@ -374,7 +395,7 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
         // execSync makes analyzing stderr extremely challenging
         command: [
           `git push origin`,
-          `-f ${branch.name} 2>&1`,
+          `--force-with-lease ${branch.name} 2>&1`,
           ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
         ].join(' '),
         options: {
@@ -382,10 +403,13 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
         },
       },
       (err) => {
-        throw new ExitFailedError(
-          `Failed to push changes for ${branch.name} to origin. Aborting...`,
-          err
+        logError(`Failed to push changes for ${branch.name} to remote.`);
+
+        logTip(
+          `There maybe external commits on remote that were not overwritten with the attempted push. 
+          \n Use 'git pull' to pull external changes and retry.`
         );
+        throw new ExitFailedError(err);
       }
     )
       .toString()
