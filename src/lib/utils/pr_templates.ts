@@ -93,7 +93,6 @@ function findSinglePRTemplate(folderPath: string): string[] {
     .filter((entry) => {
       if (
         entry.isFile() &&
-        isPRTemplateFiletype(entry.name) &&
         entry.name.match(/^pull_request_template\./gi) !== null
       ) {
         return true;
@@ -114,14 +113,9 @@ function findMultiplePRTemplates(folderPath: string): string[] {
       templates = templates.concat(
         fs
           .readdirSync(path.join(folderPath, entry.name))
-          .filter((filename) => isPRTemplateFiletype(filename))
           .map((filename) => path.join(folderPath, entry.name, filename))
       );
     }
   });
   return templates;
-}
-
-function isPRTemplateFiletype(filename: string): boolean {
-  return filename.endsWith('.txt') || filename.endsWith('.md');
 }
