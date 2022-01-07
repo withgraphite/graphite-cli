@@ -1,3 +1,6 @@
+# 0.16.5 2021-01-07
+- Fix issue with detecting some PR templates
+
 # 0.16.4 2021-12-13
 - Wildcard matching for ignored branches (`gt repo ignored-branches --set`) now accepts glob-patterns
 - Option to remove a branch from ignored list (`gt repo ignored-branches --unset`)
