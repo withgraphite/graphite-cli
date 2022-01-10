@@ -27,7 +27,6 @@ import {
   logWarn,
 } from '../../lib/utils';
 import { Unpacked } from '../../lib/utils/ts_helpers';
-import { MetaStackBuilder, Stack } from '../../wrapper-classes';
 import Branch from '../../wrapper-classes/branch';
 import { TScope } from '../scope';
 import { validateStack } from '../validate';
@@ -35,6 +34,7 @@ import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import prompts from 'prompts';
+import { read_current_stack } from '../../lib/utils/read_current_stack';
 
 export type TSubmitScope = TScope | 'BRANCH';
 
@@ -160,7 +160,7 @@ async function getValidBranchesToSubmit(scope: TSubmitScope): Promise<{
       const currentBranch = currentBranchPrecondition();
       branchesToSubmit = [currentBranch];
     } else {
-      const stack = getStack({
+      const stack = read_current_stack({
         currentBranch: currentBranchPrecondition(),
         scope: scope,
       });
@@ -258,19 +258,6 @@ async function submitPullRequests(args: {
 
   saveBranchPRInfo(prInfo);
   printSubmittedPRInfo(prInfo);
-}
-
-function getStack(args: { currentBranch: Branch; scope: TScope }): Stack {
-  switch (args.scope) {
-    case 'UPSTACK':
-      return new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
-        args.currentBranch
-      );
-    case 'DOWNSTACK':
-      return new MetaStackBuilder().downstackFromBranch(args.currentBranch);
-    case 'FULLSTACK':
-      return new MetaStackBuilder().fullStackFromBranch(args.currentBranch);
-  }
 }
 
 /**

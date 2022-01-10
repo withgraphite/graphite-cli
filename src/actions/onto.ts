@@ -25,6 +25,7 @@ import {
 } from '../lib/utils';
 import Branch from '../wrapper-classes/branch';
 import { restackBranch } from './fix';
+
 export async function ontoAction(args: {
   onto: string;
   mergeConflictCallstack: MergeConflictCallstackT;
@@ -34,20 +35,19 @@ export async function ontoAction(args: {
   }
 
   const originalBranch = currentBranchPrecondition();
-
+  validateStack();
   await stackOnto(originalBranch, args.onto, args.mergeConflictCallstack);
 
   checkoutBranch(originalBranch.name);
 }
 
-async function stackOnto(
+export async function stackOnto(
   currentBranch: Branch,
   onto: string,
   mergeConflictCallstack: MergeConflictCallstackT
-) {
+): Promise<void> {
   branchExistsPrecondition(onto);
   checkBranchCanBeMoved(currentBranch, onto);
-  validateStack();
   const parent = await getParentForRebaseOnto(currentBranch, onto);
   // Save the old ref from before rebasing so that children can find their bases.
   currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
