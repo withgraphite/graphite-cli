@@ -499,6 +499,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/object-hash@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "@types/object-hash@npm:2.2.1"
+  checksum: c9823db0f84098ad0f276ef3a681c5d3e77b2d544b5eefe6659828651bdc62c525c2c395cbdf569a766c647826f8c233ec3250a787a7c3188db0de9ffafeed44
+  languageName: node
+  linkType: hard
+
 "@types/parse-json@npm:^4.0.0":
   version: 4.0.0
   resolution: "@types/parse-json@npm:4.0.0"
@@ -2285,6 +2292,7 @@ fsevents@~2.3.1:
     "@types/mocha": ^8.2.3
     "@types/node": ^14.14.37
     "@types/node-fetch": ^2.5.11
+    "@types/object-hash": ^2.2.1
     "@types/prompts": ^2.0.14
     "@types/tmp": ^0.2.0
     "@types/yargs": ^15.0.5
@@ -2301,6 +2309,7 @@ fsevents@~2.3.1:
     mocha: ^8.3.2
     nock: ^13.1.3
     node-fetch: ^2.6.1
+    object-hash: ^2.2.0
     prettier: 2.3.2
     prompts: ^2.4.1
     tmp: ^0.2.1
@@ -3365,6 +3374,13 @@ fsevents@~2.3.1:
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
   checksum: 66cf021898fc1b13ea573ea8635fbd5a76533f50cecbc2fcd5eee1e8029af41bcebe7023788b6d0e06cbe4401ecea075d972f78ec74467cdc571a0f1a4d1a081
+  languageName: node
+  linkType: hard
+
+"object-hash@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "object-hash@npm:2.2.0"
+  checksum: 1f62307a1f97245382282652d4dc58d66fdbaf232fe97eb69cbd69bf2428935d6764c7fb9e8e8c559a97925362bcdd92258a50e47a7175b0aa6849d50e6fde9b
   languageName: node
   linkType: hard
 
