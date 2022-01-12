@@ -1,4 +1,4 @@
-import { read_current_stack } from '../lib/utils/read_current_stack';
+import { readMetaStack } from '../lib/utils/read_current_stack';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { Stack } from '../wrapper-classes';
 import Branch from '../wrapper-classes/branch';
@@ -10,7 +10,7 @@ import { stackOnto } from './onto';
 import { validateStack } from './validate';
 
 export async function editAction(): Promise<Stack> {
-  const currentStack = read_current_stack({
+  const currentStack = readMetaStack({
     currentBranch: currentBranchPrecondition(),
     scope: 'DOWNSTACK',
   });
@@ -93,7 +93,7 @@ async function createNewStackFromOrder(
     );
   }
 
-  const newStack = read_current_stack({
+  const newStack = readMetaStack({
     currentBranch: currentBranchPrecondition(),
     scope: 'DOWNSTACK',
   });
