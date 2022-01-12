@@ -34,7 +34,7 @@ import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import prompts from 'prompts';
-import { readMetaStack } from '../../lib/utils/read_current_stack';
+import { readMetaStack } from '../../lib/utils/read_meta_stack';
 
 export type TSubmitScope = TScope | 'BRANCH';
 
