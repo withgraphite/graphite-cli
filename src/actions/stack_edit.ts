@@ -1,4 +1,4 @@
-import { readMetaStack } from '../lib/utils/read_current_stack';
+import { readMetaStack } from '../lib/utils/read_meta_stack';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { Stack } from '../wrapper-classes';
 import Branch from '../wrapper-classes/branch';
