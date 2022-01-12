@@ -2,26 +2,22 @@ import { Stack } from '../../wrapper-classes';
 import path from 'path';
 import { getRepoRootPath } from './index';
 import fs from 'fs-extra';
-import { getTrunk } from '../utils';
-import StackOrderNode from '../../actions/stack_edit';
+import { getTrunk, logDebug } from '../utils';
+import { StackOrderNode } from '../../actions/downstack_edit';
 import Branch from '../../wrapper-classes/branch';
 import objectHash from 'object-hash';
+import { ConfigError } from '../errors';
 
 export class StackEditConfig {
   _stack: Stack;
   _file: string;
+
+  //TODO (Greg): Should this only be limited to meta stacks or git stacks can be included too?
   constructor(stack: Stack) {
     this._stack = stack;
     this._file = path.join(getRepoRootPath(), this.generateFileName());
   }
-  /*
-  Functionality we want:
-   - Create template file for a given stack
-   - Let the user edit the file
-   - Read the file contents into an ordered list of stackOrderNode and return
 
-   From the perspective of the caller, all this should be one function. Get file for editing and return contents in a structure
-   */
   private generateFileName(): string {
     return `gt_se_${objectHash(this._stack)}`;
   }
@@ -54,9 +50,10 @@ export class StackEditConfig {
     }
   }
 
-  public getStackEditSwpFile(): string {
+  public getStackEditTempConfig(): string {
     const file = this.filePath();
     if (!fs.existsSync(file)) {
+      logDebug(`File ${file} doesn't exist. Generating from template.`);
       const data = this.generateTemplateData();
       fs.writeFileSync(file, data, 'utf-8');
     }
@@ -64,38 +61,44 @@ export class StackEditConfig {
   }
 
   public readFileContents(): StackOrderNode[] {
-    const stackOrderNodes = [
-      new StackOrderNode({
+    if (!fs.existsSync(this.filePath())) {
+      throw new ConfigError(
+        `Something went wrong. stack-edit-temp file for this stack was not found.`
+      );
+    }
+
+    const stackOrderNodes: StackOrderNode[] = [
+      {
         branch: getTrunk(),
         operation: 'PICK',
-      }),
+      },
     ];
     const oldBranches = this._stack.branches();
     const newBranches: string[] = [];
-    if (fs.existsSync(this.filePath())) {
-      const rawContents = fs.readFileSync(this.filePath()).toString().trim();
-      const rows = rawContents.split('#')[0].trim().split('\n');
-      for (const row of rows) {
-        const details = row.split('\t');
-        const branch = new Branch(details[1], { useMemoizedResults: true });
-        newBranches.push(branch.name);
-        const operation = details[0].toUpperCase() === 'PICK' ? 'PICK' : 'DROP';
-        stackOrderNodes.push(
-          new StackOrderNode({
-            branch: branch,
-            operation: operation,
-          })
-        );
+
+    const rawContents = fs.readFileSync(this.filePath()).toString().trim();
+    const rows = rawContents.trim().split('\n');
+    for (const row of rows) {
+      if (row.trim().startsWith('#')) {
+        continue;
       }
+      const details = row.split(/[ ,]+/);
+      const branch = new Branch(details[1], { useMemoizedResults: true });
+      // TODO (Greg): We should probably validate details[1] is an existing branch
+      newBranches.push(branch.name);
+      const operation = details[0].toUpperCase() === 'PICK' ? 'PICK' : 'DROP'; // TODO: Become resilient to typos. Perhaps send the user back to edit with error message appended to end?
+      stackOrderNodes.push({
+        branch: branch,
+        operation: operation,
+      });
     }
+
     // Handle deleted lines
     const droppedBranches = oldBranches.filter(
       (b) => !newBranches.includes(b.name) && !b.isTrunk()
     );
     for (const branch of droppedBranches) {
-      stackOrderNodes.push(
-        new StackOrderNode({ branch: branch, operation: 'DROP' })
-      );
+      stackOrderNodes.push({ branch: branch, operation: 'DROP' });
     }
     return stackOrderNodes;
   }

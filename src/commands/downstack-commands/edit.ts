@@ -1,9 +1,9 @@
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry';
-import { editAction } from '../../actions/stack_edit';
+import { editAction } from '../../actions/downstack_edit';
 
 export const command = 'edit';
-export const canonical = 'stack edit';
+export const canonical = 'downstack edit';
 export const description =
   'This command allows you to edit your stack. Options for edit are: reorder';
 
