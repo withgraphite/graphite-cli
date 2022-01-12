@@ -34,7 +34,7 @@ import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import prompts from 'prompts';
-import { read_current_stack } from '../../lib/utils/read_current_stack';
+import { readMetaStack } from '../../lib/utils/read_current_stack';
 
 export type TSubmitScope = TScope | 'BRANCH';
 
@@ -160,7 +160,7 @@ async function getValidBranchesToSubmit(scope: TSubmitScope): Promise<{
       const currentBranch = currentBranchPrecondition();
       branchesToSubmit = [currentBranch];
     } else {
-      const stack = read_current_stack({
+      const stack = readMetaStack({
         currentBranch: currentBranchPrecondition(),
         scope: scope,
       });

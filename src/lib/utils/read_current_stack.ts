@@ -2,7 +2,7 @@ import Branch from '../../wrapper-classes/branch';
 import { TScope } from '../../actions/scope';
 import { MetaStackBuilder, Stack } from '../../wrapper-classes';
 
-export function read_current_stack(args: {
+export function readMetaStack(args: {
   currentBranch: Branch;
   scope: TScope;
 }): Stack {
