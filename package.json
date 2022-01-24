@@ -4,7 +4,7 @@
   "license": "None",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "homepage": "https://github.com/screenplaydev/screenplay-cli",
+  "homepage": "https://github.com/screenplaydev/graphite-cli",
   "private": true,
   "dependencies": {
     "@screenplaydev/graphite-cli-routes": "0.13.0",
