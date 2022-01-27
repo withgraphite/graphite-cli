@@ -1,3 +1,6 @@
+# 0.16.6 2021-01-27
+- Fix issue with detecting downstack/upstack branches on submit
+
 # 0.16.5 2021-01-07
 - Fix issue with detecting some PR templates
 
