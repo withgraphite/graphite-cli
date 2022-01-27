@@ -8,26 +8,36 @@ import { TSubmitScope } from './submit/submit';
 
 export function validateStack(scope: TSubmitScope, stack: Stack): void {
   const branch = currentBranchPrecondition();
-  let gitStack;
   switch (scope) {
-    case 'FULLSTACK':
-      gitStack = new GitStackBuilder().fullStackFromBranch(branch);
+    case 'FULLSTACK': {
+      const gitStack = new GitStackBuilder().fullStackFromBranch(branch);
       compareStacks(stack, gitStack);
       break;
-    case 'UPSTACK':
-      gitStack = new GitStackBuilder().upstackInclusiveFromBranchWithParents(
-        branch
-      );
-      stack.source.parent = undefined;
+    }
+    case 'UPSTACK': {
+      const gitStack =
+        new GitStackBuilder().upstackInclusiveFromBranchWithParents(branch);
+      // Since we're modifying the stack, we want to make sure not to modify
+      // the passed-in value. We re-derive the stack here but can improve this
+      // in the future by just deep-copying the stack.
+      const metadataStack =
+        new MetaStackBuilder().upstackInclusiveFromBranchWithParents(branch);
+      metadataStack.source.parent = undefined;
       gitStack.source.parent = undefined;
-      compareStacks(stack, gitStack);
+      compareStacks(metadataStack, gitStack);
       break;
-    case 'DOWNSTACK':
-      gitStack = new GitStackBuilder().downstackFromBranch(branch);
-      stack.source.children = [];
+    }
+    case 'DOWNSTACK': {
+      const gitStack = new GitStackBuilder().downstackFromBranch(branch);
+      // Since we're modifying the stack, we want to make sure not to modify
+      // the passed-in value. We re-derive the stack here but can improve this
+      // in the future by just deep-copying the stack.
+      const metadataStack = new MetaStackBuilder().downstackFromBranch(branch);
+      metadataStack.source.children = [];
       gitStack.source.children = [];
-      compareStacks(stack, gitStack);
+      compareStacks(metadataStack, gitStack);
       break;
+    }
   }
   logInfo(`Validation for current stack: passed`);
 }
