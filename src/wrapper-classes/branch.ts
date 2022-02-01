@@ -477,6 +477,19 @@ export default class Branch {
     return this.getMeta()?.priorSubmitInfo?.title;
   }
 
+  public setPriorReviewers(reviewers: string[] | undefined): void {
+    const meta: TMeta = this.getMeta() || {};
+    meta.priorSubmitInfo = {
+      ...meta.priorSubmitInfo,
+      reviewers,
+    };
+    this.writeMeta(meta);
+  }
+
+  public getPriorReviewers(): string[] | undefined {
+    return this.getMeta()?.priorSubmitInfo?.reviewers;
+  }
+
   public setPriorSubmitBody(body: string): void {
     const meta: TMeta = this.getMeta() || {};
     meta.priorSubmitInfo = {

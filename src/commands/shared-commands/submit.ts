@@ -32,6 +32,12 @@ export const args = {
     default: true,
     alias: 'e',
   },
+  reviewers: {
+    describe: 'Prompt to manually set reviewers if true',
+    type: 'boolean',
+    default: false,
+    alias: 'r',
+  },
   'dry-run': {
     describe:
       'Reports the PRs that would be submitted and terminates. No branches are pushed and no PRs are opened or updated.',
