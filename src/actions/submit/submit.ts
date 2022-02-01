@@ -2,6 +2,7 @@ import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
 import * as t from '@screenplaydev/retype';
 import { request } from '@screenplaydev/retyped-routes';
 import chalk from 'chalk';
+import prompts from 'prompts';
 import { API_SERVER } from '../../lib/api';
 import { execStateConfig, repoConfig } from '../../lib/config';
 import {
@@ -34,7 +35,7 @@ import { validateStack } from '../validate';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
-import prompts from 'prompts';
+import { getReviewers } from './reviewers';
 
 export type TSubmitScope = TScope | 'BRANCH';
 
@@ -64,6 +65,7 @@ export async function submitAction(args: {
   dryRun: boolean;
   updateOnly: boolean;
   branchesToSubmit?: Branch[];
+  reviewers: boolean;
 }): Promise<void> {
   let branchesToSubmit;
   // Check CLI pre-condition to warn early
@@ -115,6 +117,7 @@ export async function submitAction(args: {
       editPRFieldsInline: args.editPRFieldsInline,
       createNewPRsAsDraft: args.createNewPRsAsDraft,
       updateOnly: args.updateOnly,
+      reviewers: args.reviewers,
       dryRun: args.dryRun,
     });
 
@@ -290,6 +293,7 @@ async function getPRInfoForBranches(args: {
   createNewPRsAsDraft: boolean | undefined;
   updateOnly: boolean;
   dryRun: boolean;
+  reviewers: boolean;
 }): Promise<TPRSubmissionInfoWithBranch> {
   const branchPRInfo: TPRSubmissionInfoWithBranch = [];
   const newPrBranches: Branch[] = [];
@@ -335,12 +339,13 @@ async function getPRInfoForBranches(args: {
   // Prompt for PR creation info separately after printing
   for (const branch of newPrBranches) {
     const parentBranchName = getBranchBaseName(branch);
-    const { title, body, draft } = await getPRCreationInfo({
+    const { title, body, draft, reviewers } = await getPRCreationInfo({
       branch: branch,
       parentBranchName: parentBranchName,
       editPRFieldsInline: args.editPRFieldsInline,
       createNewPRsAsDraft: args.createNewPRsAsDraft,
       dryRun: args.dryRun,
+      reviewers: args.reviewers,
     });
     branchPRInfo.push({
       action: 'create',
@@ -350,6 +355,7 @@ async function getPRInfoForBranches(args: {
       body: body,
       draft: draft,
       branch: branch,
+      reviewers,
     });
   }
 
@@ -388,7 +394,7 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
         logError(`Failed to push changes for ${branch.name} to remote.`);
 
         logTip(
-          `There maybe external commits on remote that were not overwritten with the attempted push. 
+          `There maybe external commits on remote that were not overwritten with the attempted push.
           \n Use 'git pull' to pull external changes and retry.`
         );
         throw new ExitFailedError(err);
@@ -472,10 +478,12 @@ async function getPRCreationInfo(args: {
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
+  reviewers: boolean;
 }): Promise<{
   title: string;
   body: string | undefined;
   draft: boolean;
+  reviewers?: string[];
 }> {
   if (args.dryRun) {
     return {
@@ -502,6 +510,11 @@ async function getPRCreationInfo(args: {
   });
   args.branch.setPriorSubmitBody(body);
 
+  const reviewers: string[] | undefined = await getReviewers({
+    fetchReviewers: args.reviewers,
+  });
+  args.branch.setPriorReviewers(reviewers);
+
   const createAsDraft = await getPRDraftStatus({
     createNewPRsAsDraft: args.createNewPRsAsDraft,
   });
@@ -514,6 +527,7 @@ async function getPRCreationInfo(args: {
     title: title,
     body: body,
     draft: createAsDraft,
+    reviewers,
   };
 }
 

@@ -170,6 +170,7 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
       dryRun: false,
       updateOnly: false,
       branchesToSubmit: needsResubmission,
+      reviewers: false,
     });
   }
 }

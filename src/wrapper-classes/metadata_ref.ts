@@ -22,6 +22,7 @@ export type TBranchPRInfo = {
 export type TBranchPriorSubmitInfo = {
   title?: string;
   body?: string;
+  reviewers?: string[];
 };
 
 export type TMeta = {
