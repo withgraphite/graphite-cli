@@ -2,7 +2,7 @@ import { execStateConfig } from '../lib/config';
 import { ExitFailedError } from '../lib/errors';
 import {
   ensureSomeStagedChangesPrecondition,
-  uncommittedChangesPrecondition,
+  uncommittedTrackedChangesPrecondition,
 } from '../lib/preconditions';
 import { gpExecSync, logWarn } from '../lib/utils';
 import { fixAction } from './fix';
@@ -55,7 +55,7 @@ export async function commitCreateAction(opts: {
   }
 
   try {
-    uncommittedChangesPrecondition();
+    uncommittedTrackedChangesPrecondition();
     await fixAction({
       action: 'rebase',
       mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER' as const,
