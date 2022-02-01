@@ -1,3 +1,6 @@
+# 0.16.7 2021-02-01
+- Allow Graphite to run when there are untracked files.
+
 # 0.16.6 2021-01-27
 - Fix issue with detecting downstack/upstack branches on submit
 
