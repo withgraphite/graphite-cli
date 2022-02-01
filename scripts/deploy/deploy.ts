@@ -9,8 +9,8 @@ const version: string = new Date()
   .toISOString()
   .replace(/\..+/, '')
   .replace('T', '')
-  .replace(':', '')
-  .replace('-', '.')
+  .replace(/:/g, '')
+  .replace(/-/g, '.')
   .slice(2);
 
 const VERSION_TAG = `v${version}`;
