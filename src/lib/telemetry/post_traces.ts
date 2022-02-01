@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
 import { request } from '@screenplaydev/retyped-routes';
 import cp from 'child_process';
 import fs from 'fs-extra';
+import graphiteCLIRoutes from 'graphite-cli-routes';
 import path from 'path';
 import tmp from 'tmp';
 import { getUserEmail, SHOULD_REPORT_TELEMETRY, tracer } from '.';

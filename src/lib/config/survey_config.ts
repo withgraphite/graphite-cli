@@ -1,6 +1,6 @@
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
 import { request } from '@screenplaydev/retyped-routes';
 import fs from 'fs-extra';
+import graphiteCLIRoutes from 'graphite-cli-routes';
 import os from 'os';
 import path from 'path';
 import { API_SERVER } from '../api';

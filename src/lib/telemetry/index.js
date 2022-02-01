@@ -1,0 +1,17 @@
+"use strict";
+exports.__esModule = true;
+exports.registerSigintHandler = exports.postTelemetryInBackground = exports.fetchUpgradePromptInBackground = exports.SHOULD_REPORT_TELEMETRY = exports.getUserEmail = exports.profile = exports.tracer = void 0;
+var context_1 = require("./context");
+exports.getUserEmail = context_1.getUserEmail;
+var post_traces_1 = require("./post_traces");
+exports.postTelemetryInBackground = post_traces_1.postTelemetryInBackground;
+var profile_1 = require("./profile");
+exports.profile = profile_1.profile;
+var sigint_handler_1 = require("./sigint_handler");
+exports.registerSigintHandler = sigint_handler_1.registerSigintHandler;
+var tracer_1 = require("./tracer");
+exports.tracer = tracer_1["default"];
+var upgrade_prompt_1 = require("./upgrade_prompt");
+exports.fetchUpgradePromptInBackground = upgrade_prompt_1.fetchUpgradePromptInBackground;
+var SHOULD_REPORT_TELEMETRY = process.env.NODE_ENV != 'development';
+exports.SHOULD_REPORT_TELEMETRY = SHOULD_REPORT_TELEMETRY;

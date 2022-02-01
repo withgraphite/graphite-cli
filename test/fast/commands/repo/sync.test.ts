@@ -1,7 +1,7 @@
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
 import { expect } from 'chai';
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
+import graphiteCLIRoutes from 'graphite-cli-routes';
 import nock from 'nock';
 import { API_SERVER } from '../../../../src/lib/api';
 import { allScenes } from '../../../lib/scenes';

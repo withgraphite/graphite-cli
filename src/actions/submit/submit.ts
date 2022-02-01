@@ -1,7 +1,7 @@
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
 import * as t from '@screenplaydev/retype';
 import { request } from '@screenplaydev/retyped-routes';
 import chalk from 'chalk';
+import graphiteCLIRoutes from 'graphite-cli-routes';
 import prompts from 'prompts';
 import { API_SERVER } from '../../lib/api';
 import { execStateConfig, repoConfig } from '../../lib/config';

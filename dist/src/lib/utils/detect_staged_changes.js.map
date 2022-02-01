@@ -1,0 +1,1 @@
+{"version":3,"file":"detect_staged_changes.js","sourceRoot":"","sources":["../../../../src/lib/utils/detect_staged_changes.ts"],"names":[],"mappings":";;;AAAA,iDAAyC;AACzC,SAAgB,mBAAmB;IACjC,IAAI;QACF,IAAA,wBAAQ,EAAC,+BAA+B,CAAC,CAAC;KAC3C;IAAC,WAAM;QACN,OAAO,IAAI,CAAC;KACb;IACD,gDAAgD;IAChD,OAAO,KAAK,CAAC;AACf,CAAC;AARD,kDAQC"}

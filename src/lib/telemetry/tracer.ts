@@ -1,6 +1,6 @@
 // https://docs.datadoghq.com/api/latest/tracing/
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
 import { request } from '@screenplaydev/retyped-routes';
+import graphiteCLIRoutes from 'graphite-cli-routes';
 import { version } from '../../../package.json';
 import { API_SERVER } from '../api';
 
