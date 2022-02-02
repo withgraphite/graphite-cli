@@ -22,5 +22,5 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.tslint": true
   },
-  "include": ["src", "scripts"]
+  "include": ["src", "test", "scripts"]
 }
