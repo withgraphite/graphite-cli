@@ -13,8 +13,8 @@ const version = new Date()
     .toISOString()
     .replace(/\..+/, '')
     .replace('T', '')
-    .replace(/:/g, '')
-    .replace(/-/g, '.')
+    .replace(':', '')
+    .replace('-', '.')
     .slice(2);
 const VERSION_TAG = `v${version}`;
 function hasGitChanges() {
