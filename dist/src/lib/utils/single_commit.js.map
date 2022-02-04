@@ -1,0 +1,1 @@
+{"version":3,"file":"single_commit.js","sourceRoot":"","sources":["../../../../src/lib/utils/single_commit.ts"],"names":[],"mappings":";;;AAAA,2DAA+C;AAG/C,SAAgB,uBAAuB,CAAC,MAAc;IACpD,MAAM,OAAO,GAAG,MAAM,CAAC,aAAa,EAAE,CAAC;IACvC,IAAI,OAAO,CAAC,MAAM,KAAK,CAAC,EAAE;QACxB,OAAO,IAAI,CAAC;KACb;IACD,OAAO,IAAI,wBAAM,CAAC,OAAO,CAAC,CAAC,CAAC,CAAC,CAAC;AAChC,CAAC;AAND,0DAMC"}
