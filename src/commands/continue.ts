@@ -5,7 +5,7 @@ import { restackBranch, stackFixActionContinuation } from '../actions/fix';
 import {
   stackOntoBaseRebaseContinuation,
   stackOntoFixContinuation,
-} from '../actions/onto';
+} from '../actions/onto/stack_onto';
 import { repoSyncDeleteMergedBranchesContinuation } from '../actions/sync';
 import {
   clearPersistedMergeConflictCallstack,
