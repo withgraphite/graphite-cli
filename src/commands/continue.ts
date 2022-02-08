@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import yargs from 'yargs';
 import { deleteMergedBranches } from '../actions/clean_branches';
+import { applyStackEdits } from '../actions/edit/edit_downstack';
 import { restackBranch, stackFixActionContinuation } from '../actions/fix';
 import {
   stackOntoBaseRebaseContinuation,
@@ -12,6 +13,7 @@ import {
   getPersistedMergeConflictCallstack,
   MergeConflictCallstackT,
 } from '../lib/config/merge_conflict_callstack_config';
+import { getPendingStackEdits } from '../lib/config/pending_stack_edits_config';
 import { PreconditionsFailedError } from '../lib/errors';
 import { profile } from '../lib/telemetry';
 import { rebaseInProgress } from '../lib/utils/rebase_in_progress';
@@ -37,20 +39,28 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
+    const pendingRebase = rebaseInProgress();
     const mostRecentCheckpoint = getPersistedMergeConflictCallstack();
-    if (mostRecentCheckpoint === null) {
+    const pendingEdits = getPendingStackEdits();
+
+    if (!pendingEdits && !mostRecentCheckpoint && !pendingRebase) {
       throw new PreconditionsFailedError(`No Graphite command to continue.`);
     }
 
-    if (rebaseInProgress()) {
+    if (pendingRebase) {
       execSync(`${argv.edit ? '' : 'GIT_EDITOR=true'} git rebase --continue`, {
         stdio: 'inherit',
       });
     }
 
-    await resolveCallstack(mostRecentCheckpoint);
+    if (mostRecentCheckpoint) {
+      await resolveCallstack(mostRecentCheckpoint);
+      clearPersistedMergeConflictCallstack();
+    }
 
-    clearPersistedMergeConflictCallstack();
+    if (pendingEdits) {
+      await applyStackEdits(pendingEdits);
+    }
   });
 };
 
