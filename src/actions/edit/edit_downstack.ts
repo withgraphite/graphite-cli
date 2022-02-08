@@ -11,17 +11,21 @@ import { MetaStackBuilder } from '../../wrapper-classes';
 import Stack from '../../wrapper-classes/stack';
 import { validate } from '../validate';
 import { applyStackEditPick } from './apply_stack_edit_pick';
-import { createEditFile } from './create_stack_edit_file';
+import { createStackEditFile } from './create_stack_edit_file';
 import { parseEditFile } from './parse_stack_edit_file';
 import { TStackEdit } from './stack_edits';
 
-export async function editDownstack(): Promise<void> {
+export async function editDownstack(opts?: {
+  inputPath?: string;
+}): Promise<void> {
   // We're about to do some complex re-arrangements - ensure state is consistant before beginning.
   await validate('DOWNSTACK');
 
   const currentBranch = currentBranchPrecondition();
   const stack = new MetaStackBuilder().downstackFromBranch(currentBranch);
-  const stackEdits = await promptForEdit(stack);
+  const stackEdits = opts?.inputPath
+    ? parseEditFile({ filePath: opts.inputPath }) // allow users to pass a pre-written file, mostly for unit tests.
+    : await promptForEdit(stack);
   await applyStackEdits(stackEdits);
 }
 
@@ -44,7 +48,7 @@ async function processStackEdit(stackEdit: TStackEdit): Promise<void> {
 async function promptForEdit(stack: Stack) {
   const defaultEditor = await getDefaultEditorOrPrompt();
   return await performInTmpDir(async (tmpDir) => {
-    const editFilePath = createEditFile({ stack, tmpDir });
+    const editFilePath = createStackEditFile({ stack, tmpDir });
     await gpExecSync(
       {
         command: `${defaultEditor} "${editFilePath}"`,

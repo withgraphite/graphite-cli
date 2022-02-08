@@ -8,7 +8,10 @@ const FILE_HEADER = [`Op  `, `Branch`].join(COLUMN_SPACING);
 const FILE_DIVIDER = `-`.repeat(20);
 const FILE_FOOTER =
   '# p, pick = stack branch upon the branch from the previous line';
-export function createEditFile(opts: { stack: Stack; tmpDir: string }): string {
+export function createStackEditFile(opts: {
+  stack: Stack;
+  tmpDir: string;
+}): string {
   const branchNames = opts.stack.branches().map((b) => b.name);
   const fileContents = [
     FILE_HEADER,
