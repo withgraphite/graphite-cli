@@ -10,7 +10,7 @@ import { KilledError } from '../lib/errors';
 import { checkoutBranch, getTrunk, logInfo } from '../lib/utils';
 import Branch from '../wrapper-classes/branch';
 import { deleteBranchAction } from './delete_branch';
-import { ontoAction } from './onto';
+import { currentBranchOntoAction } from './onto/current_branch_onto';
 
 /**
  * This method is assumed to be idempotent -- if a merge conflict interrupts
@@ -119,7 +119,7 @@ export async function deleteMergedBranches(opts: {
       if (parentName !== undefined && parentName in branchesToDelete) {
         checkoutBranch(branch.name);
         logInfo(`upstacking (${branch.name}) onto (${getTrunk().name})`);
-        await ontoAction({
+        await currentBranchOntoAction({
           onto: getTrunk().name,
           mergeConflictCallstack: {
             frame: opts.frame,

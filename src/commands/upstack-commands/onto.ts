@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { ontoAction } from '../../actions/onto';
+import { currentBranchOntoAction } from '../../actions/onto/current_branch_onto';
 import { profile } from '../../lib/telemetry';
 
 const args = {
@@ -20,7 +20,7 @@ export const builder = args;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
-    await ontoAction({
+    await currentBranchOntoAction({
       onto: argv.branch,
       mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
     });

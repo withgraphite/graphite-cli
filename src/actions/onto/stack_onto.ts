@@ -1,81 +1,62 @@
-import { validate } from '../actions/validate';
-import { cache } from '../lib/config';
+import { cache } from '../../lib/config';
 import {
   MergeConflictCallstackT,
   StackOntoBaseRebaseStackFrameT,
   StackOntoFixStackFrameT,
-} from '../lib/config/merge_conflict_callstack_config';
+} from '../../lib/config/merge_conflict_callstack_config';
 import {
   ExitFailedError,
   PreconditionsFailedError,
   RebaseConflictError,
   ValidationFailedError,
-} from '../lib/errors';
+} from '../../lib/errors';
+import { branchExistsPrecondition } from '../../lib/preconditions';
 import {
-  branchExistsPrecondition,
-  currentBranchPrecondition,
-} from '../lib/preconditions';
-import {
-  checkoutBranch,
   getTrunk,
   gpExecSync,
   logInfo,
   rebaseInProgress,
-  trackedUncommittedChanges,
-} from '../lib/utils';
-import Branch from '../wrapper-classes/branch';
-import { restackBranch } from './fix';
-export async function ontoAction(args: {
+} from '../../lib/utils';
+import Branch from '../../wrapper-classes/branch';
+import { restackBranch } from '../fix';
+import { validate } from '../validate';
+
+export async function stackOnto(opts: {
+  currentBranch: Branch;
   onto: string;
   mergeConflictCallstack: MergeConflictCallstackT;
 }): Promise<void> {
-  if (trackedUncommittedChanges()) {
-    throw new PreconditionsFailedError('Cannot fix with uncommitted changes');
-  }
-
-  const originalBranch = currentBranchPrecondition();
-
-  await stackOnto(originalBranch, args.onto, args.mergeConflictCallstack);
-
-  checkoutBranch(originalBranch.name);
-}
-
-async function stackOnto(
-  currentBranch: Branch,
-  onto: string,
-  mergeConflictCallstack: MergeConflictCallstackT
-) {
-  branchExistsPrecondition(onto);
-  checkBranchCanBeMoved(currentBranch, onto);
+  branchExistsPrecondition(opts.onto);
+  checkBranchCanBeMoved(opts.currentBranch, opts.onto);
   validateStack();
-  const parent = await getParentForRebaseOnto(currentBranch, onto);
+  const parent = await getParentForRebaseOnto(opts.currentBranch, opts.onto);
   // Save the old ref from before rebasing so that children can find their bases.
-  currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
+  opts.currentBranch.setMetaPrevRef(opts.currentBranch.getCurrentRef());
 
   const stackOntoContinuationFrame = {
     op: 'STACK_ONTO_BASE_REBASE_CONTINUATION' as const,
-    currentBranchName: currentBranch.name,
-    onto: onto,
+    currentBranchName: opts.currentBranch.name,
+    onto: opts.onto,
   };
 
   // Add try catch check for rebase interactive....
   gpExecSync(
     {
-      command: `git rebase --onto ${onto} $(git merge-base ${currentBranch.name} ${parent.name}) ${currentBranch.name}`,
+      command: `git rebase --onto ${opts.onto} $(git merge-base ${opts.currentBranch.name} ${parent.name}) ${opts.currentBranch.name}`,
       options: { stdio: 'ignore' },
     },
     (err) => {
       if (rebaseInProgress()) {
         throw new RebaseConflictError(
-          `Interactive rebase in progress, cannot fix (${currentBranch.name}) onto (${onto}).`,
+          `Interactive rebase in progress, cannot fix (${opts.currentBranch.name}) onto (${opts.onto}).`,
           {
             frame: stackOntoContinuationFrame,
-            parent: mergeConflictCallstack,
+            parent: opts.mergeConflictCallstack,
           }
         );
       } else {
         throw new ExitFailedError(
-          `Rebase failed when moving (${currentBranch.name}) onto (${onto}).`,
+          `Rebase failed when moving (${opts.currentBranch.name}) onto (${opts.onto}).`,
           err
         );
       }
@@ -84,7 +65,7 @@ async function stackOnto(
 
   await stackOntoBaseRebaseContinuation(
     stackOntoContinuationFrame,
-    mergeConflictCallstack
+    opts.mergeConflictCallstack
   );
 }
 
