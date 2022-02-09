@@ -13,7 +13,6 @@ import {
   getPersistedMergeConflictCallstack,
   MergeConflictCallstackT,
 } from '../lib/config/merge_conflict_callstack_config';
-import { getPendingStackEdits } from '../lib/config/pending_stack_edits_config';
 import { PreconditionsFailedError } from '../lib/errors';
 import { profile } from '../lib/telemetry';
 import { rebaseInProgress } from '../lib/utils/rebase_in_progress';
@@ -41,9 +40,8 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
     const pendingRebase = rebaseInProgress();
     const mostRecentCheckpoint = getPersistedMergeConflictCallstack();
-    const pendingEdits = getPendingStackEdits();
 
-    if (!pendingEdits && !mostRecentCheckpoint && !pendingRebase) {
+    if (!mostRecentCheckpoint && !pendingRebase) {
       throw new PreconditionsFailedError(`No Graphite command to continue.`);
     }
 
@@ -56,10 +54,6 @@ export const handler = async (argv: argsT): Promise<void> => {
     if (mostRecentCheckpoint) {
       await resolveCallstack(mostRecentCheckpoint);
       clearPersistedMergeConflictCallstack();
-    }
-
-    if (pendingEdits) {
-      await applyStackEdits(pendingEdits);
     }
   });
 };
@@ -102,6 +96,9 @@ async function resolveCallstack(
       break;
     case 'REPO_SYNC_CONTINUATION':
       await repoSyncDeleteMergedBranchesContinuation(callstack.frame);
+      break;
+    case 'STACK_EDIT_CONTINUATION':
+      await applyStackEdits(callstack.frame.remainingEdits);
       break;
     default:
       assertUnreachable(callstack.frame);

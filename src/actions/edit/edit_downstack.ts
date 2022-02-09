@@ -1,7 +1,3 @@
-import {
-  clearPendingStackEdits,
-  savePendingStackEdits,
-} from '../../lib/config/pending_stack_edits_config';
 import { ExitFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { gpExecSync } from '../../lib/utils';
@@ -31,17 +27,10 @@ export async function editDownstack(opts?: {
 
 export async function applyStackEdits(stackEdits: TStackEdit[]): Promise<void> {
   for (let i = 0; i < stackEdits.length; i++) {
-    savePendingStackEdits(stackEdits.slice(i)); // Write the remaining edits in case this one gets interupted.
-    await processStackEdit(stackEdits[i]);
-  }
-  // Cleanup any pending files.
-  clearPendingStackEdits();
-}
-
-async function processStackEdit(stackEdit: TStackEdit): Promise<void> {
-  switch (stackEdit.type) {
-    case 'pick':
-      await applyStackEditPick(stackEdit);
+    switch (stackEdits[i].type) {
+      case 'pick':
+        await applyStackEditPick(stackEdits[i], stackEdits.slice(i));
+    }
   }
 }
 

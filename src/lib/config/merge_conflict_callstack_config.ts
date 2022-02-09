@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
 import { logDebug } from '../utils';
+import { TStackEdit } from './../../actions/edit/stack_edits';
 import { getRepoRootPath } from './repo_root_path';
 
 const CONFIG_NAME = '.graphite_merge_conflict';
@@ -32,7 +33,13 @@ type TGraphiteFrame =
   | TRestackNodeStackFrame
   | TDeleteBranchesStackFrame
   | TRepoFixBranchCountSanityCheckStackFrame
-  | TRepoSyncStackFrame;
+  | TRepoSyncStackFrame
+  | TStackEditStackFrame;
+
+export type TStackEditStackFrame = {
+  op: 'STACK_EDIT_CONTINUATION';
+  remainingEdits: TStackEdit[];
+};
 
 export type TStackOntoBaseRebaseStackFrame = {
   op: 'STACK_ONTO_BASE_REBASE_CONTINUATION';
