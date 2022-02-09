@@ -9,7 +9,7 @@ const globalArgumentsOptions = {
     demandOption: false,
   },
   quiet: { alias: 'q', default: false, type: 'boolean', demandOption: false },
-  verify: { default: true, type: 'boolean', demandOption: false },
+  "no-verify": { alias: 'n', default: true, type: 'boolean', demandOption: false },
   debug: { default: false, type: 'boolean', demandOption: false },
 } as const;
 
@@ -20,7 +20,7 @@ type argsT = yargs.Arguments<
 function processGlobalArgumentsMiddleware(argv: argsT): void {
   execStateConfig
     .setQuiet(argv.quiet)
-    .setNoVerify(!argv.verify)
+    .setNoVerify(argv["no-verify"])
     .setInteractive(argv.interactive)
     .setOutputDebugLogs(argv.debug);
 }
