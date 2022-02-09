@@ -44,6 +44,12 @@ export const args = {
     type: 'boolean',
     default: false,
   },
+  'pr': {
+    describe:
+      'Submits PRs for branches. It --no-pr is true, no PRs are opened or updated.',
+    type: 'boolean',
+    default: true,
+  },
   'update-only': {
     describe: 'Only update the PRs that have been already been submitted.',
     type: 'boolean',

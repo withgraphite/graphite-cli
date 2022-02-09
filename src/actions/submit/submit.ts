@@ -61,6 +61,7 @@ type TSubmittedPR = {
 export async function submitAction(args: {
   scope: TSubmitScope;
   editPRFieldsInline: boolean;
+  dontCreatePRs: boolean;
   createNewPRsAsDraft: boolean | undefined;
   dryRun: boolean;
   updateOnly: boolean;
@@ -68,6 +69,8 @@ export async function submitAction(args: {
   reviewers: boolean;
 }): Promise<void> {
   let branchesToSubmit;
+  // Need dynamic stepCount for steps depending on whether it's a dry-run
+  let stepCount = 1;
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
   if (args.dryRun) {
@@ -78,6 +81,14 @@ export async function submitAction(args: {
     );
     logNewline();
     args.editPRFieldsInline = false;
+  }
+  if (args.dontCreatePRs) {
+    logInfo(
+      chalk.yellow(
+        `Running submit in 'no-pr' mode. No PRs will be opened or updated.`
+      )
+    );
+    logNewline();
   }
 
   if (!execStateConfig.interactive()) {
@@ -95,48 +106,58 @@ export async function submitAction(args: {
     // Step 1: Validate
     logInfo(
       chalk.blueBright(
-        `✏️  [Step 1] Validating that this Graphite stack is ready to submit...`
+        `✏️  [Step ${stepCount}] Validating that this Graphite stack is ready to submit...`
       )
     );
+    stepCount += 1;
     const validationResult = await getValidBranchesToSubmit(args.scope);
     if (validationResult.abort) {
       return;
     }
     branchesToSubmit = validationResult.submittableBranches;
   }
-  // Step 2: Prepare
+
+  if (!args.dryRun) {
+    // Step 2: Pushing branches to remote
+    logInfo(chalk.blueBright(`➡️  [Step ${stepCount}] Pushing branches to remote...`));
+    stepCount += 1;
+    const branchesPushedToRemote = pushBranchesToRemote(branchesToSubmit);
+  }
+
+  if (args.dontCreatePRs) {
+    logInfo(chalk.blueBright('✅ Run complete. No PRs created or updated.'));
+    return;
+  }
+
+  // Step 3: Prepare
   logInfo(
     chalk.blueBright(
-      '🥞 [Step 2] Preparing to submit PRs for the following branches...'
+      `🥞 [Step ${stepCount}] Preparing to submit PRs for the following branches...`
     )
   );
+  stepCount += 1;
 
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
-    await getPRInfoForBranches({
-      branches: branchesToSubmit,
-      editPRFieldsInline: args.editPRFieldsInline,
-      createNewPRsAsDraft: args.createNewPRsAsDraft,
-      updateOnly: args.updateOnly,
-      reviewers: args.reviewers,
-      dryRun: args.dryRun,
-    });
+  await getPRInfoForBranches({
+    branches: branchesToSubmit,
+    editPRFieldsInline: args.editPRFieldsInline,
+    createNewPRsAsDraft: args.createNewPRsAsDraft,
+    updateOnly: args.updateOnly,
+    reviewers: args.reviewers,
+    dryRun: args.dryRun,
+  });
 
   if (args.dryRun) {
     logInfo(chalk.blueBright('✅ Dry Run complete.'));
     return;
   }
 
-  // Step 3: Pushing branches to remote
-  logInfo(chalk.blueBright('➡️  [Step 3] Pushing branches to remote...'));
-  const branchesPushedToRemote = pushBranchesToRemote(
-    submissionInfoWithBranches.map((info) => info.branch)
-  );
-
   logInfo(
     chalk.blueBright(
-      `📂 [Step 4] Opening/updating PRs on GitHub for pushed branches...`
+      `📂 [Step ${stepCount}] Opening/updating PRs on GitHub for pushed branches...`
     )
   );
+  stepCount += 1;
 
   await submitPullRequests({
     submissionInfoWithBranches: submissionInfoWithBranches,
@@ -292,8 +313,8 @@ async function getPRInfoForBranches(args: {
   editPRFieldsInline: boolean;
   createNewPRsAsDraft: boolean | undefined;
   updateOnly: boolean;
-  dryRun: boolean;
   reviewers: boolean;
+  dryRun: boolean;
 }): Promise<TPRSubmissionInfoWithBranch> {
   const branchPRInfo: TPRSubmissionInfoWithBranch = [];
   const newPrBranches: Branch[] = [];

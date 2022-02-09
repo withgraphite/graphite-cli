@@ -13,6 +13,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       scope: 'DOWNSTACK',
       editPRFieldsInline: argv.edit,
       createNewPRsAsDraft: argv.draft,
+      dontCreatePRs: !argv.pr,
       dryRun: argv['dry-run'],
       updateOnly: argv['update-only'],
       reviewers: argv.reviewers,
