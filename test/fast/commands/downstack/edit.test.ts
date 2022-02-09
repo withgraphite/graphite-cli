@@ -28,7 +28,7 @@ for (const scene of [new BasicScene()]) {
       await performInTmpDir((dirPath) => {
         const inputPath = createStackEditsInput({
           dirPath,
-          orderedBranches: ['b', 'a', 'main'],
+          orderedBranches: ['b', 'a'],
         });
         expect(() =>
           scene.repo.execCliCommand(`downstack edit --input "${inputPath}"`)
@@ -46,7 +46,7 @@ for (const scene of [new BasicScene()]) {
       await performInTmpDir((dirPath) => {
         const inputPath = createStackEditsInput({
           dirPath,
-          orderedBranches: ['a', 'b', 'main'], // reverse the order
+          orderedBranches: ['a', 'b'], // reverse the order
         });
         expect(() =>
           scene.repo.execCliCommand(`downstack edit --input "${inputPath}"`)
