@@ -20,6 +20,8 @@ export function parseEditFile(opts: { filePath: string }): TStackEdit[] {
       return { type: lineParts[0] as TStackEditType, branchName: lineParts[1] };
     });
 
+  parsedEdit.reverse(); // put trunk at the start of the list in memory, despite being bottom of list in file.
+
   if (parsedEdit[0].branchName !== getTrunk().name) {
     throw new ExitFailedError(
       `Cannot edit stack to no longer be branched off trunk`

@@ -13,6 +13,7 @@ export function createStackEditFile(opts: {
   tmpDir: string;
 }): string {
   const branchNames = opts.stack.branches().map((b) => b.name);
+  branchNames.reverse(); // show the trunk at the bottom of the list to better match "upstack" and "downstack"
   const fileContents = [
     FILE_HEADER,
     FILE_DIVIDER,
