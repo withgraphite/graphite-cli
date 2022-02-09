@@ -1,5 +1,5 @@
 import prompts from 'prompts';
-import { RepoSyncStackFrameT } from '../lib/config/merge_conflict_callstack_config';
+import { TRepoSyncStackFrame } from '../lib/config/merge_conflict_callstack_config';
 import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { syncPRInfoForBranches } from '../lib/sync/pr_info';
@@ -85,7 +85,7 @@ export async function syncAction(opts: {
 }
 
 export async function repoSyncDeleteMergedBranchesContinuation(
-  frame: RepoSyncStackFrameT
+  frame: TRepoSyncStackFrame
 ): Promise<void> {
   if (frame.resubmit) {
     await resubmitBranchesWithNewBases(frame.force);

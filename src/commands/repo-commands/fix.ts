@@ -5,7 +5,7 @@ import {
   existsDanglingBranches,
   fixDanglingBranches,
 } from '../../actions/fix_dangling_branches';
-import { RepoFixBranchCountSanityCheckStackFrameT } from '../../lib/config/merge_conflict_callstack_config';
+import { TRepoFixBranchCountSanityCheckStackFrame } from '../../lib/config/merge_conflict_callstack_config';
 import { profile } from '../../lib/telemetry';
 import { logInfo, logNewline, logTip } from '../../lib/utils';
 import Branch from '../../wrapper-classes/branch';
@@ -103,7 +103,7 @@ async function branchCountSanityCheck(opts: {
 }
 
 export async function branchCountSanityCheckContinuation(
-  frame: RepoFixBranchCountSanityCheckStackFrameT
+  frame: TRepoFixBranchCountSanityCheckStackFrame
 ): Promise<void> {
   logNewline();
   logInfo(

@@ -3,7 +3,7 @@ import prompts from 'prompts';
 import { cache } from '../lib/config';
 import {
   MergeConflictCallstackT,
-  StackFixActionStackframeT,
+  TStackFixActionStackFrame,
 } from '../lib/config/merge_conflict_callstack_config';
 import {
   ExitCancelledError,
@@ -140,7 +140,7 @@ export async function fixAction(opts: {
 }
 
 export async function stackFixActionContinuation(
-  frame: StackFixActionStackframeT
+  frame: TStackFixActionStackFrame
 ): Promise<void> {
   checkoutBranch(frame.checkoutBranchName);
 }

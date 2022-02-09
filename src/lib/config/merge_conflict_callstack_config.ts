@@ -20,53 +20,53 @@ const CURRENT_REPO_CONFIG_PATH = path.join(getRepoRootPath(), CONFIG_NAME);
  */
 export type MergeConflictCallstackT =
   | {
-      frame: GraphiteFrameT;
+      frame: TGraphiteFrame;
       parent: MergeConflictCallstackT;
     }
   | 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER';
 
-type GraphiteFrameT =
-  | StackOntoBaseRebaseStackFrameT
-  | StackOntoFixStackFrameT
-  | StackFixActionStackframeT
-  | RestackNodeStackFrameT
-  | DeleteBranchesStackFrameT
-  | RepoFixBranchCountSanityCheckStackFrameT
-  | RepoSyncStackFrameT;
+type TGraphiteFrame =
+  | TStackOntoBaseRebaseStackFrame
+  | TStackOntoFixStackFrame
+  | TStackFixActionStackFrame
+  | TRestackNodeStackFrame
+  | TDeleteBranchesStackFrame
+  | TRepoFixBranchCountSanityCheckStackFrame
+  | TRepoSyncStackFrame;
 
-export type StackOntoBaseRebaseStackFrameT = {
+export type TStackOntoBaseRebaseStackFrame = {
   op: 'STACK_ONTO_BASE_REBASE_CONTINUATION';
   currentBranchName: string;
   onto: string;
 };
 
-export type StackOntoFixStackFrameT = {
+export type TStackOntoFixStackFrame = {
   op: 'STACK_ONTO_FIX_CONTINUATION';
   currentBranchName: string;
   onto: string;
 };
 
-export type StackFixActionStackframeT = {
+export type TStackFixActionStackFrame = {
   op: 'STACK_FIX_ACTION_CONTINUATION';
   checkoutBranchName: string;
 };
 
-export type RestackNodeStackFrameT = {
+export type TRestackNodeStackFrame = {
   op: 'STACK_FIX';
   sourceBranchName: string;
 };
 
-export type DeleteBranchesStackFrameT = {
+export type TDeleteBranchesStackFrame = {
   op: 'DELETE_BRANCHES_CONTINUATION';
   force: boolean;
   showDeleteProgress: boolean;
 };
 
-export type RepoFixBranchCountSanityCheckStackFrameT = {
+export type TRepoFixBranchCountSanityCheckStackFrame = {
   op: 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION';
 };
 
-export type RepoSyncStackFrameT = {
+export type TRepoSyncStackFrame = {
   op: 'REPO_SYNC_CONTINUATION';
   force: boolean;
   resubmit: boolean;
