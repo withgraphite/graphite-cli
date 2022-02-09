@@ -9,7 +9,7 @@ const globalArgumentsOptions = {
     demandOption: false,
   },
   quiet: { alias: 'q', default: false, type: 'boolean', demandOption: false },
-  "no-verify": { alias: 'n', default: true, type: 'boolean', demandOption: false },
+  "no-verify": { alias: 'n', default: false, type: 'boolean', demandOption: false },
   debug: { default: false, type: 'boolean', demandOption: false },
 } as const;
 
