@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import yargs from 'yargs';
 import { deleteMergedBranches } from '../actions/clean_branches';
+import { applyStackEdits } from '../actions/edit/edit_downstack';
 import { restackBranch, stackFixActionContinuation } from '../actions/fix';
 import {
   stackOntoBaseRebaseContinuation,
@@ -37,20 +38,23 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
+    const pendingRebase = rebaseInProgress();
     const mostRecentCheckpoint = getPersistedMergeConflictCallstack();
-    if (mostRecentCheckpoint === null) {
+
+    if (!mostRecentCheckpoint && !pendingRebase) {
       throw new PreconditionsFailedError(`No Graphite command to continue.`);
     }
 
-    if (rebaseInProgress()) {
+    if (pendingRebase) {
       execSync(`${argv.edit ? '' : 'GIT_EDITOR=true'} git rebase --continue`, {
         stdio: 'inherit',
       });
     }
 
-    await resolveCallstack(mostRecentCheckpoint);
-
-    clearPersistedMergeConflictCallstack();
+    if (mostRecentCheckpoint) {
+      await resolveCallstack(mostRecentCheckpoint);
+      clearPersistedMergeConflictCallstack();
+    }
   });
 };
 
@@ -92,6 +96,9 @@ async function resolveCallstack(
       break;
     case 'REPO_SYNC_CONTINUATION':
       await repoSyncDeleteMergedBranchesContinuation(callstack.frame);
+      break;
+    case 'STACK_EDIT_CONTINUATION':
+      await applyStackEdits(callstack.frame.remainingEdits);
       break;
     default:
       assertUnreachable(callstack.frame);

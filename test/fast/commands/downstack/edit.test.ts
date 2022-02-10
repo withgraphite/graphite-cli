@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { performInTmpDir } from '../../../../src/lib/utils/perform_in_tmp_dir';
 import { BasicScene } from '../../../lib/scenes/basic_scene';
-import { configureTest } from '../../../lib/utils';
+import { configureTest, expectCommits } from '../../../lib/utils';
 
 function createStackEditsInput(opts: {
   dirPath: string;
@@ -34,6 +34,30 @@ for (const scene of [new BasicScene()]) {
           scene.repo.execCliCommand(`downstack edit --input "${inputPath}"`)
         ).to.not.throw(Error);
         expect(scene.repo.rebaseInProgress()).to.be.false;
+      });
+    });
+
+    it('Can can resolve a conflict and continue', async () => {
+      scene.repo.createChange('2', 'a');
+      scene.repo.execCliCommand("branch create 'a' -m '2' -q");
+      scene.repo.createChange('3', 'a'); // change the same file with a new value.
+      scene.repo.execCliCommand("branch create 'b' -m '3' -q");
+
+      await performInTmpDir((dirPath) => {
+        const inputPath = createStackEditsInput({
+          dirPath,
+          orderedBranches: ['main', 'b', 'a'], // reverse the order
+        });
+        expect(() =>
+          scene.repo.execCliCommand(`downstack edit --input "${inputPath}"`)
+        ).to.not.throw(Error);
+
+        while (scene.repo.rebaseInProgress()) {
+          scene.repo.resolveMergeConflicts();
+          scene.repo.markMergeConflictsAsResolved();
+          scene.repo.execCliCommand('continue --no-edit');
+        }
+        expectCommits(scene.repo, '2, 3, 1');
       });
     });
   });
