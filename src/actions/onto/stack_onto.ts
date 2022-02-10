@@ -1,8 +1,8 @@
 import { cache } from '../../lib/config';
 import {
   MergeConflictCallstackT,
-  StackOntoBaseRebaseStackFrameT,
-  StackOntoFixStackFrameT,
+  TStackOntoBaseRebaseStackFrame,
+  TStackOntoFixStackFrame,
 } from '../../lib/config/merge_conflict_callstack_config';
 import {
   ExitFailedError,
@@ -70,7 +70,7 @@ export async function stackOnto(opts: {
 }
 
 export async function stackOntoBaseRebaseContinuation(
-  frame: StackOntoBaseRebaseStackFrameT,
+  frame: TStackOntoBaseRebaseStackFrame,
   mergeConflictCallstack: MergeConflictCallstackT
 ): Promise<void> {
   const currentBranch = await Branch.branchWithName(frame.currentBranchName);
@@ -100,7 +100,7 @@ export async function stackOntoBaseRebaseContinuation(
 }
 
 export async function stackOntoFixContinuation(
-  frame: StackOntoFixStackFrameT
+  frame: TStackOntoFixStackFrame
 ): Promise<void> {
   logInfo(
     `Successfully moved (${frame.currentBranchName}) onto (${frame.onto})`

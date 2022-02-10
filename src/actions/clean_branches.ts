@@ -3,8 +3,8 @@ import { execSync } from 'child_process';
 import prompts from 'prompts';
 import { cache } from '../lib/config';
 import {
-  DeleteBranchesStackFrameT,
   MergeConflictCallstackT,
+  TDeleteBranchesStackFrame,
 } from '../lib/config/merge_conflict_callstack_config';
 import { KilledError } from '../lib/errors';
 import { checkoutBranch, getTrunk, logInfo } from '../lib/utils';
@@ -19,7 +19,7 @@ import { currentBranchOntoAction } from './onto/current_branch_onto';
  */
 // eslint-disable-next-line max-lines-per-function
 export async function deleteMergedBranches(opts: {
-  frame: DeleteBranchesStackFrameT;
+  frame: TDeleteBranchesStackFrame;
   parent: MergeConflictCallstackT;
 }): Promise<void> {
   const trunkChildren = getTrunk().getChildrenFromMeta();
