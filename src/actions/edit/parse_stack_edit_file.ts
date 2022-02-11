@@ -20,22 +20,18 @@ export function parseEditFile(opts: { filePath: string }): TStackEdit[] {
       return { type: lineParts[0] as TStackEditType, branchName: lineParts[1] };
     });
 
-  parsedEdit.reverse(); // put trunk at the start of the list in memory, despite being bottom of list in file.
+  parsedEdit.reverse();
 
-  if (parsedEdit[0].branchName !== getTrunk().name) {
-    throw new ExitFailedError(
-      `Cannot edit stack to no longer be branched off trunk`
-    );
+  if (parsedEdit.map((e) => e.branchName).includes(getTrunk().name)) {
+    throw new ExitFailedError(`Cannot perform edits on trunk branch`);
   }
 
-  return parsedEdit
-    .slice(1) // Remove the trunk
-    .map((parsedStackEdit, index) => {
-      // Assume all edits are PICKs for now
-      return {
-        type: parsedStackEdit.type,
-        branchName: parsedStackEdit.branchName,
-        onto: index === 0 ? getTrunk().name : parsedEdit[index].branchName,
-      };
-    });
+  return parsedEdit.map((parsedStackEdit, index) => {
+    // Assume all edits are PICKs for now
+    return {
+      type: parsedStackEdit.type,
+      branchName: parsedStackEdit.branchName,
+      onto: index === 0 ? getTrunk().name : parsedEdit[index - 1].branchName,
+    };
+  });
 }
