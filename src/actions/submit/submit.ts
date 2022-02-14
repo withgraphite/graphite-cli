@@ -314,6 +314,7 @@ async function getPRInfoForBranches(args: {
         base: parentBranchName,
         prNumber: previousPRInfo.number,
         branch: branch,
+        draft: args.draftToggle,
       });
     } else if (previousPRInfo && detectUnsubmittedChanges(branch)) {
       status = 'Update';
@@ -324,10 +325,22 @@ async function getPRInfoForBranches(args: {
         base: parentBranchName,
         prNumber: previousPRInfo.number,
         branch: branch,
+        draft: args.draftToggle,
       });
     } else if (!previousPRInfo && !args.updateOnly) {
       status = 'Create';
       newPrBranches.push(branch);
+    } else if (previousPRInfo && args.draftToggle !== undefined) {
+      status = args.draftToggle ? 'Draft' : 'Undraft';
+      reason = `Manually changing draft status to ${args.draftToggle}`;
+      branchPRInfo.push({
+        action: 'update',
+        head: branch.name,
+        base: parentBranchName,
+        prNumber: previousPRInfo.number,
+        branch: branch,
+        draft: args.draftToggle,
+      });
     } else {
       status = `no-op`;
     }
