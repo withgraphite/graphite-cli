@@ -166,7 +166,7 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
     await submitAction({
       scope: 'FULLSTACK',
       editPRFieldsInline: false,
-      createNewPRsAsDraft: false,
+      draftToggle: false,
       dryRun: false,
       updateOnly: false,
       branchesToSubmit: needsResubmission,
