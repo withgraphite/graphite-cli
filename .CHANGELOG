@@ -1,3 +1,7 @@
+# 0.17.1 2021-02-15
+
+- Support creating new branches with no staged changes, by automatically creating an empty commit.
+
 # 0.17.0 2021-02-15
 
 - Enable changing existing PRs' draft status using the `--draft` flag on submit.
