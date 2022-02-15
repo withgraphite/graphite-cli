@@ -1,3 +1,9 @@
+# 0.17.0 2021-02-15
+
+- Enable changing existing PRs' draft status using the `--draft` flag on submit.
+- Add a new command, `gt downstack edit` which enables interactive reordering of stack branches.
+- Update implementation of `gt stack submit` to avoid GitHub rate limitted when submitting large stacks.
+
 # 0.16.8 2021-02-02
 
 - Enable manually setting reviewers on submit with the `-r` flag.
