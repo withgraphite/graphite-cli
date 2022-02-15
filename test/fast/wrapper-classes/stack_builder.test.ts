@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { SiblingBranchError } from '../../../src/lib/errors';
 import {
   GitStackBuilder,
   MetaStackBuilder,
@@ -131,21 +130,6 @@ for (const scene of allScenes) {
 
       expect(metaStack.equals(Stack.fromMap({ main: { a: {} } }))).to.be.true;
       expect(gitStack.equals(Stack.fromMap({ a: {} }))).to.be.true;
-    });
-
-    it('Throws an error if two git branches point to the same commit', () => {
-      scene.repo.createChange('a');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
-
-      expect(() =>
-        new GitStackBuilder().fullStackFromBranch(new Branch('a'))
-      ).to.not.throw(Error);
-
-      scene.repo.execCliCommand(`branch create "b" -q`);
-
-      expect(() =>
-        new GitStackBuilder().fullStackFromBranch(new Branch('a'))
-      ).to.throw(SiblingBranchError);
     });
 
     it('Can get just downstack from a branch', () => {

@@ -530,7 +530,7 @@ export default class Branch {
   }
 
   // Due to deprecate in favor of other functions.
-  public getCommitSHAs(): string[] {
+  public getNonEmptyCommitSHAs(): string[] {
     // We rely on meta here as the source of truth to handle the case where
     // the user has just created a new branch, but hasn't added any commits
     // - so both branch tips point to the same commit. Graphite knows that
@@ -544,7 +544,7 @@ export default class Branch {
 
     const commits = gpExecSync(
       {
-        command: `git rev-list ${parent}..${this.name}`,
+        command: `git rev-list ${parent}..${this.name} .`, // the trailing period skips empty commits
       },
       (_) => {
         // just soft-fail if we can't find the commits

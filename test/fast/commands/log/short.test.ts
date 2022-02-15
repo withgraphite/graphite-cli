@@ -1,8 +1,8 @@
-import { expect } from "chai";
-import { execSync } from "child_process";
-import { TrailingProdScene } from "../../../lib/scenes";
-import { configureTest } from "../../../lib/utils";
-import fs from "fs-extra";
+import { expect } from 'chai';
+import { execSync } from 'child_process';
+import fs from 'fs-extra';
+import { TrailingProdScene } from '../../../lib/scenes';
+import { configureTest } from '../../../lib/utils';
 
 for (const scene of [new TrailingProdScene()]) {
   describe(`(${scene}): log short`, function () {
@@ -29,25 +29,32 @@ for (const scene of [new TrailingProdScene()]) {
       expect(() => scene.repo.execCliCommand(`log short`)).to.not.throw(Error);
     });
 
-    it('Errors if trunk has two branches pointing to one commit', () => {
+    it('Doesnt error when creating an empty branch because of empty commits', () => {
       scene.repo.execCliCommand(`branch create a`);
+      scene.repo.checkoutBranch('main');
+      expect(() => scene.repo.execCliCommand('log short')).to.not.throw(Error);
+    });
+
+    it('Errors if two branches point to the same commit', () => {
+      scene.repo.execCliCommand(`branch create a`);
+      execSync(`git -C ${scene.repo.dir} reset --hard HEAD~1`); // delete the empty commit.
       scene.repo.checkoutBranch('main');
       expect(() => scene.repo.execCliCommand('log short')).to.throw(Error);
     });
 
-    it("Works if branch and file have same name", () => {
-      const textFileName = "test.txt"
+    it('Works if branch and file have same name', () => {
+      const textFileName = 'test.txt';
       scene.repo.execCliCommand(`branch create ${textFileName}`);
 
       // Creates a commit with contents "a" in file "test.txt"
-      scene.repo.createChangeAndCommit("a");
+      scene.repo.createChangeAndCommit('a');
       expect(fs.existsSync(textFileName)).to.be.true;
 
-      scene.repo.checkoutBranch(textFileName)
+      scene.repo.checkoutBranch(textFileName);
 
       // gt log should work - using "test.txt" as a revision rather than a path
-      expect(() => scene.repo.execCliCommand("log")).to.not.throw(Error);
-      expect(() => scene.repo.execCliCommand("log short")).to.not.throw(Error);
+      expect(() => scene.repo.execCliCommand('log')).to.not.throw(Error);
+      expect(() => scene.repo.execCliCommand('log short')).to.not.throw(Error);
     });
   });
 }
