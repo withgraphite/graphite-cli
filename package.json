@@ -7,7 +7,7 @@
   "homepage": "https://github.com/screenplaydev/graphite-cli",
   "private": true,
   "dependencies": {
-    "@screenplaydev/graphite-cli-routes": "0.14.1",
+    "@screenplaydev/graphite-cli-routes": "0.15.0",
     "@screenplaydev/retype": "^0.2.0",
     "@screenplaydev/retyped-routes": "^0.1.0",
     "chalk": "^4.1.0",
