@@ -61,7 +61,7 @@ type TSubmittedPR = {
 export async function submitAction(args: {
   scope: TSubmitScope;
   editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean | undefined;
+  draftToggle: boolean | undefined;
   dryRun: boolean;
   updateOnly: boolean;
   branchesToSubmit?: Branch[];
@@ -82,10 +82,10 @@ export async function submitAction(args: {
 
   if (!execStateConfig.interactive()) {
     logInfo(
-      `Running in interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
+      `Running in non-interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
     );
     args.editPRFieldsInline = false;
-    args.createNewPRsAsDraft = true;
+    args.draftToggle = true;
   }
 
   // This supports the use case in sync.ts. Skips Steps 1 and 2
@@ -115,7 +115,7 @@ export async function submitAction(args: {
     await getPRInfoForBranches({
       branches: branchesToSubmit,
       editPRFieldsInline: args.editPRFieldsInline,
-      createNewPRsAsDraft: args.createNewPRsAsDraft,
+      draftToggle: args.draftToggle,
       updateOnly: args.updateOnly,
       reviewers: args.reviewers,
       dryRun: args.dryRun,
@@ -290,7 +290,7 @@ function getStack(args: { currentBranch: Branch; scope: TScope }): Stack {
 async function getPRInfoForBranches(args: {
   branches: Branch[];
   editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean | undefined;
+  draftToggle: boolean | undefined;
   updateOnly: boolean;
   dryRun: boolean;
   reviewers: boolean;
@@ -343,7 +343,7 @@ async function getPRInfoForBranches(args: {
       branch: branch,
       parentBranchName: parentBranchName,
       editPRFieldsInline: args.editPRFieldsInline,
-      createNewPRsAsDraft: args.createNewPRsAsDraft,
+      draftToggle: args.draftToggle,
       dryRun: args.dryRun,
       reviewers: args.reviewers,
     });
@@ -476,7 +476,7 @@ async function getPRCreationInfo(args: {
   branch: Branch;
   parentBranchName: string;
   editPRFieldsInline: boolean;
-  createNewPRsAsDraft: boolean | undefined;
+  draftToggle: boolean | undefined;
   dryRun: boolean;
   reviewers: boolean;
 }): Promise<{
@@ -515,9 +515,10 @@ async function getPRCreationInfo(args: {
   });
   args.branch.setPriorReviewers(reviewers);
 
-  const createAsDraft = await getPRDraftStatus({
-    createNewPRsAsDraft: args.createNewPRsAsDraft,
-  });
+  const createAsDraft =
+    args.draftToggle !== undefined
+      ? args.draftToggle
+      : await getPRDraftStatus();
 
   // Log newline at the end to create some visual separation to the next
   // interactive PR section or status output.
