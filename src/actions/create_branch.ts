@@ -1,10 +1,7 @@
 import { execStateConfig, userConfig } from '../lib/config';
 import { ExitFailedError } from '../lib/errors';
-import {
-  currentBranchPrecondition,
-  ensureSomeStagedChangesPrecondition,
-} from '../lib/preconditions';
-import { checkoutBranch, gpExecSync, logTip } from '../lib/utils';
+import { currentBranchPrecondition } from '../lib/preconditions';
+import { checkoutBranch, gpExecSync } from '../lib/utils';
 import Branch from '../wrapper-classes/branch';
 
 export async function createBranchAction(opts: {
@@ -27,10 +24,6 @@ export async function createBranchAction(opts: {
     );
   }
 
-  if (opts.commitMessage) {
-    ensureSomeStagedChangesPrecondition(true);
-  }
-
   const branchName = newBranchName(opts.branchName, opts.commitMessage);
   checkoutNewBranch(branchName);
 
@@ -40,39 +33,25 @@ export async function createBranchAction(opts: {
    * and check out the new branch and these types of error point to
    * larger failure outside of our control.
    */
-  if (opts.commitMessage) {
-    gpExecSync(
-      {
-        command: `git commit -m "${opts.commitMessage}" ${
-          execStateConfig.noVerify() ? '--no-verify' : ''
-        }`,
-        options: {
-          stdio: 'inherit',
-        },
+  gpExecSync(
+    {
+      command: `git commit --allow-empty --allow-empty-message -m "${
+        opts.commitMessage
+      }" ${execStateConfig.noVerify() ? '--no-verify' : ''}`,
+      options: {
+        stdio: 'inherit',
       },
-      (err) => {
-        // Commit failed, usually due to precommit hooks. Rollback the branch.
-        checkoutBranch(parentBranch.name);
-        gpExecSync({
-          command: `git branch -d ${branchName}`,
-          options: { stdio: 'ignore' },
-        });
-        throw new ExitFailedError('Failed to commit changes, aborting', err);
-      }
-    );
-  } else {
-    logTip(
-      [
-        `You've created a stacked branch without committing changes to it.`,
-        `Without a commit, the new branch and its parent will point to the same commit.`,
-        `This temporarily breaks Graphite's ability to infer parent-child branch order.`,
-        `We recommend making your staged changes first,`,
-        `and then simultaneously creating a new branch and committing to it by running either`,
-        `> gt branch create <name> -m <message>`,
-        `> gt bc -m <message> # Shortcut alias which autogenerates branch name`,
-      ].join('\n')
-    );
-  }
+    },
+    (err) => {
+      // Commit failed, usually due to precommit hooks. Rollback the branch.
+      checkoutBranch(parentBranch.name);
+      gpExecSync({
+        command: `git branch -d ${branchName}`,
+        options: { stdio: 'ignore' },
+      });
+      throw new ExitFailedError('Failed to commit changes, aborting', err);
+    }
+  );
 
   // If the branch previously existed and the stale metadata is still around,
   // make sure that we wipe that stale metadata.
