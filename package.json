@@ -1,5 +1,5 @@
 {
-  "name": "graphite-cli",
+  "name": "@graphitedev/graphite-cli",
   "version": "0.17.2",
   "license": "None",
   "main": "dist/index.js",
