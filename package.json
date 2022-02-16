@@ -5,7 +5,6 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/screenplaydev/graphite-cli",
-  "private": true,
   "dependencies": {
     "@screenplaydev/graphite-cli-routes": "0.15.0",
     "@screenplaydev/retype": "^0.2.0",
