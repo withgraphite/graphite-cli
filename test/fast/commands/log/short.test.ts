@@ -30,13 +30,13 @@ for (const scene of [new TrailingProdScene()]) {
     });
 
     it('Doesnt error when creating an empty branch because of empty commits', () => {
-      scene.repo.execCliCommand(`branch create a`);
+      scene.repo.execCliCommand(`branch create a -m "a"`);
       scene.repo.checkoutBranch('main');
       expect(() => scene.repo.execCliCommand('log short')).to.not.throw(Error);
     });
 
     it('Errors if two branches point to the same commit', () => {
-      scene.repo.execCliCommand(`branch create a`);
+      scene.repo.execCliCommand(`branch create a -m "a"`);
       execSync(`git -C ${scene.repo.dir} reset --hard HEAD~1`); // delete the empty commit.
       scene.repo.checkoutBranch('main');
       expect(() => scene.repo.execCliCommand('log short')).to.throw(Error);
@@ -44,7 +44,7 @@ for (const scene of [new TrailingProdScene()]) {
 
     it('Works if branch and file have same name', () => {
       const textFileName = 'test.txt';
-      scene.repo.execCliCommand(`branch create ${textFileName}`);
+      scene.repo.execCliCommand(`branch create ${textFileName} -m "a"`);
 
       // Creates a commit with contents "a" in file "test.txt"
       scene.repo.createChangeAndCommit('a');

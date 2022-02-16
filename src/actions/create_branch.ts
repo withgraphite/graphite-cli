@@ -4,6 +4,20 @@ import { currentBranchPrecondition } from '../lib/preconditions';
 import { checkoutBranch, gpExecSync } from '../lib/utils';
 import Branch from '../wrapper-classes/branch';
 
+const EMPTY_COMMIT_MESSAGE_INFO = [
+  '\n',
+  '# No changes were staged before creating this new branch',
+  '# Therefore Graphite has added an empty commit to your new branch',
+  '# This is because Graphite does not support two branches referencing the same commit',
+  '# Two branches referencing one commit would break parent-child inference',
+  '#',
+  '# While working on this branch, we recommend using \\`gt commit amend\\`, or later squashing this empty commit',
+  '# For future branches, we recommend staging changes before running \\`gt bc -m \\"feat(new_feat): added xyz...\\"\\`',
+].join('\n');
+
+function stringToTmpFileInput(contents: string): string {
+  return `<(printf '%s\n' "${contents}")`;
+}
 export async function createBranchAction(opts: {
   branchName?: string;
   commitMessage?: string;
@@ -35,21 +49,30 @@ export async function createBranchAction(opts: {
    */
   gpExecSync(
     {
-      command: `git commit --allow-empty --allow-empty-message -m "${
-        opts.commitMessage
-      }" ${execStateConfig.noVerify() ? '--no-verify' : ''}`,
+      command: [
+        `git commit`,
+        `--allow-empty`,
+        `${opts.commitMessage ? `-m "${opts.commitMessage}"` : ''}`,
+        `${
+          !opts.commitMessage
+            ? `-t ${stringToTmpFileInput(EMPTY_COMMIT_MESSAGE_INFO)}`
+            : ''
+        }`,
+        `${execStateConfig.noVerify() ? '--no-verify' : ''}`,
+      ].join(' '),
       options: {
         stdio: 'inherit',
+        shell: '/bin/bash',
       },
     },
-    (err) => {
+    () => {
       // Commit failed, usually due to precommit hooks. Rollback the branch.
       checkoutBranch(parentBranch.name);
       gpExecSync({
         command: `git branch -d ${branchName}`,
         options: { stdio: 'ignore' },
       });
-      throw new ExitFailedError('Failed to commit changes, aborting', err);
+      throw new ExitFailedError('Failed to commit changes, aborting');
     }
   );
 

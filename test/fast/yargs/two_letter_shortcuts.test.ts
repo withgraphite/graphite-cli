@@ -7,7 +7,7 @@ for (const scene of [new BasicScene()]) {
     configureTest(this, scene);
 
     it("Can run 'bn' shortcut command", () => {
-      scene.repo.execCliCommand(`branch create "a" -q`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       scene.repo.checkoutBranch('main');
       expect(() =>
         scene.repo.execCliCommand('bn --no-interactive')

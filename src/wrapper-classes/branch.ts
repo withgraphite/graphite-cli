@@ -4,7 +4,7 @@ import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
 import {
   getBranchChildrenOrParentsFromGit,
   getRef,
-  otherBranchesWithSameCommit,
+  otherBranchesWithSameCommit
 } from '../lib/git-refs';
 import { getCommitterDate, getTrunk, gpExecSync, logDebug } from '../lib/utils';
 import Commit from './commit';
@@ -530,7 +530,7 @@ export default class Branch {
   }
 
   // Due to deprecate in favor of other functions.
-  public getNonEmptyCommitSHAs(): string[] {
+  public getCommitSHAs(): string[] {
     // We rely on meta here as the source of truth to handle the case where
     // the user has just created a new branch, but hasn't added any commits
     // - so both branch tips point to the same commit. Graphite knows that
@@ -544,7 +544,7 @@ export default class Branch {
 
     const commits = gpExecSync(
       {
-        command: `git rev-list ${parent}..${this.name} .`, // the trailing period skips empty commits
+        command: `git rev-list ${parent}..${this.name}`,
       },
       (_) => {
         // just soft-fail if we can't find the commits
