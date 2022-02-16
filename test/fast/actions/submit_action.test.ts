@@ -13,7 +13,8 @@ for (const scene of [new BasicScene()]) {
       const title = 'Test Title';
       const body = ['Test body line 1.', 'Test body line 2.'].join('\n');
 
-      scene.repo.execCliCommand(`branch create "a" -q`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      execSync(`git reset HEAD~1 --hard`);
       scene.repo.createChange('a');
       execSync(`git commit -m "${title}" -m "${body}"`);
 
@@ -25,8 +26,7 @@ for (const scene of [new BasicScene()]) {
 
     it('can infer just title with no body', async () => {
       const title = 'Test Title';
-
-      const commitMessage = `${title}`;
+      const commitMessage = title;
 
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "${commitMessage}" -q`);
@@ -38,8 +38,7 @@ for (const scene of [new BasicScene()]) {
 
     it('does not infer title/body for multiple commits', async () => {
       const title = 'Test Title';
-
-      const commitMessage = `${title}`;
+      const commitMessage = title;
 
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "${commitMessage}" -q`);

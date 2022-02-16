@@ -13,7 +13,9 @@ for (const scene of allScenes) {
       const branchName = 'a';
 
       scene.repo.createChangeAndCommit('2', '2');
-      scene.repo.execCliCommand(`branch create "${branchName}" -q`);
+      scene.repo.execCliCommand(
+        `branch create "${branchName}" -m "${branchName}" -q`
+      );
       expect(scene.repo.currentBranchName()).to.equal(branchName);
 
       scene.repo.checkoutBranch('main');

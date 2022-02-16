@@ -116,7 +116,7 @@ function getBranchInfo(branch: Branch, config: TPrintStackConfig): string[] {
   );
 
   if (!branch.isTrunk()) {
-    const commits = branch.getNonEmptyCommitSHAs();
+    const commits = branch.getCommitSHAs();
     if (commits.length !== 0) {
       commits.forEach((commitSHA) => {
         const commit = new Commit(commitSHA);

@@ -17,7 +17,7 @@ for (const scene of allScenes) {
 
     it('Can list parent based on meta for a branch', () => {
       scene.repo.createChange('2');
-      scene.repo.execCliCommand(`branch create "a" -q`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       const branch = new Branch('a');
       expect(branch.getParentFromMeta()).is.not.undefined;

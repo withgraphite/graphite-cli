@@ -8,7 +8,7 @@ for (const scene of allScenes) {
     configureTest(this, scene);
 
     it('Can run branch create', () => {
-      scene.repo.execCliCommand(`branch create "a" -q`);
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       expect(scene.repo.currentBranchName()).to.equal('a');
       scene.repo.createChangeAndCommit('2', '2');
 
