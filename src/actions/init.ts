@@ -63,10 +63,7 @@ export async function init(
     });
     repoConfig.addIgnoreBranchPatterns(ignoreBranches);
   } else {
-    let ignoreBranches = await selectIgnoreBranches(
-      allBranches,
-      newTrunkName
-    );
+    let ignoreBranches = await selectIgnoreBranches(allBranches, newTrunkName);
     logInfo(`Selected following branches to ignore: ${ignoreBranches}`);
     if (!ignoreBranches) {
       ignoreBranches = [];
@@ -74,15 +71,15 @@ export async function init(
     repoConfig.addIgnoreBranchPatterns(ignoreBranches);
   }
 
-  logInfo(`Graphite repo config saved at "${repoConfig.path()}"`);
-  logInfo(fs.readFileSync(repoConfig.path()).toString());
+  logInfo(`Graphite repo config saved at "${repoConfig.path}"`);
+  logInfo(fs.readFileSync(repoConfig.path).toString());
 }
 
 function logWelcomeMessage(): void {
   if (!repoConfig.graphiteInitialized()) {
     logInfo('Welcome to Graphite!');
   } else {
-    logInfo(`Regenerating Graphite repo config (${repoConfig.path()})`);
+    logInfo(`Regenerating Graphite repo config (${repoConfig.path})`);
   }
 }
 

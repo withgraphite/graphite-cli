@@ -5,8 +5,7 @@ import { logInfo } from '../../lib/utils';
 
 const args = {
   set: {
-    demandOption: false,
-    default: false,
+    optional: false,
     type: 'string',
     alias: 's',
     describe:
@@ -24,7 +23,7 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
     if (argv.set) {
-      repoConfig.setRepoOwner(argv.set);
+      repoConfig.update((data) => (data.owner = argv.set));
     } else {
       logInfo(repoConfig.getRepoOwner());
     }

@@ -10,7 +10,9 @@ for (const scene of [new TrailingProdScene()]) {
     it('Can add to ignored-branches', () => {
       const repoConfigPath = `${scene.repo.dir}/.git/.graphite_repo_config`;
       fs.removeSync(repoConfigPath);
-      scene.repo.execCliCommand('repo init --trunk main');
+      scene.repo.execCliCommand(
+        'repo init --trunk main --ignore-branches "x2"' // ignore x2 to skip prompt
+      );
       const branchToAdd = 'prod';
       scene.repo.execCliCommand(`repo ignored-branches --add ${branchToAdd}`);
       const savedConfig = JSON.parse(
@@ -22,7 +24,9 @@ for (const scene of [new TrailingProdScene()]) {
     it('Can remove from ignored-branches', () => {
       const repoConfigPath = `${scene.repo.dir}/.git/.graphite_repo_config`;
       fs.removeSync(repoConfigPath);
-      scene.repo.execCliCommand('repo init --trunk main');
+      scene.repo.execCliCommand(
+        'repo init --trunk main --ignore-branches "x2"' // ignore x2 to skip prompt
+      );
       const branch = 'prod';
       scene.repo.execCliCommand(`repo ignored-branches --add ${branch}`);
       let savedConfig = JSON.parse(fs.readFileSync(repoConfigPath).toString());

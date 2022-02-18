@@ -42,6 +42,7 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, 'a, main');
 
       fakeGitSquashAndMerge(scene.repo, 'a', 'squash');
+      scene.repo.execCliCommand(`repo owner`);
       scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
 
       expectBranches(scene.repo, 'main');

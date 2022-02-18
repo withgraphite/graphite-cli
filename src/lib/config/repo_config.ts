@@ -1,192 +1,103 @@
-import chalk from 'chalk';
-import fs from 'fs-extra';
-import path from 'path';
+import * as t from '@withgraphite/retype';
 import { isMatch } from 'micromatch';
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils';
-import { getRepoRootPath } from './repo_root_path';
+import { composeConfig } from './compose_config';
 
-const CONFIG_NAME = '.graphite_repo_config';
-const CURRENT_REPO_CONFIG_PATH = path.join(getRepoRootPath(), CONFIG_NAME);
+const schema = t.shape({
+  owner: t.optional(t.string),
+  name: t.optional(t.string),
+  trunk: t.optional(t.string),
+  ignoreBranches: t.optional(t.array(t.string)),
+  maxStacksShownBehindTrunk: t.optional(t.number),
+  maxDaysShownBehindTrunk: t.optional(t.number),
+  maxBranchLength: t.optional(t.number),
+  lastFetchedPRInfoMs: t.optional(t.number),
+});
 
-type RepoConfigT = {
-  owner?: string;
-  name?: string;
-  trunk?: string;
-  ignoreBranches?: string[];
-  // TODO (nicholasyan): clean this up once we've advanced a few versions past
-  // v0.8.1.
-  logSettings?: {
-    maxStacksShownBehindTrunk?: number;
-    maxDaysShownBehindTrunk?: number;
-  };
-  maxStacksShownBehindTrunk?: number;
-  maxDaysShownBehindTrunk?: number;
-  maxBranchLength?: number;
-  lastFetchedPRInfoMs?: number;
-};
+export const repoConfigFactory = composeConfig({
+  schema,
+  defaultLocations: [
+    {
+      relativePath: '.graphite_repo_config',
+      relativeTo: 'REPO',
+    },
+  ],
+  initialize: () => {
+    return {};
+  },
+  helperFunctions: (data, update) => {
+    return {
+      getIgnoreBranches: () => data.ignoreBranches || [],
+      getMaxBranchLength: (): number => data.maxBranchLength ?? 50,
 
-class RepoConfig {
-  _data: RepoConfigT;
+      setTrunk: (trunk: string) => {
+        update((data) => (data.trunk = trunk));
+      },
 
-  public graphiteInitialized(): boolean {
-    return fs.existsSync(CURRENT_REPO_CONFIG_PATH);
-  }
+      branchIsIgnored: (branchName: string): boolean =>
+        data.ignoreBranches ? isMatch(branchName, data.ignoreBranches) : false,
 
-  constructor(data: RepoConfigT) {
-    this._data = data;
-  }
+      graphiteInitialized: (): boolean => !!data.trunk,
 
-  private save(): void {
-    fs.writeFileSync(
-      CURRENT_REPO_CONFIG_PATH,
-      JSON.stringify(this._data, null, 2)
-    );
-  }
+      getMaxDaysShownBehindTrunk: (): number =>
+        data.maxDaysShownBehindTrunk ?? 30,
 
-  public getRepoOwner(): string {
-    const configOwner = this._data.owner;
-    if (configOwner) {
-      return configOwner;
-    }
+      getMaxStacksShownBehindTrunk: (): number =>
+        data.maxStacksShownBehindTrunk ?? 10,
 
-    const inferredInfo = inferRepoGitHubInfo();
-    if (inferredInfo?.repoOwner) {
-      return inferredInfo.repoOwner;
-    }
+      getRepoOwner: (): string => {
+        const configOwner = data.owner;
+        if (configOwner) {
+          return configOwner;
+        }
 
-    throw new ExitFailedError(
-      "Could not determine the owner of this repo (e.g. 'screenplaydev' in the repo 'screenplaydev/graphite-cli'). Please run `gt repo owner --set <owner>` to manually set the repo owner."
-    );
-  }
+        const inferredInfo = inferRepoGitHubInfo();
+        if (inferredInfo?.repoOwner) {
+          return inferredInfo.repoOwner;
+        }
 
-  public path(): string {
-    return CURRENT_REPO_CONFIG_PATH;
-  }
+        throw new ExitFailedError(
+          "Could not determine the owner of this repo (e.g. 'screenplaydev' in the repo 'screenplaydev/graphite-cli'). Please run `gt repo owner --set <owner>` to manually set the repo owner."
+        );
+      },
 
-  public setTrunk(trunkName: string): void {
-    this._data.trunk = trunkName;
-    this.save();
-  }
+      addIgnoreBranchPatterns: (ignoreBranches: string[]): void => {
+        update((data) => {
+          data.ignoreBranches = (data.ignoreBranches || []).concat(
+            ignoreBranches
+          );
+        });
+      },
 
-  public getTrunk(): string | undefined {
-    return this._data.trunk;
-  }
+      removeIgnoreBranches: (branchPatternToRemove: string): void => {
+        update((data) => {
+          if (!data.ignoreBranches) {
+            return;
+          }
+          data.ignoreBranches = data.ignoreBranches.filter(function (pattern) {
+            return pattern != branchPatternToRemove;
+          });
+        });
+      },
+      getRepoName: (): string => {
+        if (data.name) {
+          return data.name;
+        }
 
-  public addIgnoreBranchPatterns(ignoreBranches: string[]): void {
-    if (!this._data.ignoreBranches) {
-      this._data.ignoreBranches = [];
-    }
+        const inferredInfo = inferRepoGitHubInfo();
+        if (inferredInfo?.repoName) {
+          return inferredInfo.repoName;
+        }
 
-    this._data.ignoreBranches = this.getIgnoreBranches().concat(ignoreBranches);
-    this.save();
-  }
+        throw new ExitFailedError(
+          "Could not determine the name of this repo (e.g. 'graphite-cli' in the repo 'screenplaydev/graphite-cli'). Please run `gt repo name --set <owner>` to manually set the repo name."
+        );
+      },
+    } as const;
+  },
+});
 
-  public removeIgnoreBranches(branchPatternToRemove: string): void {
-    const ignoredBranches = this.getIgnoreBranches();
-    this._data.ignoreBranches = ignoredBranches.filter(function (pattern) {
-      return pattern != branchPatternToRemove;
-    });
-    this.save();
-  }
-
-  public getIgnoreBranches(): string[] {
-    return this._data.ignoreBranches || [];
-  }
-
-  public setRepoOwner(owner: string): void {
-    this._data.owner = owner;
-    this.save();
-  }
-
-  public getRepoName(): string {
-    if (this._data.name) {
-      return this._data.name;
-    }
-
-    const inferredInfo = inferRepoGitHubInfo();
-    if (inferredInfo?.repoName) {
-      return inferredInfo.repoName;
-    }
-
-    throw new ExitFailedError(
-      "Could not determine the name of this repo (e.g. 'graphite-cli' in the repo 'screenplaydev/graphite-cli'). Please run `gt repo name --set <owner>` to manually set the repo name."
-    );
-  }
-  public setRepoName(name: string): void {
-    this._data.name = name;
-    this.save();
-  }
-
-  public getMaxDaysShownBehindTrunk(): number {
-    this.migrateLogSettings();
-    return this._data.maxDaysShownBehindTrunk ?? 30;
-  }
-
-  public setMaxDaysShownBehindTrunk(n: number): void {
-    this.migrateLogSettings();
-    this._data.maxDaysShownBehindTrunk = n;
-    this.save();
-  }
-
-  public getMaxStacksShownBehindTrunk(): number {
-    this.migrateLogSettings();
-    return this._data.maxStacksShownBehindTrunk ?? 10;
-  }
-
-  public setMaxStacksShownBehindTrunk(n: number): void {
-    this.migrateLogSettings();
-    this._data.maxStacksShownBehindTrunk = n;
-    this.save();
-  }
-
-  /*
-   * Branch names are to be matched using glob patterns.
-   */
-  public branchIsIgnored(branchName: string): boolean {
-    return isMatch(branchName, this.getIgnoreBranches());
-  }
-
-  /**
-   * These settings used to (briefly) live in logSettings. Moving these to live
-   * in the top-level namespace now that they're shared between multiple
-   * commands (e.g. log and stacks).
-   */
-  public migrateLogSettings(): void {
-    const maxStacksShownBehindTrunk =
-      this._data.logSettings?.maxStacksShownBehindTrunk;
-    if (maxStacksShownBehindTrunk !== undefined) {
-      this._data.maxStacksShownBehindTrunk = maxStacksShownBehindTrunk;
-    }
-
-    const maxDaysShownBehindTrunk =
-      this._data.logSettings?.maxDaysShownBehindTrunk;
-    if (maxDaysShownBehindTrunk !== undefined) {
-      this._data.maxDaysShownBehindTrunk = maxDaysShownBehindTrunk;
-    }
-
-    this._data.logSettings = undefined;
-    this.save();
-  }
-
-  public getMaxBranchLength(): number {
-    return this._data.maxBranchLength ?? 50;
-  }
-
-  public setMaxBranchLength(numCommits: number) {
-    this._data.maxBranchLength = numCommits;
-    this.save();
-  }
-
-  public getLastFetchedPRInfoMs(): number | undefined {
-    return this._data.lastFetchedPRInfoMs;
-  }
-
-  public setLastFetchedPRInfoMs(time: number) {
-    this._data.lastFetchedPRInfoMs = time;
-    this.save();
-  }
-}
 function inferRepoGitHubInfo(): {
   repoOwner: string;
   repoName: string;
@@ -265,22 +176,4 @@ export function getOwnerAndNameFromURLForTesting(originURL: string): {
   return getOwnerAndNameFromURL(originURL);
 }
 
-function readRepoConfig(): RepoConfig {
-  if (fs.existsSync(CURRENT_REPO_CONFIG_PATH)) {
-    const repoConfigRaw = fs.readFileSync(CURRENT_REPO_CONFIG_PATH);
-    try {
-      const parsedConfig = JSON.parse(
-        repoConfigRaw.toString().trim()
-      ) as RepoConfigT;
-      return new RepoConfig(parsedConfig);
-    } catch (e) {
-      console.log(
-        chalk.yellow(`Warning: Malformed ${CURRENT_REPO_CONFIG_PATH}`)
-      );
-    }
-  }
-  return new RepoConfig({});
-}
-
-const repoConfigSingleton = readRepoConfig();
-export default repoConfigSingleton;
+export const repoConfig = repoConfigFactory.load(); // TODO upstack: remove this global instance

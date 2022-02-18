@@ -5,8 +5,7 @@ import { logInfo } from '../../lib/utils';
 
 const args = {
   set: {
-    demandOption: false,
-    default: false,
+    optional: true,
     type: 'number',
     alias: 's',
     describe:
@@ -24,9 +23,9 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
     if (argv.set) {
-      repoConfig.setMaxBranchLength(argv.set);
+      repoConfig.update((data) => (data.maxBranchLength = argv.set));
     } else {
-      logInfo(`${repoConfig.getMaxBranchLength().toString()} commits`);
+      logInfo(`${repoConfig.getMaxBranchLength.toString()} commits`);
     }
   });
 };

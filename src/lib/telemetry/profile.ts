@@ -44,7 +44,7 @@ export async function profile(
     startTime: start,
   });
 
-  if (parsedArgs.command !== 'repo init' && !repoConfig.getTrunk()) {
+  if (parsedArgs.command !== 'repo init' && !repoConfig.graphiteInitialized()) {
     logInfo(`Graphite has not been initialized, attempting to setup now...`);
     logNewline();
     await init();
