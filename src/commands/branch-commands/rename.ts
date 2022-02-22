@@ -25,11 +25,11 @@ export const description =
 export const builder = args;
 
 export const handler = async (args: argsT): Promise<void> => {
-  return profile(args, canonical, async () => {
-    const currentBranch = currentBranchPrecondition();
+  return profile(args, canonical, async (context) => {
+    const currentBranch = currentBranchPrecondition(context);
     const oldName = currentBranch.name;
     const newName = args['new-branch-name'];
-    const allBranches = Branch.allBranches();
+    const allBranches = Branch.allBranches(context);
 
     gpExecSync({ command: `git branch -m ${newName}` }, (err) => {
       throw new ExitFailedError(`Failed to rename the current branch.`, err);

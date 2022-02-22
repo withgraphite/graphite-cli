@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { TContext } from '../lib/context/context';
 import { getCommitterDate } from '../lib/utils';
 import { getTrunk } from '../lib/utils/trunk';
 import { Commit } from '../wrapper-classes';
@@ -11,14 +12,17 @@ type TPrintStackConfig = {
   visited: string[];
 };
 
-export function printStack(args: {
-  baseBranch: Branch;
-  indentLevel: number;
-  config: TPrintStackConfig;
-}): void {
+export function printStack(
+  args: {
+    baseBranch: Branch;
+    indentLevel: number;
+    config: TPrintStackConfig;
+  },
+  context: TContext
+): void {
   args.config.visited.push(args.baseBranch.name);
 
-  const children = args.baseBranch.getChildrenFromGit();
+  const children = args.baseBranch.getChildrenFromGit(context);
   const currPrefix = getPrefix(args.indentLevel, args.config);
 
   /**
@@ -39,14 +43,18 @@ export function printStack(args: {
    * hit an already-visited node, we just filter it out and skip it.
    */
   const unvisitedChildren = children.filter(
-    (child) => !child.isTrunk() && !args.config.visited.includes(child.name)
+    (child) =>
+      !child.isTrunk(context) && !args.config.visited.includes(child.name)
   );
   unvisitedChildren.forEach((child, i) => {
-    printStack({
-      baseBranch: child,
-      indentLevel: args.indentLevel + i,
-      config: args.config,
-    });
+    printStack(
+      {
+        baseBranch: child,
+        indentLevel: args.indentLevel + i,
+        config: args.config,
+      },
+      context
+    );
   });
 
   // 1) if there is only 1 child, we only need to continue the parent's stem
@@ -69,14 +77,14 @@ export function printStack(args: {
   }
 
   // print lines of branch info
-  const branchInfo = getBranchInfo(args.baseBranch, args.config);
+  const branchInfo = getBranchInfo(args.baseBranch, args.config, context);
   branchInfo.forEach((line) => console.log(currPrefix + line));
 
   // print trailing stem
   // note: stem directly behind trunk should be dotted
   console.log(
     currPrefix +
-      (!args.config.offTrunk && args.baseBranch.name === getTrunk().name
+      (!args.config.offTrunk && args.baseBranch.name === getTrunk(context).name
         ? '․'
         : '│')
   );
@@ -95,7 +103,11 @@ function getPrefix(indentLevel: number, config: TPrintStackConfig): string {
   return prefix;
 }
 
-function getBranchInfo(branch: Branch, config: TPrintStackConfig): string[] {
+function getBranchInfo(
+  branch: Branch,
+  config: TPrintStackConfig,
+  context: TContext
+): string[] {
   let branchInfoLines = [];
 
   branchInfoLines.push(getBranchTitle(branch, config));
@@ -115,8 +127,8 @@ function getBranchInfo(branch: Branch, config: TPrintStackConfig): string[] {
     )}`
   );
 
-  if (!branch.isTrunk()) {
-    const commits = branch.getCommitSHAs();
+  if (!branch.isTrunk(context)) {
+    const commits = branch.getCommitSHAs(context);
     if (commits.length !== 0) {
       commits.forEach((commitSHA) => {
         const commit = new Commit(commitSHA);

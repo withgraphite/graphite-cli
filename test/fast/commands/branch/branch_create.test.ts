@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { initContext } from '../../../../src/lib/context/context';
 import Branch from '../../../../src/wrapper-classes/branch';
 import { allScenes } from '../../../lib/scenes';
 import { configureTest } from '../../../lib/utils';
@@ -6,6 +7,7 @@ import { configureTest } from '../../../lib/utils';
 for (const scene of allScenes) {
   describe(`(${scene}): branch create`, function () {
     configureTest(this, scene);
+    const context = initContext();
 
     it('Can run branch create', () => {
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
@@ -52,14 +54,15 @@ for (const scene of allScenes) {
       scene.repo.createChange('2');
       scene.repo.execCliCommand("branch create a -m 'a'");
 
-      const branch = await Branch.branchWithName('a');
+      const branch = await Branch.branchWithName('a', context);
       branch.setPRInfo({
         number: 1,
         base: 'main',
       });
 
-      expect((await Branch.branchWithName('a')).getPRInfo() !== undefined).to.be
-        .true;
+      expect(
+        (await Branch.branchWithName('a', context)).getPRInfo() !== undefined
+      ).to.be.true;
 
       scene.repo.checkoutBranch('main');
       scene.repo.deleteBranch('a');
@@ -68,8 +71,9 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand("branch create a -m 'a'");
 
       // Upon recreating the branch, the old PR info should be gone.
-      expect((await Branch.branchWithName('a')).getPRInfo() === undefined).to.be
-        .true;
+      expect(
+        (await Branch.branchWithName('a', context)).getPRInfo() === undefined
+      ).to.be.true;
     });
   });
 }

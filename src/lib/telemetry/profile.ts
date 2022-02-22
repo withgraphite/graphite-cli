@@ -3,10 +3,15 @@
 // All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { postTelemetryInBackground, registerSigintHandler } from '.';
+import {
+  fetchUpgradePromptInBackground,
+  postTelemetryInBackground,
+  registerSigintHandler,
+} from '.';
 import { version } from '../../../package.json';
 import { init } from '../../actions/init';
-import { execStateConfig, repoConfig } from '../config';
+import { execStateConfig } from '../config';
+import { initContext } from '../context/context';
 import {
   ConfigError,
   ExitCancelledError,
@@ -18,6 +23,7 @@ import {
   SiblingBranchError,
   ValidationFailedError,
 } from '../errors';
+import { refreshPRInfoInBackground } from '../requests';
 import {
   logError,
   logInfo,
@@ -27,13 +33,14 @@ import {
   VALIDATION_HELPER_MESSAGE,
 } from '../utils';
 import { printGraphiteMergeConflictStatus } from '../utils/merge_conflict_help';
+import { TContext } from './../context/context';
 import { getUserEmail } from './context';
 import tracer from './tracer';
 
 export async function profile(
   args: yargs.Arguments,
   canonicalName: string,
-  handler: () => Promise<void>
+  handler: (context: TContext) => Promise<void>
 ): Promise<void> {
   // Self heal repo config on all commands besides init:
   const parsedArgs = parseArgs(args);
@@ -44,10 +51,18 @@ export async function profile(
     startTime: start,
   });
 
-  if (parsedArgs.command !== 'repo init' && !repoConfig.graphiteInitialized()) {
+  const context = initContext();
+
+  fetchUpgradePromptInBackground(context);
+  refreshPRInfoInBackground(context);
+
+  if (
+    parsedArgs.command !== 'repo init' &&
+    !context.repoConfig.graphiteInitialized()
+  ) {
     logInfo(`Graphite has not been initialized, attempting to setup now...`);
     logNewline();
-    await init();
+    await init(context);
   }
 
   try {
@@ -64,7 +79,7 @@ export async function profile(
       },
       async () => {
         try {
-          await handler();
+          await handler(context);
         } catch (err: any) {
           switch (err.constructor) {
             case ExitFailedError:

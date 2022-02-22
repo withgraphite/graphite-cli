@@ -1,7 +1,6 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { getBranchTitle } from '../../actions/print_stack';
-import { repoConfig } from '../../lib/config';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import { profile } from '../../lib/telemetry';
@@ -23,21 +22,21 @@ export const description =
   'Fetch GitHub PR information for the current branch.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canoncial, async () => {
-    const branch = currentBranchPrecondition();
+  return profile(argv, canoncial, async (context) => {
+    const branch = currentBranchPrecondition(context);
 
     if (argv.reset) {
       branch.clearPRInfo();
       return;
     }
 
-    await syncPRInfoForBranches([branch]);
+    await syncPRInfoForBranches([branch], context);
 
     const prInfo = branch.getPRInfo();
     if (prInfo === undefined) {
       logError(
         `Could not find associated PR. Please double-check that a PR exists on GitHub in repo ${chalk.bold(
-          repoConfig.getRepoName()
+          context.repoConfig.getRepoName()
         )} for the branch ${chalk.bold(branch.name)}.`
       );
       return;

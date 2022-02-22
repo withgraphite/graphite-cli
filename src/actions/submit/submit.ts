@@ -4,7 +4,8 @@ import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { API_SERVER } from '../../lib/api';
-import { execStateConfig, repoConfig } from '../../lib/config';
+import { execStateConfig } from '../../lib/config';
+import { TContext } from '../../lib/context/context';
 import {
   ExitFailedError,
   KilledError,
@@ -58,15 +59,18 @@ type TSubmittedPR = {
   response: TSubmittedPRResponse;
 };
 
-export async function submitAction(args: {
-  scope: TSubmitScope;
-  editPRFieldsInline: boolean;
-  draftToggle: boolean | undefined;
-  dryRun: boolean;
-  updateOnly: boolean;
-  branchesToSubmit?: Branch[];
-  reviewers: boolean;
-}): Promise<void> {
+export async function submitAction(
+  args: {
+    scope: TSubmitScope;
+    editPRFieldsInline: boolean;
+    draftToggle: boolean | undefined;
+    dryRun: boolean;
+    updateOnly: boolean;
+    branchesToSubmit?: Branch[];
+    reviewers: boolean;
+  },
+  context: TContext
+): Promise<void> {
   let branchesToSubmit;
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition();
@@ -98,7 +102,10 @@ export async function submitAction(args: {
         `✏️  [Step 1] Validating that this Graphite stack is ready to submit...`
       )
     );
-    const validationResult = await getValidBranchesToSubmit(args.scope);
+    const validationResult = await getValidBranchesToSubmit(
+      args.scope,
+      context
+    );
     if (validationResult.abort) {
       return;
     }
@@ -112,14 +119,17 @@ export async function submitAction(args: {
   );
 
   const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
-    await getPRInfoForBranches({
-      branches: branchesToSubmit,
-      editPRFieldsInline: args.editPRFieldsInline,
-      draftToggle: args.draftToggle,
-      updateOnly: args.updateOnly,
-      reviewers: args.reviewers,
-      dryRun: args.dryRun,
-    });
+    await getPRInfoForBranches(
+      {
+        branches: branchesToSubmit,
+        editPRFieldsInline: args.editPRFieldsInline,
+        draftToggle: args.draftToggle,
+        updateOnly: args.updateOnly,
+        reviewers: args.reviewers,
+        dryRun: args.dryRun,
+      },
+      context
+    );
 
   if (args.dryRun) {
     logInfo(chalk.blueBright('✅ Dry Run complete.'));
@@ -138,11 +148,14 @@ export async function submitAction(args: {
     )
   );
 
-  await submitPullRequests({
-    submissionInfoWithBranches: submissionInfoWithBranches,
-    branchesPushedToRemote: branchesPushedToRemote,
-    cliAuthToken: cliAuthToken,
-  });
+  await submitPullRequests(
+    {
+      submissionInfoWithBranches: submissionInfoWithBranches,
+      branchesPushedToRemote: branchesPushedToRemote,
+      cliAuthToken: cliAuthToken,
+    },
+    context
+  );
 
   logNewline();
   const survey = await getSurvey();
@@ -151,7 +164,10 @@ export async function submitAction(args: {
   }
 }
 
-async function getValidBranchesToSubmit(scope: TSubmitScope): Promise<{
+async function getValidBranchesToSubmit(
+  scope: TSubmitScope,
+  context: TContext
+): Promise<{
   submittableBranches: Branch[];
   closedBranches: Branch[];
   mergedBranches: Branch[];
@@ -160,15 +176,18 @@ async function getValidBranchesToSubmit(scope: TSubmitScope): Promise<{
   let branchesToSubmit;
   try {
     if (scope === 'BRANCH') {
-      const currentBranch = currentBranchPrecondition();
+      const currentBranch = currentBranchPrecondition(context);
       branchesToSubmit = [currentBranch];
     } else {
-      const stack = getStack({
-        currentBranch: currentBranchPrecondition(),
-        scope: scope,
-      });
-      validateStack(scope, stack);
-      branchesToSubmit = stack.branches().filter((b) => !b.isTrunk());
+      const stack = getStack(
+        {
+          currentBranch: currentBranchPrecondition(context),
+          scope: scope,
+        },
+        context
+      );
+      validateStack(scope, stack, context);
+      branchesToSubmit = stack.branches().filter((b) => !b.isTrunk(context));
     }
     logNewline();
   } catch {
@@ -176,7 +195,7 @@ async function getValidBranchesToSubmit(scope: TSubmitScope): Promise<{
   }
   // Force a sync to link any PRs that have remote equivalents but weren't
   // previously tracked with Graphite.
-  await syncPRInfoForBranches(branchesToSubmit);
+  await syncPRInfoForBranches(branchesToSubmit, context);
 
   return await processBranchesInInvalidState(branchesToSubmit);
 }
@@ -241,13 +260,16 @@ async function processBranchesInInvalidState(branches: Branch[]) {
   };
 }
 
-async function submitPullRequests(args: {
-  submissionInfoWithBranches: (Unpacked<TPRSubmissionInfo> & {
-    branch: Branch;
-  })[];
-  branchesPushedToRemote: Branch[];
-  cliAuthToken: string;
-}) {
+async function submitPullRequests(
+  args: {
+    submissionInfoWithBranches: (Unpacked<TPRSubmissionInfo> & {
+      branch: Branch;
+    })[];
+    branchesPushedToRemote: Branch[];
+    cliAuthToken: string;
+  },
+  context: TContext
+) {
   if (!args.submissionInfoWithBranches.length) {
     logInfo(`No eligible branches to create PRs for.`);
     logNewline();
@@ -256,23 +278,34 @@ async function submitPullRequests(args: {
 
   const prInfo = await requestServerToSubmitPRs(
     args.cliAuthToken,
-    args.submissionInfoWithBranches
+    args.submissionInfoWithBranches,
+    context
   );
 
-  saveBranchPRInfo(prInfo);
+  saveBranchPRInfo(prInfo, context);
   printSubmittedPRInfo(prInfo);
 }
 
-function getStack(args: { currentBranch: Branch; scope: TScope }): Stack {
+function getStack(
+  args: { currentBranch: Branch; scope: TScope },
+  context: TContext
+): Stack {
   switch (args.scope) {
     case 'UPSTACK':
       return new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
-        args.currentBranch
+        args.currentBranch,
+        context
       );
     case 'DOWNSTACK':
-      return new MetaStackBuilder().downstackFromBranch(args.currentBranch);
+      return new MetaStackBuilder().downstackFromBranch(
+        args.currentBranch,
+        context
+      );
     case 'FULLSTACK':
-      return new MetaStackBuilder().fullStackFromBranch(args.currentBranch);
+      return new MetaStackBuilder().fullStackFromBranch(
+        args.currentBranch,
+        context
+      );
   }
 }
 
@@ -287,25 +320,28 @@ function getStack(args: { currentBranch: Branch; scope: TScope }): Stack {
  * Therefore, we should only update the PR iff either of these properties
  * differ from our stored data on the previous PR submission.
  */
-async function getPRInfoForBranches(args: {
-  branches: Branch[];
-  editPRFieldsInline: boolean;
-  draftToggle: boolean | undefined;
-  updateOnly: boolean;
-  dryRun: boolean;
-  reviewers: boolean;
-}): Promise<TPRSubmissionInfoWithBranch> {
+async function getPRInfoForBranches(
+  args: {
+    branches: Branch[];
+    editPRFieldsInline: boolean;
+    draftToggle: boolean | undefined;
+    updateOnly: boolean;
+    dryRun: boolean;
+    reviewers: boolean;
+  },
+  context: TContext
+): Promise<TPRSubmissionInfoWithBranch> {
   const branchPRInfo: TPRSubmissionInfoWithBranch = [];
   const newPrBranches: Branch[] = [];
   for (const branch of args.branches) {
     // The branch here should always have a parent - above, the branches we've
     // gathered should exclude trunk which ensures that every branch we're submitting
     // a PR for has a valid parent.
-    const parentBranchName = getBranchBaseName(branch);
+    const parentBranchName = getBranchBaseName(branch, context);
 
     const previousPRInfo = branch.getPRInfo();
     let status, reason;
-    if (previousPRInfo && branch.isBaseSameAsRemotePr()) {
+    if (previousPRInfo && branch.isBaseSameAsRemotePr(context)) {
       status = 'Update';
       reason = 'restacked';
       branchPRInfo.push({
@@ -351,15 +387,18 @@ async function getPRInfoForBranches(args: {
 
   // Prompt for PR creation info separately after printing
   for (const branch of newPrBranches) {
-    const parentBranchName = getBranchBaseName(branch);
-    const { title, body, draft, reviewers } = await getPRCreationInfo({
-      branch: branch,
-      parentBranchName: parentBranchName,
-      editPRFieldsInline: args.editPRFieldsInline,
-      draftToggle: args.draftToggle,
-      dryRun: args.dryRun,
-      reviewers: args.reviewers,
-    });
+    const parentBranchName = getBranchBaseName(branch, context);
+    const { title, body, draft, reviewers } = await getPRCreationInfo(
+      {
+        branch: branch,
+        parentBranchName: parentBranchName,
+        editPRFieldsInline: args.editPRFieldsInline,
+        draftToggle: args.draftToggle,
+        dryRun: args.dryRun,
+        reviewers: args.reviewers,
+      },
+      context
+    );
     branchPRInfo.push({
       action: 'create',
       head: branch.name,
@@ -430,7 +469,8 @@ const UNAUTHORIZED_RESPONSE_CODE = 401;
 
 async function requestServerToSubmitPRs(
   cliAuthToken: string,
-  submissionInfo: TPRSubmissionInfo
+  submissionInfo: TPRSubmissionInfo,
+  context: TContext
 ) {
   try {
     const response = await request.requestWithArgs(
@@ -438,8 +478,8 @@ async function requestServerToSubmitPRs(
       graphiteCLIRoutes.submitPullRequests,
       {
         authToken: cliAuthToken,
-        repoOwner: repoConfig.getRepoOwner(),
-        repoName: repoConfig.getRepoName(),
+        repoOwner: context.repoConfig.getRepoOwner(),
+        repoName: context.repoConfig.getRepoName(),
         prs: submissionInfo,
       }
     );
@@ -475,8 +515,8 @@ async function requestServerToSubmitPRs(
   }
 }
 
-function getBranchBaseName(branch: Branch): string {
-  const parent = branch.getParentFromMeta();
+function getBranchBaseName(branch: Branch, context: TContext): string {
+  const parent = branch.getParentFromMeta(context);
   if (parent === undefined) {
     throw new PreconditionsFailedError(
       `Could not find parent for branch ${branch.name} to submit PR against. Please checkout ${branch.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
@@ -485,14 +525,17 @@ function getBranchBaseName(branch: Branch): string {
   return parent.name;
 }
 
-async function getPRCreationInfo(args: {
-  branch: Branch;
-  parentBranchName: string;
-  editPRFieldsInline: boolean;
-  draftToggle: boolean | undefined;
-  dryRun: boolean;
-  reviewers: boolean;
-}): Promise<{
+async function getPRCreationInfo(
+  args: {
+    branch: Branch;
+    parentBranchName: string;
+    editPRFieldsInline: boolean;
+    draftToggle: boolean | undefined;
+    dryRun: boolean;
+    reviewers: boolean;
+  },
+  context: TContext
+): Promise<{
   title: string;
   body: string | undefined;
   draft: boolean;
@@ -511,16 +554,22 @@ async function getPRCreationInfo(args: {
     }:`
   );
 
-  const title = await getPRTitle({
-    branch: args.branch,
-    editPRFieldsInline: args.editPRFieldsInline,
-  });
+  const title = await getPRTitle(
+    {
+      branch: args.branch,
+      editPRFieldsInline: args.editPRFieldsInline,
+    },
+    context
+  );
   args.branch.setPriorSubmitTitle(title);
 
-  const body = await getPRBody({
-    branch: args.branch,
-    editPRFieldsInline: args.editPRFieldsInline,
-  });
+  const body = await getPRBody(
+    {
+      branch: args.branch,
+      editPRFieldsInline: args.editPRFieldsInline,
+    },
+    context
+  );
   args.branch.setPriorSubmitBody(body);
 
   const reviewers: string[] | undefined = await getReviewers({
@@ -580,10 +629,10 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
   });
 }
 
-export function saveBranchPRInfo(prs: TSubmittedPR[]): void {
+export function saveBranchPRInfo(prs: TSubmittedPR[], context: TContext): void {
   prs.forEach(async (pr) => {
     if (pr.response.status === 'updated' || pr.response.status === 'created') {
-      const branch = await Branch.branchWithName(pr.response.head);
+      const branch = await Branch.branchWithName(pr.response.head, context);
       branch.setPRInfo({
         number: pr.response.prNumber,
         url: pr.response.prURL,

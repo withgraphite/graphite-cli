@@ -7,20 +7,13 @@ import {
   processGlobalArgumentsMiddleware,
 } from './lib/global-arguments';
 import { passthrough } from './lib/passthrough';
-import { refreshPRInfoInBackground } from './lib/requests';
-import {
-  fetchUpgradePromptInBackground,
-  postTelemetryInBackground,
-} from './lib/telemetry';
+import { postTelemetryInBackground } from './lib/telemetry';
 import { postSurveyResponsesInBackground } from './lib/telemetry/survey/post_survey';
 import {
   logError,
   preprocessCommand,
   signpostDeprecatedCommands,
 } from './lib/utils';
-
-fetchUpgradePromptInBackground();
-refreshPRInfoInBackground();
 
 // We try to post the survey response right after the user takes it, but in
 // case they quit early or there's some error, we'll continue to try to post

@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
+import { TContext } from '../../lib/context/context';
 import {
   branchExistsPrecondition,
   currentBranchPrecondition,
@@ -29,14 +30,14 @@ export const description =
   'Show the parent branch of your current branch (i.e. directly below the current branch in the stack) as tracked by Graphite. Branch location metadata is stored under `.git/refs/branch-metadata`.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
-    const branch = currentBranchPrecondition();
+  return profile(argv, canonical, async (context) => {
+    const branch = currentBranchPrecondition(context);
     if (argv.set) {
-      setParent(branch, argv.set);
+      setParent(branch, argv.set, context);
     } else if (argv.reset) {
       branch.resetParentBranch();
     } else {
-      const parent = branch.getParentFromMeta();
+      const parent = branch.getParentFromMeta(context);
       if (parent) {
         console.log(parent.name);
       } else {
@@ -48,9 +49,9 @@ export const handler = async (argv: argsT): Promise<void> => {
   });
 };
 
-function setParent(branch: Branch, parent: string): void {
+function setParent(branch: Branch, parent: string, context: TContext): void {
   branchExistsPrecondition(parent);
-  const oldParent = branch.getParentFromMeta();
+  const oldParent = branch.getParentFromMeta(context);
   branch.setParentBranchName(parent);
   logInfo(
     `Updated (${branch}) parent from (${oldParent}) to (${chalk.green(parent)})`

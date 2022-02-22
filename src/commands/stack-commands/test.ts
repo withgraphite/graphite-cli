@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import tmp from 'tmp';
 import yargs from 'yargs';
 import { validate } from '../../actions/validate';
+import { TContext } from '../../lib/context/context';
 import { ValidationFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry';
@@ -33,8 +34,8 @@ export const description =
   'Checkout each branch in your stack, run the provided command, and aggregate the results. Good finding bugs in your stack.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
-    testStack(argv.command, { skipTrunk: argv['skip-trunk'] });
+  return profile(argv, canonical, async (context) => {
+    testStack(context, argv.command, { skipTrunk: argv['skip-trunk'] });
   });
 };
 
@@ -43,17 +44,24 @@ type StateT = {
   [branchName: string]: { status: TestStatusT; duration: number | undefined };
 };
 
-function testStack(command: string, opts: { skipTrunk: boolean }): void {
-  const originalBranch = currentBranchPrecondition();
-  validateStack();
+function testStack(
+  context: TContext,
+  command: string,
+  opts: { skipTrunk: boolean }
+): void {
+  const originalBranch = currentBranchPrecondition(context);
+  validateStack(context);
 
   logInfo(chalk.grey(`Getting stack...`));
-  const stack = new GitStackBuilder().fullStackFromBranch(originalBranch);
+  const stack = new GitStackBuilder().fullStackFromBranch(
+    originalBranch,
+    context
+  );
   logInfo(chalk.grey(stack.toString() + '\n'));
 
   // Get branches to test.
   const branches = stack.branches().filter((b) => {
-    if (opts.skipTrunk && b.name == getTrunk().name) {
+    if (opts.skipTrunk && b.name == getTrunk(context).name) {
       return false;
     }
     return true;
@@ -143,9 +151,9 @@ function logState(state: StateT, refresh: boolean) {
   });
 }
 
-function validateStack(): void {
+function validateStack(context: TContext): void {
   try {
-    validate('FULLSTACK');
+    validate('FULLSTACK', context);
   } catch (err) {
     throw new ValidationFailedError(
       `Failed to validate fullstack before testing`

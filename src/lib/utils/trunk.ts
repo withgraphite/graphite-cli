@@ -2,8 +2,8 @@ import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
 import Branch from '../../wrapper-classes/branch';
-import { repoConfig } from '../config';
 import { ConfigError, ExitFailedError, SiblingBranchError } from '../errors';
+import { TContext } from './../context/context';
 
 function findRemoteOriginBranch(): Branch | undefined {
   let config;
@@ -33,8 +33,8 @@ function findRemoteOriginBranch(): Branch | undefined {
   return undefined;
 }
 
-function findCommonlyNamedTrunk(): Branch | undefined {
-  const potentialTrunks = Branch.allBranches().filter((b) =>
+function findCommonlyNamedTrunk(context: TContext): Branch | undefined {
+  const potentialTrunks = Branch.allBranches(context).filter((b) =>
     ['main', 'master', 'development', 'develop'].includes(b.name)
   );
   if (potentialTrunks.length === 1) {
@@ -44,14 +44,14 @@ function findCommonlyNamedTrunk(): Branch | undefined {
 }
 
 let memoizedTrunk: Branch;
-export function inferTrunk(): Branch | undefined {
-  return findRemoteOriginBranch() || findCommonlyNamedTrunk();
+export function inferTrunk(context: TContext): Branch | undefined {
+  return findRemoteOriginBranch() || findCommonlyNamedTrunk(context);
 }
-export function getTrunk(): Branch {
+export function getTrunk(context: TContext): Branch {
   if (memoizedTrunk) {
     return memoizedTrunk;
   }
-  const configTrunkName = repoConfig.data.trunk;
+  const configTrunkName = context.repoConfig.data.trunk;
   if (configTrunkName) {
     if (!Branch.exists(configTrunkName)) {
       throw new ExitFailedError(
@@ -63,7 +63,7 @@ export function getTrunk(): Branch {
 
   // No configured trunk, infer
   if (!memoizedTrunk) {
-    const inferredTrunk = inferTrunk();
+    const inferredTrunk = inferTrunk(context);
     if (inferredTrunk) {
       memoizedTrunk = inferredTrunk.useMemoizedResults();
       return memoizedTrunk;
@@ -72,9 +72,12 @@ export function getTrunk(): Branch {
       `No configured trunk branch, and unable to infer. Consider setting the trunk name by running "gt repo init".`
     );
   }
-  const trunkSiblings = memoizedTrunk.branchesWithSameCommit();
+  const trunkSiblings = memoizedTrunk.branchesWithSameCommit(context);
   if (trunkSiblings.length > 0) {
-    throw new SiblingBranchError([memoizedTrunk].concat(trunkSiblings));
+    throw new SiblingBranchError(
+      [memoizedTrunk].concat(trunkSiblings),
+      context
+    );
   }
   return memoizedTrunk;
 }

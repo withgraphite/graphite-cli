@@ -1,20 +1,21 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import prompts from 'prompts';
-import { repoConfig } from '../lib/config';
 import { PreconditionsFailedError } from '../lib/errors';
 import { currentGitRepoPrecondition } from '../lib/preconditions';
 import { logError, logInfo, logNewline } from '../lib/utils';
 import { inferTrunk } from '../lib/utils/trunk';
 import Branch from '../wrapper-classes/branch';
+import { TContext } from './../lib/context/context';
 export async function init(
+  context: TContext,
   trunk?: string,
   ignoreBranches?: string[]
 ): Promise<void> {
   currentGitRepoPrecondition();
-  const allBranches = Branch.allBranches();
+  const allBranches = Branch.allBranches(context);
 
-  logWelcomeMessage();
+  logWelcomeMessage(context);
   logNewline();
 
   /**
@@ -40,7 +41,7 @@ export async function init(
   if (trunk) {
     if (Branch.exists(trunk)) {
       newTrunkName = trunk;
-      repoConfig.setTrunk(newTrunkName);
+      context.repoConfig.setTrunk(newTrunkName);
       logInfo(`Trunk set to (${newTrunkName})`);
     } else {
       throw new PreconditionsFailedError(
@@ -48,8 +49,8 @@ export async function init(
       );
     }
   } else {
-    newTrunkName = await selectTrunkBranch(allBranches);
-    repoConfig.setTrunk(newTrunkName);
+    newTrunkName = await selectTrunkBranch(allBranches, context);
+    context.repoConfig.setTrunk(newTrunkName);
   }
 
   // Ignore Branches
@@ -61,25 +62,25 @@ export async function init(
         );
       }
     });
-    repoConfig.addIgnoreBranchPatterns(ignoreBranches);
+    context.repoConfig.addIgnoreBranchPatterns(ignoreBranches);
   } else {
     let ignoreBranches = await selectIgnoreBranches(allBranches, newTrunkName);
     logInfo(`Selected following branches to ignore: ${ignoreBranches}`);
     if (!ignoreBranches) {
       ignoreBranches = [];
     }
-    repoConfig.addIgnoreBranchPatterns(ignoreBranches);
+    context.repoConfig.addIgnoreBranchPatterns(ignoreBranches);
   }
 
-  logInfo(`Graphite repo config saved at "${repoConfig.path}"`);
-  logInfo(fs.readFileSync(repoConfig.path).toString());
+  logInfo(`Graphite repo config saved at "${context.repoConfig.path}"`);
+  logInfo(fs.readFileSync(context.repoConfig.path).toString());
 }
 
-function logWelcomeMessage(): void {
-  if (!repoConfig.graphiteInitialized()) {
+function logWelcomeMessage(context: TContext): void {
+  if (!context.repoConfig.graphiteInitialized()) {
     logInfo('Welcome to Graphite!');
   } else {
-    logInfo(`Regenerating Graphite repo config (${repoConfig.path})`);
+    logInfo(`Regenerating Graphite repo config (${context.repoConfig.path})`);
   }
 }
 
@@ -104,8 +105,11 @@ async function selectIgnoreBranches(
   return response.branches;
 }
 
-async function selectTrunkBranch(allBranches: Branch[]): Promise<string> {
-  const trunk = inferTrunk();
+async function selectTrunkBranch(
+  allBranches: Branch[],
+  context: TContext
+): Promise<string> {
+  const trunk = inferTrunk(context);
   const response = await prompts({
     type: 'autocomplete',
     name: 'branch',

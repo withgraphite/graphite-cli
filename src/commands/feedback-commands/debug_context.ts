@@ -30,17 +30,18 @@ export const description =
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
+  return profile(argv, canonical, async (context) => {
     if (argv['recreate-from-file']) {
       const dir = recreateState(
-        fs.readFileSync(argv['recreate-from-file']).toString()
+        fs.readFileSync(argv['recreate-from-file']).toString(),
+        context
       );
       logInfo(`${chalk.green(dir)}`);
     } else if (argv.recreate) {
-      const dir = recreateState(argv.recreate);
+      const dir = recreateState(argv.recreate, context);
       logInfo(`${chalk.green(dir)}`);
     } else {
-      logInfo(captureState());
+      logInfo(captureState(context));
     }
   });
 };

@@ -2,18 +2,22 @@ import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import prompts from 'prompts';
 import tmp from 'tmp';
+import { TContext } from '../../lib/context/context';
 import { KilledError } from '../../lib/errors';
 import { getSingleCommitOnBranch } from '../../lib/utils';
 import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
 import { getPRTemplate } from '../../lib/utils/pr_templates';
 import Branch from '../../wrapper-classes/branch';
 
-export async function getPRBody(args: {
-  branch: Branch;
-  editPRFieldsInline: boolean;
-}): Promise<string> {
+export async function getPRBody(
+  args: {
+    branch: Branch;
+    editPRFieldsInline: boolean;
+  },
+  context: TContext
+): Promise<string> {
   const template = await getPRTemplate();
-  const inferredBodyFromCommit = inferPRBody(args.branch);
+  const inferredBodyFromCommit = inferPRBody(args.branch, context);
   let body =
     inferredBodyFromCommit !== null ? inferredBodyFromCommit : template;
   const hasPRTemplate = body !== undefined;
@@ -60,14 +64,14 @@ async function editPRBody(args: {
   return contents;
 }
 
-export function inferPRBody(branch: Branch): string | null {
+export function inferPRBody(branch: Branch, context: TContext): string | null {
   const priorSubmitBody = branch.getPriorSubmitBody();
   if (priorSubmitBody !== undefined) {
     return priorSubmitBody;
   }
 
   // Only infer the title from the commit if the branch has just 1 commit.
-  const singleCommit = getSingleCommitOnBranch(branch);
+  const singleCommit = getSingleCommitOnBranch(branch, context);
   const singleCommitBody =
     singleCommit === null ? null : singleCommit.messageBody().trim();
 

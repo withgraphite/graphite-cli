@@ -1,4 +1,5 @@
 import { Stack, StackNode } from '.';
+import { TContext } from '../lib/context/context';
 import { getTrunk, logDebug } from '../lib/utils';
 import Branch from './branch';
 
@@ -9,9 +10,9 @@ export default abstract class AbstractStackBuilder {
     this.useMemoizedResults = opts?.useMemoizedResults || false;
   }
 
-  public allStacks(): Stack[] {
-    const baseBranches = this.allStackBaseNames();
-    return baseBranches.map(this.fullStackFromBranch);
+  public allStacks(context: TContext): Stack[] {
+    const baseBranches = this.allStackBaseNames(context);
+    return baseBranches.map((b) => this.fullStackFromBranch(b, context));
   }
 
   private memoizeBranchIfNeeded(branch: Branch): Branch {
@@ -24,9 +25,12 @@ export default abstract class AbstractStackBuilder {
     return b;
   }
 
-  public upstackInclusiveFromBranchWithParents(b: Branch): Stack {
+  public upstackInclusiveFromBranchWithParents(
+    b: Branch,
+    context: TContext
+  ): Stack {
     const branch = this.memoizeBranchIfNeeded(b);
-    const stack = this.fullStackFromBranch(branch);
+    const stack = this.fullStackFromBranch(branch, context);
 
     // Traverse to find the source node and set;
     let possibleSourceNodes = [stack.source];
@@ -48,7 +52,10 @@ export default abstract class AbstractStackBuilder {
     This function traverses the tree upstack, ie, from the branch to all its
     children until it hits leaf nodes (which have no children)
    */
-  public upstackInclusiveFromBranchWithoutParents(b: Branch): Stack {
+  public upstackInclusiveFromBranchWithoutParents(
+    b: Branch,
+    context: TContext
+  ): Stack {
     const branch = this.memoizeBranchIfNeeded(b);
     const sourceNode: StackNode = new StackNode({
       branch,
@@ -93,7 +100,10 @@ export default abstract class AbstractStackBuilder {
       visitedBranches.push(curNode.branch.name);
 
       logDebug(`Looking up children for ${curNode.branch.name}...`);
-      const unvisitedChildren = this.getChildrenForBranch(curNode.branch)
+      const unvisitedChildren = this.getChildrenForBranch(
+        curNode.branch,
+        context
+      )
         .filter((child) => !visitedBranches.includes(child.name))
         .map((child) => {
           return new StackNode({
@@ -110,12 +120,12 @@ export default abstract class AbstractStackBuilder {
     return new Stack(sourceNode);
   }
 
-  private allStackBaseNames(): Branch[] {
-    const allBranches = Branch.allBranches({
+  private allStackBaseNames(context: TContext): Branch[] {
+    const allBranches = Branch.allBranches(context, {
       useMemoizedResults: this.useMemoizedResults,
     });
     const allStackBaseNames = allBranches.map(
-      (b) => this.getStackBaseBranch(b, { excludingTrunk: false }).name
+      (b) => this.getStackBaseBranch(b, { excludingTrunk: false }, context).name
     );
     const uniqueStackBaseNames = [...new Set(allStackBaseNames)];
     return uniqueStackBaseNames.map(
@@ -127,38 +137,42 @@ export default abstract class AbstractStackBuilder {
     This function traverses the tree downstack, ie, from the branch to all its
     ancestors until it hits trunk (which has no parent)
    */
-  public downstackFromBranch = (b: Branch): Stack => {
+  public downstackFromBranch = (b: Branch, context: TContext): Stack => {
     const branch = this.memoizeBranchIfNeeded(b);
     let node = new StackNode({ branch });
-    let parent = this.getBranchParent(node.branch);
+    let parent = this.getBranchParent(node.branch, context);
     while (parent) {
       node.parent = new StackNode({ branch: parent, children: [node] });
       node = node.parent;
-      parent = this.getBranchParent(node.branch);
+      parent = this.getBranchParent(node.branch, context);
     }
     return new Stack(node);
   };
 
-  public fullStackFromBranch = (b: Branch): Stack => {
+  public fullStackFromBranch = (b: Branch, context: TContext): Stack => {
     const branch = this.memoizeBranchIfNeeded(b);
 
     logDebug(`Finding base branch of stack with ${branch.name}`);
-    const base = this.getStackBaseBranch(branch, { excludingTrunk: true });
+    const base = this.getStackBaseBranch(
+      branch,
+      { excludingTrunk: true },
+      context
+    );
 
     logDebug(
       `Finding rest of stack from base branch of stack with ${branch.name}`
     );
-    const stack = this.upstackInclusiveFromBranchWithoutParents(base);
+    const stack = this.upstackInclusiveFromBranchWithoutParents(base, context);
 
-    if (branch.name == getTrunk().name) {
+    if (branch.name == getTrunk(context).name) {
       return stack;
     }
 
     // If the parent is trunk (the only possibility because this is a off trunk)
-    const parent = this.getBranchParent(stack.source.branch);
-    if (parent && parent.name == getTrunk().name) {
+    const parent = this.getBranchParent(stack.source.branch, context);
+    if (parent && parent.name == getTrunk(context).name) {
       const trunkNode: StackNode = new StackNode({
-        branch: getTrunk(),
+        branch: getTrunk(context),
         parent: undefined,
         children: [stack.source],
       });
@@ -172,19 +186,29 @@ export default abstract class AbstractStackBuilder {
 
   private getStackBaseBranch(
     branch: Branch,
-    opts: { excludingTrunk: boolean }
+    opts: { excludingTrunk: boolean },
+    context: TContext
   ): Branch {
-    const parent = this.getBranchParent(branch);
+    const parent = this.getBranchParent(branch, context);
     if (!parent) {
       return branch;
     }
-    if (opts?.excludingTrunk && parent.isTrunk()) {
+    if (opts?.excludingTrunk && parent.isTrunk(context)) {
       return branch;
     }
-    return this.getStackBaseBranch(parent, opts);
+    return this.getStackBaseBranch(parent, opts, context);
   }
 
-  protected abstract getBranchParent(branch: Branch): Branch | undefined;
-  protected abstract getChildrenForBranch(branch: Branch): Branch[];
-  protected abstract getParentForBranch(branch: Branch): Branch | undefined;
+  protected abstract getBranchParent(
+    branch: Branch,
+    context: TContext
+  ): Branch | undefined;
+  protected abstract getChildrenForBranch(
+    branch: Branch,
+    context: TContext
+  ): Branch[];
+  protected abstract getParentForBranch(
+    branch: Branch,
+    context: TContext
+  ): Branch | undefined;
 }

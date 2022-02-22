@@ -1,3 +1,4 @@
+import { TContext } from '../../lib/context/context';
 import { checkoutBranch } from '../../lib/utils';
 import Branch from '../../wrapper-classes/branch';
 import { stackOnto } from '../onto/stack_onto';
@@ -6,19 +7,23 @@ import { TStackEdit, TStackEditPick } from './stack_edits';
 
 export async function applyStackEditPick(
   stackEdit: TStackEditPick,
-  remainingEdits: TStackEdit[]
+  remainingEdits: TStackEdit[],
+  context: TContext
 ): Promise<void> {
   checkoutBranch(stackEdit.branchName);
-  await stackOnto({
-    currentBranch: new Branch(stackEdit.branchName),
-    onto: stackEdit.onto,
-    mergeConflictCallstack: {
-      parent: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
-      frame: {
-        op: 'STACK_EDIT_CONTINUATION',
-        currentBranch: stackEdit.branchName,
-        remainingEdits: remainingEdits,
-      } as TStackEditStackFrame,
+  await stackOnto(
+    {
+      currentBranch: new Branch(stackEdit.branchName),
+      onto: stackEdit.onto,
+      mergeConflictCallstack: {
+        parent: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
+        frame: {
+          op: 'STACK_EDIT_CONTINUATION',
+          currentBranch: stackEdit.branchName,
+          remainingEdits: remainingEdits,
+        } as TStackEditStackFrame,
+      },
     },
-  });
+    context
+  );
 }

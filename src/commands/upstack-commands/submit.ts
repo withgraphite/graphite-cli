@@ -8,14 +8,17 @@ export const description =
 export const canonical = 'upstack submit';
 
 export const handler = async (argv: argsT): Promise<void> => {
-  await profile(argv, canonical, async () => {
-    await submitAction({
-      scope: 'UPSTACK',
-      editPRFieldsInline: argv.edit,
-      draftToggle: argv.draft,
-      dryRun: argv['dry-run'],
-      updateOnly: argv['update-only'],
-      reviewers: argv.reviewers,
-    });
+  await profile(argv, canonical, async (context) => {
+    await submitAction(
+      {
+        scope: 'UPSTACK',
+        editPRFieldsInline: argv.edit,
+        draftToggle: argv.draft,
+        dryRun: argv['dry-run'],
+        updateOnly: argv['update-only'],
+        reviewers: argv.reviewers,
+      },
+      context
+    );
   });
 };

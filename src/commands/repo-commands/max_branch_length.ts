@@ -1,5 +1,4 @@
 import yargs from 'yargs';
-import { repoConfig } from '../../lib/config';
 import { profile } from '../../lib/telemetry';
 import { logInfo } from '../../lib/utils';
 
@@ -21,11 +20,11 @@ export const description =
   'Graphite will track up to this many commits on a branch. e.g. If this is set to 50, Graphite can track branches up to 50 commits long. Increasing this setting may result in slower performance for Graphite.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
+  return profile(argv, canonical, async (context) => {
     if (argv.set) {
-      repoConfig.update((data) => (data.maxBranchLength = argv.set));
+      context.repoConfig.update((data) => (data.maxBranchLength = argv.set));
     } else {
-      logInfo(`${repoConfig.getMaxBranchLength.toString()} commits`);
+      logInfo(`${context.repoConfig.getMaxBranchLength.toString()} commits`);
     }
   });
 };

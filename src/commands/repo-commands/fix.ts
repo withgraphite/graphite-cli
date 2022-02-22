@@ -6,6 +6,7 @@ import {
   fixDanglingBranches,
 } from '../../actions/fix_dangling_branches';
 import { TRepoFixBranchCountSanityCheckStackFrame } from '../../lib/config/merge_conflict_callstack_config';
+import { TContext } from '../../lib/context/context';
 import { profile } from '../../lib/telemetry';
 import { logInfo, logNewline, logTip } from '../../lib/utils';
 import Branch from '../../wrapper-classes/branch';
@@ -34,18 +35,24 @@ export const description =
   'Search for and remediate common problems in your repo that slow Graphite down and/or cause bugs (e.g. stale branches, branches with unknown parents).';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
-    await branchMetadataSanityChecks(argv.force);
-    await branchCountSanityCheck({
-      force: argv.force,
-      showDeleteProgress: argv['show-delete-progress'],
-    });
+  return profile(argv, canonical, async (context) => {
+    await branchMetadataSanityChecks(argv.force, context);
+    await branchCountSanityCheck(
+      {
+        force: argv.force,
+        showDeleteProgress: argv['show-delete-progress'],
+      },
+      context
+    );
   });
 };
 
-async function branchMetadataSanityChecks(force: boolean): Promise<void> {
+async function branchMetadataSanityChecks(
+  force: boolean,
+  context: TContext
+): Promise<void> {
   logInfo(`Ensuring tracked branches in Graphite are all well-formed...`);
-  if (existsDanglingBranches()) {
+  if (existsDanglingBranches(context)) {
     logNewline();
     console.log(
       chalk.yellow(
@@ -56,7 +63,7 @@ async function branchMetadataSanityChecks(force: boolean): Promise<void> {
       `To ensure Graphite always has a known parent for your branch, create your branch through Graphite with \`gt branch create <branch_name>\`.`
     );
     logNewline();
-    await fixDanglingBranches(force);
+    await fixDanglingBranches(context, force);
     logNewline();
   } else {
     logInfo(`All branches well-formed.`);
@@ -64,11 +71,14 @@ async function branchMetadataSanityChecks(force: boolean): Promise<void> {
   }
 }
 
-async function branchCountSanityCheck(opts: {
-  force: boolean;
-  showDeleteProgress: boolean;
-}): Promise<void> {
-  const branchCount = Branch.allBranches().length;
+async function branchCountSanityCheck(
+  opts: {
+    force: boolean;
+    showDeleteProgress: boolean;
+  },
+  context: TContext
+): Promise<void> {
+  const branchCount = Branch.allBranches(context).length;
   if (branchCount > 50) {
     console.log(
       chalk.yellow(
@@ -87,17 +97,20 @@ async function branchCountSanityCheck(opts: {
     op: 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION' as const,
   };
 
-  await deleteMergedBranches({
-    frame: {
-      op: 'DELETE_BRANCHES_CONTINUATION',
-      showDeleteProgress: opts.showDeleteProgress,
-      force: opts.force,
+  await deleteMergedBranches(
+    {
+      frame: {
+        op: 'DELETE_BRANCHES_CONTINUATION',
+        showDeleteProgress: opts.showDeleteProgress,
+        force: opts.force,
+      },
+      parent: {
+        frame: continuationFrame,
+        parent: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
+      },
     },
-    parent: {
-      frame: continuationFrame,
-      parent: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
-    },
-  });
+    context
+  );
 
   await branchCountSanityCheckContinuation(continuationFrame);
 }

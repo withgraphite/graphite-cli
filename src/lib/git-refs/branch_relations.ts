@@ -1,10 +1,9 @@
 import chalk from 'chalk';
 import Branch from '../../wrapper-classes/branch';
-import { repoConfig } from '../config';
 import cache from '../config/cache';
 import { tracer } from '../telemetry';
-import { gpExecSync } from '../utils';
-import { logDebug } from '../utils';
+import { gpExecSync, logDebug } from '../utils';
+import { TContext } from './../context/context';
 import { getRef } from './branch_ref';
 
 export function getBranchChildrenOrParentsFromGit(
@@ -12,7 +11,8 @@ export function getBranchChildrenOrParentsFromGit(
   opts: {
     direction: 'children' | 'parents';
     useMemoizedResults?: boolean;
-  }
+  },
+  context: TContext
 ): Branch[] {
   const direction = opts.direction;
   const useMemoizedResults = opts.useMemoizedResults ?? false;
@@ -23,18 +23,22 @@ export function getBranchChildrenOrParentsFromGit(
       meta: { direction: direction },
     },
     () => {
-      const gitTree = getRevListGitTree({
-        useMemoizedResults,
-        direction: opts.direction,
-      });
+      const gitTree = getRevListGitTree(
+        {
+          useMemoizedResults,
+          direction: opts.direction,
+        },
+        context
+      );
 
-      const headSha = getRef(branch);
+      const headSha = getRef(branch, context);
 
       const childrenOrParents = traverseGitTreeFromCommitUntilBranch(
         headSha,
         gitTree,
-        getBranchList({ useMemoizedResult: useMemoizedResults }),
-        0
+        getBranchList({ useMemoizedResult: useMemoizedResults }, context),
+        0,
+        context
       );
 
       if (childrenOrParents.shortCircuitedDueToMaxDepth) {
@@ -43,10 +47,10 @@ export function getBranchChildrenOrParentsFromGit(
             `Potential missing branch ${direction.toLocaleLowerCase()}:`
           )} Short-circuited search for branch ${chalk.bold(
             branch.name
-          )}'s ${direction.toLocaleLowerCase()} due to Graphite 'max-branch-length' setting. (Your Graphite CLI is currently configured to search a max of <${repoConfig.getMaxBranchLength()}> commits away from a branch's tip.) If this is causing an incorrect result (e.g. you know that ${
+          )}'s ${direction.toLocaleLowerCase()} due to Graphite 'max-branch-length' setting. (Your Graphite CLI is currently configured to search a max of <${context.repoConfig.getMaxBranchLength()}> commits away from a branch's tip.) If this is causing an incorrect result (e.g. you know that ${
             branch.name
           } has ${direction.toLocaleLowerCase()} ${
-            repoConfig.getMaxBranchLength() + 1
+            context.repoConfig.getMaxBranchLength() + 1
           } commits away), please adjust the setting using \`gt repo max-branch-length\`.`
         );
       }
@@ -61,10 +65,13 @@ export function getBranchChildrenOrParentsFromGit(
   );
 }
 
-export function getRevListGitTree(opts: {
-  useMemoizedResults: boolean;
-  direction: 'parents' | 'children';
-}): Record<string, string[]> {
+export function getRevListGitTree(
+  opts: {
+    useMemoizedResults: boolean;
+    direction: 'parents' | 'children';
+  },
+  context: TContext
+): Record<string, string[]> {
   const cachedParentsRevList = cache.getParentsRevList();
   const cachedChildrenRevList = cache.getChildrenRevList();
   if (
@@ -80,7 +87,7 @@ export function getRevListGitTree(opts: {
   ) {
     return cachedChildrenRevList;
   }
-  const allBranches = Branch.allBranches()
+  const allBranches = Branch.allBranches(context)
     .map((b) => b.name)
     .join(' ');
   const revList = gitTreeFromRevListOutput(
@@ -104,9 +111,12 @@ export function getRevListGitTree(opts: {
 }
 
 let memoizedBranchList: Record<string, string[]>;
-function getBranchList(opts: {
-  useMemoizedResult?: boolean;
-}): Record<string, string[]> {
+function getBranchList(
+  opts: {
+    useMemoizedResult?: boolean;
+  },
+  context: TContext
+): Record<string, string[]> {
   if (opts.useMemoizedResult && memoizedBranchList !== undefined) {
     return memoizedBranchList;
   }
@@ -117,7 +127,8 @@ function getBranchList(opts: {
       options: { maxBuffer: 1024 * 1024 * 1024 },
     })
       .toString()
-      .trim()
+      .trim(),
+    context
   );
 
   return memoizedBranchList;
@@ -127,7 +138,8 @@ function traverseGitTreeFromCommitUntilBranch(
   commit: string,
   gitTree: Record<string, string[]>,
   branchList: Record<string, string[]>,
-  n: number
+  n: number,
+  context: TContext
 ): {
   branches: Set<string>;
   shortCircuitedDueToMaxDepth?: boolean;
@@ -140,7 +152,7 @@ function traverseGitTreeFromCommitUntilBranch(
   }
 
   // Limit the search
-  const maxBranchLength = repoConfig.getMaxBranchLength();
+  const maxBranchLength = context.repoConfig.getMaxBranchLength();
   if (n > maxBranchLength) {
     return {
       branches: new Set(),
@@ -161,7 +173,8 @@ function traverseGitTreeFromCommitUntilBranch(
       neighborCommit,
       gitTree,
       branchList,
-      n + 1
+      n + 1,
+      context
     );
 
     const branches = results.branches;
@@ -180,7 +193,10 @@ function traverseGitTreeFromCommitUntilBranch(
   };
 }
 
-function branchListFromShowRefOutput(output: string): Record<string, string[]> {
+function branchListFromShowRefOutput(
+  output: string,
+  context: TContext
+): Record<string, string[]> {
   const ret: Record<string, string[]> = {};
 
   for (const line of output.split('\n')) {
@@ -189,7 +205,7 @@ function branchListFromShowRefOutput(output: string): Record<string, string[]> {
       const branchName = parts[1].slice('refs/heads/'.length);
       const branchRef = parts[0];
 
-      if (!repoConfig.branchIsIgnored(branchName)) {
+      if (!context.repoConfig.branchIsIgnored(branchName)) {
         logDebug(`branch ${branchName} is not ignored`);
         if (branchRef in ret) {
           ret[branchRef].push(branchName);

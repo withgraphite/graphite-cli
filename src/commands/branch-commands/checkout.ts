@@ -20,11 +20,11 @@ export const aliases = ['co'];
 export const builder = args;
 
 export const handler = async (args: argsT): Promise<void> => {
-  return profile(args, canonical, async () => {
+  return profile(args, canonical, async (context) => {
     if (args.branch) {
       gpExecSync({ command: `git checkout ${args.branch}` });
     } else {
-      await interactiveCheckout();
+      await interactiveCheckout(context);
     }
   });
 };

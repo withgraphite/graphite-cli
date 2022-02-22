@@ -31,7 +31,7 @@ export const description =
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
+  return profile(argv, canonical, async (context) => {
     const user = getUserEmail();
     if (!argv.message) {
       return;
@@ -42,7 +42,9 @@ export const handler = async (argv: argsT): Promise<void> => {
       {
         user: user || 'NotFound',
         message: argv.message,
-        debugContext: argv['with-debug-context'] ? captureState() : undefined,
+        debugContext: argv['with-debug-context']
+          ? captureState(context)
+          : undefined,
       }
     );
     if (response._response.status == 200) {

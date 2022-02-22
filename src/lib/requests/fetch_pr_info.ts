@@ -1,42 +1,24 @@
-#!/usr/bin/env node
 import cp from 'child_process';
-import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
-import Branch from '../../wrapper-classes/branch';
-import { repoConfig } from '../config';
+import { TContext } from './../context/context';
 
-export function refreshPRInfoInBackground(): void {
-  if (!repoConfig.graphiteInitialized()) {
+export function refreshPRInfoInBackground(context: TContext): void {
+  if (!context.repoConfig.graphiteInitialized()) {
     return;
   }
 
   const now = Date.now();
-  const lastFetchedMs = repoConfig.data.lastFetchedPRInfoMs;
+  const lastFetchedMs = context.repoConfig.data.lastFetchedPRInfoMs;
   const msInSecond = 1000;
 
   // rate limit refreshing PR info to once per minute
   if (lastFetchedMs === undefined || now - lastFetchedMs > 60 * msInSecond) {
     // do our potential write before we kick off the child process so that we
     // don't incur a possible race condition with the write
-    repoConfig.update((data) => (data.lastFetchedPRInfoMs = now));
+    context.repoConfig.update((data) => (data.lastFetchedPRInfoMs = now));
 
     cp.spawn('/usr/bin/env', ['node', __filename], {
       detached: true,
       stdio: 'ignore',
     });
   }
-}
-
-async function refreshPRInfo(): Promise<void> {
-  try {
-    const branchesWithPRInfo = Branch.allBranches().filter(
-      (branch) => branch.getPRInfo() !== undefined
-    );
-    await syncPRInfoForBranches(branchesWithPRInfo);
-  } catch (err) {
-    return;
-  }
-}
-
-if (process.argv[1] === __filename) {
-  void refreshPRInfo();
 }

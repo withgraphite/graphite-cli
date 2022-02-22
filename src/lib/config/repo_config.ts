@@ -175,5 +175,3 @@ export function getOwnerAndNameFromURLForTesting(originURL: string): {
 } {
   return getOwnerAndNameFromURL(originURL);
 }
-
-export const repoConfig = repoConfigFactory.load(); // TODO upstack: remove this global instance

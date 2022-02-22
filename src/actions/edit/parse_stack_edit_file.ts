@@ -1,4 +1,5 @@
 import fs from 'fs-extra';
+import { TContext } from '../../lib/context/context';
 import { ExitFailedError } from '../../lib/errors';
 import { getTrunk } from '../../lib/utils';
 import {
@@ -7,7 +8,10 @@ import {
   TStackEditType,
 } from './stack_edits';
 
-export function parseEditFile(opts: { filePath: string }): TStackEdit[] {
+export function parseEditFile(
+  opts: { filePath: string },
+  context: TContext
+): TStackEdit[] {
   const fileContents = fs.readFileSync(opts.filePath).toString();
   const parsedEdit = fileContents
     .split('\n')
@@ -22,7 +26,7 @@ export function parseEditFile(opts: { filePath: string }): TStackEdit[] {
 
   parsedEdit.reverse();
 
-  if (parsedEdit.map((e) => e.branchName).includes(getTrunk().name)) {
+  if (parsedEdit.map((e) => e.branchName).includes(getTrunk(context).name)) {
     throw new ExitFailedError(`Cannot perform edits on trunk branch`);
   }
 
@@ -31,7 +35,8 @@ export function parseEditFile(opts: { filePath: string }): TStackEdit[] {
     return {
       type: parsedStackEdit.type,
       branchName: parsedStackEdit.branchName,
-      onto: index === 0 ? getTrunk().name : parsedEdit[index - 1].branchName,
+      onto:
+        index === 0 ? getTrunk(context).name : parsedEdit[index - 1].branchName,
     };
   });
 }

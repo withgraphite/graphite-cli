@@ -6,6 +6,7 @@ import {
   MergeConflictCallstackT,
   TDeleteBranchesStackFrame,
 } from '../lib/config/merge_conflict_callstack_config';
+import { TContext } from '../lib/context/context';
 import { KilledError } from '../lib/errors';
 import { checkoutBranch, getTrunk, logInfo } from '../lib/utils';
 import Branch from '../wrapper-classes/branch';
@@ -18,11 +19,14 @@ import { currentBranchOntoAction } from './onto/current_branch_onto';
  * continue`.
  */
 // eslint-disable-next-line max-lines-per-function
-export async function deleteMergedBranches(opts: {
-  frame: TDeleteBranchesStackFrame;
-  parent: MergeConflictCallstackT;
-}): Promise<void> {
-  const trunkChildren = getTrunk().getChildrenFromMeta();
+export async function deleteMergedBranches(
+  opts: {
+    frame: TDeleteBranchesStackFrame;
+    parent: MergeConflictCallstackT;
+  },
+  context: TContext
+): Promise<void> {
+  const trunkChildren = getTrunk(context).getChildrenFromMeta(context);
 
   /**
    * To find and delete all of the merged branches, we traverse all of the
@@ -94,12 +98,15 @@ export async function deleteMergedBranches(opts: {
       );
     }
 
-    const shouldDelete = await shouldDeleteBranch({
-      branch: branch,
-      force: opts.frame.force,
-    });
+    const shouldDelete = await shouldDeleteBranch(
+      {
+        branch: branch,
+        force: opts.frame.force,
+      },
+      context
+    );
     if (shouldDelete) {
-      const children = branch.getChildrenFromMeta();
+      const children = branch.getChildrenFromMeta(context);
 
       // We concat toProcess to children here (because we shift above) to make
       // our search a DFS.
@@ -110,7 +117,7 @@ export async function deleteMergedBranches(opts: {
         children: children,
       };
     } else {
-      const parent = branch.getParentFromMeta();
+      const parent = branch.getParentFromMeta(context);
       const parentName = parent?.name;
 
       // If we've reached this point, we know the branch shouldn't be deleted.
@@ -118,14 +125,17 @@ export async function deleteMergedBranches(opts: {
       // going to be deleted.
       if (parentName !== undefined && parentName in branchesToDelete) {
         checkoutBranch(branch.name);
-        logInfo(`upstacking (${branch.name}) onto (${getTrunk().name})`);
-        await currentBranchOntoAction({
-          onto: getTrunk().name,
-          mergeConflictCallstack: {
-            frame: opts.frame,
-            parent: opts.parent,
+        logInfo(`upstacking (${branch.name}) onto (${getTrunk(context).name})`);
+        await currentBranchOntoAction(
+          {
+            onto: getTrunk(context).name,
+            mergeConflictCallstack: {
+              frame: opts.frame,
+              parent: opts.parent,
+            },
           },
-        });
+          context
+        );
 
         branchesToDelete[parentName].children = branchesToDelete[
           parentName
@@ -133,7 +143,7 @@ export async function deleteMergedBranches(opts: {
       }
     }
 
-    checkoutBranch(getTrunk().name);
+    checkoutBranch(getTrunk(context).name);
 
     // With either of the paths above, we may have unblocked a branch that can
     // be deleted immediately. We recursively check whether we can delete a
@@ -150,7 +160,7 @@ export async function deleteMergedBranches(opts: {
       }
 
       const branch = branchesToDelete[branchToDeleteName].branch;
-      const parentName = branch.getParentFromMeta()?.name;
+      const parentName = branch.getParentFromMeta(context)?.name;
       if (parentName !== undefined && parentName in branchesToDelete) {
         branchesToDelete[parentName].children = branchesToDelete[
           parentName
@@ -163,11 +173,14 @@ export async function deleteMergedBranches(opts: {
   } while (toProcess.length > 0);
 }
 
-async function shouldDeleteBranch(args: {
-  branch: Branch;
-  force: boolean;
-}): Promise<boolean> {
-  const merged = branchMerged(args.branch);
+async function shouldDeleteBranch(
+  args: {
+    branch: Branch;
+    force: boolean;
+  },
+  context: TContext
+): Promise<boolean> {
+  const merged = branchMerged(args.branch, context);
   if (!merged) {
     return false;
   }
@@ -187,7 +200,7 @@ async function shouldDeleteBranch(args: {
   // see the code in trunk, we fallback to say that it was merged into trunk.
   // This extra check (rather than just saying trunk) is used to catch the
   // case where one feature branch is merged into another on GitHub.
-  const mergedBase = githubMergedBase ?? getTrunk().name;
+  const mergedBase = githubMergedBase ?? getTrunk(context).name;
 
   const response = await prompts(
     {
@@ -207,14 +220,14 @@ async function shouldDeleteBranch(args: {
   return response.value === true;
 }
 
-function branchMerged(branch: Branch): boolean {
+function branchMerged(branch: Branch, context: TContext): boolean {
   const prMerged = branch.getPRInfo()?.state === 'MERGED';
   if (prMerged) {
     return true;
   }
 
   const branchName = branch.name;
-  const trunk = getTrunk().name;
+  const trunk = getTrunk(context).name;
   const cherryCheckProvesMerged = execSync(
     `mergeBase=$(git merge-base ${trunk} ${branchName}) && git cherry ${trunk} $(git commit-tree $(git rev-parse "${branchName}^{tree}") -p $mergeBase -m _)`
   )
