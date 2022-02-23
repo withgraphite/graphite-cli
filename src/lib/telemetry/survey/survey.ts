@@ -1,6 +1,6 @@
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
-import { default as t } from '@screenplaydev/retype';
-import { request } from '@screenplaydev/retyped-routes';
+import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { default as t } from '@withgraphite/retype';
+import { request } from '@withgraphite/retyped-routes';
 import prompts from 'prompts';
 import { API_SERVER } from '../../../lib/api';
 import surveyConfig from '../../../lib/config/survey_config';

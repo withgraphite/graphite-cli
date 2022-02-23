@@ -1,5 +1,5 @@
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
-import { request } from '@screenplaydev/retyped-routes';
+import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { request } from '@withgraphite/retyped-routes';
 import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';

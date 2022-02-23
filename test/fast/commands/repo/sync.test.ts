@@ -1,4 +1,4 @@
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
+import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { expect } from 'chai';
 import { execSync } from 'child_process';
 import fs from 'fs-extra';

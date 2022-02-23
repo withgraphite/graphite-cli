@@ -294,44 +294,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@screenplaydev/graphite-cli-routes@npm:0.15.0":
-  version: 0.15.0
-  resolution: "@screenplaydev/graphite-cli-routes@npm:0.15.0"
-  dependencies:
-    "@screenplaydev/retype": ^0.3.1
-    "@screenplaydev/retyped-routes": ^0.1.0
-    "@types/node": ^14.14.37
-  checksum: 2f56c060944ea39750e9a399c33da88f3aeaa2e8b2d78847d3040e381fd625fa5835bc96fbd9913586f305469b137f5e71e6c0247cad3e4ffd8682d742a454b5
-  languageName: node
-  linkType: hard
-
-"@screenplaydev/retype@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@screenplaydev/retype@npm:0.2.0"
-  checksum: 9b633e952ccf172609f91157eb939b5aaabcde97ad222b3b942b3acf9ecf22f0e20aa7a8e63070ec48cbdac7ddcb52d3051e93250ecb7c789f828a0c9bd03e2a
-  languageName: node
-  linkType: hard
-
-"@screenplaydev/retype@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "@screenplaydev/retype@npm:0.3.1"
-  checksum: 6de6f7a08d9eb582a7dc361edf93ae79414c021b10c516048ef6ae1230857143535fde189d74d7d9e256fdf60b6b94cd7f6ffc4e9c5339ca55e5bb011fea5743
-  languageName: node
-  linkType: hard
-
-"@screenplaydev/retyped-routes@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "@screenplaydev/retyped-routes@npm:0.1.0"
-  dependencies:
-    "@screenplaydev/retype": ^0.2.0
-    "@types/isomorphic-fetch": ^0.0.35
-    "@types/node": ^14.14.37
-    isomorphic-fetch: ^3.0.0
-    path-to-regexp: ^6.1.0
-  checksum: 42c5ada2a3eed0726c6478d45f3d6278dc5584eb6b774e194d067e00aa99d5c362907295940e37c142caeb8e74fcbfa2bc7d97fd638043ccef640ebb00bacf34
-  languageName: node
-  linkType: hard
-
 "@sindresorhus/is@npm:^4.0.0":
   version: 4.0.1
   resolution: "@sindresorhus/is@npm:4.0.1"
@@ -669,6 +631,84 @@ __metadata:
   version: 1.1.2
   resolution: "@ungap/promise-all-settled@npm:1.1.2"
   checksum: be6c80a2fcea2fc4ed9ccf707da9837c2f501ba21312bf9b39f8b0c4ac7e581ed37909f4f64f8dab0c51c0ae5bdf2a45b59d9a215050876b3f27e6844dba30b6
+  languageName: node
+  linkType: hard
+
+"@withgraphite/graphite-cli-routes@npm:0.15.0":
+  version: 0.15.0
+  resolution: "@withgraphite/graphite-cli-routes@npm:0.15.0"
+  dependencies:
+    "@types/node": ^14.14.37
+    "@withgraphite/retype": ^0.3.1
+    "@withgraphite/retyped-routes": ^0.3.0
+  checksum: 4f30659dbcbc8279c65cc82b2240a8c9c0ee86ce525e41582c90d60ea5b419a3c108dfef84b82739e92693b69809474309fc2026535996d1b6af851ea3ccc393
+  languageName: node
+  linkType: hard
+
+"@withgraphite/graphite-cli@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@withgraphite/graphite-cli@workspace:."
+  dependencies:
+    "@commitlint/cli": ^13.1.0
+    "@commitlint/config-conventional": ^13.1.0
+    "@types/chai": ^4.2.14
+    "@types/chai-as-promised": ^7.1.4
+    "@types/chalk": ^2.2.0
+    "@types/fs-extra": ^9.0.1
+    "@types/micromatch": ^4.0.2
+    "@types/mocha": ^8.2.3
+    "@types/node": ^14.14.37
+    "@types/node-fetch": ^2.5.11
+    "@types/prompts": ^2.0.14
+    "@types/tmp": ^0.2.0
+    "@types/yargs": ^15.0.5
+    "@typescript-eslint/eslint-plugin": ^4.15.2
+    "@typescript-eslint/parser": ^4.15.2
+    "@withgraphite/graphite-cli-routes": 0.15.0
+    "@withgraphite/retype": ^0.3.1
+    "@withgraphite/retyped-routes": ^0.3.0
+    "@yarnpkg/pnpify": ^3.0.0-rc.10
+    chai: ^4.2.0
+    chai-as-promised: ^7.1.1
+    chalk: ^4.1.0
+    eslint: ^7.20.0
+    fs-extra: ^9.0.1
+    husky: ^7.0.1
+    micromatch: ^4.0.4
+    mocha: ^8.3.2
+    nock: ^13.1.3
+    node-fetch: ^2.6.1
+    open: ^8.4.0
+    prettier: 2.3.2
+    prompts: ^2.4.1
+    tmp: ^0.2.1
+    ts-node: ^9.0.0
+    typescript: ^4.2.4
+    yargs: ^17.0.1
+  bin:
+    gp: dist/src/index.js
+    graphite: dist/src/index.js
+    gt: dist/src/index.js
+  languageName: unknown
+  linkType: soft
+
+"@withgraphite/retype@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "@withgraphite/retype@npm:0.3.1"
+  checksum: dd54e20776a7e3169c49088a650d421719e49d7ade4e0b4f5a0dceb748e4a27d088cb3adc999df77ef45b590c3e0b600afd4b1f9dda85aa843a4f5de502123dc
+  languageName: node
+  linkType: hard
+
+"@withgraphite/retyped-routes@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@withgraphite/retyped-routes@npm:0.3.0"
+  dependencies:
+    "@types/isomorphic-fetch": ^0.0.35
+    "@types/node": ^14.14.37
+    "@withgraphite/retype": ^0.3.1
+    isomorphic-fetch: ^3.0.0
+    path-to-regexp: ^6.1.0
+  checksum: 6c7dc5e515e79758a40842c8328b39f47eabcb901f173ac477b5d0f47f73a01fccf03ce89cc76505c36cb6fc7e2a090662dd7ed856c638ca4c439a40458b3c7d
   languageName: node
   linkType: hard
 
@@ -2281,53 +2321,6 @@ fsevents@~2.3.1:
   checksum: 6875e94add80360364a609e1fd0fe325e3b82326db2278dd36c1011a6bfc0e098811e791dedf9a88d4ae3f9d17a5c6a8d684948dd7b097f1f8d5ff905676e2b2
   languageName: node
   linkType: hard
-
-"graphite-cli@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "graphite-cli@workspace:."
-  dependencies:
-    "@commitlint/cli": ^13.1.0
-    "@commitlint/config-conventional": ^13.1.0
-    "@screenplaydev/graphite-cli-routes": 0.15.0
-    "@screenplaydev/retype": ^0.2.0
-    "@screenplaydev/retyped-routes": ^0.1.0
-    "@types/chai": ^4.2.14
-    "@types/chai-as-promised": ^7.1.4
-    "@types/chalk": ^2.2.0
-    "@types/fs-extra": ^9.0.1
-    "@types/micromatch": ^4.0.2
-    "@types/mocha": ^8.2.3
-    "@types/node": ^14.14.37
-    "@types/node-fetch": ^2.5.11
-    "@types/prompts": ^2.0.14
-    "@types/tmp": ^0.2.0
-    "@types/yargs": ^15.0.5
-    "@typescript-eslint/eslint-plugin": ^4.15.2
-    "@typescript-eslint/parser": ^4.15.2
-    "@yarnpkg/pnpify": ^3.0.0-rc.10
-    chai: ^4.2.0
-    chai-as-promised: ^7.1.1
-    chalk: ^4.1.0
-    eslint: ^7.20.0
-    fs-extra: ^9.0.1
-    husky: ^7.0.1
-    micromatch: ^4.0.4
-    mocha: ^8.3.2
-    nock: ^13.1.3
-    node-fetch: ^2.6.1
-    open: ^8.4.0
-    prettier: 2.3.2
-    prompts: ^2.4.1
-    tmp: ^0.2.1
-    ts-node: ^9.0.0
-    typescript: ^4.2.4
-    yargs: ^17.0.1
-  bin:
-    gp: dist/src/index.js
-    graphite: dist/src/index.js
-    gt: dist/src/index.js
-  languageName: unknown
-  linkType: soft
 
 "growl@npm:1.10.5":
   version: 1.10.5

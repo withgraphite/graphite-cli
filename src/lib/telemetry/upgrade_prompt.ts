@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
-import { request } from '@screenplaydev/retyped-routes';
+import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { request } from '@withgraphite/retyped-routes';
 import cp from 'child_process';
 import { getUserEmail, SHOULD_REPORT_TELEMETRY } from '.';
 import { version } from '../../../package.json';
