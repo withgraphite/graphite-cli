@@ -1,23 +1,34 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { repoConfig } from '../lib/config';
 import { KilledError } from '../lib/errors';
 import { getTrunk, logInfo } from '../lib/utils';
 import Branch from '../wrapper-classes/branch';
+import { TContext } from './../lib/context/context';
 
-export function existsDanglingBranches(): boolean {
-  const danglingBranches = Branch.allBranchesWithFilter({
-    filter: (b) => !b.isTrunk() && b.getParentFromMeta() === undefined,
-  });
+export function existsDanglingBranches(context: TContext): boolean {
+  const danglingBranches = Branch.allBranchesWithFilter(
+    {
+      filter: (b) =>
+        !b.isTrunk(context) && b.getParentFromMeta(context) === undefined,
+    },
+    context
+  );
   return danglingBranches.length > 0;
 }
 
-export async function fixDanglingBranches(force: boolean): Promise<void> {
-  const danglingBranches = Branch.allBranchesWithFilter({
-    filter: (b) => !b.isTrunk() && b.getParentFromMeta() === undefined,
-  });
+export async function fixDanglingBranches(
+  context: TContext,
+  force: boolean
+): Promise<void> {
+  const danglingBranches = Branch.allBranchesWithFilter(
+    {
+      filter: (b) =>
+        !b.isTrunk(context) && b.getParentFromMeta(context) === undefined,
+    },
+    context
+  );
 
-  const trunk = getTrunk().name;
+  const trunk = getTrunk(context).name;
   for (const branch of danglingBranches) {
     type TFixStrategy = 'parent_trunk' | 'ignore_branch' | 'no_fix' | undefined;
     let fixStrategy: TFixStrategy | undefined = undefined;
@@ -74,7 +85,7 @@ export async function fixDanglingBranches(force: boolean): Promise<void> {
         branch.setParentBranchName(trunk);
         break;
       case 'ignore_branch':
-        repoConfig.addIgnoreBranchPatterns([branch.name]);
+        context.repoConfig.addIgnoreBranchPatterns([branch.name]);
         break;
       case 'no_fix':
         break;

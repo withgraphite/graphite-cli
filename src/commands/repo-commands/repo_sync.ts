@@ -54,14 +54,17 @@ export const description =
   'Delete any branches that have been merged or squashed into the trunk branch, and recursively check for stack states against main.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
-    await syncAction({
-      pull: argv.pull,
-      force: argv.force,
-      resubmit: argv.resubmit,
-      delete: argv.delete,
-      showDeleteProgress: argv['show-delete-progress'],
-      fixDanglingBranches: argv['show-dangling'],
-    });
+  return profile(argv, canonical, async (context) => {
+    await syncAction(
+      {
+        pull: argv.pull,
+        force: argv.force,
+        resubmit: argv.resubmit,
+        delete: argv.delete,
+        showDeleteProgress: argv['show-delete-progress'],
+        fixDanglingBranches: argv['show-dangling'],
+      },
+      context
+    );
   });
 };

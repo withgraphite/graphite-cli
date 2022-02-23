@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { initContext } from '../../../src/lib/context/context';
 import {
   GitStackBuilder,
   MetaStackBuilder,
@@ -12,6 +13,7 @@ for (const scene of allScenes) {
   // eslint-disable-next-line max-lines-per-function
   describe(`(${scene}): stack builder class`, function () {
     configureTest(this, scene);
+    const context = initContext();
 
     it('Can print stacks from git', () => {
       scene.repo.createAndCheckoutBranch('a');
@@ -27,8 +29,8 @@ for (const scene of allScenes) {
       scene.repo.createAndCheckoutBranch('d');
       scene.repo.createChangeAndCommit('d');
 
-      const gitStacks = new GitStackBuilder().allStacks();
-      const metaStacks = new MetaStackBuilder().allStacks();
+      const gitStacks = new GitStackBuilder().allStacks(context);
+      const metaStacks = new MetaStackBuilder().allStacks(context);
 
       expect(
         gitStacks[0].equals(
@@ -55,8 +57,8 @@ for (const scene of allScenes) {
       scene.repo.createChange('d');
       scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
-      const metaStacks = new MetaStackBuilder().allStacks();
-      const gitStacks = new GitStackBuilder().allStacks();
+      const metaStacks = new MetaStackBuilder().allStacks(context);
+      const gitStacks = new GitStackBuilder().allStacks(context);
 
       expect(
         metaStacks[0].equals(Stack.fromMap({ main: { d: {}, a: { b: {} } } }))
@@ -79,10 +81,12 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
-        new Branch('a')
+        new Branch('a'),
+        context
       );
       const gitStack = new GitStackBuilder().fullStackFromBranch(
-        new Branch('a')
+        new Branch('a'),
+        context
       );
 
       expect(metaStack.equals(Stack.fromMap({ main: { a: { b: {} } } }))).to.be
@@ -103,10 +107,12 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
-        new Branch('main')
+        new Branch('main'),
+        context
       );
       const gitStack = new GitStackBuilder().fullStackFromBranch(
-        new Branch('main')
+        new Branch('main'),
+        context
       );
 
       expect(metaStack.equals(Stack.fromMap({ main: { a: { b: {} }, d: {} } })))
@@ -122,10 +128,12 @@ for (const scene of allScenes) {
       scene.repo.createChangeAndCommit('b');
 
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
-        new Branch('a')
+        new Branch('a'),
+        context
       );
       const gitStack = new GitStackBuilder().fullStackFromBranch(
-        new Branch('a')
+        new Branch('a'),
+        context
       );
 
       expect(metaStack.equals(Stack.fromMap({ main: { a: {} } }))).to.be.true;
@@ -140,10 +148,12 @@ for (const scene of allScenes) {
       scene.repo.createChange('c');
       scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
       const metaStack = new MetaStackBuilder().downstackFromBranch(
-        new Branch('b')
+        new Branch('b'),
+        context
       );
       const gitStack = new GitStackBuilder().downstackFromBranch(
-        new Branch('b')
+        new Branch('b'),
+        context
       );
       expect(metaStack.equals(Stack.fromMap({ main: { a: { b: {} } } }))).to.be
         .true;
@@ -158,7 +168,8 @@ for (const scene of allScenes) {
       scene.repo.createChange('c');
       scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
-        new Branch('b')
+        new Branch('b'),
+        context
       );
       expect(
         metaStack
@@ -190,10 +201,12 @@ for (const scene of allScenes) {
       // A
 
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
-        new Branch('a')
+        new Branch('a'),
+        context
       );
       const gitStack = new GitStackBuilder().fullStackFromBranch(
-        new Branch('a')
+        new Branch('a'),
+        context
       );
 
       expect(metaStack.equals(Stack.fromMap({ main: { a: { b: {}, c: {} } } })))

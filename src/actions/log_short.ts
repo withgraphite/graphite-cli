@@ -1,20 +1,21 @@
 import chalk from 'chalk';
+import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { getTrunk, logTip } from '../lib/utils';
 import { GitStackBuilder, Stack, StackNode } from '../wrapper-classes';
 import Branch from '../wrapper-classes/branch';
 
-function getStacks(): {
+function getStacks(context: TContext): {
   fallenStacks: Stack[];
   untrackedStacks: Stack[];
   trunkStack: Stack;
 } {
   const stacks = new GitStackBuilder({
     useMemoizedResults: true,
-  }).allStacks();
+  }).allStacks(context);
 
-  const trunkStack = stacks.find((s) => s.source.branch.isTrunk());
+  const trunkStack = stacks.find((s) => s.source.branch.isTrunk(context));
   if (!trunkStack) {
     throw new ExitFailedError(`Unable to find trunk stack`);
   }
@@ -22,9 +23,9 @@ function getStacks(): {
   const untrackedStacks: Stack[] = [];
 
   stacks
-    .filter((s) => !s.source.branch.isTrunk())
+    .filter((s) => !s.source.branch.isTrunk(context))
     .forEach((s) => {
-      if (s.source.branch.getParentFromMeta()) {
+      if (s.source.branch.getParentFromMeta(context)) {
         fallenStacks.push(s);
       } else {
         untrackedStacks.push(s);
@@ -33,33 +34,45 @@ function getStacks(): {
   return { trunkStack, fallenStacks, untrackedStacks };
 }
 
-export async function logShortAction(): Promise<void> {
-  const currentBranch = currentBranchPrecondition();
-  const stacks = getStacks();
+export async function logShortAction(context: TContext): Promise<void> {
+  const currentBranch = currentBranchPrecondition(context);
+  const stacks = getStacks(context);
 
-  const tips = printStackNode(stacks.trunkStack.source, {
-    indent: 0,
-    currentBranch: currentBranch,
-  });
+  const tips = printStackNode(
+    stacks.trunkStack.source,
+    {
+      indent: 0,
+      currentBranch: currentBranch,
+    },
+    context
+  );
 
   stacks.fallenStacks.sort(sortStacksByAge).forEach((s) => {
-    printStackNode(s.source, {
-      indent: 0,
-      currentBranch,
-    });
+    printStackNode(
+      s.source,
+      {
+        indent: 0,
+        currentBranch,
+      },
+      context
+    );
   });
 
   if (tips.needsFix || stacks.fallenStacks.length > 0) {
-    logRebaseTip();
+    logRebaseTip(context);
   }
 
   if (stacks.untrackedStacks.length > 0) {
     console.log('\nuntracked (created without Graphite)');
     stacks.untrackedStacks.sort(sortStacksByAge).forEach((s) =>
-      printStackNode(s.source, {
-        indent: 0,
-        currentBranch,
-      })
+      printStackNode(
+        s.source,
+        {
+          indent: 0,
+          currentBranch,
+        },
+        context
+      )
     );
   }
 
@@ -76,10 +89,11 @@ function sortStacksByAge(a: Stack, b: Stack): number {
 
 function printStackNode(
   node: StackNode,
-  opts: { indent: number; currentBranch: Branch }
+  opts: { indent: number; currentBranch: Branch },
+  context: TContext
 ): { needsFix: boolean; untracked: boolean } {
-  const metaParent = node.branch.getParentFromMeta();
-  let untracked = !metaParent && !node.branch.isTrunk();
+  const metaParent = node.branch.getParentFromMeta(context);
+  let untracked = !metaParent && !node.branch.isTrunk(context);
   let needsFix: boolean =
     !!metaParent &&
     (!node.parent || metaParent.name !== node.parent.branch.name);
@@ -97,11 +111,15 @@ function printStackNode(
     ].join(' ')
   );
   node.children.forEach((c) => {
-    if (!c.branch.isTrunk()) {
-      const tips = printStackNode(c, {
-        indent: opts.indent + 1,
-        currentBranch: opts.currentBranch,
-      });
+    if (!c.branch.isTrunk(context)) {
+      const tips = printStackNode(
+        c,
+        {
+          indent: opts.indent + 1,
+          currentBranch: opts.currentBranch,
+        },
+        context
+      );
       untracked = tips.untracked || untracked;
       needsFix = tips.needsFix || needsFix;
     }
@@ -109,11 +127,13 @@ function printStackNode(
   return { untracked, needsFix };
 }
 
-function logRebaseTip(): void {
+function logRebaseTip(context: TContext): void {
   logTip(
     [
       `Some branch merge-bases have fallen behind their parent branch's latest commit. Consider:`,
-      `> gt branch checkout ${getTrunk()} && gt stack fix --rebase # fix all stacks`,
+      `> gt branch checkout ${getTrunk(
+        context
+      )} && gt stack fix --rebase # fix all stacks`,
       `> gt branch checkout <branch> && gt stack fix --rebase # fix a specific stack`,
       `> gt branch checkout <branch> && gt upstack onto <parent> # fix a stack and update the parent`,
     ].join('\n')

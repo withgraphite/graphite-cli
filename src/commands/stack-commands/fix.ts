@@ -27,15 +27,18 @@ export const builder = args;
 export const aliases = ['f'];
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
+  return profile(argv, canonical, async (context) => {
     if (argv.rebase && argv.regen) {
       throw new ExitFailedError(
         'Please specify either the "--rebase" or "--regen" method, not both'
       );
     }
-    await fixAction({
-      action: argv.rebase ? 'rebase' : argv.regen ? 'regen' : undefined,
-      mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
-    });
+    await fixAction(
+      {
+        action: argv.rebase ? 'rebase' : argv.regen ? 'regen' : undefined,
+        mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
+      },
+      context
+    );
   });
 };

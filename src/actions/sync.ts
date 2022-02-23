@@ -1,5 +1,6 @@
 import prompts from 'prompts';
 import { TRepoSyncStackFrame } from '../lib/config/merge_conflict_callstack_config';
+import { TContext } from '../lib/context/context';
 import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { syncPRInfoForBranches } from '../lib/sync/pr_info';
@@ -17,19 +18,22 @@ import { deleteMergedBranches } from './clean_branches';
 import { fixDanglingBranches } from './fix_dangling_branches';
 import { submitAction } from './submit';
 
-export async function syncAction(opts: {
-  pull: boolean;
-  force: boolean;
-  delete: boolean;
-  showDeleteProgress: boolean;
-  resubmit: boolean;
-  fixDanglingBranches: boolean;
-}): Promise<void> {
+export async function syncAction(
+  opts: {
+    pull: boolean;
+    force: boolean;
+    delete: boolean;
+    showDeleteProgress: boolean;
+    resubmit: boolean;
+    fixDanglingBranches: boolean;
+  },
+  context: TContext
+): Promise<void> {
   if (trackedUncommittedChanges()) {
     throw new PreconditionsFailedError('Cannot sync with uncommitted changes');
   }
-  const oldBranch = currentBranchPrecondition();
-  const trunk = getTrunk().name;
+  const oldBranch = currentBranchPrecondition(context);
+  const trunk = getTrunk(context).name;
   checkoutBranch(trunk);
 
   if (opts.pull) {
@@ -42,7 +46,7 @@ export async function syncAction(opts: {
     });
   }
 
-  await syncPRInfoForBranches(Branch.allBranches());
+  await syncPRInfoForBranches(Branch.allBranches(context), context);
 
   // This needs to happen before we delete/resubmit so that we can potentially
   // delete or resubmit on the dangling branches.
@@ -52,7 +56,7 @@ export async function syncAction(opts: {
     logTip(
       `Disable this behavior at any point in the future with --no-show-dangling`
     );
-    await fixDanglingBranches(opts.force);
+    await fixDanglingBranches(context, opts.force);
   }
 
   const deleteMergedBranchesContinuation = {
@@ -66,32 +70,37 @@ export async function syncAction(opts: {
     logNewline();
     logInfo(`Checking if any branches have been merged and can be deleted...`);
     logTip(`Disable this behavior at any point in the future with --no-delete`);
-    await deleteMergedBranches({
-      frame: {
-        op: 'DELETE_BRANCHES_CONTINUATION',
-        force: opts.force,
-        showDeleteProgress: opts.showDeleteProgress,
+    await deleteMergedBranches(
+      {
+        frame: {
+          op: 'DELETE_BRANCHES_CONTINUATION',
+          force: opts.force,
+          showDeleteProgress: opts.showDeleteProgress,
+        },
+        parent: {
+          frame: deleteMergedBranchesContinuation,
+          parent: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
+        },
       },
-      parent: {
-        frame: deleteMergedBranchesContinuation,
-        parent: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
-      },
-    });
+      context
+    );
   }
 
   await repoSyncDeleteMergedBranchesContinuation(
-    deleteMergedBranchesContinuation
+    deleteMergedBranchesContinuation,
+    context
   );
 }
 
 export async function repoSyncDeleteMergedBranchesContinuation(
-  frame: TRepoSyncStackFrame
+  frame: TRepoSyncStackFrame,
+  context: TContext
 ): Promise<void> {
   if (frame.resubmit) {
-    await resubmitBranchesWithNewBases(frame.force);
+    await resubmitBranchesWithNewBases(frame.force, context);
   }
 
-  const trunk = getTrunk().name;
+  const trunk = getTrunk(context).name;
   checkoutBranch(
     Branch.exists(frame.oldBranchName) ? frame.oldBranchName : trunk
   );
@@ -115,20 +124,26 @@ function cleanDanglingMetadata(): void {
   });
 }*/
 
-async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
+async function resubmitBranchesWithNewBases(
+  force: boolean,
+  context: TContext
+): Promise<void> {
   const needsResubmission: Branch[] = [];
-  Branch.allBranchesWithFilter({
-    filter: (b) => {
-      const prState = b.getPRInfo()?.state;
-      return (
-        !b.isTrunk() &&
-        b.getParentFromMeta() !== undefined &&
-        prState !== 'MERGED' &&
-        prState !== 'CLOSED'
-      );
+  Branch.allBranchesWithFilter(
+    {
+      filter: (b) => {
+        const prState = b.getPRInfo()?.state;
+        return (
+          !b.isTrunk(context) &&
+          b.getParentFromMeta(context) !== undefined &&
+          prState !== 'MERGED' &&
+          prState !== 'CLOSED'
+        );
+      },
     },
-  }).forEach((b) => {
-    const currentBase = b.getParentFromMeta()?.name;
+    context
+  ).forEach((b) => {
+    const currentBase = b.getParentFromMeta(context)?.name;
     const githubBase = b.getPRInfo()?.base;
 
     if (githubBase && githubBase !== currentBase) {
@@ -163,14 +178,17 @@ async function resubmitBranchesWithNewBases(force: boolean): Promise<void> {
   }
   if (resubmit) {
     logInfo(`Updating PR to propagate local rebase changes...`);
-    await submitAction({
-      scope: 'FULLSTACK',
-      editPRFieldsInline: false,
-      draftToggle: false,
-      dryRun: false,
-      updateOnly: false,
-      branchesToSubmit: needsResubmission,
-      reviewers: false,
-    });
+    await submitAction(
+      {
+        scope: 'FULLSTACK',
+        editPRFieldsInline: false,
+        draftToggle: false,
+        dryRun: false,
+        updateOnly: false,
+        branchesToSubmit: needsResubmission,
+        reviewers: false,
+      },
+      context
+    );
   }
 }

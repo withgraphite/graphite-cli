@@ -1,5 +1,6 @@
 import Branch from '../../wrapper-classes/branch';
-import { repoConfig, userConfig } from '../config';
+import { userConfig } from '../config';
+import { TContext } from '../context/context';
 import { PreconditionsFailedError } from '../errors';
 import {
   detectStagedChanges,
@@ -18,14 +19,14 @@ function addAllAvailableTip(): void {
   }
 }
 
-function currentBranchPrecondition(): Branch {
+function currentBranchPrecondition(context: TContext): Branch {
   const branch = Branch.getCurrentBranch();
   if (!branch) {
     throw new PreconditionsFailedError(
       `Cannot find current branch. Please ensure you're running this command atop a checked-out branch.`
     );
   }
-  if (repoConfig.branchIsIgnored(branch.name)) {
+  if (context.repoConfig.branchIsIgnored(branch.name)) {
     throw new PreconditionsFailedError(
       [
         `Cannot use graphite atop (${branch.name}) which is explicitly ignored in your repo config.`,

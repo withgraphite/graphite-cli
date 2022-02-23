@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { repoConfig } from '../../lib/config';
 import { profile } from '../../lib/telemetry';
 import { gpExecSync, logInfo, logWarn } from '../../lib/utils';
 
@@ -28,7 +27,7 @@ export const description =
   'Often branches that you never plan to create PRs and merge into trunk.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
+  return profile(argv, canonical, async (context) => {
     if (argv.add) {
       const foundBranches = findMatches(argv.add);
       if (foundBranches.length) {
@@ -43,17 +42,17 @@ export const handler = async (argv: argsT): Promise<void> => {
           `No branches were found matching the provided pattern. Please make sure it is correct.`
         );
       }
-      repoConfig.addIgnoreBranchPatterns([argv.add]);
+      context.repoConfig.addIgnoreBranchPatterns([argv.add]);
       logInfo(`Added (${argv.add}) to be ignored`);
     } else if (argv.remove) {
-      if (repoConfig.getIgnoreBranches().includes(argv.remove)) {
-        repoConfig.removeIgnoreBranches(argv.remove);
+      if (context.repoConfig.getIgnoreBranches().includes(argv.remove)) {
+        context.repoConfig.removeIgnoreBranches(argv.remove);
         logInfo(`Removed pattern (${argv.remove}) from ignore list`);
       } else {
         logInfo(`No pattern matching (${argv.remove}) found.`);
       }
     } else {
-      const ignoredBranches = repoConfig.getIgnoreBranches();
+      const ignoredBranches = context.repoConfig.getIgnoreBranches();
       if (ignoredBranches.length) {
         logInfo(`The following patterns are being ignored by Graphite:`);
         logInfo(ignoredBranches.join('\n'));

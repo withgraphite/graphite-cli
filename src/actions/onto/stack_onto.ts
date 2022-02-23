@@ -4,6 +4,7 @@ import {
   TStackOntoBaseRebaseStackFrame,
   TStackOntoFixStackFrame,
 } from '../../lib/config/merge_conflict_callstack_config';
+import { TContext } from '../../lib/context/context';
 import {
   ExitFailedError,
   PreconditionsFailedError,
@@ -21,15 +22,22 @@ import Branch from '../../wrapper-classes/branch';
 import { restackBranch } from '../fix';
 import { validate } from '../validate';
 
-export async function stackOnto(opts: {
-  currentBranch: Branch;
-  onto: string;
-  mergeConflictCallstack: MergeConflictCallstackT;
-}): Promise<void> {
+export async function stackOnto(
+  opts: {
+    currentBranch: Branch;
+    onto: string;
+    mergeConflictCallstack: MergeConflictCallstackT;
+  },
+  context: TContext
+): Promise<void> {
   branchExistsPrecondition(opts.onto);
-  checkBranchCanBeMoved(opts.currentBranch, opts.onto);
-  validateStack();
-  const parent = await getParentForRebaseOnto(opts.currentBranch, opts.onto);
+  checkBranchCanBeMoved(opts.currentBranch, opts.onto, context);
+  validateStack(context);
+  const parent = await getParentForRebaseOnto(
+    opts.currentBranch,
+    opts.onto,
+    context
+  );
   // Save the old ref from before rebasing so that children can find their bases.
   opts.currentBranch.setMetaPrevRef(opts.currentBranch.getCurrentRef());
 
@@ -65,15 +73,20 @@ export async function stackOnto(opts: {
 
   await stackOntoBaseRebaseContinuation(
     stackOntoContinuationFrame,
-    opts.mergeConflictCallstack
+    opts.mergeConflictCallstack,
+    context
   );
 }
 
 export async function stackOntoBaseRebaseContinuation(
   frame: TStackOntoBaseRebaseStackFrame,
-  mergeConflictCallstack: MergeConflictCallstackT
+  mergeConflictCallstack: MergeConflictCallstackT,
+  context: TContext
 ): Promise<void> {
-  const currentBranch = await Branch.branchWithName(frame.currentBranchName);
+  const currentBranch = await Branch.branchWithName(
+    frame.currentBranchName,
+    context
+  );
   const onto = frame.onto;
 
   cache.clearAll();
@@ -88,13 +101,16 @@ export async function stackOntoBaseRebaseContinuation(
     onto: frame.onto,
   };
 
-  await restackBranch({
-    branch: currentBranch,
-    mergeConflictCallstack: {
-      frame: stackOntoContinuationFrame,
-      parent: mergeConflictCallstack,
+  await restackBranch(
+    {
+      branch: currentBranch,
+      mergeConflictCallstack: {
+        frame: stackOntoContinuationFrame,
+        parent: mergeConflictCallstack,
+      },
     },
-  });
+    context
+  );
 
   await stackOntoFixContinuation(stackOntoContinuationFrame);
 }
@@ -107,8 +123,12 @@ export async function stackOntoFixContinuation(
   );
 }
 
-function getParentForRebaseOnto(branch: Branch, onto: string): Branch {
-  const metaParent = branch.getParentFromMeta();
+function getParentForRebaseOnto(
+  branch: Branch,
+  onto: string,
+  context: TContext
+): Branch {
+  const metaParent = branch.getParentFromMeta(context);
   if (metaParent) {
     return metaParent;
   }
@@ -117,9 +137,9 @@ function getParentForRebaseOnto(branch: Branch, onto: string): Branch {
   return new Branch(onto);
 }
 
-function validateStack() {
+function validateStack(context: TContext) {
   try {
-    validate('UPSTACK');
+    validate('UPSTACK', context);
   } catch {
     throw new ValidationFailedError(
       `Cannot stack "onto", git branches must match stack.`
@@ -127,8 +147,12 @@ function validateStack() {
   }
 }
 
-function checkBranchCanBeMoved(branch: Branch, onto: string) {
-  if (branch.name === getTrunk().name) {
+function checkBranchCanBeMoved(
+  branch: Branch,
+  onto: string,
+  context: TContext
+) {
+  if (branch.name === getTrunk(context).name) {
     throw new PreconditionsFailedError(
       `Cannot stack (${branch.name}) onto ${onto}, (${branch.name}) is currently set as trunk.`
     );

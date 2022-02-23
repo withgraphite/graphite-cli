@@ -1,15 +1,19 @@
 import { execStateConfig } from '../lib/config';
+import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
 import { gpExecSync, logWarn } from '../lib/utils';
 import Branch from '../wrapper-classes/branch';
 import { fixAction } from './fix';
 
-export async function commitAmendAction(opts: {
-  addAll: boolean;
-  message?: string;
-  noEdit: boolean;
-}): Promise<void> {
+export async function commitAmendAction(
+  opts: {
+    addAll: boolean;
+    message?: string;
+    noEdit: boolean;
+  },
+  context: TContext
+): Promise<void> {
   if (opts.addAll) {
     gpExecSync(
       {
@@ -51,10 +55,13 @@ export async function commitAmendAction(opts: {
   // Only restack if working tree is now clean.
   try {
     uncommittedTrackedChangesPrecondition();
-    await fixAction({
-      action: 'rebase',
-      mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER' as const,
-    });
+    await fixAction(
+      {
+        action: 'rebase',
+        mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER' as const,
+      },
+      context
+    );
   } catch {
     logWarn(
       'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix --rebase`'

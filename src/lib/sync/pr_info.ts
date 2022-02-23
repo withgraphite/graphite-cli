@@ -1,24 +1,27 @@
-#!/usr/bin/env node
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import { logError } from '../../lib/utils';
 import Branch from '../../wrapper-classes/branch';
 import { API_SERVER } from '../api';
-import { repoConfig, userConfig } from '../config';
+import { userConfig } from '../config';
+import { TContext } from './../context/context';
 
 /**
  * TODO (nicholasyan): for now, this just syncs info for branches with existing
  * PR info. In the future, we can extend this method to query GitHub for PRs
  * associated with branch heads that don't have associated PR info.
  */
-export async function syncPRInfoForBranches(branches: Branch[]): Promise<void> {
+export async function syncPRInfoForBranches(
+  branches: Branch[],
+  context: TContext
+): Promise<void> {
   const authToken = userConfig.getAuthToken();
   if (authToken === undefined) {
     return;
   }
 
-  const repoName = repoConfig.getRepoName();
-  const repoOwner = repoConfig.getRepoOwner();
+  const repoName = context.repoConfig.getRepoName();
+  const repoOwner = context.repoConfig.getRepoOwner();
 
   const response = await request.requestWithArgs(
     API_SERVER,
@@ -29,7 +32,7 @@ export async function syncPRInfoForBranches(branches: Branch[]): Promise<void> {
       repoOwner: repoOwner,
       prNumbers: [],
       prHeadRefNames: branches
-        .filter((branch) => !branch.isTrunk())
+        .filter((branch) => !branch.isTrunk(context))
         .map((branch) => branch.name),
     }
   );
@@ -40,7 +43,7 @@ export async function syncPRInfoForBranches(branches: Branch[]): Promise<void> {
     // be a rare case and will develop it lazily.
     await Promise.all(
       response.prs.map(async (pr) => {
-        const branch = await Branch.branchWithName(pr.headRefName);
+        const branch = await Branch.branchWithName(pr.headRefName, context);
         branch.setPRInfo({
           number: pr.prNumber,
           base: pr.baseRefName,

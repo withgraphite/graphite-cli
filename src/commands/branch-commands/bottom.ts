@@ -17,9 +17,13 @@ export const description =
   "If you're in a stack: Branch A → Branch B → Branch C (you are here), checkout the branch at the bottom of the stack (Branch A).";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
-    await switchBranchAction(TraversalDirection.Bottom, {
-      interactive: execStateConfig.interactive(),
-    });
+  return profile(argv, canonical, async (context) => {
+    await switchBranchAction(
+      TraversalDirection.Bottom,
+      {
+        interactive: execStateConfig.interactive(),
+      },
+      context
+    );
   });
 };

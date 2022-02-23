@@ -1,11 +1,15 @@
 import prompts from 'prompts';
+import { TContext } from '../lib/context/context';
 import { ExitCancelledError, ExitFailedError } from '../lib/errors';
 import { getTrunk, gpExecSync } from '../lib/utils';
 import { MetaStackBuilder } from '../wrapper-classes';
 import Branch from '../wrapper-classes/branch';
 
-export async function interactiveCheckout(): Promise<void> {
-  const stack = new MetaStackBuilder().fullStackFromBranch(getTrunk());
+export async function interactiveCheckout(context: TContext): Promise<void> {
+  const stack = new MetaStackBuilder().fullStackFromBranch(
+    getTrunk(context),
+    context
+  );
   await promptBranches(stack.toPromptChoices());
 }
 

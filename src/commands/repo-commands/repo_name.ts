@@ -1,5 +1,4 @@
 import yargs from 'yargs';
-import { repoConfig } from '../../lib/config';
 import { profile } from '../../lib/telemetry';
 import { logInfo } from '../../lib/utils';
 
@@ -21,11 +20,11 @@ export const description =
   "The current repo's name stored in Graphite. e.g. in 'screenplaydev/graphite-cli', this is 'graphite-cli'.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
+  return profile(argv, canonical, async (context) => {
     if (argv.set) {
-      repoConfig.update((data) => (data.name = argv.set));
+      context.repoConfig.update((data) => (data.name = argv.set));
     } else {
-      logInfo(repoConfig.getRepoName());
+      logInfo(context.repoConfig.getRepoName());
     }
   });
 };

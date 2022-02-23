@@ -20,7 +20,10 @@ export const builder = args;
 export const aliases = ['e'];
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
-    await editDownstack(argv.input ? { inputPath: argv.input } : undefined);
+  return profile(argv, canonical, async (context) => {
+    await editDownstack(
+      context,
+      argv.input ? { inputPath: argv.input } : undefined
+    );
   });
 };

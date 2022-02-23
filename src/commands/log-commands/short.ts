@@ -12,7 +12,7 @@ export const canonical = 'log short';
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
-    await logShortAction();
+  return profile(argv, canonical, async (context) => {
+    await logShortAction(context);
   });
 };

@@ -2,11 +2,12 @@ import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
 import MetadataRef from '../../wrapper-classes/metadata_ref';
-import { repoConfig, userConfig } from '../config';
+import { userConfig } from '../config';
 import { getBranchToRefMapping } from '../git-refs/branch_ref';
 import { getRevListGitTree } from '../git-refs/branch_relations';
 import { currentBranchPrecondition } from '../preconditions';
 import { gpExecSync, logInfo, logWarn } from '../utils';
+import { TContext } from './../context/context';
 
 type stateT = {
   refTree: Record<string, string[]>;
@@ -16,25 +17,28 @@ type stateT = {
   metadata: Record<string, string>;
   currentBranchName: string;
 };
-export function captureState(): string {
-  const refTree = getRevListGitTree({
-    useMemoizedResults: false,
-    direction: 'parents',
-  });
-  const branchToRefMapping = getBranchToRefMapping();
+export function captureState(context: TContext): string {
+  const refTree = getRevListGitTree(
+    {
+      useMemoizedResults: false,
+      direction: 'parents',
+    },
+    context
+  );
+  const branchToRefMapping = getBranchToRefMapping(context);
 
   const metadata: Record<string, string> = {};
   MetadataRef.allMetadataRefs().forEach((ref) => {
     metadata[ref._branchName] = JSON.stringify(ref.read());
   });
 
-  const currentBranchName = currentBranchPrecondition().name;
+  const currentBranchName = currentBranchPrecondition(context).name;
 
   const state: stateT = {
     refTree,
     branchToRefMapping,
     userConfig: JSON.stringify(userConfig._data),
-    repoConfig: JSON.stringify(repoConfig.data),
+    repoConfig: JSON.stringify(context.repoConfig.data),
     metadata,
     currentBranchName,
   };
@@ -42,7 +46,7 @@ export function captureState(): string {
   return JSON.stringify(state, null, 2);
 }
 
-export function recreateState(stateJson: string): string {
+export function recreateState(stateJson: string, context: TContext): string {
   const state = JSON.parse(stateJson) as stateT;
   const refMappingsOldToNew: Record<string, string> = {};
 
@@ -56,10 +60,13 @@ export function recreateState(stateJson: string): string {
   recreateCommits({ refTree: state.refTree, refMappingsOldToNew });
 
   logInfo(`Creating ${Object.keys(state.branchToRefMapping).length} branches`);
-  createBranches({
-    branchToRefMapping: state.branchToRefMapping,
-    refMappingsOldToNew,
-  });
+  createBranches(
+    {
+      branchToRefMapping: state.branchToRefMapping,
+      refMappingsOldToNew,
+    },
+    context
+  );
 
   logInfo(`Creating the repo config`);
   fs.writeFileSync(
@@ -95,11 +102,14 @@ function createMetadata(opts: {
   });
 }
 
-function createBranches(opts: {
-  branchToRefMapping: Record<string, string>;
-  refMappingsOldToNew: Record<string, string>;
-}): void {
-  const curBranch = currentBranchPrecondition();
+function createBranches(
+  opts: {
+    branchToRefMapping: Record<string, string>;
+    refMappingsOldToNew: Record<string, string>;
+  },
+  context: TContext
+): void {
+  const curBranch = currentBranchPrecondition(context);
   Object.keys(opts.branchToRefMapping).forEach((branch) => {
     const originalRef =
       opts.refMappingsOldToNew[opts.branchToRefMapping[branch]];

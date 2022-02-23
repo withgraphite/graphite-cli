@@ -1,4 +1,5 @@
 import { execStateConfig, userConfig } from '../lib/config';
+import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { checkoutBranch, gpExecSync } from '../lib/utils';
@@ -18,12 +19,15 @@ const EMPTY_COMMIT_MESSAGE_INFO = [
 function stringToTmpFileInput(contents: string): string {
   return `<(printf '%s\n' "${contents}")`;
 }
-export async function createBranchAction(opts: {
-  branchName?: string;
-  commitMessage?: string;
-  addAll?: boolean;
-}): Promise<void> {
-  const parentBranch = currentBranchPrecondition();
+export async function createBranchAction(
+  opts: {
+    branchName?: string;
+    commitMessage?: string;
+    addAll?: boolean;
+  },
+  context: TContext
+): Promise<void> {
+  const parentBranch = currentBranchPrecondition(context);
 
   if (opts.addAll) {
     gpExecSync(

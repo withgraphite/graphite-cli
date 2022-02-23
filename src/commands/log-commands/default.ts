@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { printStack } from '../../actions/print_stack';
-import { repoConfig } from '../../lib/config';
+import { TContext } from '../../lib/context/context';
 import { profile } from '../../lib/telemetry';
 import { getTrunk } from '../../lib/utils/trunk';
 import Branch from '../../wrapper-classes/branch';
@@ -30,40 +30,46 @@ export const canonical = 'log';
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
+  return profile(argv, canonical, async (context) => {
     // Use our custom logging of branches and stacks:
     if (argv['on-trunk']) {
-      printTrunkLog();
+      printTrunkLog(context);
     } else if (argv['behind-trunk']) {
-      await printStacksBehindTrunk();
+      await printStacksBehindTrunk(context);
     } else {
-      printTrunkLog();
-      await printStacksBehindTrunk();
+      printTrunkLog(context);
+      await printStacksBehindTrunk(context);
     }
   });
 };
 
-function printTrunkLog(): void {
-  const trunk = getTrunk();
-  printStack({
-    baseBranch: trunk.useMemoizedResults(),
-    indentLevel: 0,
-    config: {
-      currentBranch: Branch.getCurrentBranch(),
-      offTrunk: true,
-      visited: [],
+function printTrunkLog(context: TContext): void {
+  const trunk = getTrunk(context);
+  printStack(
+    {
+      baseBranch: trunk.useMemoizedResults(),
+      indentLevel: 0,
+      config: {
+        currentBranch: Branch.getCurrentBranch(),
+        offTrunk: true,
+        visited: [],
+      },
     },
-  });
+    context
+  );
 }
 
-async function printStacksBehindTrunk(): Promise<void> {
-  const trunk = getTrunk();
-  const branchesWithoutParents = await Branch.getAllBranchesWithoutParents({
-    useMemoizedResults: true,
-    maxDaysBehindTrunk: repoConfig.getMaxDaysShownBehindTrunk(),
-    maxBranches: repoConfig.getMaxStacksShownBehindTrunk(),
-    excludeTrunk: true,
-  });
+async function printStacksBehindTrunk(context: TContext): Promise<void> {
+  const trunk = getTrunk(context);
+  const branchesWithoutParents = await Branch.getAllBranchesWithoutParents(
+    context,
+    {
+      useMemoizedResults: true,
+      maxDaysBehindTrunk: context.repoConfig.getMaxDaysShownBehindTrunk(),
+      maxBranches: context.repoConfig.getMaxStacksShownBehindTrunk(),
+      excludeTrunk: true,
+    }
+  );
   if (branchesWithoutParents.length === 0) {
     return;
   }
@@ -78,15 +84,18 @@ async function printStacksBehindTrunk(): Promise<void> {
 
   branchesWithoutParents.forEach((branch) => {
     console.log('․');
-    printStack({
-      baseBranch: branch.useMemoizedResults(),
-      indentLevel: 1,
-      config: {
-        currentBranch: Branch.getCurrentBranch(),
-        offTrunk: false,
-        visited: [],
+    printStack(
+      {
+        baseBranch: branch.useMemoizedResults(),
+        indentLevel: 1,
+        config: {
+          currentBranch: Branch.getCurrentBranch(),
+          offTrunk: false,
+          visited: [],
+        },
       },
-    });
+      context
+    );
     console.log(`◌──┘`);
     console.log('․');
   });

@@ -1,4 +1,5 @@
 import { execStateConfig } from '../lib/config';
+import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import {
   ensureSomeStagedChangesPrecondition,
@@ -7,10 +8,13 @@ import {
 import { gpExecSync, logWarn } from '../lib/utils';
 import { fixAction } from './fix';
 
-export async function commitCreateAction(opts: {
-  addAll: boolean;
-  message: string | undefined;
-}): Promise<void> {
+export async function commitCreateAction(
+  opts: {
+    addAll: boolean;
+    message: string | undefined;
+  },
+  context: TContext
+): Promise<void> {
   if (opts.addAll) {
     gpExecSync(
       {
@@ -56,10 +60,13 @@ export async function commitCreateAction(opts: {
 
   try {
     uncommittedTrackedChangesPrecondition();
-    await fixAction({
-      action: 'rebase',
-      mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER' as const,
-    });
+    await fixAction(
+      {
+        action: 'rebase',
+        mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER' as const,
+      },
+      context
+    );
   } catch {
     logWarn(
       'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix --rebase`'

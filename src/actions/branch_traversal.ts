@@ -1,7 +1,7 @@
-#!/usr/bin/env node
 import chalk from 'chalk';
 import { execSync } from 'child_process';
 import prompts from 'prompts';
+import { TContext } from '../lib/context/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { logInfo } from '../lib/utils';
@@ -38,21 +38,25 @@ async function getStackBranch(candidates: Branch[]): Promise<string> {
 function getDownstackBranch(
   currentBranch: Branch,
   direction: TraversalDirection.Previous | TraversalDirection.Bottom,
+  context: TContext,
   numSteps?: number
 ): string | undefined {
   let branch = currentBranch;
-  let prevBranch = branch.getParentFromMeta();
+  let prevBranch = branch.getParentFromMeta(context);
   let indent = 0;
 
   // Bottom goes to the bottom of the stack but prev can go up to trunk
-  if (direction === TraversalDirection.Previous && prevBranch?.isTrunk()) {
+  if (
+    direction === TraversalDirection.Previous &&
+    prevBranch?.isTrunk(context)
+  ) {
     branch = prevBranch;
     indent++;
   }
-  while (prevBranch && !prevBranch.isTrunk()) {
+  while (prevBranch && !prevBranch.isTrunk(context)) {
     logInfo(`${'  '.repeat(indent)}↳(${branch})`);
     branch = prevBranch;
-    prevBranch = branch.getParentFromMeta();
+    prevBranch = branch.getParentFromMeta(context);
     indent++;
     if (direction === TraversalDirection.Previous && indent === numSteps) {
       break;
@@ -66,10 +70,11 @@ async function getUpstackBranch(
   currentBranch: Branch,
   interactive: boolean,
   direction: TraversalDirection.Next | TraversalDirection.Top,
+  context: TContext,
   numSteps?: number
 ): Promise<string | undefined> {
   let branch = currentBranch;
-  let candidates = branch.getChildrenFromMeta();
+  let candidates = branch.getChildrenFromMeta(context);
   let indent = 0;
 
   while (branch && candidates.length) {
@@ -79,7 +84,7 @@ async function getUpstackBranch(
     } else {
       if (interactive) {
         const stack_base_branch = await getStackBranch(candidates);
-        branch = await Branch.branchWithName(stack_base_branch);
+        branch = await Branch.branchWithName(stack_base_branch, context);
       } else {
         throw new ExitFailedError(
           `Cannot get next branch, multiple choices available: [${candidates.join(
@@ -92,7 +97,7 @@ async function getUpstackBranch(
     if (direction === TraversalDirection.Next && indent === numSteps) {
       break;
     }
-    candidates = branch.getChildrenFromMeta();
+    candidates = branch.getChildrenFromMeta(context);
   }
 
   logInfo(`${'  '.repeat(indent)}↳(${chalk.cyan(branch)})`);
@@ -104,19 +109,25 @@ export async function switchBranchAction(
   opts: {
     numSteps?: number;
     interactive: boolean;
-  }
+  },
+  context: TContext
 ): Promise<void> {
-  const currentBranch = currentBranchPrecondition();
+  const currentBranch = currentBranchPrecondition(context);
   let nextBranch;
   switch (direction) {
     case TraversalDirection.Bottom: {
-      nextBranch = getDownstackBranch(currentBranch, TraversalDirection.Bottom);
+      nextBranch = getDownstackBranch(
+        currentBranch,
+        TraversalDirection.Bottom,
+        context
+      );
       break;
     }
     case TraversalDirection.Previous: {
       nextBranch = getDownstackBranch(
         currentBranch,
         TraversalDirection.Previous,
+        context,
         opts.numSteps
       );
       break;
@@ -125,7 +136,8 @@ export async function switchBranchAction(
       nextBranch = await getUpstackBranch(
         currentBranch,
         opts.interactive,
-        TraversalDirection.Top
+        TraversalDirection.Top,
+        context
       );
       break;
     }
@@ -134,6 +146,7 @@ export async function switchBranchAction(
         currentBranch,
         opts.interactive,
         TraversalDirection.Next,
+        context,
         opts.numSteps
       );
       break;

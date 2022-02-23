@@ -5,7 +5,8 @@ import cp from 'child_process';
 import { getUserEmail, SHOULD_REPORT_TELEMETRY } from '.';
 import { version } from '../../../package.json';
 import { API_SERVER } from '../api';
-import { messageConfig, repoConfig } from '../config';
+import { messageConfig } from '../config';
+import { TContext } from '../context/context';
 import { logMessageFromGraphite } from '../utils';
 
 function printAndClearOldMessage(): void {
@@ -18,8 +19,8 @@ function printAndClearOldMessage(): void {
     messageConfig.setMessage(undefined);
   }
 }
-export function fetchUpgradePromptInBackground(): void {
-  if (!repoConfig.graphiteInitialized()) {
+export function fetchUpgradePromptInBackground(context: TContext): void {
+  if (!context.repoConfig.graphiteInitialized()) {
     return;
   }
 

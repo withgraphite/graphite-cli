@@ -12,10 +12,10 @@ export const description =
   'Show the child branches of your current branch (i.e. directly above the current branch in the stack) as tracked by Graphite. Branch location metadata is stored under `.git/refs/branch-metadata`.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
-    const branch = currentBranchPrecondition();
+  return profile(argv, canonical, async (context) => {
+    const branch = currentBranchPrecondition(context);
 
-    const children = branch.getChildrenFromMeta();
+    const children = branch.getChildrenFromMeta(context);
     if (children.length === 0) {
       logInfo(
         `(${branch}) has no child branches (branches stacked on top of it).`

@@ -1,10 +1,10 @@
 import Branch from '../../wrapper-classes/branch';
-import { repoConfig } from '../config';
 import cache from '../config/cache';
+import { TContext } from '../context/context';
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils';
 
-function refreshRefsCache(): void {
+function refreshRefsCache(context: TContext): void {
   cache.clearBranchRefs();
   const memoizedRefToBranches: Record<string, string[]> = {};
   const memoizedBranchToRef: Record<string, string> = {};
@@ -22,7 +22,7 @@ function refreshRefsCache(): void {
       }
       const ref = pair[0];
       const branchName = pair[1].replace('refs/heads/', '');
-      if (!repoConfig.branchIsIgnored(branchName)) {
+      if (!context.repoConfig.branchIsIgnored(branchName)) {
         memoizedRefToBranches[ref]
           ? memoizedRefToBranches[ref].push(branchName)
           : (memoizedRefToBranches[ref] = [branchName]);
@@ -35,16 +35,18 @@ function refreshRefsCache(): void {
   });
 }
 
-export function getBranchToRefMapping(): Record<string, string> {
+export function getBranchToRefMapping(
+  context: TContext
+): Record<string, string> {
   if (!cache.getBranchToRef()) {
-    refreshRefsCache();
+    refreshRefsCache(context);
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return cache.getBranchToRef()!;
 }
-export function getRef(branch: Branch): string {
+export function getRef(branch: Branch, context: TContext): string {
   if (!branch.shouldUseMemoizedResults || !cache.getBranchToRef()) {
-    refreshRefsCache();
+    refreshRefsCache(context);
   }
   const ref = cache.getBranchToRef()?.[branch.name];
   if (!ref) {
@@ -52,11 +54,14 @@ export function getRef(branch: Branch): string {
   }
   return ref;
 }
-export function otherBranchesWithSameCommit(branch: Branch): Branch[] {
+export function otherBranchesWithSameCommit(
+  branch: Branch,
+  context: TContext
+): Branch[] {
   if (!branch.shouldUseMemoizedResults || !cache.getRefToBranches()) {
-    refreshRefsCache();
+    refreshRefsCache(context);
   }
-  const ref = branch.ref();
+  const ref = branch.ref(context);
   const branchNames = cache.getRefToBranches()?.[ref];
   if (!branchNames) {
     throw new ExitFailedError(`Failed to find branches for ref ${ref}`);

@@ -1,15 +1,20 @@
 import yargs, { Arguments } from 'yargs';
+import { initContext } from '../lib/context/context';
 import Branch from '../wrapper-classes/branch';
 
 yargs.completion('completion', (current, argv) => {
+  const context = initContext();
   const branchArg = getBranchArg(current, argv);
   if (branchArg === null) {
     return;
   }
 
-  return Branch.allBranchesWithFilter({
-    filter: (b) => b.name.startsWith(branchArg),
-  })
+  return Branch.allBranchesWithFilter(
+    {
+      filter: (b) => b.name.startsWith(branchArg),
+    },
+    context
+  )
     .map((b) => b.name)
     .sort();
 });

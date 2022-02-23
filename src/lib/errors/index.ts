@@ -3,6 +3,7 @@ import {
   MergeConflictCallstackT,
   persistMergeConflictCallstack,
 } from '../config/merge_conflict_callstack_config';
+import { TContext } from '../context/context';
 
 class ExitError extends Error {}
 class ExitCancelledError extends ExitError {
@@ -68,10 +69,10 @@ class KilledError extends ExitError {
 }
 
 class SiblingBranchError extends ExitError {
-  constructor(branches: Branch[]) {
+  constructor(branches: Branch[], context: TContext) {
     super(
       [
-        `Multiple branches pointing to commit ${branches[0].ref()}.`,
+        `Multiple branches pointing to commit ${branches[0].ref(context)}.`,
         `Graphite cannot infer parent-child relationships between identical branches.`,
         `Please add a commit to one, or delete one to continue:`,
         ...branches.map((b) => `-> (${b.name})`),

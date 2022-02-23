@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { TContext } from '../../lib/context/context';
 import { getTrunk } from '../../lib/utils';
 import Stack from '../../wrapper-classes/stack';
 
@@ -23,11 +24,14 @@ pick    gf--02-09-first
 
 */
 
-export function createStackEditFile(opts: {
-  stack: Stack;
-  tmpDir: string;
-}): string {
-  const trunkName = getTrunk().name;
+export function createStackEditFile(
+  opts: {
+    stack: Stack;
+    tmpDir: string;
+  },
+  context: TContext
+): string {
+  const trunkName = getTrunk(context).name;
   const branchNames = opts.stack
     .branches()
     .map((b) => b.name)

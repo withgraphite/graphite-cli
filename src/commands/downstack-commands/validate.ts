@@ -12,7 +12,7 @@ export const description =
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
-    validate('DOWNSTACK');
+  return profile(argv, canonical, async (context) => {
+    validate('DOWNSTACK', context);
   });
 };
