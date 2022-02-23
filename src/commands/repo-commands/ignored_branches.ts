@@ -1,8 +1,8 @@
+import chalk from 'chalk';
 import yargs from 'yargs';
 import { repoConfig } from '../../lib/config';
 import { profile } from '../../lib/telemetry';
 import { gpExecSync, logInfo, logWarn } from '../../lib/utils';
-import chalk from 'chalk';
 
 const args = {
   add: {

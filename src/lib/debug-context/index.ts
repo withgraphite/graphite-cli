@@ -34,7 +34,7 @@ export function captureState(): string {
     refTree,
     branchToRefMapping,
     userConfig: JSON.stringify(userConfig._data),
-    repoConfig: JSON.stringify(repoConfig._data),
+    repoConfig: JSON.stringify(repoConfig.data),
     metadata,
     currentBranchName,
   };

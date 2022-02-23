@@ -5,8 +5,7 @@ import { logInfo } from '../../lib/utils';
 
 const args = {
   set: {
-    demandOption: false,
-    default: false,
+    optional: true,
     type: 'string',
     alias: 's',
     describe:
@@ -24,7 +23,7 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
     if (argv.set) {
-      repoConfig.setRepoName(argv.set);
+      repoConfig.update((data) => (data.name = argv.set));
     } else {
       logInfo(repoConfig.getRepoName());
     }

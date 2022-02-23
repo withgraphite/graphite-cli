@@ -10,14 +10,14 @@ export function refreshPRInfoInBackground(): void {
   }
 
   const now = Date.now();
-  const lastFetchedMs = repoConfig.getLastFetchedPRInfoMs();
+  const lastFetchedMs = repoConfig.data.lastFetchedPRInfoMs;
   const msInSecond = 1000;
 
   // rate limit refreshing PR info to once per minute
   if (lastFetchedMs === undefined || now - lastFetchedMs > 60 * msInSecond) {
     // do our potential write before we kick off the child process so that we
     // don't incur a possible race condition with the write
-    repoConfig.setLastFetchedPRInfoMs(now);
+    repoConfig.update((data) => (data.lastFetchedPRInfoMs = now));
 
     cp.spawn('/usr/bin/env', ['node', __filename], {
       detached: true,

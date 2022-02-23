@@ -51,7 +51,7 @@ export function getTrunk(): Branch {
   if (memoizedTrunk) {
     return memoizedTrunk;
   }
-  const configTrunkName = repoConfig.getTrunk();
+  const configTrunkName = repoConfig.data.trunk;
   if (configTrunkName) {
     if (!Branch.exists(configTrunkName)) {
       throw new ExitFailedError(
