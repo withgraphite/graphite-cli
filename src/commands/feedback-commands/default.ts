@@ -1,5 +1,5 @@
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
-import { request } from '@screenplaydev/retyped-routes';
+import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { API_SERVER } from '../../lib/api';

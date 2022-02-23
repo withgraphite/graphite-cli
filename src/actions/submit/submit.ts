@@ -1,6 +1,6 @@
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
-import * as t from '@screenplaydev/retype';
-import { request } from '@screenplaydev/retyped-routes';
+import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import * as t from '@withgraphite/retype';
+import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { API_SERVER } from '../../lib/api';

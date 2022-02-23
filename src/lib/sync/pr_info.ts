@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import graphiteCLIRoutes from '@screenplaydev/graphite-cli-routes';
-import { request } from '@screenplaydev/retyped-routes';
+import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { request } from '@withgraphite/retyped-routes';
 import { logError } from '../../lib/utils';
 import Branch from '../../wrapper-classes/branch';
 import { API_SERVER } from '../api';
