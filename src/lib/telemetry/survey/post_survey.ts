@@ -1,5 +1,5 @@
 import cp from 'child_process';
-import surveyConfig from '../../config/survey_config';
+import { surveyConfig } from '../../config/survey_config';
 
 export function postSurveyResponsesInBackground(): void {
   // We don't worry about race conditions here - we can dedup on the server.
@@ -14,7 +14,7 @@ export function postSurveyResponsesInBackground(): void {
 export async function postSurveyResponse(): Promise<void> {
   const responsePostedSuccessfully = await surveyConfig.postResponses();
   if (responsePostedSuccessfully) {
-    surveyConfig.clearPriorSurveyResponse();
+    surveyConfig.clearPriorSurveyResponses();
   }
 }
 
