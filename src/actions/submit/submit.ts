@@ -160,7 +160,7 @@ export async function submitAction(
   logNewline();
   const survey = await getSurvey();
   if (survey) {
-    await showSurvey(survey);
+    await showSurvey(survey, context);
   }
 }
 

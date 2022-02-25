@@ -83,5 +83,3 @@ export const surveyConfigFactory = composeConfig({
     };
   },
 });
-
-export const surveyConfig = surveyConfigFactory.load();
