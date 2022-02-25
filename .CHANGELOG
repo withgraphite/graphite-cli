@@ -1,3 +1,7 @@
+# 0.17.3 2021-02-25
+
+- Fix bug regarding repo config file reading from repo subdirs.
+
 # 0.17.2 2021-02-16
 
 - Support numbers when generating a branch name from a commit message through `gt bc -m <message>`
