@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { DEFAULT_GRAPHITE_EDITOR } from '../../../../src/commands/user-commands/editor';
-import { userConfig } from '../../../../src/lib/config/user_config';
+import { initContext } from '../../../../src/lib/context/context';
 import { logInfo } from '../../../../src/lib/utils';
 import { BasicScene } from '../../../lib/scenes';
 import { configureTest } from '../../../lib/utils';
@@ -8,6 +8,7 @@ import { configureTest } from '../../../lib/utils';
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): user editor`, function () {
     configureTest(this, scene);
+    const context = initContext();
 
     /**
      * If users run this test locally, we don't want it to mangle their editor settings
@@ -16,7 +17,7 @@ for (const scene of [new BasicScene()]) {
      */
     let editorPref: string | undefined;
     before(function () {
-      editorPref = userConfig.data.editor;
+      editorPref = context.userConfig.data.editor;
       logInfo(`Existing user pref: ${editorPref}`);
     });
 
@@ -52,7 +53,7 @@ for (const scene of [new BasicScene()]) {
 
     after(function () {
       if (editorPref !== undefined) {
-        userConfig.update((data) => (data.editor = editorPref));
+        context.userConfig.update((data) => (data.editor = editorPref));
         logInfo(`Reset user pref: ${editorPref}`);
       }
     });

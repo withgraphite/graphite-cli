@@ -77,7 +77,7 @@ export async function logShortAction(context: TContext): Promise<void> {
   }
 
   if (stacks.untrackedStacks.length > 0 || tips.untracked) {
-    logRegenTip();
+    logRegenTip(context);
   }
 }
 
@@ -136,11 +136,12 @@ function logRebaseTip(context: TContext): void {
       )} && gt stack fix --rebase # fix all stacks`,
       `> gt branch checkout <branch> && gt stack fix --rebase # fix a specific stack`,
       `> gt branch checkout <branch> && gt upstack onto <parent> # fix a stack and update the parent`,
-    ].join('\n')
+    ].join('\n'),
+    context
   );
 }
 
-function logRegenTip(): void {
+function logRegenTip(context: TContext): void {
   logTip(
     [
       'Graphite does not know the parent of untracked branches. Consider:',
@@ -148,6 +149,7 @@ function logRegenTip(): void {
       `> gt branch checkout <branch> && gt stack fix --regen # generate stack based on current commit tree`,
       `> gt repo ignored-branches --add <branch> # set branch to be ignored by Graphite`,
       `> git branch -D <branch> # delete branch from git`,
-    ].join('\n')
+    ].join('\n'),
+    context
   );
 }

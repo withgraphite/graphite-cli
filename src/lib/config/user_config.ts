@@ -17,17 +17,9 @@ export const userConfigFactory = composeConfig({
     },
   ],
   initialize: () => {
-    return {
-      responses: undefined,
-      postingResponse: false,
-    };
+    return {};
   },
   helperFunctions: (data, update) => {
     return {};
   },
 });
-
-export const USER_CONFIG_OVERRIDE_ENV = 'GRAPHITE_USER_CONFIG_PATH' as const;
-export const userConfig = userConfigFactory.load(
-  process.env[USER_CONFIG_OVERRIDE_ENV] // allow for config location override
-);

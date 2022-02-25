@@ -45,7 +45,7 @@ export async function applyStackEdits(
 }
 
 async function promptForEdit(stack: Stack, context: TContext) {
-  const defaultEditor = await getDefaultEditorOrPrompt();
+  const defaultEditor = await getDefaultEditorOrPrompt(context);
   return await performInTmpDir(async (tmpDir) => {
     const editFilePath = createStackEditFile({ stack, tmpDir }, context);
     await gpExecSync(

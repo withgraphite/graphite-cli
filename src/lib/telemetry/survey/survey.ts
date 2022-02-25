@@ -13,9 +13,11 @@ export type SurveyT = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.cliSurvey.response
 >['survey'];
 
-export async function getSurvey(): Promise<SurveyT | undefined> {
+export async function getSurvey(
+  context: TContext
+): Promise<SurveyT | undefined> {
   try {
-    const authToken = cliAuthPrecondition();
+    const authToken = cliAuthPrecondition(context);
     const response = await request.requestWithArgs(
       API_SERVER,
       graphiteCLIRoutes.cliSurvey,

@@ -1,5 +1,4 @@
 import Branch from '../../wrapper-classes/branch';
-import { userConfig } from '../config/user_config';
 import { TContext } from '../context/context';
 import { PreconditionsFailedError } from '../errors';
 import {
@@ -11,10 +10,11 @@ import {
 } from '../utils';
 import { trackedUncommittedChanges } from '../utils/git_status_utils';
 
-function addAllAvailableTip(): void {
+function addAllAvailableTip(context: TContext): void {
   if (unstagedChanges()) {
     logTip(
-      'There are unstaged changes. Use -a option to stage all unstaged changes.'
+      'There are unstaged changes. Use -a option to stage all unstaged changes.',
+      context
     );
   }
 }
@@ -62,19 +62,20 @@ function uncommittedChangesPrecondition(): void {
 }
 
 function ensureSomeStagedChangesPrecondition(
+  context: TContext,
   addAllLogTipEnabled?: boolean
 ): void {
   if (!detectStagedChanges()) {
     gpExecSync({ command: `git status`, options: { stdio: 'ignore' } });
     if (addAllLogTipEnabled) {
-      addAllAvailableTip();
+      addAllAvailableTip(context);
     }
     throw new PreconditionsFailedError(`Cannot run without staged changes.`);
   }
 }
 
-function cliAuthPrecondition(): string {
-  const token = userConfig.data.authToken;
+function cliAuthPrecondition(context: TContext): string {
+  const token = context.userConfig.data.authToken;
   if (!token || token.length === 0) {
     throw new PreconditionsFailedError(
       'Please authenticate your Graphite CLI by visiting https://app.graphite.dev/activate.'

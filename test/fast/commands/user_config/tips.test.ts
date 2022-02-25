@@ -1,11 +1,12 @@
 import { expect } from 'chai';
-import { userConfig } from '../../../../src/lib/config/user_config';
+import { initContext } from '../../../../src/lib/context/context';
 import { BasicScene } from '../../../lib/scenes';
 import { configureTest } from '../../../lib/utils';
 
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): user tips`, function () {
     configureTest(this, scene);
+    const context = initContext();
 
     /**
      * If users run this test locally, we don't want it to mangle their tips settings
@@ -19,7 +20,7 @@ for (const scene of [new BasicScene()]) {
 
     let tipsPref: boolean | undefined;
     before(function () {
-      tipsPref = userConfig.data.tips;
+      tipsPref = context.userConfig.data.tips;
     });
 
     it('Sanity check - can enable tips', () => {
@@ -42,7 +43,7 @@ for (const scene of [new BasicScene()]) {
 
     after(function () {
       if (tipsPref !== undefined) {
-        userConfig.update((data) => (data.tips = tipsPref));
+        context.userConfig.update((data) => (data.tips = tipsPref));
       }
     });
   });

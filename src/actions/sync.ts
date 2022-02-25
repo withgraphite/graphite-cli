@@ -39,7 +39,10 @@ export async function syncAction(
   if (opts.pull) {
     logNewline();
     logInfo(`Pulling in new changes...`);
-    logTip(`Disable this behavior at any point in the future with --no-pull`);
+    logTip(
+      `Disable this behavior at any point in the future with --no-pull`,
+      context
+    );
     gpExecSync({ command: `git pull --prune` }, (err) => {
       checkoutBranch(oldBranch.name);
       throw new ExitFailedError(`Failed to pull trunk ${trunk}`, err);
@@ -54,7 +57,8 @@ export async function syncAction(
     logNewline();
     logInfo(`Ensuring tracked branches in Graphite are all well-formed...`);
     logTip(
-      `Disable this behavior at any point in the future with --no-show-dangling`
+      `Disable this behavior at any point in the future with --no-show-dangling`,
+      context
     );
     await fixDanglingBranches(context, opts.force);
   }
@@ -69,7 +73,10 @@ export async function syncAction(
   if (opts.delete) {
     logNewline();
     logInfo(`Checking if any branches have been merged and can be deleted...`);
-    logTip(`Disable this behavior at any point in the future with --no-delete`);
+    logTip(
+      `Disable this behavior at any point in the future with --no-delete`,
+      context
+    );
     await deleteMergedBranches(
       {
         frame: {
@@ -163,7 +170,10 @@ async function resubmitBranchesWithNewBases(
     ].join('\n')
   );
 
-  logTip(`Disable this check at any point in the future with --no-resubmit`);
+  logTip(
+    `Disable this check at any point in the future with --no-resubmit`,
+    context
+  );
 
   // Prompt for resubmission.
   let resubmit: boolean = force;
