@@ -7,7 +7,7 @@ import path from 'path';
 import tmp from 'tmp';
 import { getUserEmail, SHOULD_REPORT_TELEMETRY, tracer } from '.';
 import { version } from '../../../package.json';
-import { userConfig } from '../../lib/config';
+import { userConfig } from '../../lib/config/user_config';
 import { API_SERVER } from '../api';
 
 type oldTelemetryT = {
@@ -51,7 +51,7 @@ async function logCommand(oldTelemetryFilePath: string): Promise<void> {
         commandName: data.commandName,
         durationMiliSeconds: data.durationMiliSeconds,
         user: getUserEmail() || 'NotFound',
-        auth: userConfig.getAuthToken(),
+        auth: userConfig.data.authToken,
         version: version,
         err: data.err
           ? {

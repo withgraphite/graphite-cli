@@ -1,10 +1,10 @@
-import { gpExecSync } from './exec_sync';
-import { logInfo, logTip } from './splog';
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { KilledError } from '../errors';
-import { userConfig } from '../../lib/config';
 import { DEFAULT_GRAPHITE_EDITOR } from '../../commands/user-commands/editor';
+import { userConfig } from '../../lib/config/user_config';
+import { KilledError } from '../errors';
+import { gpExecSync } from './exec_sync';
+import { logInfo, logTip } from './splog';
 
 /*
 If the editor is not set, we attempt to infer it from environment variables $GIT_EDITOR or $EDITOR.
@@ -13,7 +13,7 @@ If those are unavailable, we want to prompt user to set them. If user doesn't wa
 
 export async function getDefaultEditorOrPrompt(): Promise<string> {
   await setDefaultEditorOrPrompt();
-  return userConfig.getEditor() || DEFAULT_GRAPHITE_EDITOR;
+  return userConfig.data.editor || DEFAULT_GRAPHITE_EDITOR;
 }
 
 export function setDefaultEditor(): void {
@@ -21,21 +21,21 @@ export function setDefaultEditor(): void {
     gpExecSync({ command: `echo \${GIT_EDITOR:-$EDITOR}` }).toString().trim() ||
     DEFAULT_GRAPHITE_EDITOR;
 
-  userConfig.setEditor(editor);
+  userConfig.update((data) => (data.editor = editor));
 }
 
 async function setDefaultEditorOrPrompt(): Promise<void> {
-  if (!userConfig.getEditor()) {
+  if (!userConfig.data.editor) {
     // Check if any env variable is set.
     const systemEditor = gpExecSync({ command: `echo \${GIT_EDITOR:-$EDITOR}` })
       .toString()
       .trim();
 
-    let editorPref;
+    let editorPref: string;
     if (systemEditor.length) {
       editorPref = systemEditor;
-      logTip(`Graphite will now use ${editorPref} as the default editor setting. 
-      We infer it from your environment variables ($GIT_EDITOR || $EDITOR). 
+      logTip(`Graphite will now use ${editorPref} as the default editor setting.
+      We infer it from your environment variables ($GIT_EDITOR || $EDITOR).
       If you wish to change it, use \`gt user editor\` to change this in the future`);
     } else {
       logInfo(
@@ -88,7 +88,7 @@ async function setDefaultEditorOrPrompt(): Promise<void> {
       }
     }
 
-    userConfig.setEditor(editorPref);
+    userConfig.update((data) => (data.editor = editorPref));
     logInfo(chalk.yellow(`Graphite editor preference set to ${editorPref}.`));
   }
 }

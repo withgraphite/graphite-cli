@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { userConfig } from '../../../../src/lib/config';
+import { userConfig } from '../../../../src/lib/config/user_config';
 import { BasicScene } from '../../../lib/scenes';
 import { configureTest } from '../../../lib/utils';
 
@@ -19,7 +19,7 @@ for (const scene of [new BasicScene()]) {
 
     let tipsPref: boolean | undefined;
     before(function () {
-      tipsPref = userConfig.tipsEnabled();
+      tipsPref = userConfig.data.tips;
     });
 
     it('Sanity check - can enable tips', () => {
@@ -42,7 +42,7 @@ for (const scene of [new BasicScene()]) {
 
     after(function () {
       if (tipsPref !== undefined) {
-        userConfig.toggleTips(tipsPref);
+        userConfig.update((data) => (data.tips = tipsPref));
       }
     });
   });

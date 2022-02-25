@@ -12,6 +12,7 @@ export abstract class AbstractScene {
 
   constructor() {
     this.tmpDir = tmp.dirSync();
+
     this.dir = this.tmpDir.name;
     this.repo = new GitRepo(this.dir);
   }
