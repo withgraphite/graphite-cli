@@ -21,6 +21,9 @@ type TConfigTemplate<TConfigData, THelperFunctions> = {
     data: TConfigData,
     update: (mutator: TConfigMutator<TConfigData>) => void
   ) => THelperFunctions;
+  options?: {
+    removeIfEmpty: boolean;
+  };
 };
 
 type TConfigInstance<TConfigData, THelperFunctions> = {
@@ -51,7 +54,14 @@ export function composeConfig<TConfigData, THelperFunctions>(
       );
       const update = (mutator: TConfigMutator<TConfigData>) => {
         mutator(_data);
-        fs.writeFileSync(curPath, JSON.stringify(_data, null, 2));
+        const shouldRemoveBecauseEmpty =
+          configTemplate.options?.removeIfEmpty &&
+          JSON.stringify(_data) === JSON.stringify({});
+        if (shouldRemoveBecauseEmpty) {
+          fs.removeSync(curPath);
+        } else {
+          fs.writeFileSync(curPath, JSON.stringify(_data, null, 2));
+        }
       };
       return {
         data: _data,
