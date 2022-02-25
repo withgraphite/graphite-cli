@@ -42,14 +42,14 @@ class ExitedSurveyError extends Error {
 
 export type SurveyResponseT = {
   timestamp: number;
-  responses: { [question: string]: string };
+  responses: { question: string; answer: string }[];
   exitedEarly: boolean;
 };
 
 export async function showSurvey(survey: SurveyT): Promise<void> {
   const responses: SurveyResponseT = {
     timestamp: Date.now(),
-    responses: {},
+    responses: [],
     exitedEarly: false,
   };
   try {
@@ -156,7 +156,10 @@ async function askSurveyQuestions(args: {
     // question.
     logNewline();
 
-    args.responses.responses[question.question] = promptResponse.answer;
+    args.responses.responses.push({
+      question: question.question,
+      answer: promptResponse.answer,
+    });
   }
 }
 

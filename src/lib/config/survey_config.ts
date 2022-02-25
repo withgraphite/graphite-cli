@@ -52,14 +52,12 @@ class SurveyConfig {
           authToken: authToken,
           responses: {
             timestamp: surveyResponse.timestamp,
-            responses: Object.keys(surveyResponse.responses).map(
-              (question: string) => {
-                return {
-                  question: question,
-                  response: surveyResponse.responses[question],
-                };
-              }
-            ),
+            responses: surveyResponse.responses.map((qa) => {
+              return {
+                question: qa.question,
+                response: qa.answer,
+              };
+            }),
             exitedEarly: surveyResponse.exitedEarly,
           },
         }
