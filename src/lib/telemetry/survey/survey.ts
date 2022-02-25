@@ -3,9 +3,10 @@ import { default as t } from '@withgraphite/retype';
 import { request } from '@withgraphite/retyped-routes';
 import prompts from 'prompts';
 import { API_SERVER } from '../../../lib/api';
-import surveyConfig from '../../../lib/config/survey_config';
+import { surveyConfig } from '../../../lib/config/survey_config';
 import { cliAuthPrecondition } from '../../../lib/preconditions';
 import { logMessageFromGraphite, logNewline } from '../../utils';
+import { TSurveyResponse } from './../../config/survey_config';
 import { postSurveyResponse } from './post_survey';
 
 export type SurveyT = t.UnwrapSchemaMap<
@@ -40,14 +41,8 @@ class ExitedSurveyError extends Error {
   }
 }
 
-export type SurveyResponseT = {
-  timestamp: number;
-  responses: { question: string; answer: string }[];
-  exitedEarly: boolean;
-};
-
 export async function showSurvey(survey: SurveyT): Promise<void> {
-  const responses: SurveyResponseT = {
+  const responses: TSurveyResponse = {
     timestamp: Date.now(),
     responses: [],
     exitedEarly: false,
@@ -106,7 +101,7 @@ async function askSurveyQuestions(args: {
         options: string[];
       }
   )[];
-  responses: SurveyResponseT;
+  responses: TSurveyResponse;
 }): Promise<void> {
   for (const [index, question] of args.questions.entries()) {
     const onCancel = {
@@ -167,7 +162,7 @@ async function askSurveyQuestions(args: {
 function assertUnreachable(arg: never): void {}
 
 async function logAnswers(args: {
-  responses: SurveyResponseT;
+  responses: TSurveyResponse;
   completionMessage: string | undefined;
 }): Promise<void> {
   surveyConfig.setSurveyResponses(args.responses);
