@@ -1,5 +1,4 @@
 import yargs from 'yargs';
-import { userConfig } from '../../lib/config/user_config';
 import { profile } from '../../lib/telemetry';
 import { logInfo } from '../../lib/utils';
 import { setDefaultEditor } from '../../lib/utils/default_editor';
@@ -26,21 +25,23 @@ export const description = 'Editor used when using Graphite';
 export const canonical = 'user editor';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
+  return profile(argv, canonical, async (context) => {
     if (argv.set) {
-      userConfig.update((data) => (data.editor = argv.set));
+      context.userConfig.update((data) => (data.editor = argv.set));
       logInfo(`Editor preference set to: ${argv.set}`);
     } else if (argv.unset) {
-      userConfig.update((data) => (data.editor = DEFAULT_GRAPHITE_EDITOR));
+      context.userConfig.update(
+        (data) => (data.editor = DEFAULT_GRAPHITE_EDITOR)
+      );
       logInfo(
         `Editor preference erased. Defaulting to Graphite default: ${DEFAULT_GRAPHITE_EDITOR}`
       );
     } else {
-      if (!userConfig.data.editor) {
-        setDefaultEditor();
+      if (!context.userConfig.data.editor) {
+        setDefaultEditor(context);
       }
       logInfo(
-        `Current editor preference is set to : ${userConfig.data.editor}`
+        `Current editor preference is set to : ${context.userConfig.data.editor}`
       );
     }
   });

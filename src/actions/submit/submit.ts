@@ -73,7 +73,7 @@ export async function submitAction(
 ): Promise<void> {
   let branchesToSubmit;
   // Check CLI pre-condition to warn early
-  const cliAuthToken = cliAuthPrecondition();
+  const cliAuthToken = cliAuthPrecondition(context);
   if (args.dryRun) {
     logInfo(
       chalk.yellow(
@@ -139,7 +139,8 @@ export async function submitAction(
   // Step 3: Pushing branches to remote
   logInfo(chalk.blueBright('➡️  [Step 3] Pushing branches to remote...'));
   const branchesPushedToRemote = pushBranchesToRemote(
-    submissionInfoWithBranches.map((info) => info.branch)
+    submissionInfoWithBranches.map((info) => info.branch),
+    context
   );
 
   logInfo(
@@ -158,7 +159,7 @@ export async function submitAction(
   );
 
   logNewline();
-  const survey = await getSurvey();
+  const survey = await getSurvey(context);
   if (survey) {
     await showSurvey(survey, context);
   }
@@ -415,7 +416,7 @@ async function getPRInfoForBranches(
   return branchPRInfo;
 }
 
-function pushBranchesToRemote(branches: Branch[]): Branch[] {
+function pushBranchesToRemote(branches: Branch[], context: TContext): Branch[] {
   const branchesPushedToRemote: Branch[] = [];
 
   if (!branches.length) {
@@ -447,7 +448,8 @@ function pushBranchesToRemote(branches: Branch[]): Branch[] {
 
         logTip(
           `There maybe external commits on remote that were not overwritten with the attempted push.
-          \n Use 'git pull' to pull external changes and retry.`
+          \n Use 'git pull' to pull external changes and retry.`,
+          context
         );
         throw new ExitFailedError(err);
       }

@@ -2,7 +2,6 @@ import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
 import MetadataRef from '../../wrapper-classes/metadata_ref';
-import { userConfig } from '../config/user_config';
 import { getBranchToRefMapping } from '../git-refs/branch_ref';
 import { getRevListGitTree } from '../git-refs/branch_relations';
 import { currentBranchPrecondition } from '../preconditions';
@@ -37,7 +36,7 @@ export function captureState(context: TContext): string {
   const state: stateT = {
     refTree,
     branchToRefMapping,
-    userConfig: JSON.stringify(userConfig.data),
+    userConfig: JSON.stringify(context.userConfig.data),
     repoConfig: JSON.stringify(context.repoConfig.data),
     metadata,
     currentBranchName,

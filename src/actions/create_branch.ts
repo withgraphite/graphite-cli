@@ -1,5 +1,4 @@
 import { execStateConfig } from '../lib/config';
-import { userConfig } from '../lib/config/user_config';
 import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
@@ -43,7 +42,11 @@ export async function createBranchAction(
     );
   }
 
-  const branchName = newBranchName(opts.branchName, opts.commitMessage);
+  const branchName = newBranchName(
+    context,
+    opts.branchName,
+    opts.commitMessage
+  );
   checkoutNewBranch(branchName);
 
   /**
@@ -86,7 +89,11 @@ export async function createBranchAction(
   new Branch(branchName).clearMetadata().setParentBranchName(parentBranch.name);
 }
 
-function newBranchName(branchName?: string, commitMessage?: string): string {
+function newBranchName(
+  context: TContext,
+  branchName?: string,
+  commitMessage?: string
+): string {
   if (!branchName && !commitMessage) {
     throw new ExitFailedError(
       `Must specify at least a branch name or commit message`
@@ -118,7 +125,9 @@ function newBranchName(branchName?: string, commitMessage?: string): string {
       ).slice(-2)}-` + branchMessage; // Condence underscores
   }
 
-  const newBranchName = `${userConfig.data.branchPrefix || ''}${branchMessage}`;
+  const newBranchName = `${
+    context.userConfig.data.branchPrefix || ''
+  }${branchMessage}`;
   return newBranchName.slice(0, MAX_BRANCH_NAME_LENGTH);
 }
 

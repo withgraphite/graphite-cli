@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { execStateConfig } from '../config';
-import { userConfig } from '../config/user_config';
+import { TContext } from '../context/context';
 
 export function logMessageFromGraphite(msg: string): void {
   console.log(chalk.yellow(msg) + '\n\n');
@@ -31,8 +31,8 @@ export function logDebug(msg: string): void {
     console.log(msg);
   }
 }
-export function logTip(msg: string): void {
-  if (!execStateConfig.quiet() && userConfig.data.tips) {
+export function logTip(msg: string, context: TContext): void {
+  if (!execStateConfig.quiet() && context.userConfig.data.tips) {
     console.log(
       chalk.gray(
         [

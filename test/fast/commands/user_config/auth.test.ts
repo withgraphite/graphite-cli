@@ -5,7 +5,6 @@ import { configureTest } from '../../../lib/utils';
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): auth`, function () {
     configureTest(this, scene);
-
     it('Sanity check - can read previously written auth token', () => {
       const authToken = 'SUPER_SECRET_AUTH_TOKEN';
       expect(() =>

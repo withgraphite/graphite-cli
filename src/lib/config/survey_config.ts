@@ -2,6 +2,7 @@ import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import * as t from '@withgraphite/retype';
 import { request } from '@withgraphite/retyped-routes';
 import { API_SERVER } from '../api';
+import { TContext } from '../context/context';
 import { cliAuthPrecondition } from '../preconditions';
 import { composeConfig } from './compose_config';
 
@@ -43,14 +44,14 @@ export const surveyConfigFactory = composeConfig({
       clearPriorSurveyResponses: (): void => {
         update((data) => (data.responses = undefined));
       },
-      postResponses: async (): Promise<boolean> => {
+      postResponses: async (context: TContext): Promise<boolean> => {
         try {
           const surveyResponse = data.responses;
           if (surveyResponse === undefined) {
             return false;
           }
 
-          const authToken = cliAuthPrecondition();
+          const authToken = cliAuthPrecondition(context);
 
           const response = await request.requestWithArgs(
             API_SERVER,

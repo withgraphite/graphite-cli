@@ -28,7 +28,8 @@ export const handler = async (argv: argsT): Promise<void> => {
         `* 'gt stack submit'`,
         `* 'gt downstack submit'`,
         `because these will ensure any downstack changes will be synced to existing PRs.`,
-      ].join('\n')
+      ].join('\n'),
+      context
     );
   });
 };

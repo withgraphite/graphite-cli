@@ -43,7 +43,7 @@ for (const scene of [new BasicScene()]) {
       expect(clone.owner === 'screenplaydev').to.be.true;
       expect(clone.name === 'graphite-cli').to.be.true;
 
-      let sshClone = getOwnerAndNameFromURLForTesting(
+      const sshClone = getOwnerAndNameFromURLForTesting(
         'git@github.com:screenplaydev/graphite-cli'
       );
       expect(sshClone.owner === 'screenplaydev').to.be.true;
