@@ -20,12 +20,12 @@ export default class GitRepo {
     }
   }
 
-  execCliCommand(command: string): void {
+  execCliCommand(command: string, opts?: { cwd?: string }): void {
     execSync(
       `NODE_ENV=development node ${__dirname}/../../../../dist/src/index.js ${command}`,
       {
         stdio: process.env.DEBUG ? 'inherit' : 'ignore',
-        cwd: this.dir,
+        cwd: opts?.cwd || this.dir,
       }
     );
   }
