@@ -29,6 +29,4 @@ export const messageConfigFactory = composeConfig({
   options: { removeIfEmpty: true },
 });
 
-export const messageConfig = messageConfigFactory.load();
-
 export type TMessageConfig = ReturnType<typeof messageConfigFactory.load>;

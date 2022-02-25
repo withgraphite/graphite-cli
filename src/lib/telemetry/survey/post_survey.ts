@@ -1,5 +1,5 @@
 import cp from 'child_process';
-import { TContext } from '../../context/context';
+import { initContext, TContext } from '../../context/context';
 
 export function postSurveyResponsesInBackground(context: TContext): void {
   // We don't worry about race conditions here - we can dedup on the server.
@@ -18,4 +18,8 @@ export async function postSurveyResponse(context: TContext): Promise<void> {
   if (responsePostedSuccessfully) {
     context.surveyConfig.clearPriorSurveyResponses();
   }
+}
+
+if (process.argv[1] === __filename) {
+  void postSurveyResponse(initContext());
 }
