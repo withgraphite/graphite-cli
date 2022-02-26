@@ -53,5 +53,4 @@ class ExecStateConfig {
   }
 }
 
-const execStateConfig = new ExecStateConfig();
-export default execStateConfig;
+export const execStateConfig = new ExecStateConfig();

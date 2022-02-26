@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { cache } from '../../lib/config';
+import { cache } from '../../lib/config/cache';
 import { ExitFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry';

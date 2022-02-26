@@ -1,4 +1,4 @@
-import { cache } from '../../lib/config';
+import { cache } from '../../lib/config/cache';
 import {
   MergeConflictCallstackT,
   TStackOntoBaseRebaseStackFrame,

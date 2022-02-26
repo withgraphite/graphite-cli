@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
-import { getRepoRootPath } from '../lib/config';
+import { getRepoRootPath } from '../lib/config/repo_root_path';
 import { ExitFailedError } from '../lib/errors';
 
 export type TBranchPRState = 'OPEN' | 'CLOSED' | 'MERGED';

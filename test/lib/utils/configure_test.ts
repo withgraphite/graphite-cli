@@ -1,4 +1,4 @@
-import { cache } from '../../../src/lib/config';
+import { cache } from '../../../src/lib/config/cache';
 import { AbstractScene } from '../scenes/abstract_scene';
 
 export function configureTest(suite: Mocha.Suite, scene: AbstractScene): void {

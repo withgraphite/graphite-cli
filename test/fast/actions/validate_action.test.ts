@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { validate, validateStack } from '../../../src/actions/validate';
-import { cache } from '../../../src/lib/config';
+import { cache } from '../../../src/lib/config/cache';
 import { initContext } from '../../../src/lib/context/context';
 import { currentBranchPrecondition } from '../../../src/lib/preconditions';
 import { MetaStackBuilder, Stack } from '../../../src/wrapper-classes';

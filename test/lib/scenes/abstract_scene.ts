@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import tmp from 'tmp';
-import { execStateConfig } from '../../../src/lib/config';
+import { execStateConfig } from '../../../src/lib/config/exec_state_config';
 import { GitRepo } from '../../../src/lib/utils';
 
 export abstract class AbstractScene {
