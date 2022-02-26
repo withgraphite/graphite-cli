@@ -11,6 +11,7 @@
     "@typescript-eslint/explicit-module-boundary-types": "error",
     "import/no-default-export": 2,
     "import/unambiguous": 2,
+    "import/first": 2,
     "no-restricted-syntax": [
       "error",
       {
