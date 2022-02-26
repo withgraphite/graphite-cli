@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import { default as chalk } from 'chalk';
 import { execSync } from 'child_process';
 import prompts from 'prompts';
 import { cache } from '../lib/config/cache';
@@ -9,7 +9,7 @@ import {
 import { TContext } from '../lib/context/context';
 import { KilledError } from '../lib/errors';
 import { checkoutBranch, getTrunk, logInfo } from '../lib/utils';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 import { deleteBranchAction } from './delete_branch';
 import { currentBranchOntoAction } from './onto/current_branch_onto';
 

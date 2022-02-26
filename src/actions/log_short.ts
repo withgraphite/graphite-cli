@@ -4,7 +4,7 @@ import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { getTrunk, logTip } from '../lib/utils';
 import { GitStackBuilder, Stack, StackNode } from '../wrapper-classes';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 
 function getStacks(context: TContext): {
   fallenStacks: Stack[];

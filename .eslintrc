@@ -4,11 +4,12 @@
   "parserOptions": {
     "project": "./tsconfig.json"
   },
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "import"],
   "rules": {
     "@typescript-eslint/no-floating-promises": "error",
     "max-lines-per-function": ["error", { "max": 120 }],
     "@typescript-eslint/explicit-module-boundary-types": "error",
+    "import/no-default-export": 2,
     "no-restricted-syntax": [
       "error",
       {
@@ -17,5 +18,22 @@
       }
     ]
   },
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"]
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      },
+      "typescript": {
+        "alwaysTryTypes": true // always try to resolve types under `<root>@types` directory even it doesn't contain any source code, like `@types/unist`
+      }
+    }
+  },
+  "extends": [
+    "plugin:import/typescript",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ]
 }

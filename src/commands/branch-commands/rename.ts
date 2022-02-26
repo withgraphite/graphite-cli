@@ -6,7 +6,7 @@ import { currentBranchPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry';
 import { gpExecSync, logInfo } from '../../lib/utils';
 import { MetadataRef } from '../../wrapper-classes';
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 
 const args = {
   'new-branch-name': {

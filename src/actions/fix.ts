@@ -30,7 +30,7 @@ import {
   Stack,
   StackNode,
 } from '../wrapper-classes';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 
 async function promptStacks(opts: {
   gitStack: Stack;

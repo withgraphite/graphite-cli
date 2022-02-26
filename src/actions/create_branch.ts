@@ -3,7 +3,7 @@ import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { checkoutBranch, gpExecSync } from '../lib/utils';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 
 const EMPTY_COMMIT_MESSAGE_INFO = [
   '\n',

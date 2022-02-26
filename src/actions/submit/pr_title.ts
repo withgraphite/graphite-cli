@@ -2,7 +2,7 @@ import prompts from 'prompts';
 import { TContext } from '../../lib/context/context';
 import { KilledError } from '../../lib/errors';
 import { getSingleCommitOnBranch } from '../../lib/utils';
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 
 export async function getPRTitle(
   args: {

@@ -7,8 +7,8 @@ import {
 } from '../lib/git-refs';
 import { getCommitterDate, getTrunk, gpExecSync, logDebug } from '../lib/utils';
 import { TContext } from './../lib/context/context';
-import Commit from './commit';
-import MetadataRef, { TBranchPRInfo, TMeta } from './metadata_ref';
+import { Commit } from './commit';
+import { MetadataRef, TBranchPRInfo, TMeta } from './metadata_ref';
 
 type TBranchFilters = {
   useMemoizedResults?: boolean;
@@ -19,7 +19,7 @@ type TBranchFilters = {
 
 let memoizedMetaChildren: Record<string, Branch[]> | undefined;
 
-export default class Branch {
+export class Branch {
   name: string;
   shouldUseMemoizedResults: boolean;
 

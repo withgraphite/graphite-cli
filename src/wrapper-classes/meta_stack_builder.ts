@@ -1,8 +1,8 @@
 import { AbstractStackBuilder } from '.';
 import { TContext } from '../lib/context/context';
-import Branch from './branch';
+import { Branch } from './branch';
 
-export default class MetaStackBuilder extends AbstractStackBuilder {
+export class MetaStackBuilder extends AbstractStackBuilder {
   protected getBranchParent(
     branch: Branch,
     context: TContext

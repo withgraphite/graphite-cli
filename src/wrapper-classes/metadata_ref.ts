@@ -32,7 +32,7 @@ export type TMeta = {
   priorSubmitInfo?: TBranchPriorSubmitInfo;
 };
 
-export default class MetadataRef {
+export class MetadataRef {
   _branchName: string;
 
   constructor(branchName: string) {

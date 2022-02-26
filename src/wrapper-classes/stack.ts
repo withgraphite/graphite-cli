@@ -1,7 +1,7 @@
-import Branch from './branch';
-import StackNode from './stack_node';
+import { Branch } from './branch';
+import { StackNode } from './stack_node';
 
-export default class Stack {
+export class Stack {
   source: StackNode;
 
   constructor(source: StackNode) {

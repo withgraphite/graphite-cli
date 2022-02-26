@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import { gpExecSync } from '../lib/utils';
 
-export default class Commit {
+export class Commit {
   sha: string;
 
   constructor(sha: string) {

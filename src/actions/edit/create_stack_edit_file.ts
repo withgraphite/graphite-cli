@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { TContext } from '../../lib/context/context';
 import { getTrunk } from '../../lib/utils';
-import Stack from '../../wrapper-classes/stack';
+import { Stack } from '../../wrapper-classes/stack';
 
 const FILE_NAME = 'graphite_stack_edit';
 const COLUMN_SPACING = ' '.repeat(5);

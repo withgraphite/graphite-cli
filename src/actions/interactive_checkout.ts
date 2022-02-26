@@ -3,7 +3,7 @@ import { TContext } from '../lib/context/context';
 import { ExitCancelledError, ExitFailedError } from '../lib/errors';
 import { getTrunk, gpExecSync } from '../lib/utils';
 import { MetaStackBuilder } from '../wrapper-classes';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 
 export async function interactiveCheckout(context: TContext): Promise<void> {
   const stack = new MetaStackBuilder().fullStackFromBranch(

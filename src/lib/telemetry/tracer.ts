@@ -181,6 +181,4 @@ class Tracer {
   }
 }
 
-const globalTracer = new Tracer();
-
-export default globalTracer;
+export const globalTracer = new Tracer();

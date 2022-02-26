@@ -5,7 +5,7 @@ import { TContext } from '../lib/context/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { logInfo } from '../lib/utils';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 
 export enum TraversalDirection {
   Top = 'TOP',

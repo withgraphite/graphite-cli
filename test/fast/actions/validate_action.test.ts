@@ -3,7 +3,7 @@ import { validate, validateStack } from '../../../src/actions/validate';
 import { cache } from '../../../src/lib/config/cache';
 import { currentBranchPrecondition } from '../../../src/lib/preconditions';
 import { MetaStackBuilder, Stack } from '../../../src/wrapper-classes';
-import Branch from '../../../src/wrapper-classes/branch';
+import { Branch } from '../../../src/wrapper-classes/branch';
 import { allScenes, BasicScene, TrailingProdScene } from '../../lib/scenes';
 import { configureTest } from '../../lib/utils';
 

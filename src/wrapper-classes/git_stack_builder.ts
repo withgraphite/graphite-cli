@@ -1,9 +1,9 @@
 import { AbstractStackBuilder } from '.';
 import { TContext } from '../lib/context/context';
 import { MultiParentError, SiblingBranchError } from '../lib/errors';
-import Branch from './branch';
+import { Branch } from './branch';
 
-export default class GitStackBuilder extends AbstractStackBuilder {
+export class GitStackBuilder extends AbstractStackBuilder {
   protected getBranchParent(
     branch: Branch,
     context: TContext

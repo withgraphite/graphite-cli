@@ -4,7 +4,7 @@ import { printStack } from '../../actions/print_stack';
 import { TContext } from '../../lib/context/context';
 import { profile } from '../../lib/telemetry';
 import { getTrunk } from '../../lib/utils/trunk';
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 
 const args = {
   'on-trunk': {

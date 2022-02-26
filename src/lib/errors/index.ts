@@ -1,4 +1,4 @@
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 import {
   MergeConflictCallstackT,
   persistMergeConflictCallstack,
