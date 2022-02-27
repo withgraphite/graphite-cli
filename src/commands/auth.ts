@@ -1,5 +1,4 @@
 import yargs from 'yargs';
-import { userConfig } from '../lib/config/user_config';
 import { profile } from '../lib/telemetry';
 import { logInfo, logSuccess } from '../lib/utils';
 
@@ -20,12 +19,12 @@ export const builder = args;
 export const canonical = 'auth';
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
+  return profile(argv, canonical, async (context) => {
     if (argv.token) {
-      userConfig.update((data) => (data.authToken = argv.token));
-      logSuccess(`🔐 Saved auth token to "${userConfig.path}"`);
+      context.userConfig.update((data) => (data.authToken = argv.token));
+      logSuccess(`🔐 Saved auth token to "${context.userConfig.path}"`);
       return;
     }
-    logInfo(userConfig.data.authToken ?? 'No auth token set.');
+    logInfo(context.userConfig.data.authToken ?? 'No auth token set.');
   });
 };

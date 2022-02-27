@@ -7,8 +7,8 @@ import path from 'path';
 import tmp from 'tmp';
 import { getUserEmail, SHOULD_REPORT_TELEMETRY, tracer } from '.';
 import { version } from '../../../package.json';
-import { userConfig } from '../../lib/config/user_config';
 import { API_SERVER } from '../api';
+import { initContext, TContext } from '../context/context';
 
 type oldTelemetryT = {
   canonicalCommandName: string;
@@ -41,7 +41,10 @@ export function postTelemetryInBackground(oldDetails: oldTelemetryT): void {
   });
 }
 
-async function logCommand(oldTelemetryFilePath: string): Promise<void> {
+async function logCommand(
+  oldTelemetryFilePath: string,
+  context: TContext
+): Promise<void> {
   const data = JSON.parse(
     fs.readFileSync(oldTelemetryFilePath).toString().trim()
   ) as oldTelemetryT;
@@ -51,7 +54,7 @@ async function logCommand(oldTelemetryFilePath: string): Promise<void> {
         commandName: data.commandName,
         durationMiliSeconds: data.durationMiliSeconds,
         user: getUserEmail() || 'NotFound',
-        auth: userConfig.data.authToken,
+        auth: context.userConfig.data.authToken,
         version: version,
         err: data.err
           ? {
@@ -68,7 +71,7 @@ async function logCommand(oldTelemetryFilePath: string): Promise<void> {
   }
 }
 
-async function postTelemetry(): Promise<void> {
+async function postTelemetry(context: TContext): Promise<void> {
   if (!SHOULD_REPORT_TELEMETRY) {
     return;
   }
@@ -89,12 +92,12 @@ async function postTelemetry(): Promise<void> {
 
   const oldTelemetryFilePath = process.argv[3];
   if (oldTelemetryFilePath && fs.existsSync(oldTelemetryFilePath)) {
-    await logCommand(oldTelemetryFilePath);
+    await logCommand(oldTelemetryFilePath, context);
     // Cleanup despite it being a temp file.
     fs.removeSync(oldTelemetryFilePath);
   }
 }
 
 if (process.argv[1] === __filename) {
-  void postTelemetry();
+  void postTelemetry(initContext());
 }

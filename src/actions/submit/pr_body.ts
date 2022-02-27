@@ -22,7 +22,7 @@ export async function getPRBody(
     inferredBodyFromCommit !== null ? inferredBodyFromCommit : template;
   const hasPRTemplate = body !== undefined;
   if (args.editPRFieldsInline) {
-    const defaultEditor = await getDefaultEditorOrPrompt();
+    const defaultEditor = await getDefaultEditorOrPrompt(context);
     const response = await prompts(
       {
         type: 'select',

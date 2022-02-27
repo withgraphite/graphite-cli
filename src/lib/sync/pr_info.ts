@@ -3,7 +3,6 @@ import { request } from '@withgraphite/retyped-routes';
 import { logError } from '../../lib/utils';
 import Branch from '../../wrapper-classes/branch';
 import { API_SERVER } from '../api';
-import { userConfig } from '../config/user_config';
 import { TContext } from './../context/context';
 
 /**
@@ -15,7 +14,7 @@ export async function syncPRInfoForBranches(
   branches: Branch[],
   context: TContext
 ): Promise<void> {
-  const authToken = userConfig.data.authToken;
+  const authToken = context.userConfig.data.authToken;
   if (authToken === undefined) {
     return;
   }

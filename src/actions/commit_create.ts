@@ -26,7 +26,7 @@ export async function commitCreateAction(
     );
   }
 
-  ensureSomeStagedChangesPrecondition();
+  ensureSomeStagedChangesPrecondition(context);
 
   if (opts.message !== undefined) {
     gpExecSync(

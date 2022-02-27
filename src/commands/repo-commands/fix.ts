@@ -60,7 +60,8 @@ async function branchMetadataSanityChecks(
       )
     );
     logTip(
-      `To ensure Graphite always has a known parent for your branch, create your branch through Graphite with \`gt branch create <branch_name>\`.`
+      `To ensure Graphite always has a known parent for your branch, create your branch through Graphite with \`gt branch create <branch_name>\`.`,
+      context
     );
     logNewline();
     await fixDanglingBranches(context, force);
@@ -86,7 +87,8 @@ async function branchCountSanityCheck(
       )
     );
     logTip(
-      `To further reduce Graphite's search space, you can also tune the maximum days and/or stacks Graphite tracks behind trunk using \`gt repo max-days-behind-trunk --set\` or \`gt repo max-stacks-behind-trunk --set\`.`
+      `To further reduce Graphite's search space, you can also tune the maximum days and/or stacks Graphite tracks behind trunk using \`gt repo max-days-behind-trunk --set\` or \`gt repo max-stacks-behind-trunk --set\`.`,
+      context
     );
     logNewline();
   }

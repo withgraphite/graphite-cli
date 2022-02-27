@@ -12,7 +12,9 @@ export function postSurveyResponsesInBackground(context: TContext): void {
 }
 
 export async function postSurveyResponse(context: TContext): Promise<void> {
-  const responsePostedSuccessfully = await context.surveyConfig.postResponses();
+  const responsePostedSuccessfully = await context.surveyConfig.postResponses(
+    context
+  );
   if (responsePostedSuccessfully) {
     context.surveyConfig.clearPriorSurveyResponses();
   }
