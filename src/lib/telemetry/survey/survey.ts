@@ -3,8 +3,8 @@ import { default as t } from '@withgraphite/retype';
 import { request } from '@withgraphite/retyped-routes';
 import prompts from 'prompts';
 import { API_SERVER } from '../../../lib/api';
-import { surveyConfig } from '../../../lib/config/survey_config';
 import { cliAuthPrecondition } from '../../../lib/preconditions';
+import { TContext } from '../../context/context';
 import { logMessageFromGraphite, logNewline } from '../../utils';
 import { TSurveyResponse } from './../../config/survey_config';
 import { postSurveyResponse } from './post_survey';
@@ -41,7 +41,10 @@ class ExitedSurveyError extends Error {
   }
 }
 
-export async function showSurvey(survey: SurveyT): Promise<void> {
+export async function showSurvey(
+  survey: SurveyT,
+  context: TContext
+): Promise<void> {
   const responses: TSurveyResponse = {
     timestamp: Date.now(),
     responses: [],
@@ -64,19 +67,25 @@ export async function showSurvey(survey: SurveyT): Promise<void> {
     });
 
     logNewline();
-    await logAnswers({
-      responses: responses,
-      completionMessage: survey?.completionMessage,
-    });
+    await logAnswers(
+      {
+        responses: responses,
+        completionMessage: survey?.completionMessage,
+      },
+      context
+    );
   } catch (err: any) {
     switch (err.constructor) {
       case ExitedSurveyError:
         responses.exitedEarly = true;
         logNewline();
-        await logAnswers({
-          responses: responses,
-          completionMessage: survey?.completionMessage,
-        });
+        await logAnswers(
+          {
+            responses: responses,
+            completionMessage: survey?.completionMessage,
+          },
+          context
+        );
         break;
       default:
         throw err;
@@ -161,13 +170,16 @@ async function askSurveyQuestions(args: {
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 function assertUnreachable(arg: never): void {}
 
-async function logAnswers(args: {
-  responses: TSurveyResponse;
-  completionMessage: string | undefined;
-}): Promise<void> {
-  surveyConfig.setSurveyResponses(args.responses);
+async function logAnswers(
+  args: {
+    responses: TSurveyResponse;
+    completionMessage: string | undefined;
+  },
+  context: TContext
+): Promise<void> {
+  context.surveyConfig.setSurveyResponses(args.responses);
 
-  await postSurveyResponse();
+  await postSurveyResponse(context);
 
   if (args.completionMessage !== undefined) {
     logMessageFromGraphite(args.completionMessage);

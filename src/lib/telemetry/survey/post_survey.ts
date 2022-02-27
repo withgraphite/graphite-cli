@@ -1,9 +1,9 @@
 import cp from 'child_process';
-import { surveyConfig } from '../../config/survey_config';
+import { TContext } from '../../context/context';
 
-export function postSurveyResponsesInBackground(): void {
+export function postSurveyResponsesInBackground(context: TContext): void {
   // We don't worry about race conditions here - we can dedup on the server.
-  if (surveyConfig.hasSurveyResponse()) {
+  if (context.surveyConfig.hasSurveyResponse()) {
     cp.spawn('/usr/bin/env', ['node', __filename], {
       detached: true,
       stdio: 'ignore',
@@ -11,13 +11,9 @@ export function postSurveyResponsesInBackground(): void {
   }
 }
 
-export async function postSurveyResponse(): Promise<void> {
-  const responsePostedSuccessfully = await surveyConfig.postResponses();
+export async function postSurveyResponse(context: TContext): Promise<void> {
+  const responsePostedSuccessfully = await context.surveyConfig.postResponses();
   if (responsePostedSuccessfully) {
-    surveyConfig.clearPriorSurveyResponses();
+    context.surveyConfig.clearPriorSurveyResponses();
   }
-}
-
-if (process.argv[1] === __filename) {
-  void postSurveyResponse();
 }

@@ -35,7 +35,21 @@ import {
 import { printGraphiteMergeConflictStatus } from '../utils/merge_conflict_help';
 import { TContext } from './../context/context';
 import { getUserEmail } from './context';
+import { postSurveyResponsesInBackground } from './survey/post_survey';
 import tracer from './tracer';
+
+function initalizeContext(): TContext {
+  const context = initContext();
+
+  fetchUpgradePromptInBackground(context);
+  refreshPRInfoInBackground(context);
+
+  // We try to post the survey response right after the user takes it, but in
+  // case they quit early or there's some error, we'll continue to try to post
+  // it in the future until it succeeds.
+  postSurveyResponsesInBackground(context);
+  return context;
+}
 
 export async function profile(
   args: yargs.Arguments,
@@ -51,11 +65,7 @@ export async function profile(
     startTime: start,
   });
 
-  const context = initContext();
-
-  fetchUpgradePromptInBackground(context);
-  refreshPRInfoInBackground(context);
-
+  const context = initalizeContext();
   if (
     parsedArgs.command !== 'repo init' &&
     !context.repoConfig.graphiteInitialized()
