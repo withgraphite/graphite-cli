@@ -106,10 +106,7 @@ async function branchCountSanityCheck(
         showDeleteProgress: opts.showDeleteProgress,
         force: opts.force,
       },
-      parent: {
-        frame: continuationFrame,
-        parent: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
-      },
+      parent: [continuationFrame, 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER'],
     },
     context
   );

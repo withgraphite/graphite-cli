@@ -30,45 +30,65 @@ type TConfigInstance<TConfigData, THelperFunctions> = {
   readonly data: TConfigData;
   readonly update: (mutator: TConfigMutator<TConfigData>) => void;
   readonly path: string;
+  delete: () => void;
 } & THelperFunctions;
 
 type TConfigFactory<TConfigData, THelperFunctions> = {
   load: (configPath?: string) => TConfigInstance<TConfigData, THelperFunctions>;
+  loadIfExists: (
+    configPath?: string
+  ) => TConfigInstance<TConfigData, THelperFunctions> | undefined;
 };
 
 export function composeConfig<TConfigData, THelperFunctions>(
   configTemplate: TConfigTemplate<TConfigData, THelperFunctions>
 ): TConfigFactory<TConfigData, THelperFunctions> {
-  return {
-    load: (defaultPathOverride?: string) => {
-      const configPaths = configAbsolutePaths(
-        configTemplate.defaultLocations,
-        defaultPathOverride
-      );
-      const curPath =
-        configPaths.find((p) => fs.existsSync(p)) || configPaths[0];
-      const _data: TConfigData = readOrInitConfig(
-        curPath,
-        configTemplate.schema,
-        configTemplate.initialize
-      );
-      const update = (mutator: TConfigMutator<TConfigData>) => {
-        mutator(_data);
-        const shouldRemoveBecauseEmpty =
-          configTemplate.options?.removeIfEmpty &&
-          JSON.stringify(_data) === JSON.stringify({});
-        if (shouldRemoveBecauseEmpty) {
+  const determinePath = (defaultPathOverride?: string): string => {
+    const configPaths = configAbsolutePaths(
+      configTemplate.defaultLocations,
+      defaultPathOverride
+    );
+    return configPaths.find((p) => fs.existsSync(p)) || configPaths[0];
+  };
+  const loadHandler = (defaultPathOverride?: string) => {
+    const curPath = determinePath(defaultPathOverride);
+    const _data: TConfigData = readOrInitConfig(
+      curPath,
+      configTemplate.schema,
+      configTemplate.initialize
+    );
+    const update = (mutator: TConfigMutator<TConfigData>) => {
+      mutator(_data);
+      const shouldRemoveBecauseEmpty =
+        configTemplate.options?.removeIfEmpty &&
+        JSON.stringify(_data) === JSON.stringify({});
+      if (shouldRemoveBecauseEmpty) {
+        fs.removeSync(curPath);
+      } else {
+        fs.writeFileSync(curPath, JSON.stringify(_data, null, 2));
+      }
+    };
+    return {
+      data: _data,
+      update,
+      path: curPath,
+      delete: (defaultPathOverride?: string) => {
+        const curPath = determinePath(defaultPathOverride);
+        if (fs.existsSync(curPath)) {
           fs.removeSync(curPath);
-        } else {
-          fs.writeFileSync(curPath, JSON.stringify(_data, null, 2));
         }
-      };
-      return {
-        data: _data,
-        update,
-        path: curPath,
-        ...configTemplate.helperFunctions(_data, update),
-      };
+      },
+      ...configTemplate.helperFunctions(_data, update),
+    };
+  };
+  return {
+    load: loadHandler,
+    loadIfExists: (defaultPathOverride?: string) => {
+      const curPath = determinePath(defaultPathOverride);
+      if (!fs.existsSync(curPath)) {
+        return undefined;
+      }
+      return loadHandler(defaultPathOverride);
     },
   };
 }

@@ -23,7 +23,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     await currentBranchOntoAction(
       {
         onto: argv.branch,
-        mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
+        mergeConflictCallstack: ['TOP_OF_CALLSTACK_WITH_NOTHING_AFTER'],
       },
       context
     );

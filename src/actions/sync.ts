@@ -84,10 +84,10 @@ export async function syncAction(
           force: opts.force,
           showDeleteProgress: opts.showDeleteProgress,
         },
-        parent: {
-          frame: deleteMergedBranchesContinuation,
-          parent: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
-        },
+        parent: [
+          deleteMergedBranchesContinuation,
+          'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
+        ],
       },
       context
     );

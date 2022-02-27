@@ -1,6 +1,6 @@
 import { cache } from '../../lib/config/cache';
 import {
-  MergeConflictCallstackT,
+  TMergeConflictCallstack,
   TStackOntoBaseRebaseStackFrame,
   TStackOntoFixStackFrame,
 } from '../../lib/config/merge_conflict_callstack_config';
@@ -26,7 +26,7 @@ export async function stackOnto(
   opts: {
     currentBranch: Branch;
     onto: string;
-    mergeConflictCallstack: MergeConflictCallstackT;
+    mergeConflictCallstack: TMergeConflictCallstack;
   },
   context: TContext
 ): Promise<void> {
@@ -57,10 +57,8 @@ export async function stackOnto(
       if (rebaseInProgress()) {
         throw new RebaseConflictError(
           `Interactive rebase in progress, cannot fix (${opts.currentBranch.name}) onto (${opts.onto}).`,
-          {
-            frame: stackOntoContinuationFrame,
-            parent: opts.mergeConflictCallstack,
-          }
+          [stackOntoContinuationFrame, ...opts.mergeConflictCallstack],
+          context
         );
       } else {
         throw new ExitFailedError(
@@ -80,7 +78,7 @@ export async function stackOnto(
 
 export async function stackOntoBaseRebaseContinuation(
   frame: TStackOntoBaseRebaseStackFrame,
-  mergeConflictCallstack: MergeConflictCallstackT,
+  mergeConflictCallstack: TMergeConflictCallstack,
   context: TContext
 ): Promise<void> {
   const currentBranch = await Branch.branchWithName(
@@ -104,10 +102,10 @@ export async function stackOntoBaseRebaseContinuation(
   await restackBranch(
     {
       branch: currentBranch,
-      mergeConflictCallstack: {
-        frame: stackOntoContinuationFrame,
-        parent: mergeConflictCallstack,
-      },
+      mergeConflictCallstack: [
+        stackOntoContinuationFrame,
+        ...mergeConflictCallstack,
+      ],
     },
     context
   );

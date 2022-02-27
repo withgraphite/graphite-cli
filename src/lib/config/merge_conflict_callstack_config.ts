@@ -1,12 +1,7 @@
-import chalk from 'chalk';
-import fs from 'fs-extra';
-import path from 'path';
-import { logDebug } from '../utils';
-import { TStackEdit } from './../../actions/edit/stack_edits';
-import { getRepoRootPath } from './repo_root_path';
-
-const CONFIG_NAME = '.graphite_merge_conflict';
-const CURRENT_REPO_CONFIG_PATH = path.join(getRepoRootPath(), CONFIG_NAME);
+import * as t from '@withgraphite/retype';
+import { StackedEditPickSchema } from './../../actions/edit/stack_edits';
+import { TContext } from './../context/context';
+import { composeConfig } from './compose_config';
 
 /**
  * After Graphite is interrupted by a merge conflict, upon continuing, there
@@ -19,90 +14,119 @@ const CURRENT_REPO_CONFIG_PATH = path.join(getRepoRootPath(), CONFIG_NAME);
  * The below object helps keep track of these items and persist them across
  * invocations of the CLI.
  */
-export type MergeConflictCallstackT =
-  | {
-      frame: TGraphiteFrame;
-      parent: MergeConflictCallstackT;
-    }
-  | 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER';
 
-type TGraphiteFrame =
-  | TStackOntoBaseRebaseStackFrame
-  | TStackOntoFixStackFrame
-  | TStackFixActionStackFrame
-  | TRestackNodeStackFrame
-  | TDeleteBranchesStackFrame
-  | TRepoFixBranchCountSanityCheckStackFrame
-  | TRepoSyncStackFrame
-  | TStackEditStackFrame;
+const StackEditStackFrameSchema = t.shape({
+  op: t.literal('STACK_EDIT_CONTINUATION' as const),
+  currentBranchName: t.string,
+  remainingEdits: t.array(StackedEditPickSchema),
+});
 
-export type TStackEditStackFrame = {
-  op: 'STACK_EDIT_CONTINUATION';
-  remainingEdits: TStackEdit[];
-};
+const StackOntoBaseRebaseStackFrameSchema = t.shape({
+  op: t.literal('STACK_ONTO_BASE_REBASE_CONTINUATION' as const),
+  currentBranchName: t.string,
+  onto: t.string,
+});
 
-export type TStackOntoBaseRebaseStackFrame = {
-  op: 'STACK_ONTO_BASE_REBASE_CONTINUATION';
-  currentBranchName: string;
-  onto: string;
-};
+const StackOntoFixStackFrameSchema = t.shape({
+  op: t.literal('STACK_ONTO_FIX_CONTINUATION' as const),
+  currentBranchName: t.string,
+  onto: t.string,
+});
 
-export type TStackOntoFixStackFrame = {
-  op: 'STACK_ONTO_FIX_CONTINUATION';
-  currentBranchName: string;
-  onto: string;
-};
+const StackFixActionStackFrameSchema = t.shape({
+  op: t.literal('STACK_FIX_ACTION_CONTINUATION' as const),
+  checkoutBranchName: t.string,
+});
 
-export type TStackFixActionStackFrame = {
-  op: 'STACK_FIX_ACTION_CONTINUATION';
-  checkoutBranchName: string;
-};
+const RestackNodeStackFrameSchema = t.shape({
+  op: t.literal('STACK_FIX' as const),
+  sourceBranchName: t.string,
+});
 
-export type TRestackNodeStackFrame = {
-  op: 'STACK_FIX';
-  sourceBranchName: string;
-};
+const DeleteBranchesStackFrameSchema = t.shape({
+  op: t.literal('DELETE_BRANCHES_CONTINUATION' as const),
+  force: t.boolean,
+  showDeleteProgress: t.boolean,
+});
 
-export type TDeleteBranchesStackFrame = {
-  op: 'DELETE_BRANCHES_CONTINUATION';
-  force: boolean;
-  showDeleteProgress: boolean;
-};
+const RepoFixBranchCountSanityCheckStackFrameSchema = t.shape({
+  op: t.literal('REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION' as const),
+});
 
-export type TRepoFixBranchCountSanityCheckStackFrame = {
-  op: 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION';
-};
+const RepoSyncStackFrameSchema = t.shape({
+  op: t.literal('REPO_SYNC_CONTINUATION' as const),
+  force: t.boolean,
+  resubmit: t.boolean,
+  oldBranchName: t.string,
+});
 
-export type TRepoSyncStackFrame = {
-  op: 'REPO_SYNC_CONTINUATION';
-  force: boolean;
-  resubmit: boolean;
-  oldBranchName: string;
-};
+export type TStackEditStackFrame = t.TypeOf<typeof StackEditStackFrameSchema>;
+export type TStackOntoBaseRebaseStackFrame = t.TypeOf<
+  typeof StackOntoBaseRebaseStackFrameSchema
+>;
+export type TStackOntoFixStackFrame = t.TypeOf<
+  typeof StackOntoFixStackFrameSchema
+>;
+export type TStackFixActionStackFrame = t.TypeOf<
+  typeof StackFixActionStackFrameSchema
+>;
+export type TRestackNodeStackFrame = t.TypeOf<
+  typeof RestackNodeStackFrameSchema
+>;
+export type TDeleteBranchesStackFrame = t.TypeOf<
+  typeof DeleteBranchesStackFrameSchema
+>;
+export type TRepoFixBranchCountSanityCheckStackFrame = t.TypeOf<
+  typeof RepoFixBranchCountSanityCheckStackFrameSchema
+>;
+export type TRepoSyncStackFrame = t.TypeOf<typeof RepoSyncStackFrameSchema>;
+
+const GraphiteFrameSchema = t.unionMany([
+  StackOntoBaseRebaseStackFrameSchema,
+  StackOntoFixStackFrameSchema,
+  StackFixActionStackFrameSchema,
+  RestackNodeStackFrameSchema,
+  DeleteBranchesStackFrameSchema,
+  RepoFixBranchCountSanityCheckStackFrameSchema,
+  RepoSyncStackFrameSchema,
+  StackEditStackFrameSchema,
+  t.literal('TOP_OF_CALLSTACK_WITH_NOTHING_AFTER' as const),
+]);
+
+const MergeConflictCallstackSchema = t.shape({
+  callstack: t.array(GraphiteFrameSchema),
+});
+
+export type TMergeConflictCallstack = t.TypeOf<
+  typeof MergeConflictCallstackSchema
+>['callstack'];
+
+export const mergeConflictCallstackConfigFactory = composeConfig({
+  schema: MergeConflictCallstackSchema,
+  defaultLocations: [
+    {
+      relativePath: '.graphite_merge_conflict',
+      relativeTo: 'REPO',
+    },
+  ],
+  initialize: () => {
+    return { callstack: [] };
+  },
+  helperFunctions: (data, update) => {
+    return {} as const;
+  },
+  options: { removeIfEmpty: true },
+});
 
 export function persistMergeConflictCallstack(
-  callstack: MergeConflictCallstackT
+  callstack: TMergeConflictCallstack,
+  context: TContext
 ): void {
-  fs.writeFileSync(
-    CURRENT_REPO_CONFIG_PATH,
-    JSON.stringify(callstack, null, 2)
-  );
-}
-
-export function getPersistedMergeConflictCallstack(): MergeConflictCallstackT | null {
-  if (fs.existsSync(CURRENT_REPO_CONFIG_PATH)) {
-    const repoConfigRaw = fs.readFileSync(CURRENT_REPO_CONFIG_PATH);
-    try {
-      return JSON.parse(
-        repoConfigRaw.toString().trim()
-      ) as MergeConflictCallstackT;
-    } catch (e) {
-      logDebug(chalk.yellow(`Warning: Malformed ${CURRENT_REPO_CONFIG_PATH}`));
-    }
+  if (!context.mergeConflictCallstackConfig) {
+    context.mergeConflictCallstackConfig =
+      mergeConflictCallstackConfigFactory.load();
   }
-  return null;
-}
-
-export function clearPersistedMergeConflictCallstack(): void {
-  fs.unlinkSync(CURRENT_REPO_CONFIG_PATH);
+  context.mergeConflictCallstackConfig.update(
+    (data) => (data.callstack = callstack)
+  );
 }

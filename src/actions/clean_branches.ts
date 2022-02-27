@@ -3,8 +3,8 @@ import { execSync } from 'child_process';
 import prompts from 'prompts';
 import { cache } from '../lib/config/cache';
 import {
-  MergeConflictCallstackT,
   TDeleteBranchesStackFrame,
+  TMergeConflictCallstack,
 } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context/context';
 import { KilledError } from '../lib/errors';
@@ -22,7 +22,7 @@ import { currentBranchOntoAction } from './onto/current_branch_onto';
 export async function deleteMergedBranches(
   opts: {
     frame: TDeleteBranchesStackFrame;
-    parent: MergeConflictCallstackT;
+    parent: TMergeConflictCallstack;
   },
   context: TContext
 ): Promise<void> {
@@ -129,10 +129,7 @@ export async function deleteMergedBranches(
         await currentBranchOntoAction(
           {
             onto: getTrunk(context).name,
-            mergeConflictCallstack: {
-              frame: opts.frame,
-              parent: opts.parent,
-            },
+            mergeConflictCallstack: [opts.frame, ...opts.parent],
           },
           context
         );

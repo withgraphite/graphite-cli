@@ -1,7 +1,7 @@
 import { Branch } from '../../wrapper-classes/branch';
 import {
-  MergeConflictCallstackT,
   persistMergeConflictCallstack,
+  TMergeConflictCallstack,
 } from '../config/merge_conflict_callstack_config';
 import { TContext } from '../context/context';
 
@@ -33,10 +33,14 @@ class ExitFailedError extends ExitError {
 }
 
 class RebaseConflictError extends ExitError {
-  constructor(message: string, callstack: MergeConflictCallstackT) {
+  constructor(
+    message: string,
+    callstack: TMergeConflictCallstack,
+    context: TContext
+  ) {
     super(message);
     this.name = 'RebaseConflict';
-    persistMergeConflictCallstack(callstack);
+    persistMergeConflictCallstack(callstack, context);
   }
 }
 
