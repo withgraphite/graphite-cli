@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import fs from 'fs-extra';
 import path from 'path';
-import { getOwnerAndNameFromURLForTesting } from '../../../../src/lib/config';
+import { getOwnerAndNameFromURLForTesting } from '../../../../src/lib/config/repo_config';
 import { BasicScene } from '../../../lib/scenes';
 import { configureTest } from '../../../lib/utils';
 

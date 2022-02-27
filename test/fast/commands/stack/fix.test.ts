@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { initContext } from '../../../../src/lib/context/context';
 import Branch from '../../../../src/wrapper-classes/branch';
 import { allScenes } from '../../../lib/scenes';
 import { configureTest, expectCommits } from '../../../lib/utils';
@@ -8,7 +7,6 @@ for (const scene of allScenes) {
   // eslint-disable-next-line max-lines-per-function
   describe(`(${scene}): stack fix`, function () {
     configureTest(this, scene);
-    const context = initContext();
 
     it('Can fix a stack of three branches', () => {
       scene.repo.createChange('2', 'a');
@@ -93,9 +91,9 @@ for (const scene of allScenes) {
 
       const branch = new Branch('b');
 
-      expect(branch.stackByTracingMetaParents(context).join(',')).not.to.equal(
-        branch.stackByTracingGitParents(context).join(',')
-      );
+      expect(
+        branch.stackByTracingMetaParents(scene.context).join(',')
+      ).not.to.equal(branch.stackByTracingGitParents(scene.context).join(','));
 
       scene.repo.checkoutBranch('a');
 
@@ -103,9 +101,9 @@ for (const scene of allScenes) {
 
       scene.repo.checkoutBranch('b');
 
-      expect(branch.stackByTracingMetaParents(context).join(',')).to.equal(
-        branch.stackByTracingGitParents(context).join(',')
-      );
+      expect(
+        branch.stackByTracingMetaParents(scene.context).join(',')
+      ).to.equal(branch.stackByTracingGitParents(scene.context).join(','));
     });
 
     it('Can regen from trunk branch', () => {

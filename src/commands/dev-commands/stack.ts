@@ -2,7 +2,8 @@ import { execSync } from 'child_process';
 import yargs from 'yargs';
 import { currentGitRepoPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry';
-import { GitRepo, makeId } from '../../lib/utils';
+import { makeId } from '../../lib/utils';
+import { GitRepo } from '../../lib/utils/git_repo';
 
 export const command = 'create-stack';
 export const canonical = 'create-stack';

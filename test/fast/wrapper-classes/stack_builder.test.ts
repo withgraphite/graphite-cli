@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { initContext } from '../../../src/lib/context/context';
 import {
   GitStackBuilder,
   MetaStackBuilder,
@@ -13,7 +12,6 @@ for (const scene of allScenes) {
   // eslint-disable-next-line max-lines-per-function
   describe(`(${scene}): stack builder class`, function () {
     configureTest(this, scene);
-    const context = initContext();
 
     it('Can print stacks from git', () => {
       scene.repo.createAndCheckoutBranch('a');
@@ -29,8 +27,8 @@ for (const scene of allScenes) {
       scene.repo.createAndCheckoutBranch('d');
       scene.repo.createChangeAndCommit('d');
 
-      const gitStacks = new GitStackBuilder().allStacks(context);
-      const metaStacks = new MetaStackBuilder().allStacks(context);
+      const gitStacks = new GitStackBuilder().allStacks(scene.context);
+      const metaStacks = new MetaStackBuilder().allStacks(scene.context);
 
       expect(
         gitStacks[0].equals(
@@ -57,8 +55,8 @@ for (const scene of allScenes) {
       scene.repo.createChange('d');
       scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
 
-      const metaStacks = new MetaStackBuilder().allStacks(context);
-      const gitStacks = new GitStackBuilder().allStacks(context);
+      const metaStacks = new MetaStackBuilder().allStacks(scene.context);
+      const gitStacks = new GitStackBuilder().allStacks(scene.context);
 
       expect(
         metaStacks[0].equals(Stack.fromMap({ main: { d: {}, a: { b: {} } } }))
@@ -82,11 +80,11 @@ for (const scene of allScenes) {
 
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
         new Branch('a'),
-        context
+        scene.context
       );
       const gitStack = new GitStackBuilder().fullStackFromBranch(
         new Branch('a'),
-        context
+        scene.context
       );
 
       expect(metaStack.equals(Stack.fromMap({ main: { a: { b: {} } } }))).to.be
@@ -108,11 +106,11 @@ for (const scene of allScenes) {
 
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
         new Branch('main'),
-        context
+        scene.context
       );
       const gitStack = new GitStackBuilder().fullStackFromBranch(
         new Branch('main'),
-        context
+        scene.context
       );
 
       expect(metaStack.equals(Stack.fromMap({ main: { a: { b: {} }, d: {} } })))
@@ -129,11 +127,11 @@ for (const scene of allScenes) {
 
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
         new Branch('a'),
-        context
+        scene.context
       );
       const gitStack = new GitStackBuilder().fullStackFromBranch(
         new Branch('a'),
-        context
+        scene.context
       );
 
       expect(metaStack.equals(Stack.fromMap({ main: { a: {} } }))).to.be.true;
@@ -149,11 +147,11 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
       const metaStack = new MetaStackBuilder().downstackFromBranch(
         new Branch('b'),
-        context
+        scene.context
       );
       const gitStack = new GitStackBuilder().downstackFromBranch(
         new Branch('b'),
-        context
+        scene.context
       );
       expect(metaStack.equals(Stack.fromMap({ main: { a: { b: {} } } }))).to.be
         .true;
@@ -169,7 +167,7 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
         new Branch('b'),
-        context
+        scene.context
       );
       expect(
         metaStack
@@ -202,11 +200,11 @@ for (const scene of allScenes) {
 
       const metaStack = new MetaStackBuilder().fullStackFromBranch(
         new Branch('a'),
-        context
+        scene.context
       );
       const gitStack = new GitStackBuilder().fullStackFromBranch(
         new Branch('a'),
-        context
+        scene.context
       );
 
       expect(metaStack.equals(Stack.fromMap({ main: { a: { b: {}, c: {} } } })))

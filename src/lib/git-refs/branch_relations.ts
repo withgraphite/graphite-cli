@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import Branch from '../../wrapper-classes/branch';
-import cache from '../config/cache';
+import { cache } from '../config/cache';
 import { tracer } from '../telemetry';
 import { gpExecSync, logDebug } from '../utils';
 import { TContext } from './../context/context';

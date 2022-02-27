@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { execSync } from 'child_process';
-import { GitRepo } from '../../../src/lib/utils';
+import { GitRepo } from '../../../src/lib/utils/git_repo';
 
 export function expectBranches(repo: GitRepo, sortedBranches: string): void {
   expect(

@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { cache } from '../lib/config';
+import { cache } from '../lib/config/cache';
 import {
   MergeConflictCallstackT,
   TStackFixActionStackFrame,

@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { execStateConfig } from '../config';
+import { execStateConfig } from '../config/exec_state_config';
 import { TContext } from '../context/context';
 
 export function logMessageFromGraphite(msg: string): void {

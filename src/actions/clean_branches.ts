@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { execSync } from 'child_process';
 import prompts from 'prompts';
-import { cache } from '../lib/config';
+import { cache } from '../lib/config/cache';
 import {
   MergeConflictCallstackT,
   TDeleteBranchesStackFrame,

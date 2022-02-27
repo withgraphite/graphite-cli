@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import tmp from 'tmp';
-import { GitRepo } from '../../../src/lib/utils';
+import { GitRepo } from '../../../src/lib/utils/git_repo';
 import { AbstractScene } from './abstract_scene';
 
 export class PublicRepoScene extends AbstractScene {

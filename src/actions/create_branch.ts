@@ -1,4 +1,4 @@
-import { execStateConfig } from '../lib/config';
+import { execStateConfig } from '../lib/config/exec_state_config';
 import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';

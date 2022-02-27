@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { GitRepo } from '../../../src/lib/utils';
+import { GitRepo } from '../../../src/lib/utils/git_repo';
 export function expectCommits(repo: GitRepo, commitMessages: string): void {
   expect(
     repo
