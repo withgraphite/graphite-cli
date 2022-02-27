@@ -1,4 +1,5 @@
-import { execStateConfig, userConfig } from '../lib/config';
+import { execStateConfig } from '../lib/config';
+import { userConfig } from '../lib/config/user_config';
 import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
@@ -117,7 +118,7 @@ function newBranchName(branchName?: string, commitMessage?: string): string {
       ).slice(-2)}-` + branchMessage; // Condence underscores
   }
 
-  const newBranchName = `${userConfig.getBranchPrefix() || ''}${branchMessage}`;
+  const newBranchName = `${userConfig.data.branchPrefix || ''}${branchMessage}`;
   return newBranchName.slice(0, MAX_BRANCH_NAME_LENGTH);
 }
 

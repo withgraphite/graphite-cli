@@ -1,21 +1,10 @@
 import { expect } from 'chai';
-import { userConfig } from '../../../../src/lib/config';
 import { BasicScene } from '../../../lib/scenes';
 import { configureTest } from '../../../lib/utils';
 
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): auth`, function () {
     configureTest(this, scene);
-
-    /**
-     * If users run this test locally, we don't want it to mangle their auth
-     * token. As a result, before we run our tests, we save their auth token
-     * and after finishing our tests, we reset their auth token.
-     */
-    let localAuthToken: string | undefined;
-    before(function () {
-      localAuthToken = userConfig.getAuthToken();
-    });
 
     it('Sanity check - can read previously written auth token', () => {
       const authToken = 'SUPER_SECRET_AUTH_TOKEN';
@@ -37,12 +26,6 @@ for (const scene of [new BasicScene()]) {
       expect(scene.repo.execCliCommandAndGetOutput(`auth`)).to.equal(
         authTokenNew
       );
-    });
-
-    after(function () {
-      if (localAuthToken !== undefined) {
-        userConfig.setAuthToken(localAuthToken);
-      }
     });
   });
 }

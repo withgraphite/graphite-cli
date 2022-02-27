@@ -1,5 +1,5 @@
 import Branch from '../../wrapper-classes/branch';
-import { userConfig } from '../config';
+import { userConfig } from '../config/user_config';
 import { TContext } from '../context/context';
 import { PreconditionsFailedError } from '../errors';
 import {
@@ -74,7 +74,7 @@ function ensureSomeStagedChangesPrecondition(
 }
 
 function cliAuthPrecondition(): string {
-  const token = userConfig.getAuthToken();
+  const token = userConfig.data.authToken;
   if (!token || token.length === 0) {
     throw new PreconditionsFailedError(
       'Please authenticate your Graphite CLI by visiting https://app.graphite.dev/activate.'

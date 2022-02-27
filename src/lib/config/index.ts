@@ -8,12 +8,10 @@ import {
   repoConfigFactory,
 } from './repo_config';
 import { getRepoRootPath } from './repo_root_path';
-import userConfig from './user_config';
 
 export {
   messageConfig,
   readMessageConfigForTestingOnly,
-  userConfig,
   repoConfigFactory,
   getOwnerAndNameFromURLForTesting,
   execStateConfig,

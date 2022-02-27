@@ -1,15 +1,19 @@
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
+import path from 'path';
 import { rebaseInProgress, unstagedChanges } from './';
+import { USER_CONFIG_OVERRIDE_ENV } from './../config/user_config';
 
 const TEXT_FILE_NAME = 'test.txt';
-export default class GitRepo {
+export default class TestGitRepo {
   dir: string;
+  userConfigPath: string;
   constructor(
     dir: string,
     opts?: { existingRepo?: boolean; repoUrl?: string }
   ) {
     this.dir = dir;
+    this.userConfigPath = path.join(dir, '.graphite_user_config');
     if (opts?.existingRepo) {
       return;
     }
@@ -22,7 +26,11 @@ export default class GitRepo {
 
   execCliCommand(command: string, opts?: { cwd?: string }): void {
     execSync(
-      `NODE_ENV=development node ${__dirname}/../../../../dist/src/index.js ${command}`,
+      [
+        `${USER_CONFIG_OVERRIDE_ENV}=${this.userConfigPath}`,
+        `NODE_ENV=development`,
+        `node ${__dirname}/../../../../dist/src/index.js ${command}`,
+      ].join('\n'),
       {
         stdio: process.env.DEBUG ? 'inherit' : 'ignore',
         cwd: opts?.cwd || this.dir,
@@ -32,7 +40,11 @@ export default class GitRepo {
 
   execCliCommandAndGetOutput(command: string): string {
     return execSync(
-      `NODE_ENV=development node ${__dirname}/../../../../dist/src/index.js ${command}`,
+      [
+        `${USER_CONFIG_OVERRIDE_ENV}=${this.userConfigPath}`,
+        `NODE_ENV=development`,
+        `node ${__dirname}/../../../../dist/src/index.js ${command}`,
+      ].join('\n'),
       {
         cwd: this.dir,
       }

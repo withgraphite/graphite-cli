@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { userConfig } from '../../lib/config';
+import { userConfig } from '../../lib/config/user_config';
 import { profile } from '../../lib/telemetry';
 import { logInfo } from '../../lib/utils';
 
@@ -27,15 +27,13 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async () => {
     if (argv.enable) {
-      userConfig.toggleTips(true);
+      userConfig.update((data) => (data.tips = true));
       logInfo(`tips enabled`);
     } else if (argv.disable) {
-      userConfig.toggleTips(false);
+      userConfig.update((data) => (data.tips = false));
       logInfo(`tips disabled`);
     } else {
-      userConfig.tipsEnabled()
-        ? logInfo(`tips enabled`)
-        : logInfo(`tips disabled`);
+      userConfig.data.tips ? logInfo(`tips enabled`) : logInfo(`tips disabled`);
     }
   });
 };

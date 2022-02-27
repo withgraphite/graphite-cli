@@ -1,9 +1,9 @@
 import { expect } from 'chai';
-import { userConfig } from '../../../../src/lib/config';
+import { DEFAULT_GRAPHITE_EDITOR } from '../../../../src/commands/user-commands/editor';
+import { userConfig } from '../../../../src/lib/config/user_config';
+import { logInfo } from '../../../../src/lib/utils';
 import { BasicScene } from '../../../lib/scenes';
 import { configureTest } from '../../../lib/utils';
-import { logInfo } from '../../../../src/lib/utils';
-import { DEFAULT_GRAPHITE_EDITOR } from '../../../../src/commands/user-commands/editor';
 
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): user editor`, function () {
@@ -16,7 +16,7 @@ for (const scene of [new BasicScene()]) {
      */
     let editorPref: string | undefined;
     before(function () {
-      editorPref = userConfig.getEditor();
+      editorPref = userConfig.data.editor;
       logInfo(`Existing user pref: ${editorPref}`);
     });
 
@@ -52,7 +52,7 @@ for (const scene of [new BasicScene()]) {
 
     after(function () {
       if (editorPref !== undefined) {
-        userConfig.setEditor(editorPref);
+        userConfig.update((data) => (data.editor = editorPref));
         logInfo(`Reset user pref: ${editorPref}`);
       }
     });

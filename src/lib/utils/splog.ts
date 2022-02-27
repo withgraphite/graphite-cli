@@ -1,5 +1,6 @@
 import chalk from 'chalk';
-import { execStateConfig, userConfig } from '../config';
+import { execStateConfig } from '../config';
+import { userConfig } from '../config/user_config';
 
 export function logMessageFromGraphite(msg: string): void {
   console.log(chalk.yellow(msg) + '\n\n');
@@ -31,7 +32,7 @@ export function logDebug(msg: string): void {
   }
 }
 export function logTip(msg: string): void {
-  if (!execStateConfig.quiet() && userConfig.tipsEnabled()) {
+  if (!execStateConfig.quiet() && userConfig.data.tips) {
     console.log(
       chalk.gray(
         [
