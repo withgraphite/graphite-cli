@@ -60,10 +60,7 @@ async function resolveCallstack(
   callstack: TMergeConflictCallstack,
   context: TContext
 ): Promise<void> {
-  if (
-    callstack.length === 0 ||
-    callstack[0] === 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER'
-  ) {
+  if (callstack.length === 0) {
     return;
   }
 
