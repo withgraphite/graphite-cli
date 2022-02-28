@@ -1,22 +1,24 @@
-#!/usr/bin/env node
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import cp from 'child_process';
 import { getUserEmail, SHOULD_REPORT_TELEMETRY } from '.';
 import { version } from '../../../package.json';
 import { API_SERVER } from '../api';
-import { messageConfig } from '../config/message_config';
 import { TContext } from '../context/context';
 import { logMessageFromGraphite } from '../utils';
+import {
+  messageConfigFactory,
+  TMessageConfig,
+} from './../config/message_config';
 
-function printAndClearOldMessage(): void {
-  const oldMessage = messageConfig.data.message;
+function printAndClearOldMessage(context: TContext): void {
+  const oldMessage = context.messageConfig.data.message;
   // "Since we fetch the message asynchronously and display it when the user runs their next Graphite command,
   // double-check before showing the message if the CLI is still an old version
   // (i.e. the user hasn't updated the CLI in the meantime)."
   if (oldMessage && version == oldMessage.cliVersion) {
     logMessageFromGraphite(oldMessage.contents);
-    messageConfig.update((data) => (data.message = undefined));
+    context.messageConfig.update((data) => (data.message = undefined));
   }
 }
 export function fetchUpgradePromptInBackground(context: TContext): void {
@@ -24,14 +26,16 @@ export function fetchUpgradePromptInBackground(context: TContext): void {
     return;
   }
 
-  printAndClearOldMessage();
+  printAndClearOldMessage(context);
   cp.spawn('/usr/bin/env', ['node', __filename], {
     detached: true,
     stdio: 'ignore',
   });
 }
 
-async function fetchUpgradePrompt(): Promise<void> {
+async function fetchUpgradePrompt(
+  messageConfig: TMessageConfig
+): Promise<void> {
   if (!SHOULD_REPORT_TELEMETRY) {
     return;
   }
@@ -66,5 +70,5 @@ async function fetchUpgradePrompt(): Promise<void> {
 }
 
 if (process.argv[1] === __filename) {
-  void fetchUpgradePrompt();
+  void fetchUpgradePrompt(messageConfigFactory.load());
 }

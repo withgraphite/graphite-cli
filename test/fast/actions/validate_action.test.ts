@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import { validate, validateStack } from '../../../src/actions/validate';
-import { cache } from '../../../src/lib/config';
-import { initContext } from '../../../src/lib/context/context';
+import { cache } from '../../../src/lib/config/cache';
 import { currentBranchPrecondition } from '../../../src/lib/preconditions';
 import { MetaStackBuilder, Stack } from '../../../src/wrapper-classes';
 import Branch from '../../../src/wrapper-classes/branch';
@@ -26,7 +25,6 @@ for (const scene of allScenes) {
   // eslint-disable-next-line max-lines-per-function
   describe(`(${scene}): validate action`, function () {
     configureTest(this, scene);
-    const context = initContext();
 
     it('Can validate upstack', async () => {
       setupScene(scene);
@@ -34,44 +32,46 @@ for (const scene of allScenes) {
       let stack: Stack;
 
       scene.repo.checkoutBranch('a');
-      expect(() => validate('UPSTACK', context)).to.throw(Error);
-      branch = currentBranchPrecondition(context);
+      expect(() => validate('UPSTACK', scene.context)).to.throw(Error);
+      branch = currentBranchPrecondition(scene.context);
       stack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
         branch,
-        context
+        scene.context
       );
-      expect(() => validateStack('UPSTACK', stack, context)).to.throw(Error);
+      expect(() => validateStack('UPSTACK', stack, scene.context)).to.throw(
+        Error
+      );
 
       scene.repo.checkoutBranch('b');
-      expect(() => validate('UPSTACK', context)).to.not.throw(Error);
-      branch = currentBranchPrecondition(context);
+      expect(() => validate('UPSTACK', scene.context)).to.not.throw(Error);
+      branch = currentBranchPrecondition(scene.context);
       stack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
         branch,
-        context
+        scene.context
       );
-      expect(() => validateStack('UPSTACK', stack, context)).to.not.throw(
+      expect(() => validateStack('UPSTACK', stack, scene.context)).to.not.throw(
         Error
       );
 
       scene.repo.checkoutBranch('c');
-      expect(() => validate('UPSTACK', context)).to.not.throw(Error);
-      branch = currentBranchPrecondition(context);
+      expect(() => validate('UPSTACK', scene.context)).to.not.throw(Error);
+      branch = currentBranchPrecondition(scene.context);
       stack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
         branch,
-        context
+        scene.context
       );
-      expect(() => validateStack('UPSTACK', stack, context)).to.not.throw(
+      expect(() => validateStack('UPSTACK', stack, scene.context)).to.not.throw(
         Error
       );
 
       scene.repo.checkoutBranch('d');
-      expect(() => validate('UPSTACK', context)).to.not.throw(Error);
-      branch = currentBranchPrecondition(context);
+      expect(() => validate('UPSTACK', scene.context)).to.not.throw(Error);
+      branch = currentBranchPrecondition(scene.context);
       stack = new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
         branch,
-        context
+        scene.context
       );
-      expect(() => validateStack('UPSTACK', stack, context)).to.not.throw(
+      expect(() => validateStack('UPSTACK', stack, scene.context)).to.not.throw(
         Error
       );
     });
@@ -82,36 +82,48 @@ for (const scene of allScenes) {
       let metaStack: Stack;
 
       scene.repo.checkoutBranch('a');
-      expect(() => validate('DOWNSTACK', context)).to.not.throw(Error);
-      branch = currentBranchPrecondition(context);
-      metaStack = new MetaStackBuilder().downstackFromBranch(branch, context);
-      expect(() => validateStack('DOWNSTACK', metaStack, context)).to.not.throw(
-        Error
+      expect(() => validate('DOWNSTACK', scene.context)).to.not.throw(Error);
+      branch = currentBranchPrecondition(scene.context);
+      metaStack = new MetaStackBuilder().downstackFromBranch(
+        branch,
+        scene.context
       );
+      expect(() =>
+        validateStack('DOWNSTACK', metaStack, scene.context)
+      ).to.not.throw(Error);
 
       scene.repo.checkoutBranch('b');
-      expect(() => validate('DOWNSTACK', context)).to.throw(Error);
-      branch = currentBranchPrecondition(context);
-      metaStack = new MetaStackBuilder().downstackFromBranch(branch, context);
-      expect(() => validateStack('DOWNSTACK', metaStack, context)).to.throw(
-        Error
+      expect(() => validate('DOWNSTACK', scene.context)).to.throw(Error);
+      branch = currentBranchPrecondition(scene.context);
+      metaStack = new MetaStackBuilder().downstackFromBranch(
+        branch,
+        scene.context
       );
+      expect(() =>
+        validateStack('DOWNSTACK', metaStack, scene.context)
+      ).to.throw(Error);
 
       scene.repo.checkoutBranch('c');
-      expect(() => validate('DOWNSTACK', context)).to.throw(Error);
-      branch = currentBranchPrecondition(context);
-      metaStack = new MetaStackBuilder().downstackFromBranch(branch, context);
-      expect(() => validateStack('DOWNSTACK', metaStack, context)).to.throw(
-        Error
+      expect(() => validate('DOWNSTACK', scene.context)).to.throw(Error);
+      branch = currentBranchPrecondition(scene.context);
+      metaStack = new MetaStackBuilder().downstackFromBranch(
+        branch,
+        scene.context
       );
+      expect(() =>
+        validateStack('DOWNSTACK', metaStack, scene.context)
+      ).to.throw(Error);
 
       scene.repo.checkoutBranch('d');
-      expect(() => validate('DOWNSTACK', context)).to.throw(Error);
-      branch = currentBranchPrecondition(context);
-      metaStack = new MetaStackBuilder().downstackFromBranch(branch, context);
-      expect(() => validateStack('DOWNSTACK', metaStack, context)).to.throw(
-        Error
+      expect(() => validate('DOWNSTACK', scene.context)).to.throw(Error);
+      branch = currentBranchPrecondition(scene.context);
+      metaStack = new MetaStackBuilder().downstackFromBranch(
+        branch,
+        scene.context
       );
+      expect(() =>
+        validateStack('DOWNSTACK', metaStack, scene.context)
+      ).to.throw(Error);
     });
 
     it('Can validate fullstack', async () => {
@@ -120,32 +132,41 @@ for (const scene of allScenes) {
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       cache.clearAll();
-      expect(() => validate('FULLSTACK', context)).to.not.throw(Error);
-      branch = currentBranchPrecondition(context);
-      metaStack = new MetaStackBuilder().fullStackFromBranch(branch, context);
-      expect(() => validateStack('FULLSTACK', metaStack, context)).to.not.throw(
-        Error
+      expect(() => validate('FULLSTACK', scene.context)).to.not.throw(Error);
+      branch = currentBranchPrecondition(scene.context);
+      metaStack = new MetaStackBuilder().fullStackFromBranch(
+        branch,
+        scene.context
       );
+      expect(() =>
+        validateStack('FULLSTACK', metaStack, scene.context)
+      ).to.not.throw(Error);
 
       scene.repo.createChange('b');
       scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
       cache.clearAll();
-      expect(() => validate('FULLSTACK', context)).to.not.throw(Error);
-      branch = currentBranchPrecondition(context);
-      metaStack = new MetaStackBuilder().fullStackFromBranch(branch, context);
-      expect(() => validateStack('FULLSTACK', metaStack, context)).to.not.throw(
-        Error
+      expect(() => validate('FULLSTACK', scene.context)).to.not.throw(Error);
+      branch = currentBranchPrecondition(scene.context);
+      metaStack = new MetaStackBuilder().fullStackFromBranch(
+        branch,
+        scene.context
       );
+      expect(() =>
+        validateStack('FULLSTACK', metaStack, scene.context)
+      ).to.not.throw(Error);
 
       scene.repo.createAndCheckoutBranch('c');
       scene.repo.createChangeAndCommit('c');
       cache.clearAll();
-      expect(() => validate('FULLSTACK', context)).to.throw(Error);
-      branch = currentBranchPrecondition(context);
-      metaStack = new MetaStackBuilder().fullStackFromBranch(branch, context);
-      expect(() => validateStack('FULLSTACK', metaStack, context)).to.throw(
-        Error
+      expect(() => validate('FULLSTACK', scene.context)).to.throw(Error);
+      branch = currentBranchPrecondition(scene.context);
+      metaStack = new MetaStackBuilder().fullStackFromBranch(
+        branch,
+        scene.context
       );
+      expect(() =>
+        validateStack('FULLSTACK', metaStack, scene.context)
+      ).to.throw(Error);
     });
   });
 }

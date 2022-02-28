@@ -5,7 +5,7 @@ import { rebaseInProgress, unstagedChanges } from './';
 import { USER_CONFIG_OVERRIDE_ENV } from './../context/context';
 
 const TEXT_FILE_NAME = 'test.txt';
-export default class TestGitRepo {
+export class GitRepo {
   dir: string;
   userConfigPath: string;
   constructor(
@@ -30,7 +30,7 @@ export default class TestGitRepo {
         `${USER_CONFIG_OVERRIDE_ENV}=${this.userConfigPath}`,
         `NODE_ENV=development`,
         `node ${__dirname}/../../../../dist/src/index.js ${command}`,
-      ].join('\n'),
+      ].join(' '),
       {
         stdio: process.env.DEBUG ? 'inherit' : 'ignore',
         cwd: opts?.cwd || this.dir,
@@ -44,7 +44,7 @@ export default class TestGitRepo {
         `${USER_CONFIG_OVERRIDE_ENV}=${this.userConfigPath}`,
         `NODE_ENV=development`,
         `node ${__dirname}/../../../../dist/src/index.js ${command}`,
-      ].join('\n'),
+      ].join(' '),
       {
         cwd: this.dir,
       }

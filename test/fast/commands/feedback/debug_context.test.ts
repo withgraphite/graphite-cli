@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import fs from 'fs-extra';
-import { GitRepo } from '../../../../src/lib/utils';
+import { GitRepo } from '../../../../src/lib/utils/git_repo';
 import { TrailingProdScene } from '../../../lib/scenes';
 import { configureTest } from '../../../lib/utils';
 

@@ -10,7 +10,7 @@ import {
 } from '.';
 import { version } from '../../../package.json';
 import { init } from '../../actions/init';
-import { execStateConfig } from '../config';
+import { execStateConfig } from '../config/exec_state_config';
 import { initContext } from '../context/context';
 import {
   ConfigError,

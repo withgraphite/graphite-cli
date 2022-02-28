@@ -4,7 +4,7 @@ import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { API_SERVER } from '../../lib/api';
-import { execStateConfig } from '../../lib/config';
+import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context/context';
 import {
   ExitFailedError,
