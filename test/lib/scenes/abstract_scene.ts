@@ -19,6 +19,10 @@ export abstract class AbstractScene {
       `${this.dir}/.git/.graphite_repo_config`,
       JSON.stringify({ trunk: 'main' }, null, 2)
     );
+    fs.writeFileSync(
+      `${this.dir}/.git/.graphite_user_config`,
+      JSON.stringify({}, null, 2)
+    );
     process.chdir(this.dir);
     this.context = initContext();
   }
@@ -32,6 +36,10 @@ export abstract class AbstractScene {
     fs.writeFileSync(
       `${this.dir}/.git/.graphite_repo_config`,
       JSON.stringify({ trunk: 'main' }, null, 2)
+    );
+    fs.writeFileSync(
+      `${this.dir}/.git/.graphite_user_config`,
+      JSON.stringify({}, null, 2)
     );
     process.chdir(this.dir);
     this.context = initContext();
