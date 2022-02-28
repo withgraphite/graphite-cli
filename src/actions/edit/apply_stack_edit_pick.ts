@@ -20,7 +20,6 @@ export async function applyStackEditPick(
           currentBranchName: stackEdit.branchName,
           remainingEdits: remainingEdits,
         },
-        'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER',
       ],
     },
     context

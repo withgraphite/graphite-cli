@@ -90,7 +90,6 @@ const GraphiteFrameSchema = t.unionMany([
   RepoFixBranchCountSanityCheckStackFrameSchema,
   RepoSyncStackFrameSchema,
   StackEditStackFrameSchema,
-  t.literal('TOP_OF_CALLSTACK_WITH_NOTHING_AFTER' as const),
 ]);
 
 const MergeConflictCallstackSchema = t.shape({
