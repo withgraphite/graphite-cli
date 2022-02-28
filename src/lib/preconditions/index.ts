@@ -1,4 +1,4 @@
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 import { TContext } from '../context/context';
 import { PreconditionsFailedError } from '../errors';
 import {

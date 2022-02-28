@@ -36,7 +36,7 @@ import { printGraphiteMergeConflictStatus } from '../utils/merge_conflict_help';
 import { TContext } from './../context/context';
 import { getUserEmail } from './context';
 import { postSurveyResponsesInBackground } from './survey/post_survey';
-import tracer from './tracer';
+import { globalTracer as tracer } from './tracer';
 
 function initalizeContext(): TContext {
   const context = initContext();

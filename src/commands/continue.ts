@@ -17,7 +17,7 @@ import { TContext } from '../lib/context/context';
 import { PreconditionsFailedError } from '../lib/errors';
 import { profile } from '../lib/telemetry';
 import { rebaseInProgress } from '../lib/utils/rebase_in_progress';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 import { branchCountSanityCheckContinuation } from './repo-commands/fix';
 
 const args = {

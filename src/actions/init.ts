@@ -5,7 +5,7 @@ import { PreconditionsFailedError } from '../lib/errors';
 import { currentGitRepoPrecondition } from '../lib/preconditions';
 import { logError, logInfo, logNewline } from '../lib/utils';
 import { inferTrunk } from '../lib/utils/trunk';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 import { TContext } from './../lib/context/context';
 export async function init(
   context: TContext,

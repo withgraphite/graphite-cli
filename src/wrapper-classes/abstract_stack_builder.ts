@@ -1,9 +1,9 @@
 import { Stack, StackNode } from '.';
 import { TContext } from '../lib/context/context';
 import { getTrunk, logDebug } from '../lib/utils';
-import Branch from './branch';
+import { Branch } from './branch';
 
-export default abstract class AbstractStackBuilder {
+export abstract class AbstractStackBuilder {
   useMemoizedResults: boolean;
 
   constructor(opts?: { useMemoizedResults: boolean }) {

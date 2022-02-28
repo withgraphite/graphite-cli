@@ -1,5 +1,5 @@
 import { execSync, ExecSyncOptions } from 'child_process';
-import tracer from '../telemetry/tracer';
+import { globalTracer as tracer } from '../telemetry/tracer';
 
 export type GPExecSyncOptions = {
   // Both 1) capture the output from stdout and return it (like normal execSync)

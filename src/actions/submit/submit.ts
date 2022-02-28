@@ -30,7 +30,7 @@ import {
 } from '../../lib/utils';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { MetaStackBuilder, Stack } from '../../wrapper-classes';
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 import { TScope } from '../scope';
 import { validateStack } from '../validate';
 import { getPRBody } from './pr_body';

@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { KilledError } from '../lib/errors';
 import { getTrunk, logInfo } from '../lib/utils';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 import { TContext } from './../lib/context/context';
 
 export function existsDanglingBranches(context: TContext): boolean {

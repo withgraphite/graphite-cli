@@ -13,7 +13,7 @@ import {
   logTip,
   trackedUncommittedChanges,
 } from '../lib/utils';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 import { deleteMergedBranches } from './clean_branches';
 import { fixDanglingBranches } from './fix_dangling_branches';
 import { submitAction } from './submit';

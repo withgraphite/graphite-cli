@@ -9,7 +9,7 @@ import { TRepoFixBranchCountSanityCheckStackFrame } from '../../lib/config/merge
 import { TContext } from '../../lib/context/context';
 import { profile } from '../../lib/telemetry';
 import { logInfo, logNewline, logTip } from '../../lib/utils';
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 
 const args = {
   force: {

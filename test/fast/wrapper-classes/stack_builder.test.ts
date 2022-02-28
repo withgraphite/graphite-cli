@@ -4,7 +4,7 @@ import {
   MetaStackBuilder,
   Stack,
 } from '../../../src/wrapper-classes';
-import Branch from '../../../src/wrapper-classes/branch';
+import { Branch } from '../../../src/wrapper-classes/branch';
 import { allScenes } from '../../lib/scenes';
 import { configureTest } from '../../lib/utils';
 

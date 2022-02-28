@@ -3,7 +3,7 @@ import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
 import { gpExecSync, logWarn } from '../lib/utils';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 import { fixAction } from './fix';
 
 export async function commitAmendAction(

@@ -3,7 +3,7 @@ import { TContext } from '../lib/context/context';
 import { getCommitterDate } from '../lib/utils';
 import { getTrunk } from '../lib/utils/trunk';
 import { Commit } from '../wrapper-classes';
-import Branch from '../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 import { TBranchPRInfo } from '../wrapper-classes/metadata_ref';
 
 type TPrintStackConfig = {

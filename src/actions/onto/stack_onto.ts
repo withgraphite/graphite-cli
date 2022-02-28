@@ -18,7 +18,7 @@ import {
   logInfo,
   rebaseInProgress,
 } from '../../lib/utils';
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 import { restackBranch } from '../fix';
 import { validate } from '../validate';
 

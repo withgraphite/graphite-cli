@@ -7,7 +7,7 @@ import { KilledError } from '../../lib/errors';
 import { getSingleCommitOnBranch } from '../../lib/utils';
 import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
 import { getPRTemplate } from '../../lib/utils/pr_templates';
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 
 export async function getPRBody(
   args: {

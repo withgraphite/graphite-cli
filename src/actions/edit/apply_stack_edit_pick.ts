@@ -1,6 +1,6 @@
 import { TContext } from '../../lib/context/context';
 import { checkoutBranch } from '../../lib/utils';
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 import { stackOnto } from '../onto/stack_onto';
 import { TStackEditStackFrame } from './../../lib/config/merge_conflict_callstack_config';
 import { TStackEdit, TStackEditPick } from './stack_edits';

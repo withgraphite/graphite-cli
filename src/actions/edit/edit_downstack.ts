@@ -5,7 +5,7 @@ import { gpExecSync } from '../../lib/utils';
 import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
 import { performInTmpDir } from '../../lib/utils/perform_in_tmp_dir';
 import { MetaStackBuilder } from '../../wrapper-classes';
-import Stack from '../../wrapper-classes/stack';
+import { Stack } from '../../wrapper-classes/stack';
 import { validate } from '../validate';
 import { applyStackEditPick } from './apply_stack_edit_pick';
 import { createStackEditFile } from './create_stack_edit_file';

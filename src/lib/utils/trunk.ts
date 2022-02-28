@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 import { ConfigError, ExitFailedError, SiblingBranchError } from '../errors';
 import { TContext } from './../context/context';
 

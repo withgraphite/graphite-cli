@@ -7,7 +7,7 @@ import {
 } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry';
 import { logInfo } from '../../lib/utils';
-import Branch from '../../wrapper-classes/branch';
+import { Branch } from '../../wrapper-classes/branch';
 
 const args = {
   set: {
