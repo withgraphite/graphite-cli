@@ -7,13 +7,12 @@ import { Branch } from '../wrapper-classes/branch';
 
 const EMPTY_COMMIT_MESSAGE_INFO = [
   '\n',
-  '# No changes were staged before creating this new branch',
-  '# Therefore Graphite has added an empty commit to your new branch',
-  '# This is because Graphite does not support two branches referencing the same commit',
-  '# Two branches referencing one commit would break parent-child inference',
+  '# Since no changes were staged before creating this new branch,',
+  '# Graphite has added an empty commit to track dependencies.',
+  '# This is because two branches referencing one commit would break parent-child inference for Graphite',
   '#',
-  '# While working on this branch, we recommend using \\`gt commit amend\\`, or later squashing this empty commit',
-  '# For future branches, we recommend staging changes before running \\`gt bc -m \\"feat(new_feat): added xyz...\\"\\`',
+  '# You can remove the empty commit by running \\`gt commit amend\\`, or by squashing',
+  '# If you wish to avoid empty commits in the future, stage changes before running \\`gt bc -m \\"feat(new_feat): added xyz...\\"\\`',
 ].join('\n');
 
 function stringToTmpFileInput(contents: string): string {
