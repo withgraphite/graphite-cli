@@ -65,7 +65,6 @@ for (const scene of allScenes) {
     it("Can amend a commit with a multi-word commit message", () => {
       scene.repo.createChange("2");
       scene.repo.execCliCommand(`commit amend -m "a b c" -q`);
-      expect(scene.repo.currentBranchName()).to.equal("main");
       expectCommits(scene.repo, "a b c");
     });
   });
