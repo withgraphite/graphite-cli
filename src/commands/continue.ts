@@ -8,11 +8,7 @@ import {
   stackOntoFixContinuation,
 } from '../actions/onto/stack_onto';
 import { repoSyncDeleteMergedBranchesContinuation } from '../actions/sync';
-import {
-  clearPersistedMergeConflictCallstack,
-  getPersistedMergeConflictCallstack,
-  MergeConflictCallstackT,
-} from '../lib/config/merge_conflict_callstack_config';
+import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context/context';
 import { PreconditionsFailedError } from '../lib/errors';
 import { profile } from '../lib/telemetry';
@@ -40,7 +36,8 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     const pendingRebase = rebaseInProgress();
-    const mostRecentCheckpoint = getPersistedMergeConflictCallstack();
+    const mostRecentCheckpoint =
+      context.mergeConflictCallstackConfig?.data.callstack;
 
     if (!mostRecentCheckpoint && !pendingRebase) {
       throw new PreconditionsFailedError(`No Graphite command to continue.`);
@@ -54,70 +51,72 @@ export const handler = async (argv: argsT): Promise<void> => {
 
     if (mostRecentCheckpoint) {
       await resolveCallstack(mostRecentCheckpoint, context);
-      clearPersistedMergeConflictCallstack();
+      context.mergeConflictCallstackConfig?.delete();
     }
   });
 };
 
 async function resolveCallstack(
-  callstack: MergeConflictCallstackT,
+  callstack: TMergeConflictCallstack,
   context: TContext
 ): Promise<void> {
-  if (callstack === 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER') {
+  if (
+    callstack.length === 0 ||
+    callstack[0] === 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER'
+  ) {
     return;
   }
 
-  switch (callstack.frame.op) {
+  const frame = callstack[0];
+  const remaining = callstack.slice(1);
+
+  switch (frame.op) {
     case 'STACK_ONTO_BASE_REBASE_CONTINUATION':
-      await stackOntoBaseRebaseContinuation(
-        callstack.frame,
-        callstack.parent,
-        context
-      );
+      await stackOntoBaseRebaseContinuation(frame, remaining, context);
       break;
     case 'STACK_ONTO_FIX_CONTINUATION':
-      await stackOntoFixContinuation(callstack.frame);
+      await stackOntoFixContinuation(frame);
       break;
     case 'STACK_FIX': {
       const branch = await Branch.branchWithName(
-        callstack.frame.sourceBranchName,
+        frame.sourceBranchName,
         context
       );
       await restackBranch(
         {
           branch: branch,
-          mergeConflictCallstack: callstack.parent,
+          mergeConflictCallstack: remaining,
         },
         context
       );
       break;
     }
     case 'STACK_FIX_ACTION_CONTINUATION':
-      await stackFixActionContinuation(callstack.frame);
+      await stackFixActionContinuation(frame);
       break;
     case 'DELETE_BRANCHES_CONTINUATION':
       await deleteMergedBranches(
         {
-          frame: callstack.frame,
-          parent: callstack.parent,
+          frame: frame,
+          parent: remaining,
         },
         context
       );
       break;
     case 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION':
-      await branchCountSanityCheckContinuation(callstack.frame);
+      await branchCountSanityCheckContinuation(frame);
       break;
     case 'REPO_SYNC_CONTINUATION':
-      await repoSyncDeleteMergedBranchesContinuation(callstack.frame, context);
+      await repoSyncDeleteMergedBranchesContinuation(frame, context);
       break;
     case 'STACK_EDIT_CONTINUATION':
-      await applyStackEdits(callstack.frame.remainingEdits, context);
+      await applyStackEdits(frame.remainingEdits, context);
       break;
     default:
-      assertUnreachable(callstack.frame);
+      assertUnreachable(frame);
   }
 
-  await resolveCallstack(callstack.parent, context);
+  await resolveCallstack(remaining, context);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function

@@ -58,7 +58,9 @@ export async function commitAmendAction(
     await fixAction(
       {
         action: 'rebase',
-        mergeConflictCallstack: 'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER' as const,
+        mergeConflictCallstack: [
+          'TOP_OF_CALLSTACK_WITH_NOTHING_AFTER' as const,
+        ],
       },
       context
     );

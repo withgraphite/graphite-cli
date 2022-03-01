@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { cache } from '../lib/config/cache';
 import {
-  MergeConflictCallstackT,
+  TMergeConflictCallstack,
   TStackFixActionStackFrame,
 } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context/context';
@@ -82,7 +82,7 @@ async function promptStacks(opts: {
 export async function fixAction(
   opts: {
     action: 'regen' | 'rebase' | undefined;
-    mergeConflictCallstack: MergeConflictCallstackT;
+    mergeConflictCallstack: TMergeConflictCallstack;
   },
   context: TContext
 ): Promise<void> {
@@ -121,17 +121,14 @@ export async function fixAction(
   } else {
     // If we get interrupted and need to continue, first we'll do a stack fix
     // and then we'll continue the stack fix action.
-    const mergeConflictCallstack = {
-      frame: {
+    const mergeConflictCallstack = [
+      {
         op: 'STACK_FIX' as const,
         sourceBranchName: currentBranch.name,
       },
-      parent: {
-        frame: stackFixActionContinuationFrame,
-        parent: opts.mergeConflictCallstack,
-      },
-    };
-
+      stackFixActionContinuationFrame,
+      ...opts.mergeConflictCallstack,
+    ];
     for (const child of metaStack.source.children) {
       await restackNode(
         {
@@ -155,7 +152,7 @@ export async function stackFixActionContinuation(
 export async function restackBranch(
   args: {
     branch: Branch;
-    mergeConflictCallstack: MergeConflictCallstackT;
+    mergeConflictCallstack: TMergeConflictCallstack;
   },
   context: TContext
 ): Promise<void> {
@@ -170,16 +167,14 @@ export async function restackBranch(
     checkoutBranchName: args.branch.name,
   };
 
-  const mergeConflictCallstack = {
-    frame: {
+  const mergeConflictCallstack = [
+    {
       op: 'STACK_FIX' as const,
       sourceBranchName: args.branch.name,
     },
-    parent: {
-      frame: stackFixActionContinuationFrame,
-      parent: args.mergeConflictCallstack,
-    },
-  };
+    stackFixActionContinuationFrame,
+    ...args.mergeConflictCallstack,
+  ];
 
   await restackNode(
     {
@@ -195,7 +190,7 @@ export async function restackBranch(
 async function restackNode(
   args: {
     node: StackNode;
-    mergeConflictCallstack: MergeConflictCallstackT;
+    mergeConflictCallstack: TMergeConflictCallstack;
   },
   context: TContext
 ): Promise<void> {
@@ -204,7 +199,8 @@ async function restackNode(
   if (rebaseInProgress()) {
     throw new RebaseConflictError(
       `Interactive rebase still in progress, cannot fix (${node.branch.name}).`,
-      args.mergeConflictCallstack
+      args.mergeConflictCallstack,
+      context
     );
   }
   const parentBranch = node.parent?.branch;
@@ -239,7 +235,8 @@ async function restackNode(
         if (rebaseInProgress()) {
           throw new RebaseConflictError(
             `Interactive rebase in progress, cannot fix (${node.branch.name}) onto (${parentBranch.name}).`,
-            args.mergeConflictCallstack
+            args.mergeConflictCallstack,
+            context
           );
         }
       }

@@ -1,4 +1,4 @@
-import { MergeConflictCallstackT } from '../../lib/config/merge_conflict_callstack_config';
+import { TMergeConflictCallstack } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context/context';
 import { PreconditionsFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
@@ -8,7 +8,7 @@ import { stackOnto } from './stack_onto';
 export async function currentBranchOntoAction(
   args: {
     onto: string;
-    mergeConflictCallstack: MergeConflictCallstackT;
+    mergeConflictCallstack: TMergeConflictCallstack;
   },
   context: TContext
 ): Promise<void> {
