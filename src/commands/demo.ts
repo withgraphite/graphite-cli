@@ -61,7 +61,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     repo.checkoutBranch('main');
 
     execSync(
-      'git remote add origin git@github.com:screenplaydev/graphite-demo-repo.git',
+      'git remote add origin git@github.com:withgraphite/graphite-demo-repo.git',
       { cwd: tmpDir.name }
     );
     execSync('git push origin main -f', { cwd: tmpDir.name });
