@@ -11,17 +11,17 @@ for (const scene of [new BasicScene()]) {
 
     it('Can infer cloned repos', () => {
       const { owner, name } = getOwnerAndNameFromURLForTesting(
-        'https://github.com/screenplaydev/graphite-cli.git'
+        'https://github.com/withgraphite/graphite-cli.git'
       );
-      expect(owner === 'screenplaydev').to.be.true;
+      expect(owner === 'withgraphite').to.be.true;
       expect(name === 'graphite-cli').to.be.true;
     });
 
     it('Can infer SSH cloned repos', () => {
       const { owner, name } = getOwnerAndNameFromURLForTesting(
-        'git@github.com:screenplaydev/graphite-cli.git'
+        'git@github.com:withgraphite/graphite-cli.git'
       );
-      expect(owner === 'screenplaydev').to.be.true;
+      expect(owner === 'withgraphite').to.be.true;
       expect(name === 'graphite-cli').to.be.true;
     });
 
@@ -38,15 +38,15 @@ for (const scene of [new BasicScene()]) {
     // them.
     it('Can infer cloned repos without .git', () => {
       const clone = getOwnerAndNameFromURLForTesting(
-        'https://github.com/screenplaydev/graphite-cli'
+        'https://github.com/withgraphite/graphite-cli'
       );
-      expect(clone.owner === 'screenplaydev').to.be.true;
+      expect(clone.owner === 'withgraphite').to.be.true;
       expect(clone.name === 'graphite-cli').to.be.true;
 
       const sshClone = getOwnerAndNameFromURLForTesting(
-        'git@github.com:screenplaydev/graphite-cli'
+        'git@github.com:withgraphite/graphite-cli'
       );
-      expect(sshClone.owner === 'screenplaydev').to.be.true;
+      expect(sshClone.owner === 'withgraphite').to.be.true;
       expect(sshClone.name === 'graphite-cli').to.be.true;
     });
   });
