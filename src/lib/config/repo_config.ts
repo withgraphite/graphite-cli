@@ -58,7 +58,7 @@ export const repoConfigFactory = composeConfig({
         }
 
         throw new ExitFailedError(
-          "Could not determine the owner of this repo (e.g. 'screenplaydev' in the repo 'screenplaydev/graphite-cli'). Please run `gt repo owner --set <owner>` to manually set the repo owner."
+          "Could not determine the owner of this repo (e.g. 'withgraphite' in the repo 'withgraphite/graphite-cli'). Please run `gt repo owner --set <owner>` to manually set the repo owner."
         );
       },
 
@@ -91,7 +91,7 @@ export const repoConfigFactory = composeConfig({
         }
 
         throw new ExitFailedError(
-          "Could not determine the name of this repo (e.g. 'graphite-cli' in the repo 'screenplaydev/graphite-cli'). Please run `gt repo name --set <owner>` to manually set the repo name."
+          "Could not determine the name of this repo (e.g. 'graphite-cli' in the repo 'withgraphite/graphite-cli'). Please run `gt repo name --set <owner>` to manually set the repo name."
         );
       },
     } as const;
@@ -119,7 +119,7 @@ function inferRepoGitHubInfo(): {
     .trim();
 
   const inferError = new ExitFailedError(
-    `Failed to infer the owner and name of this repo from remote origin "${url}". Please run \`gt repo owner --set <owner>\` and \`gt repo name --set <name>\` to manually set the repo owner/name. (e.g. in the repo 'screenplaydev/graphite-cli', 'screenplaydev' is the repo owner and 'graphite-cli' is the repo name)`
+    `Failed to infer the owner and name of this repo from remote origin "${url}". Please run \`gt repo owner --set <owner>\` and \`gt repo name --set <name>\` to manually set the repo owner/name. (e.g. in the repo 'withgraphite/graphite-cli', 'withgraphite' is the repo owner and 'graphite-cli' is the repo name)`
   );
   if (!url || url.length === 0) {
     throw inferError;
@@ -160,8 +160,8 @@ function getOwnerAndNameFromURL(originURL: string): {
     };
   }
 
-  // e.g. in screenplaydev/graphite-cli we're trying to get the owner
-  // ('screenplaydev') and the repo name ('graphite-cli')
+  // e.g. in withgraphite/graphite-cli we're trying to get the owner
+  // ('withgraphite') and the repo name ('graphite-cli')
   const matches = regex.exec(url);
   return {
     owner: matches?.[1],

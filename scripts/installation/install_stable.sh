@@ -1,3 +1,3 @@
 #!/bin/bash
 
-brew install screenplaydev/tap/graphite
+brew install withgraphite/tap/graphite
