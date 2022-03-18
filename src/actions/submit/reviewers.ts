@@ -11,7 +11,7 @@ export async function getReviewers(args: {
     {
       type: 'list',
       name: 'reviewers',
-      message: 'Reviewers (comma seperated github usernames)',
+      message: 'Reviewers (comma-separated GitHub usernames)',
       seperator: ',',
     },
     {
