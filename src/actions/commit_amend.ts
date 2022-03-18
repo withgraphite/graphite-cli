@@ -41,7 +41,7 @@ export async function commitAmendAction(
           opts.noEdit
             ? ['--no-edit']
             : opts.message
-            ? [`-m ${opts.message}`]
+            ? [`-m "${opts.message}"`]
             : [],
         ],
         ...[execStateConfig.noVerify() ? ['--no-verify'] : []],

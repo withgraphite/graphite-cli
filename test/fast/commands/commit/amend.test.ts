@@ -61,5 +61,11 @@ for (const scene of allScenes) {
       // as we upstacked branch 'b' that commit 'a' was dropped.
       expectCommits(scene.repo, 'b, a1, 1');
     });
+
+    it('Can amend a commit with a multi-word commit message', () => {
+      scene.repo.createChange('2');
+      scene.repo.execCliCommand(`commit amend -m "a b c" -q`);
+      expectCommits(scene.repo, 'a b c');
+    });
   });
 }
