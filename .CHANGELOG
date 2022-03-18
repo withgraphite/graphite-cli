@@ -1,3 +1,9 @@
+# 0.17.4 2021-02-25
+
+- Refactored config loading to reduce race conditions.
+- Add quotes around commit message in ammend command.
+- Minor copy updates.
+
 # 0.17.3 2021-02-25
 
 - Fix bug regarding repo config file reading from repo subdirs.
