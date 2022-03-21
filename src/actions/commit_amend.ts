@@ -1,8 +1,8 @@
-import { execStateConfig } from '../lib/config/exec_state_config';
 import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
 import { gpExecSync, logWarn } from '../lib/utils';
+import { commit } from '../lib/utils/commit';
 import { Branch } from '../wrapper-classes/branch';
 import { fixAction } from './fix';
 
@@ -33,25 +33,8 @@ export async function commitAmendAction(
     currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
   }
 
-  gpExecSync(
-    {
-      command: [
-        `git commit --amend`,
-        ...[
-          opts.noEdit
-            ? ['--no-edit']
-            : opts.message
-            ? [`-m "${opts.message}"`]
-            : [],
-        ],
-        ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
-      ].join(' '),
-      options: { stdio: 'inherit' },
-    },
-    (err) => {
-      throw new ExitFailedError('Failed to amend changes. Aborting...', err);
-    }
-  );
+  commit({ amend: true, noEdit: opts.noEdit, message: opts.message });
+
   // Only restack if working tree is now clean.
   try {
     uncommittedTrackedChangesPrecondition();

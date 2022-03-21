@@ -1,4 +1,3 @@
-import { execStateConfig } from '../lib/config/exec_state_config';
 import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import {
@@ -6,6 +5,7 @@ import {
   uncommittedTrackedChangesPrecondition,
 } from '../lib/preconditions';
 import { gpExecSync, logWarn } from '../lib/utils';
+import { commit } from '../lib/utils/commit';
 import { fixAction } from './fix';
 
 export async function commitCreateAction(
@@ -28,35 +28,7 @@ export async function commitCreateAction(
 
   ensureSomeStagedChangesPrecondition(context);
 
-  if (opts.message !== undefined) {
-    gpExecSync(
-      {
-        command: [
-          'git commit',
-          `-m "${opts.message}"`,
-          ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
-        ].join(' '),
-      },
-      (err) => {
-        throw new ExitFailedError('Failed to commit changes. Aborting...', err);
-      }
-    );
-  } else {
-    gpExecSync(
-      {
-        command: [
-          'git commit',
-          ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
-        ].join(' '),
-        options: {
-          stdio: 'inherit',
-        },
-      },
-      (err) => {
-        throw new ExitFailedError('Failed to commit changes. Aborting...', err);
-      }
-    );
-  }
+  commit({ message: opts.message });
 
   try {
     uncommittedTrackedChangesPrecondition();

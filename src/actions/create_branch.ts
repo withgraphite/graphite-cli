@@ -1,23 +1,10 @@
-import { execStateConfig } from '../lib/config/exec_state_config';
 import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { checkoutBranch, gpExecSync } from '../lib/utils';
+import { commit } from '../lib/utils/commit';
 import { Branch } from '../wrapper-classes/branch';
 
-const EMPTY_COMMIT_MESSAGE_INFO = [
-  '\n',
-  '# Since no changes were staged before creating this new branch,',
-  '# Graphite has added an empty commit to track dependencies.',
-  '# This is because two branches referencing one commit would break parent-child inference for Graphite',
-  '#',
-  '# You can remove the empty commit by running \\`gt commit amend\\`, or by squashing',
-  '# If you wish to avoid empty commits in the future, stage changes before running \\`gt bc -m \\"feat(new_feat): added xyz...\\"\\`',
-].join('\n');
-
-function stringToTmpFileInput(contents: string): string {
-  return `<(printf '%s\n' "${contents}")`;
-}
 export async function createBranchAction(
   opts: {
     branchName?: string;
@@ -54,25 +41,10 @@ export async function createBranchAction(
    * and check out the new branch and these types of error point to
    * larger failure outside of our control.
    */
-  gpExecSync(
-    {
-      command: [
-        `git commit`,
-        `--allow-empty`,
-        `${opts.commitMessage ? `-m "${opts.commitMessage}"` : ''}`,
-        `${
-          !opts.commitMessage
-            ? `-t ${stringToTmpFileInput(EMPTY_COMMIT_MESSAGE_INFO)}`
-            : ''
-        }`,
-        `${execStateConfig.noVerify() ? '--no-verify' : ''}`,
-      ].join(' '),
-      options: {
-        stdio: 'inherit',
-        shell: '/bin/bash',
-      },
-    },
-    () => {
+  commit({
+    allowEmpty: true,
+    message: opts.commitMessage,
+    rollbackOnError: () => {
       // Commit failed, usually due to precommit hooks. Rollback the branch.
       checkoutBranch(parentBranch.name);
       gpExecSync({
@@ -80,8 +52,8 @@ export async function createBranchAction(
         options: { stdio: 'ignore' },
       });
       throw new ExitFailedError('Failed to commit changes, aborting');
-    }
-  );
+    },
+  });
 
   // If the branch previously existed and the stale metadata is still around,
   // make sure that we wipe that stale metadata.
