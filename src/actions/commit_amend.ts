@@ -1,7 +1,7 @@
 import { TContext } from '../lib/context/context';
-import { ExitFailedError } from '../lib/errors';
 import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
-import { gpExecSync, logWarn } from '../lib/utils';
+import { logWarn } from '../lib/utils';
+import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';
 import { Branch } from '../wrapper-classes/branch';
 import { fixAction } from './fix';
@@ -15,14 +15,7 @@ export async function commitAmendAction(
   context: TContext
 ): Promise<void> {
   if (opts.addAll) {
-    gpExecSync(
-      {
-        command: 'git add --all',
-      },
-      (err) => {
-        throw new ExitFailedError('Failed to add changes. Aborting...', err);
-      }
-    );
+    addAll();
   }
 
   // If we're checked out on a branch, we're going to perform a stack fix later.

@@ -2,6 +2,7 @@ import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { checkoutBranch, gpExecSync } from '../lib/utils';
+import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';
 import { Branch } from '../wrapper-classes/branch';
 
@@ -16,16 +17,7 @@ export async function createBranchAction(
   const parentBranch = currentBranchPrecondition(context);
 
   if (opts.addAll) {
-    gpExecSync(
-      {
-        command: 'git add --all',
-      },
-      () => {
-        throw new ExitFailedError(
-          'Could not add all staged changes. Aborting...'
-        );
-      }
-    );
+    addAll();
   }
 
   const branchName = newBranchName(
