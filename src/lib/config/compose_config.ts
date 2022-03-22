@@ -116,7 +116,7 @@ function readOrInitConfig<TConfigData>(
     ? JSON.parse(fs.readFileSync(configPath).toString())
     : initialize();
 
-  const validConfigFile = schema(rawConfig, { logFailures: true });
+  const validConfigFile = schema(rawConfig, { logFailures: false });
   if (!validConfigFile) {
     throw new ExitFailedError(`Malformed config file at ${configPath}`);
   }
