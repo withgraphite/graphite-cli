@@ -19,14 +19,17 @@ export function commit(opts: {
   noEdit?: boolean;
   rollbackOnError?: () => void;
 }): void {
+  // We must escape all backticks in the string
+  const message = opts.message?.replace(/`/g, '\\`');
+
   gpExecSync(
     {
       command: [
         'git commit',
         opts.amend ? `--amend` : '',
         opts.allowEmpty ? `--allow-empty` : '',
-        opts.message
-          ? `-m "${opts.message}"`
+        message
+          ? `-m "${message}"`
           : opts.allowEmpty
           ? `-t ${stringToTmpFileInput(EMPTY_COMMIT_MESSAGE_INFO)}`
           : '',
