@@ -1,10 +1,10 @@
 import { TContext } from '../lib/context/context';
-import { ExitFailedError } from '../lib/errors';
 import {
   ensureSomeStagedChangesPrecondition,
   uncommittedTrackedChangesPrecondition,
 } from '../lib/preconditions';
-import { gpExecSync, logWarn } from '../lib/utils';
+import { logWarn } from '../lib/utils';
+import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';
 import { fixAction } from './fix';
 
@@ -16,14 +16,7 @@ export async function commitCreateAction(
   context: TContext
 ): Promise<void> {
   if (opts.addAll) {
-    gpExecSync(
-      {
-        command: 'git add --all',
-      },
-      (err) => {
-        throw new ExitFailedError('Failed to add changes. Aborting...', err);
-      }
-    );
+    addAll();
   }
 
   ensureSomeStagedChangesPrecondition(context);
