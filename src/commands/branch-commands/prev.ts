@@ -20,7 +20,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = 'prev [steps]';
 export const canonical = 'branch prev';
-export const aliases = ['p', 'down'];
+export const aliases = ['p', 'down', 'd'];
 export const description =
   "If you're in a stack: Branch A → Branch B (you are here) → Branch C, checkout the branch directly downstack (Branch A). Pass the `steps` arg to checkout the branch `[steps]` levels below in the stack.";
 export const builder = args;
