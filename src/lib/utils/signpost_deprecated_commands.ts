@@ -1,6 +1,7 @@
 import { logWarn } from './splog';
-export function signpostDeprecatedCommands(command: string): void {
-  switch (command) {
+export function signpostDeprecatedCommands(command: string[]): void {
+  if (command.length === 0) return;
+  switch (command[0]) {
     case 'stacks':
       logWarn(
         [

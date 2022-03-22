@@ -45,7 +45,7 @@ function deprecatedGpWarning(argv: yargs.Arguments) {
   }
 }
 
-signpostDeprecatedCommands(process.argv[2]);
+signpostDeprecatedCommands(process.argv.slice(2));
 passthrough(process.argv);
 preprocessCommand();
 yargs(process.argv.slice(2))
