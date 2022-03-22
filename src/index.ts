@@ -37,7 +37,7 @@ function deprecatedGpWarning(argv: yargs.Arguments) {
   if (argv['$0'].endsWith('gp')) {
     console.log(
       chalk.red(
-        `Warning: Based on feedback, we've update the Graphite CLI alias to "gt". The alias "gp" has been deprecated.`
+        `Warning: Based on feedback, we've updated the Graphite CLI alias to "gt". The alias "gp" has been deprecated.`
       )
     );
     // eslint-disable-next-line no-restricted-syntax
