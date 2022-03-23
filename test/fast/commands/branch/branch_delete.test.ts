@@ -38,9 +38,7 @@ for (const scene of allScenes) {
       scene.repo.createChangeAndCommit('2', '2');
 
       scene.repo.checkoutBranch('main');
-      scene.repo.execCliCommandAndGetOutput(
-        `branch delete "${branchName}" -D -q`
-      );
+      scene.repo.execCliCommandAndGetOutput(`bdl "${branchName}" -D -q`);
 
       expectBranches(scene.repo, 'main');
       expect(Branch.exists(branchName)).to.be.false;

@@ -8,7 +8,7 @@ function splitShortcuts(command: string): string[] {
   } else if (
     typeof command === 'string' &&
     command.length == 3 &&
-    command === 'bco' // special case this two-letter shortcut for checkout
+    ['bco', 'bdl'].includes(command) // special case two-letter shortcuts
   ) {
     return [command[0], command.slice(1)];
   }

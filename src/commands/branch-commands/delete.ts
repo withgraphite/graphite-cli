@@ -20,7 +20,7 @@ const args = {
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
-export const aliases = ['d'];
+export const aliases = ['dl'];
 export const command = 'delete [name]';
 export const canonical = 'branch delete';
 export const description =
