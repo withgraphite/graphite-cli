@@ -1,3 +1,13 @@
+# 0.17.5 2021-03-23
+
+- Add deprecation warnings for `gt branch next` and `gt branch prev` in favor of `gt branch up` and `gt branch down`, respectively.
+- Add `gt bu` and `gt bd` shortcuts for `gt branch up` and `gt branch down`, respectively.
+- Change `gt branch delete` shortcut to `gt bdl`.
+- Support passing through `gt stash` as `git stash`.
+- Fix bug where `fish` users couldn't add backticks to commit message using the `-m` option.
+- Silence retype errors.
+- Minor copy updates.
+
 # 0.17.4 2021-02-25
 
 - Refactored config loading to reduce race conditions.
