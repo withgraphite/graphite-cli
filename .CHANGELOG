@@ -1,3 +1,7 @@
+# 0.17.6 2021-03-29
+
+- Support handling corrupted `.graphite_merge_conflict` files.
+
 # 0.17.5 2021-03-23
 
 - Add deprecation warnings for `gt branch next` and `gt branch prev` in favor of `gt branch up` and `gt branch down`, respectively.
