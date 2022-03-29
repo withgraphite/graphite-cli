@@ -22,7 +22,8 @@ type TConfigTemplate<TConfigData, THelperFunctions> = {
     update: (mutator: TConfigMutator<TConfigData>) => void
   ) => THelperFunctions;
   options?: {
-    removeIfEmpty: boolean;
+    removeIfEmpty?: boolean;
+    removeIfInvalid?: boolean;
   };
 };
 
@@ -55,8 +56,9 @@ export function composeConfig<TConfigData, THelperFunctions>(
     const _data: TConfigData = readOrInitConfig(
       curPath,
       configTemplate.schema,
-      configTemplate.initialize
-    );
+      configTemplate.initialize,
+      { removeIfInvalid: configTemplate.options?.removeIfEmpty || false }
+    ) as TConfigData;
     const update = (mutator: TConfigMutator<TConfigData>) => {
       mutator(_data);
       const shouldRemoveBecauseEmpty =
@@ -109,16 +111,27 @@ function configAbsolutePaths(
 function readOrInitConfig<TConfigData>(
   configPath: string,
   schema: t.Schema<TConfigData>,
-  initialize: () => unknown
+  initialize: () => TConfigData,
+  opts?: {
+    removeIfInvalid?: boolean;
+  }
 ): TConfigData {
   const hasExistingConfig = configPath && fs.existsSync(configPath);
-  const rawConfig = hasExistingConfig
-    ? JSON.parse(fs.readFileSync(configPath).toString())
-    : initialize();
-
-  const validConfigFile = schema(rawConfig, { logFailures: false });
-  if (!validConfigFile) {
-    throw new ExitFailedError(`Malformed config file at ${configPath}`);
+  try {
+    const parsedConfig = hasExistingConfig
+      ? JSON.parse(fs.readFileSync(configPath).toString()) // JSON.parse might throw.
+      : initialize();
+    const isValidConfigFile = schema(parsedConfig, { logFailures: false });
+    if (!isValidConfigFile) {
+      throw new Error('Malformed config'); // expected to be caught below.
+    }
+    return parsedConfig;
+  } catch {
+    if (opts?.removeIfInvalid === true) {
+      fs.removeSync(configPath);
+      return initialize();
+    } else {
+      throw new ExitFailedError(`Malformed config file at ${configPath}`);
+    }
   }
-  return rawConfig;
 }

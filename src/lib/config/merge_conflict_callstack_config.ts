@@ -114,7 +114,7 @@ export const mergeConflictCallstackConfigFactory = composeConfig({
   helperFunctions: (data, update) => {
     return {} as const;
   },
-  options: { removeIfEmpty: true },
+  options: { removeIfEmpty: true, removeIfInvalid: true },
 });
 
 export function persistMergeConflictCallstack(
