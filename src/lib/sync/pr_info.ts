@@ -29,10 +29,11 @@ export async function syncPRInfoForBranches(
       authToken: authToken,
       repoName: repoName,
       repoOwner: repoOwner,
-      prNumbers: [],
-      prHeadRefNames: branches
+      prNumbers: branches
         .filter((branch) => !branch.isTrunk(context))
-        .map((branch) => branch.name),
+        .map((branch) => branch.getPRInfo()?.number)
+        .filter((value): value is number => value !== undefined),
+      prHeadRefNames: [],
     }
   );
 

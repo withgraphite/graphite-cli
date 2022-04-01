@@ -194,8 +194,7 @@ async function getValidBranchesToSubmit(
   } catch {
     throw new ValidationFailedError(`Validation failed. Will not submit.`);
   }
-  // Force a sync to link any PRs that have remote equivalents but weren't
-  // previously tracked with Graphite.
+
   await syncPRInfoForBranches(branchesToSubmit, context);
 
   return await processBranchesInInvalidState(branchesToSubmit);
@@ -272,7 +271,7 @@ async function submitPullRequests(
   context: TContext
 ) {
   if (!args.submissionInfoWithBranches.length) {
-    logInfo(`No eligible branches to create PRs for.`);
+    logInfo(`No eligible branches to create/update PRs for.`);
     logNewline();
     return;
   }
