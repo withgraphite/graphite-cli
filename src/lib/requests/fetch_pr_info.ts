@@ -1,5 +1,7 @@
 import cp from 'child_process';
-import { TContext } from './../context/context';
+import { Branch } from '../../wrapper-classes/branch';
+import { syncPRInfoForBranches } from '../sync/pr_info';
+import { initContext, TContext } from './../context/context';
 
 export function refreshPRInfoInBackground(context: TContext): void {
   if (!context.repoConfig.graphiteInitialized()) {
@@ -21,4 +23,19 @@ export function refreshPRInfoInBackground(context: TContext): void {
       stdio: 'ignore',
     });
   }
+}
+
+async function refreshPRInfo(context: TContext): Promise<void> {
+  try {
+    const branchesWithPRInfo = Branch.allBranches(context).filter(
+      (branch) => branch.getPRInfo() !== undefined
+    );
+    await syncPRInfoForBranches(branchesWithPRInfo, context);
+  } catch (err) {
+    return;
+  }
+}
+
+if (process.argv[1] === __filename) {
+  void refreshPRInfo(initContext());
 }

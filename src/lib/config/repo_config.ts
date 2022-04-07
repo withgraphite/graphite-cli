@@ -175,3 +175,5 @@ export function getOwnerAndNameFromURLForTesting(originURL: string): {
 } {
   return getOwnerAndNameFromURL(originURL);
 }
+
+export type TRepoConfig = ReturnType<typeof repoConfigFactory.load>;
