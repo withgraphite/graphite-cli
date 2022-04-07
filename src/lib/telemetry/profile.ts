@@ -75,6 +75,8 @@ export async function profile(
     await init(context);
   }
 
+  let err: any = undefined;
+
   try {
     await tracer.span(
       {
@@ -140,24 +142,8 @@ export async function profile(
         }
       }
     );
-  } catch (err: any) {
-    const end = Date.now();
-    if (execStateConfig.outputDebugLogs()) {
-      logInfo(err);
-      logInfo(err.stack);
-    }
-    postTelemetryInBackground({
-      canonicalCommandName: canonicalName,
-      commandName: parsedArgs.command,
-      durationMiliSeconds: end - start,
-      err: {
-        errName: err.name,
-        errMessage: err.message,
-        errStack: err.stack || '',
-      },
-    });
-    // eslint-disable-next-line no-restricted-syntax
-    process.exit(1);
+  } catch (e: any) {
+    err = e;
   }
 
   const end = Date.now();
@@ -165,5 +151,16 @@ export async function profile(
     canonicalCommandName: canonicalName,
     commandName: parsedArgs.command,
     durationMiliSeconds: end - start,
+    err,
   });
+
+  if (err) {
+    if (execStateConfig.outputDebugLogs()) {
+      logInfo(err);
+      logInfo(err.stack);
+    }
+
+    // eslint-disable-next-line no-restricted-syntax
+    process.exit(1);
+  }
 }
