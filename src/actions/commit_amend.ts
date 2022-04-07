@@ -35,6 +35,7 @@ export async function commitAmendAction(
       {
         action: 'rebase',
         mergeConflictCallstack: [],
+        scope: 'upstack',
       },
       context
     );
