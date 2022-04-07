@@ -79,28 +79,41 @@ async function promptStacks(opts: {
   return response.value;
 }
 
+type TFixScope = 'stack' | 'upstack';
+
 export async function fixAction(
   opts: {
     action: 'regen' | 'rebase' | undefined;
     mergeConflictCallstack: TMergeConflictCallstack;
+    scope: TFixScope;
   },
   context: TContext
 ): Promise<void> {
   const currentBranch = currentBranchPrecondition(context);
   uncommittedTrackedChangesPrecondition();
 
-  logDebug(`Determining full meta stack from ${currentBranch.name}`);
-  const metaStack = new MetaStackBuilder({
-    useMemoizedResults: true,
-  }).fullStackFromBranch(currentBranch, context);
-  logDebug(`Found full meta stack.`);
+  logDebug(`Determining meta ${opts.scope} from ${currentBranch.name}`);
+  const metaStack =
+    opts.scope === 'stack'
+      ? new MetaStackBuilder({
+          useMemoizedResults: true,
+        }).fullStackFromBranch(currentBranch, context)
+      : new MetaStackBuilder({
+          useMemoizedResults: true,
+        }).upstackInclusiveFromBranchWithParents(currentBranch, context);
+  logDebug(`Found meta ${opts.scope}.`);
   logDebug(metaStack.toString());
 
-  logDebug(`Determining full git stack from ${currentBranch.name}`);
-  const gitStack = new GitStackBuilder({
-    useMemoizedResults: true,
-  }).fullStackFromBranch(currentBranch, context);
-  logDebug(`Found full git stack`);
+  logDebug(`Determining full git ${opts.scope} from ${currentBranch.name}`);
+  const gitStack =
+    opts.scope === 'stack'
+      ? new GitStackBuilder({
+          useMemoizedResults: true,
+        }).fullStackFromBranch(currentBranch, context)
+      : new GitStackBuilder({
+          useMemoizedResults: true,
+        }).fullStackFromBranch(currentBranch, context);
+  logDebug(`Found full git ${opts.scope}`);
   logDebug(gitStack.toString());
 
   // Consider noop
@@ -117,7 +130,7 @@ export async function fixAction(
   };
 
   if (action === 'regen') {
-    await regen(currentBranch, context);
+    await regen(currentBranch, context, opts.scope);
   } else {
     // If we get interrupted and need to continue, first we'll do a stack fix
     // and then we'll continue the stack fix action.
@@ -255,14 +268,24 @@ async function restackNode(
   }
 }
 
-async function regen(branch: Branch, context: TContext): Promise<void> {
+async function regen(
+  branch: Branch,
+  context: TContext,
+  scope: TFixScope
+): Promise<void> {
   const trunk = getTrunk(context);
   if (trunk.name == branch.name) {
     regenAllStacks(context);
     return;
   }
 
-  const gitStack = new GitStackBuilder().fullStackFromBranch(branch, context);
+  const gitStack =
+    scope === 'stack'
+      ? new GitStackBuilder().fullStackFromBranch(branch, context)
+      : new GitStackBuilder().upstackInclusiveFromBranchWithParents(
+          branch,
+          context
+        );
   await recursiveRegen(gitStack.source, context);
 }
 
