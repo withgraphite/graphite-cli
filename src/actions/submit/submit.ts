@@ -159,6 +159,10 @@ export async function submitAction(
     context
   );
 
+  logInfo(chalk.blueBright(`➡️ [Step 5] Pushing stack metadata to GitHub...`));
+
+  await pushMetaStacks(branchesPushedToRemote);
+
   logNewline();
   const survey = await getSurvey(context);
   if (survey) {
@@ -494,6 +498,7 @@ function pushBranchesToRemote(branches: Branch[], context: TContext): Branch[] {
 
   if (!branches.length) {
     logInfo(`No eligible branches to push.`);
+    logNewline();
     return [];
   }
 
@@ -520,7 +525,7 @@ function pushBranchesToRemote(branches: Branch[], context: TContext): Branch[] {
         logError(`Failed to push changes for ${branch.name} to remote.`);
 
         logTip(
-          `There maybe external commits on remote that were not overwritten with the attempted push.
+          `There may be external commits on remote that were not overwritten with the attempted push.
           \n Use 'git pull' to pull external changes and retry.`,
           context
         );
@@ -600,6 +605,26 @@ function getBranchBaseName(branch: Branch, context: TContext): string {
   return parent.name;
 }
 
+async function pushMetaStacks(branchesPushedToRemote: Branch[]): Promise<void> {
+  if (!branchesPushedToRemote.length) {
+    logInfo(`No eligible branches to push stack metadata for.`);
+    return;
+  }
+
+  branchesPushedToRemote.forEach((branch) => {
+    logInfo(`Pushing stack metadata for ${branch.name} to remote...`);
+    gpExecSync(
+      {
+        command: `git push origin "+refs/branch-metadata/${branch.name}:refs/branch-metadata/${branch.name}"`,
+      },
+      (err) => {
+        logError(`Failed to push stack metadata for ${branch.name} to remote.`);
+        throw new ExitFailedError(err);
+      }
+    );
+  });
+}
+
 async function getPRCreationInfo(
   args: {
     branch: Branch;
@@ -675,6 +700,7 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
     logInfo(
       chalk.blueBright('✅ All PRs up-to-date on GitHub; no updates necessary.')
     );
+    logNewline();
     return;
   }
 
@@ -702,9 +728,10 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
       );
     }
   });
+  logNewline();
 }
 
-export function saveBranchPRInfo(prs: TSubmittedPR[], context: TContext): void {
+function saveBranchPRInfo(prs: TSubmittedPR[], context: TContext): void {
   prs.forEach(async (pr) => {
     if (pr.response.status === 'updated' || pr.response.status === 'created') {
       const branch = await Branch.branchWithName(pr.response.head, context);
