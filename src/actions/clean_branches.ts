@@ -236,8 +236,9 @@ function branchMerged(branch: Branch, context: TContext): boolean {
   }
 
   const diffCheckProvesMerged =
-    execSync(`git diff ${branchName} ${trunk} | wc -l`).toString().trim() ===
-    '0';
+    execSync(`git diff --no-ext-diff ${branchName} ${trunk} | wc -l`)
+      .toString()
+      .trim() === '0';
   if (diffCheckProvesMerged) {
     return true;
   }
