@@ -1,3 +1,11 @@
+# 0.17.7 2021-04-08
+
+- Graphite no longer cleans up local branches that share a name with merged branches on remote unless they have been associated with the merged PR (via a `submit` command).
+- Fix bug where PR info wasn't being synced periodically.
+- Added a new command `upstack fix`, similar to `stack fix` that only runs upstack of the current branch.
+- `commit create` and `commit amend` now internally run an `upstack fix` instead of a `stack fix`
+- Fix a hang related to `git config diff.external` being set.
+
 # 0.17.6 2021-03-29
 
 - Support handling corrupted `.graphite_merge_conflict` files.
