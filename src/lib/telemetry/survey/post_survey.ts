@@ -1,5 +1,5 @@
-import { spawnDetached } from 'src/lib/utils/spawn';
 import { initContext, TContext } from '../../context/context';
+import { spawnDetached } from '../../utils/spawn';
 
 export function postSurveyResponsesInBackground(context: TContext): void {
   // We don't worry about race conditions here - we can dedup on the server.
