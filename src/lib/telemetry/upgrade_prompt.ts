@@ -1,11 +1,11 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
-import cp from 'child_process';
 import { getUserEmail, SHOULD_REPORT_TELEMETRY } from '.';
 import { version } from '../../../package.json';
 import { API_SERVER } from '../api';
 import { TContext } from '../context/context';
 import { logMessageFromGraphite } from '../utils';
+import { spawnDetached } from '../utils/spawn';
 import {
   messageConfigFactory,
   TMessageConfig,
@@ -27,10 +27,7 @@ export function fetchUpgradePromptInBackground(context: TContext): void {
   }
 
   printAndClearOldMessage(context);
-  cp.spawn('/usr/bin/env', ['node', __filename], {
-    detached: true,
-    stdio: 'ignore',
-  });
+  spawnDetached(__filename);
 }
 
 async function fetchUpgradePrompt(

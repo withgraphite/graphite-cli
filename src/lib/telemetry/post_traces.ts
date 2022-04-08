@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
-import cp from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
@@ -9,6 +8,7 @@ import { getUserEmail, SHOULD_REPORT_TELEMETRY, tracer } from '.';
 import { version } from '../../../package.json';
 import { API_SERVER } from '../api';
 import { initContext, TContext } from '../context/context';
+import { spawnDetached } from '../utils/spawn';
 
 type oldTelemetryT = {
   canonicalCommandName: string;
@@ -35,10 +35,7 @@ function saveOldTelemetryToFile(data: oldTelemetryT): string {
 export function postTelemetryInBackground(oldDetails: oldTelemetryT): void {
   const tracesPath = saveTracesToTmpFile();
   const oldTelemetryPath = saveOldTelemetryToFile(oldDetails);
-  cp.spawn('/usr/bin/env', ['node', __filename, tracesPath, oldTelemetryPath], {
-    detached: true,
-    stdio: 'ignore',
-  });
+  spawnDetached(__filename, [tracesPath, oldTelemetryPath]);
 }
 
 async function logCommand(
