@@ -1,3 +1,7 @@
+# 0.17.8 2021-04-08
+
+- Happy Friday! This should fix many hangs that users are experiencing.
+
 # 0.17.7 2021-04-08
 
 - Graphite no longer cleans up local branches that share a name with merged branches on remote unless they have been associated with the merged PR (via a `submit` command).

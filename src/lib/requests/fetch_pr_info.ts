@@ -1,6 +1,6 @@
-import cp from 'child_process';
 import { Branch } from '../../wrapper-classes/branch';
 import { syncPRInfoForBranches } from '../sync/pr_info';
+import { spawnDetached } from '../utils/spawn';
 import { initContext, TContext } from './../context/context';
 
 export function refreshPRInfoInBackground(context: TContext): void {
@@ -18,10 +18,7 @@ export function refreshPRInfoInBackground(context: TContext): void {
     // don't incur a possible race condition with the write
     context.repoConfig.update((data) => (data.lastFetchedPRInfoMs = now));
 
-    cp.spawn('/usr/bin/env', ['node', __filename], {
-      detached: true,
-      stdio: 'ignore',
-    });
+    spawnDetached(__filename);
   }
 }
 

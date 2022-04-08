@@ -1,13 +1,10 @@
-import cp from 'child_process';
+import { spawnDetached } from 'src/lib/utils/spawn';
 import { initContext, TContext } from '../../context/context';
 
 export function postSurveyResponsesInBackground(context: TContext): void {
   // We don't worry about race conditions here - we can dedup on the server.
   if (context.surveyConfig.hasSurveyResponse()) {
-    cp.spawn('/usr/bin/env', ['node', __filename], {
-      detached: true,
-      stdio: 'ignore',
-    });
+    spawnDetached(__filename);
   }
 }
 
