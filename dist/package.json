@@ -1,0 +1,72 @@
+{
+    "name": "@withgraphite/graphite-cli",
+    "version": "0.17.8",
+    "license": "None",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "homepage": "https://github.com/withgraphite/graphite-cli",
+    "dependencies": {
+        "@withgraphite/graphite-cli-routes": "0.15.0",
+        "@withgraphite/retype": "^0.3.1",
+        "@withgraphite/retyped-routes": "^0.3.0",
+        "chalk": "^4.1.0",
+        "fs-extra": "^9.0.1",
+        "micromatch": "^4.0.4",
+        "nock": "^13.1.3",
+        "node-fetch": "^2.6.1",
+        "open": "^8.4.0",
+        "prompts": "^2.4.1",
+        "tmp": "^0.2.1",
+        "yargs": "^17.0.1"
+    },
+    "scripts": {
+        "build": "tsc",
+        "lint": "eslint src --quiet --ext .ts --cache",
+        "prepublishOnly": "yarn build",
+        "cli": "ts-node ./src/index.ts",
+        "test": "yarn mocha \"dist/test/**/*.test.js\"  --parallel --jobs 8",
+        "test-fast": "yarn mocha \"dist/test/fast/**/*.test.js\"  --parallel --jobs 8",
+        "test-slow": "yarn mocha \"dist/test/slow/**/*.test.js\"",
+        "test-one": "yarn mocha --parallel --jobs 8",
+        "test-grep": "yarn mocha \"dist/test/**/*.test.js\" -g",
+        "deploy": "ts-node ./scripts/deploy/deploy.ts",
+        "deploy-test": "ts-node ./scripts/deploy/deploy-test.ts",
+        "regen-demo": "ts-node ./scripts/demo/index.ts"
+    },
+    "files": [
+        "dist"
+    ],
+    "bin": {
+        "gp": "dist/src/index.js",
+        "graphite": "dist/src/index.js",
+        "gt": "dist/src/index.js"
+    },
+    "devDependencies": {
+        "@commitlint/cli": "^13.1.0",
+        "@commitlint/config-conventional": "^13.1.0",
+        "@types/chai": "^4.2.14",
+        "@types/chai-as-promised": "^7.1.4",
+        "@types/chalk": "^2.2.0",
+        "@types/fs-extra": "^9.0.1",
+        "@types/micromatch": "^4.0.2",
+        "@types/mocha": "^8.2.3",
+        "@types/node": "^14.14.37",
+        "@types/node-fetch": "^2.5.11",
+        "@types/prompts": "^2.0.14",
+        "@types/tmp": "^0.2.0",
+        "@types/yargs": "^15.0.5",
+        "@typescript-eslint/eslint-plugin": "^4.26.1",
+        "@typescript-eslint/parser": "^5.7.0",
+        "@yarnpkg/pnpify": "^3.0.0-rc.10",
+        "chai": "^4.2.0",
+        "chai-as-promised": "^7.1.1",
+        "eslint": "^7.20.0",
+        "eslint-import-resolver-typescript": "^2.5.0",
+        "eslint-plugin-import": "^2.25.3",
+        "husky": "^7.0.1",
+        "mocha": "^8.3.2",
+        "prettier": "2.3.2",
+        "ts-node": "^9.0.0",
+        "typescript": "^4.2.4"
+    }
+}
