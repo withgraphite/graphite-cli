@@ -27,7 +27,7 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     await switchBranchAction(
-      TraversalDirection.Next,
+      TraversalDirection.Up,
       {
         numSteps: argv.steps,
         interactive: execStateConfig.interactive(),
