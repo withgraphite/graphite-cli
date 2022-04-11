@@ -28,6 +28,7 @@ import {
   logTip,
   logWarn,
 } from '../../lib/utils';
+import { isEmptyBranch } from '../../lib/utils/is_empty_branch';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { MetaStackBuilder, Stack } from '../../wrapper-classes';
 import { Branch } from '../../wrapper-classes/branch';
@@ -106,7 +107,7 @@ export async function submitAction(
       args.scope,
       context
     );
-    if (validationResult.abort) {
+    if (validationResult.result === 'ABORT') {
       return;
     }
     branchesToSubmit = validationResult.submittableBranches;
@@ -168,12 +169,13 @@ export async function submitAction(
 async function getValidBranchesToSubmit(
   scope: TSubmitScope,
   context: TContext
-): Promise<{
-  submittableBranches: Branch[];
-  closedBranches: Branch[];
-  mergedBranches: Branch[];
-  abort: boolean;
-}> {
+): Promise<
+  | {
+      result: 'SUCCESS';
+      submittableBranches: Branch[];
+    }
+  | { result: 'ABORT' }
+> {
   let branchesToSubmit;
   try {
     if (scope === 'BRANCH') {
@@ -196,68 +198,140 @@ async function getValidBranchesToSubmit(
   }
 
   await syncPRInfoForBranches(branchesToSubmit, context);
-
-  return await processBranchesInInvalidState(branchesToSubmit);
-}
-
-async function processBranchesInInvalidState(branches: Branch[]) {
-  const closedBranches = branches.filter(
+  const closedBranches = branchesToSubmit.filter(
     (b) => b.getPRInfo()?.state === 'CLOSED'
   );
-  const mergedBranches = branches.filter(
+  const mergedBranches = branchesToSubmit.filter(
     (b) => b.getPRInfo()?.state === 'MERGED'
   );
-  const submittableBranches = branches.filter(
+  const submittableBranches = branchesToSubmit.filter(
     (b) =>
       b.getPRInfo()?.state !== 'CLOSED' || b.getPRInfo()?.state !== 'MERGED'
   );
-  let abort = false;
-  if (closedBranches.length > 0 || mergedBranches.length > 0) {
-    logWarn(
-      `PRs for the following branches in the stack have been closed or merged:`
-    );
-    closedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (closed)`));
-    mergedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (merged)`));
-    logWarn(`This can cause unexpected issues.`);
-    if (!execStateConfig.interactive()) {
-      abort = true;
-      logInfo(`Aborting.`);
-    } else {
-      const response = await prompts(
+
+  const result =
+    (await processBranchesInInvalidState(closedBranches, mergedBranches)) ===
+      'ABORT' ||
+    (await detectEmptyBranches(submittableBranches, context)) === 'ABORT'
+      ? 'ABORT'
+      : 'SUCCESS';
+
+  return { result, submittableBranches };
+}
+
+async function processBranchesInInvalidState(
+  closedBranches: Branch[],
+  mergedBranches: Branch[]
+): Promise<'SUCCESS' | 'ABORT'> {
+  if (closedBranches.length === 0 && mergedBranches.length === 0) {
+    return 'SUCCESS';
+  }
+
+  const hasMultipleBranches = closedBranches.length + mergedBranches.length > 1;
+
+  logWarn(
+    `PR${hasMultipleBranches ? 's' : ''} for the following branch${
+      hasMultipleBranches ? 'es have' : ' has'
+    } been closed or merged:`
+  );
+  closedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (closed)`));
+  mergedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (merged)`));
+  logWarn(`This can cause unexpected issues.`);
+  logNewline();
+
+  if (!execStateConfig.interactive()) {
+    return 'ABORT';
+  }
+
+  const response = await prompts(
+    {
+      type: 'select',
+      name: 'closed_branches_options',
+      message: `How would you like to proceed?`,
+      choices: [
         {
-          type: 'select',
-          name: 'closed_branches_options',
-          message: `How would you like to proceed?`,
-          choices: [
-            {
-              title: `Abort "stack submit" and fix manually`,
-              value: 'fix_manually',
-            },
-            {
-              title: `Continue with closed branches (best effort)`,
-              value: 'continue_without_fix',
-            },
-          ],
+          title: `Abort command and fix manually`,
+          value: 'fix_manually',
         },
         {
-          onCancel: () => {
-            throw new KilledError();
-          },
-        }
-      );
-      if (response.closed_branches_options === 'fix_manually') {
-        abort = true;
-        logInfo(`Aborting...`);
-      } //TODO (nehasri): Fix branches automatically in the else option and modify submittableBranches
+          title: `Continue with closed branch${
+            hasMultipleBranches ? 'es' : ''
+          } (best effort)`,
+          value: 'continue_without_fix',
+        },
+      ],
+    },
+    {
+      onCancel: () => {
+        throw new KilledError();
+      },
     }
-    logNewline();
+  );
+  logNewline();
+
+  return response.closed_branches_options === 'continue_without_fix'
+    ? 'SUCCESS'
+    : 'ABORT';
+  //TODO (nehasri): Fix branches automatically in the else option and modify submittableBranches
+}
+
+export async function detectEmptyBranches(
+  submittableBranches: Branch[],
+  context: TContext
+): Promise<'SUCCESS' | 'ABORT'> {
+  const emptyBranches = submittableBranches.filter((branch) =>
+    isEmptyBranch(branch.name, getBranchBaseName(branch, context))
+  );
+  if (emptyBranches.length === 0) {
+    return 'SUCCESS';
   }
-  return {
-    submittableBranches: submittableBranches,
-    closedBranches: closedBranches,
-    mergedBranches: mergedBranches,
-    abort: abort,
-  };
+
+  const hasMultipleBranches = emptyBranches.length > 1;
+
+  logWarn(
+    `The following branch${
+      hasMultipleBranches ? 'es have' : ' has'
+    } no changes:`
+  );
+  emptyBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)}`));
+  logWarn(
+    `Are you sure you want to submit ${hasMultipleBranches ? 'them' : 'it'}?`
+  );
+  logNewline();
+
+  if (!execStateConfig.interactive()) {
+    return 'ABORT';
+  }
+
+  const response = await prompts(
+    {
+      type: 'select',
+      name: 'empty_branches_options',
+      message: `How would you like to proceed?`,
+      choices: [
+        {
+          title: `Abort command and keep working on ${
+            hasMultipleBranches ? 'these branches' : 'this branch'
+          }`,
+          value: 'fix_manually',
+        },
+        {
+          title: `Continue with empty branch${hasMultipleBranches ? 'es' : ''}`,
+          value: 'continue_empty',
+        },
+      ],
+    },
+    {
+      onCancel: () => {
+        throw new KilledError();
+      },
+    }
+  );
+  logNewline();
+
+  return response.empty_branches_options === 'continue_empty'
+    ? 'SUCCESS'
+    : 'ABORT';
 }
 
 async function submitPullRequests(
