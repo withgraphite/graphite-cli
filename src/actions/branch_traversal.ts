@@ -10,8 +10,8 @@ import { Branch } from '../wrapper-classes/branch';
 export enum TraversalDirection {
   Top = 'TOP',
   Bottom = 'BOTTOM',
-  Next = 'NEXT',
-  Previous = 'PREV',
+  Up = 'UP',
+  Down = 'DOWN',
 }
 
 async function getStackBranch(candidates: Branch[]): Promise<string> {
@@ -37,7 +37,7 @@ async function getStackBranch(candidates: Branch[]): Promise<string> {
 
 function getDownstackBranch(
   currentBranch: Branch,
-  direction: TraversalDirection.Previous | TraversalDirection.Bottom,
+  direction: TraversalDirection.Down | TraversalDirection.Bottom,
   context: TContext,
   numSteps?: number
 ): string | undefined {
@@ -45,11 +45,8 @@ function getDownstackBranch(
   let prevBranch = branch.getParentFromMeta(context);
   let indent = 0;
 
-  // Bottom goes to the bottom of the stack but prev can go up to trunk
-  if (
-    direction === TraversalDirection.Previous &&
-    prevBranch?.isTrunk(context)
-  ) {
+  // Bottom goes to the bottom of the stack but down can go up to trunk
+  if (direction === TraversalDirection.Down && prevBranch?.isTrunk(context)) {
     branch = prevBranch;
     indent++;
   }
@@ -58,7 +55,7 @@ function getDownstackBranch(
     branch = prevBranch;
     prevBranch = branch.getParentFromMeta(context);
     indent++;
-    if (direction === TraversalDirection.Previous && indent === numSteps) {
+    if (direction === TraversalDirection.Down && indent === numSteps) {
       break;
     }
   }
@@ -69,7 +66,7 @@ function getDownstackBranch(
 async function getUpstackBranch(
   currentBranch: Branch,
   interactive: boolean,
-  direction: TraversalDirection.Next | TraversalDirection.Top,
+  direction: TraversalDirection.Up | TraversalDirection.Top,
   context: TContext,
   numSteps?: number
 ): Promise<string | undefined> {
@@ -87,14 +84,14 @@ async function getUpstackBranch(
         branch = await Branch.branchWithName(stack_base_branch, context);
       } else {
         throw new ExitFailedError(
-          `Cannot get next branch, multiple choices available: [${candidates.join(
+          `Cannot get upstack branch, multiple choices available: [${candidates.join(
             ', '
           )}]`
         );
       }
     }
     indent++;
-    if (direction === TraversalDirection.Next && indent === numSteps) {
+    if (direction === TraversalDirection.Up && indent === numSteps) {
       break;
     }
     candidates = branch.getChildrenFromMeta(context);
@@ -123,10 +120,10 @@ export async function switchBranchAction(
       );
       break;
     }
-    case TraversalDirection.Previous: {
+    case TraversalDirection.Down: {
       nextBranch = getDownstackBranch(
         currentBranch,
-        TraversalDirection.Previous,
+        TraversalDirection.Down,
         context,
         opts.numSteps
       );
@@ -141,11 +138,11 @@ export async function switchBranchAction(
       );
       break;
     }
-    case TraversalDirection.Next: {
+    case TraversalDirection.Up: {
       nextBranch = await getUpstackBranch(
         currentBranch,
         opts.interactive,
-        TraversalDirection.Next,
+        TraversalDirection.Up,
         context,
         opts.numSteps
       );
@@ -158,7 +155,7 @@ export async function switchBranchAction(
   } else {
     logInfo(
       `Already at the ${
-        direction === TraversalDirection.Previous ||
+        direction === TraversalDirection.Down ||
         direction === TraversalDirection.Bottom
           ? 'bottom most'
           : 'top most'
