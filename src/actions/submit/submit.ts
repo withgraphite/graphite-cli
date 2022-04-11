@@ -434,7 +434,7 @@ function pushBranchesToRemote(branches: Branch[], context: TContext): Branch[] {
         // of the push command to stderr 2) we want to analyze it but Node's
         // execSync makes analyzing stderr extremely challenging
         command: [
-          `git push origin`,
+          `git push ${context.repoConfig.getRemote()}`,
           `--force-with-lease ${branch.name} 2>&1`,
           ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
         ].join(' '),

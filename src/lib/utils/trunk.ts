@@ -5,7 +5,7 @@ import { Branch } from '../../wrapper-classes/branch';
 import { ConfigError, ExitFailedError, SiblingBranchError } from '../errors';
 import { TContext } from './../context/context';
 
-function findRemoteOriginBranch(): Branch | undefined {
+function findRemoteOriginBranch(context: TContext): Branch | undefined {
   let config;
   try {
     const gitDir = execSync(`git rev-parse --git-dir`).toString().trim();
@@ -17,7 +17,8 @@ function findRemoteOriginBranch(): Branch | undefined {
     .split('[')
     .filter(
       (section) =>
-        section.includes('branch "') && section.includes('remote = origin')
+        section.includes('branch "') &&
+        section.includes(`remote = ${context.repoConfig.getRemote()}`)
     );
   if (originBranchSections.length !== 1) {
     return undefined;
@@ -45,7 +46,7 @@ function findCommonlyNamedTrunk(context: TContext): Branch | undefined {
 
 let memoizedTrunk: Branch;
 export function inferTrunk(context: TContext): Branch | undefined {
-  return findRemoteOriginBranch() || findCommonlyNamedTrunk(context);
+  return findRemoteOriginBranch(context) || findCommonlyNamedTrunk(context);
 }
 export function getTrunk(context: TContext): Branch {
   if (memoizedTrunk) {
