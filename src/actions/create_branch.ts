@@ -11,6 +11,9 @@ import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';
 import { Branch } from '../wrapper-classes/branch';
 
+// 256 minus 11 (for 'refs/heads/')
+const MAX_BRANCH_NAME_BYTE_LENGTH = 245;
+
 export async function createBranchAction(
   opts: {
     branchName?: string;
@@ -25,11 +28,8 @@ export async function createBranchAction(
     addAll();
   }
 
-  const branchName = newBranchName(
-    context,
-    opts.branchName,
-    opts.commitMessage
-  );
+  const branchName =
+    opts.branchName ?? newBranchName(context, opts.commitMessage);
   checkoutNewBranch(branchName);
 
   const isAddingEmptyCommit = !detectStagedChanges();
@@ -65,24 +65,21 @@ export async function createBranchAction(
   }
 }
 
-function newBranchName(
-  context: TContext,
-  branchName?: string,
-  commitMessage?: string
-): string {
-  if (!branchName && !commitMessage) {
+function newBranchName(context: TContext, commitMessage?: string): string {
+  if (!commitMessage) {
     throw new ExitFailedError(
       `Must specify at least a branch name or commit message`
     );
-  } else if (branchName) {
-    return branchName;
   }
 
-  const date = new Date();
+  const branchPrefix = context.userConfig.data.branchPrefix || '';
 
-  const MAX_BRANCH_NAME_LENGTH = 40;
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  let branchMessage = commitMessage!
+  const date = new Date();
+  const branchDate = `${('0' + (date.getMonth() + 1)).slice(-2)}-${(
+    '0' + date.getDate()
+  ).slice(-2)}-`;
+
+  const branchMessage = commitMessage
     .split('')
     .map((c) => {
       if (ALLOWED_BRANCH_CHARACTERS.includes(c)) {
@@ -91,20 +88,14 @@ function newBranchName(
       return '_'; // Replace all disallowed characters with _
     })
     .join('')
-    .replace(/_+/g, '_');
+    .replace(/_+/g, '_'); // Condense underscores
 
-  if (branchMessage.length <= MAX_BRANCH_NAME_LENGTH - 6) {
-    // prepend date if there's room.
-    branchMessage =
-      `${('0' + (date.getMonth() + 1)).slice(-2)}-${(
-        '0' + date.getDate()
-      ).slice(-2)}-` + branchMessage; // Condence underscores
-  }
-
-  const newBranchName = `${
-    context.userConfig.data.branchPrefix || ''
-  }${branchMessage}`;
-  return newBranchName.slice(0, MAX_BRANCH_NAME_LENGTH);
+  // https://stackoverflow.com/questions/60045157/what-is-the-maximum-length-of-a-github-branch-name
+  // GitHub's max branch name size is computed based on a maximum ref name length (including
+  // 'refs/heads/') of 256 bytes, so we need to convert to a Buffer and back to slice correctly.
+  return Buffer.from(branchPrefix + branchDate + branchMessage)
+    .slice(0, MAX_BRANCH_NAME_BYTE_LENGTH)
+    .toString();
 }
 
 function checkoutNewBranch(branchName: string): void {
