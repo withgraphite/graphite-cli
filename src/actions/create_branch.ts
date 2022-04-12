@@ -1,7 +1,12 @@
 import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { checkoutBranch, gpExecSync } from '../lib/utils';
+import {
+  checkoutBranch,
+  detectStagedChanges,
+  gpExecSync,
+  logInfo,
+} from '../lib/utils';
 import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';
 import { Branch } from '../wrapper-classes/branch';
@@ -27,6 +32,8 @@ export async function createBranchAction(
   );
   checkoutNewBranch(branchName);
 
+  const isAddingEmptyCommit = !detectStagedChanges();
+
   /**
    * Here, we silence errors and ignore them. This
    * isn't great but our main concern is that we're able to create
@@ -34,7 +41,7 @@ export async function createBranchAction(
    * larger failure outside of our control.
    */
   commit({
-    allowEmpty: true,
+    allowEmpty: isAddingEmptyCommit,
     message: opts.commitMessage,
     rollbackOnError: () => {
       // Commit failed, usually due to precommit hooks. Rollback the branch.
@@ -50,6 +57,12 @@ export async function createBranchAction(
   // If the branch previously existed and the stale metadata is still around,
   // make sure that we wipe that stale metadata.
   new Branch(branchName).clearMetadata().setParentBranchName(parentBranch.name);
+
+  if (isAddingEmptyCommit) {
+    logInfo(
+      'Since no changes were staged, an empty commit was added to track Graphite stack dependencies. If you wish to get rid of the empty commit you can amend, or squash when merging.'
+    );
+  }
 }
 
 function newBranchName(
