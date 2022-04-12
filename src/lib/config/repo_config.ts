@@ -8,6 +8,7 @@ const schema = t.shape({
   owner: t.optional(t.string),
   name: t.optional(t.string),
   trunk: t.optional(t.string),
+  remote: t.optional(t.string),
   ignoreBranches: t.optional(t.array(t.string)),
   maxStacksShownBehindTrunk: t.optional(t.number),
   maxDaysShownBehindTrunk: t.optional(t.number),
@@ -31,6 +32,12 @@ export const repoConfigFactory = composeConfig({
       getIgnoreBranches: () => data.ignoreBranches || [],
       getMaxBranchLength: (): number => data.maxBranchLength ?? 50,
 
+      setRemote: (remote: string) => {
+        update((data) => (data.remote = remote));
+      },
+
+      getRemote: () => data.remote ?? 'origin',
+
       setTrunk: (trunk: string) => {
         update((data) => (data.trunk = trunk));
       },
@@ -52,7 +59,7 @@ export const repoConfigFactory = composeConfig({
           return configOwner;
         }
 
-        const inferredInfo = inferRepoGitHubInfo();
+        const inferredInfo = inferRepoGitHubInfo(data.remote ?? 'origin');
         if (inferredInfo?.repoOwner) {
           return inferredInfo.repoOwner;
         }
@@ -80,12 +87,13 @@ export const repoConfigFactory = composeConfig({
           });
         });
       },
+
       getRepoName: (): string => {
         if (data.name) {
           return data.name;
         }
 
-        const inferredInfo = inferRepoGitHubInfo();
+        const inferredInfo = inferRepoGitHubInfo(data.remote ?? 'origin');
         if (inferredInfo?.repoName) {
           return inferredInfo.repoName;
         }
@@ -98,18 +106,16 @@ export const repoConfigFactory = composeConfig({
   },
 });
 
-function inferRepoGitHubInfo(): {
+function inferRepoGitHubInfo(remote: string): {
   repoOwner: string;
   repoName: string;
 } {
-  // This assumes that the remote to use is named 'origin' and that the remote
-  // to fetch from is the same as the remote to push to. If a user runs into
-  // an issue where any of these invariants are not true, they can manually
-  // edit the repo config file to overrule what our CLI tries to intelligently
-  // infer.
+  // This assumes the remote to fetch from is the same as the remote to push to.
+  // If a user runs into this is not true, they can manually edit the repo config
+  // file to overrule what our CLI tries to intelligently infer.
   const url = gpExecSync(
     {
-      command: `git config --get remote.origin.url`,
+      command: `git config --get remote.${remote}.url`,
     },
     (_) => {
       return Buffer.alloc(0);
@@ -119,7 +125,7 @@ function inferRepoGitHubInfo(): {
     .trim();
 
   const inferError = new ExitFailedError(
-    `Failed to infer the owner and name of this repo from remote origin "${url}". Please run \`gt repo owner --set <owner>\` and \`gt repo name --set <name>\` to manually set the repo owner/name. (e.g. in the repo 'withgraphite/graphite-cli', 'withgraphite' is the repo owner and 'graphite-cli' is the repo name)`
+    `Failed to infer the owner and name of this repo from remote ${remote} "${url}". Please run \`gt repo owner --set <owner>\` and \`gt repo name --set <name>\` to manually set the repo owner/name. (e.g. in the repo 'withgraphite/graphite-cli', 'withgraphite' is the repo owner and 'graphite-cli' is the repo name)`
   );
   if (!url || url.length === 0) {
     throw inferError;
