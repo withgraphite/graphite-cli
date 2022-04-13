@@ -36,12 +36,10 @@ export class Stack {
         .map((l) => '  ' + l)
         .join('\n');
 
-    return [`↳ (${this.source.branch.name})`]
-      .concat(
-        this.source.children
-          .map((c) => new Stack(c).toString())
-          .map(indentMultilineString)
-      )
+    return this.source.children
+      .map((c) => new Stack(c).toString())
+      .map(indentMultilineString)
+      .concat([`↱ (${this.source.branch.name})`])
       .join('\n');
   }
 
