@@ -14,6 +14,7 @@ export function getBranchChildrenOrParentsFromGit(
   },
   context: TContext
 ): Branch[] {
+  logDebug(`Getting ${opts.direction} of ${branch.name} from git...`);
   const direction = opts.direction;
   const useMemoizedResults = opts.useMemoizedResults ?? false;
   return tracer.spanSync(
