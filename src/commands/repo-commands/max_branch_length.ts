@@ -24,7 +24,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     if (argv.set) {
       context.repoConfig.update((data) => (data.maxBranchLength = argv.set));
     } else {
-      logInfo(`${context.repoConfig.getMaxBranchLength.toString()} commits`);
+      logInfo(`${context.repoConfig.getMaxBranchLength().toString()} commits`);
     }
   });
 };
