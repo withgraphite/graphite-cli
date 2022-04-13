@@ -121,13 +121,17 @@ export abstract class AbstractStackBuilder {
   }
 
   private allStackBaseNames(context: TContext): Branch[] {
+    logDebug(`Getting all branches...`);
     const allBranches = Branch.allBranches(context, {
       useMemoizedResults: this.useMemoizedResults,
     });
+    logDebug(`Got ${allBranches.length} branches`);
+    logDebug(`Getting all stack base names...`);
     const allStackBaseNames = allBranches.map(
       (b) => this.getStackBaseBranch(b, { excludingTrunk: false }, context).name
     );
     const uniqueStackBaseNames = [...new Set(allStackBaseNames)];
+    logDebug(`Got ${uniqueStackBaseNames.length} stack base names...`);
     return uniqueStackBaseNames.map(
       (bn) => new Branch(bn, { useMemoizedResults: this.useMemoizedResults })
     );
@@ -189,11 +193,10 @@ export abstract class AbstractStackBuilder {
     opts: { excludingTrunk: boolean },
     context: TContext
   ): Branch {
+    logDebug(`Getting base branch for ${branch.name}...`);
     const parent = this.getBranchParent(branch, context);
-    if (!parent) {
-      return branch;
-    }
-    if (opts?.excludingTrunk && parent.isTrunk(context)) {
+    if (!parent || (opts?.excludingTrunk && parent.isTrunk(context))) {
+      logDebug(`Base branch is ${branch.name}`);
       return branch;
     }
     return this.getStackBaseBranch(parent, opts, context);

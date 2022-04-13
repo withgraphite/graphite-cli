@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { getTrunk, logTip } from '../lib/utils';
+import { getTrunk, logDebug, logTip } from '../lib/utils';
 import { GitStackBuilder, Stack, StackNode } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 
@@ -36,7 +36,11 @@ function getStacks(context: TContext): {
 
 export async function logShortAction(context: TContext): Promise<void> {
   const currentBranch = currentBranchPrecondition(context);
+  logDebug(`Getting stacks...`);
   const stacks = getStacks(context);
+  logDebug(
+    `Got stacks (${stacks.fallenStacks.length} fallen; ${stacks.untrackedStacks.length} untracked)...`
+  );
 
   const tips = printStackNode(
     stacks.trunkStack.source,
