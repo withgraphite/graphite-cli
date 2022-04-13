@@ -38,12 +38,16 @@ function getBranchArg(current: string, argv: Arguments): string | null {
     // a substring of another command). Since we're dealing with a positional,
     // we also want to make sure that the current argument is the positional
     // (position 3).
-    ((argv['_'].length <= 3 && argv['_'][1] === 'bco') ||
-      // gt branch checkout / b co (and permutations)
+    ((argv['_'].length <= 3 &&
+      (argv['_'][1] === 'bco' || argv['_'][1] === 'bdl')) ||
+      // gt branch checkout/delete (and permutations)
       // same as above, but one position further
       (argv['_'].length <= 4 &&
         (argv['_'][1] === 'b' || argv['_'][1] === 'branch') &&
-        (argv['_'][2] === 'co' || argv['_'][2] === 'checkout')) ||
+        (argv['_'][2] === 'co' ||
+          argv['_'][2] === 'checkout' ||
+          argv['_'][2] === 'dl' ||
+          argv['_'][2] === 'delete')) ||
       // gt upstack onto / us onto
       ((argv['_'][1] === 'upstack' || argv['_'][1] === 'us') &&
         argv['_'][2] === 'onto')) &&
