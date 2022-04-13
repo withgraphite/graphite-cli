@@ -101,19 +101,6 @@ function printStackNode(
   let needsFix: boolean =
     !!metaParent &&
     (!node.parent || metaParent.name !== node.parent.branch.name);
-  console.log(
-    [
-      // indent
-      `${'  '.repeat(opts.indent)}`,
-      // branch name, potentially highlighted
-      node.branch.name === opts.currentBranch.name
-        ? chalk.cyan(`↳ ${node.branch.name}`)
-        : `↳ ${node.branch.name}`,
-      // whether it needs a rebase or not
-      ...(needsFix ? [chalk.yellow(`(off ${metaParent?.name})`)] : []),
-      ...(untracked ? [chalk.yellow(`(untracked)`)] : []),
-    ].join(' ')
-  );
   node.children.forEach((c) => {
     if (!c.branch.isTrunk(context)) {
       const tips = printStackNode(
@@ -128,6 +115,19 @@ function printStackNode(
       needsFix = tips.needsFix || needsFix;
     }
   });
+  console.log(
+    [
+      // indent
+      `${'  '.repeat(opts.indent)}`,
+      // branch name, potentially highlighted
+      node.branch.name === opts.currentBranch.name
+        ? chalk.cyan(`↱ ${node.branch.name}`)
+        : `↱ ${node.branch.name}`,
+      // whether it needs a rebase or not
+      ...(needsFix ? [chalk.yellow(`(off ${metaParent?.name})`)] : []),
+      ...(untracked ? [chalk.yellow(`(untracked)`)] : []),
+    ].join(' ')
+  );
   return { untracked, needsFix };
 }
 
