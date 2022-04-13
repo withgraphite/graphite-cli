@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { execSync } from 'child_process';
 import { inferPRBody, inferPRTitle } from '../../../src/actions/submit';
+import { detectEmptyBranches } from '../../../src/actions/submit/submit';
+import { execStateConfig } from '../../../src/lib/config/exec_state_config';
 import { Branch } from '../../../src/wrapper-classes/branch';
 import { BasicScene } from '../../lib/scenes';
 import { configureTest } from '../../lib/utils';
@@ -47,6 +49,25 @@ for (const scene of [new BasicScene()]) {
       const branch = await Branch.branchWithName('a', scene.context);
       expect(inferPRTitle(branch, scene.context)).to.not.equals(title);
       expect(inferPRBody(branch, scene.context)).to.be.null;
+    });
+
+    it('aborts if the branch is empty', async () => {
+      execStateConfig._data.interactive = false;
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      const branch = await Branch.branchWithName('a', scene.context);
+      expect(await detectEmptyBranches([branch], scene.context)).to.equals(
+        'ABORT'
+      );
+    });
+
+    it('does not abort if the branch is not empty', async () => {
+      execStateConfig._data.interactive = false;
+      scene.repo.createChange('a');
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      const branch = await Branch.branchWithName('a', scene.context);
+      expect(await detectEmptyBranches([branch], scene.context)).to.equals(
+        'SUCCESS'
+      );
     });
   });
 }
