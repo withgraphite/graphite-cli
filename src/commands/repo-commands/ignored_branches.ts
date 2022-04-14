@@ -34,7 +34,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         logInfo(
           chalk.gray(`The following branches were found matching your pattern:`)
         );
-        foundBranches.split('/n').forEach((branch) => {
+        foundBranches.split('\n').forEach((branch) => {
           logInfo(chalk.gray(branch.trim()));
         });
       } else {

@@ -1,3 +1,19 @@
+# 0.17.9 2021-04-14
+
+- Flipped `gt log short` view to match other log commands and `up`/`down` naming convention. `↳` → `↱`!
+- Graphite now asks for confirmation if the user tries to submit an empty branch.
+- Graphite now displays an info message when it creates an empty commit on a new branch.
+- The empty commit copy in the commit editor now only appears when Graphite has created an empty commit.
+- Added support for remotes not named `origin` - use the new `gt repo remote` command to set the name of your remote.
+- Added support for branch names up to GitHub's max supported length (256 bytes including `/refs/heads` gives us room for 245 bytes).
+- Allowlisted many git commands for passthrough.
+- Added autocomplete support for `gt branch delete`.
+- Changed force option on `gt branch delete` from `-D` to `-f`.
+- Cleaned up output on `gt branch delete` failure.
+- Fixed an issue where a branch could not be submitted if its name matched a file in the repository.
+- Fixed an issue where `gt repo max-branch-length` wouldn't print the configured value.
+- Added more debug information for the `--debug` option.
+
 # 0.17.8 2021-04-08
 
 - Happy Friday! This should fix many hangs that users are experiencing.
