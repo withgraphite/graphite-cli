@@ -19,7 +19,7 @@ for (const scene of allScenes) {
       expect(scene.repo.currentBranchName()).to.equal(branchName);
 
       scene.repo.checkoutBranch('main');
-      scene.repo.execCliCommand(`branch delete "${branchName}" -D -q`);
+      scene.repo.execCliCommand(`branch delete "${branchName}" -f -q`);
 
       expectBranches(scene.repo, 'main');
       expect(Branch.exists(branchName)).to.be.false;
@@ -38,7 +38,7 @@ for (const scene of allScenes) {
       scene.repo.createChangeAndCommit('2', '2');
 
       scene.repo.checkoutBranch('main');
-      scene.repo.execCliCommandAndGetOutput(`bdl "${branchName}" -D -q`);
+      scene.repo.execCliCommandAndGetOutput(`bdl "${branchName}" -f -q`);
 
       expectBranches(scene.repo, 'main');
       expect(Branch.exists(branchName)).to.be.false;
