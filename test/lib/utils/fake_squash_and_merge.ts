@@ -5,7 +5,7 @@ export function fakeGitSquashAndMerge(
   repo: GitRepo,
   branchName: string,
   squashedCommitMessage: string
-) {
+): void {
   // Fake github squash and merge
   execSync(`git -C "${repo.dir}" switch -q -c temp ${branchName}`);
   repo.checkoutBranch('temp');

@@ -152,7 +152,7 @@ function logRegenTip(context: TContext): void {
       `> gt branch checkout <branch> && gt upstack onto <parent> # fix a stack and update the parent`,
       `> gt branch checkout <branch> && gt stack fix --regen # generate stack based on current commit tree`,
       `> gt repo ignored-branches --add <branch> # set branch to be ignored by Graphite`,
-      `> git branch -D <branch> # delete branch from git`,
+      `> gt branch delete -f <branch> # delete branch from git`,
     ].join('\n'),
     context
   );

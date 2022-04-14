@@ -1,6 +1,7 @@
 import yargs from 'yargs';
 import { deleteBranchAction } from '../../actions/delete_branch';
 import { profile } from '../../lib/telemetry';
+import { logTip } from '../../lib/utils';
 
 const args = {
   name: {
@@ -14,7 +15,7 @@ const args = {
     describe: `Force delete the git branch.`,
     demandOption: false,
     type: 'boolean',
-    alias: 'D',
+    alias: 'f',
     default: false,
   },
 } as const;
@@ -28,12 +29,13 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    await deleteBranchAction(
-      {
-        branchName: argv.name,
-        force: argv.force,
-      },
-      context
-    );
+    if (!args.force) {
+      logTip(`You can force branch deletion with -f`, context);
+    }
+
+    await deleteBranchAction({
+      branchName: argv.name,
+      force: argv.force,
+    });
   });
 };
