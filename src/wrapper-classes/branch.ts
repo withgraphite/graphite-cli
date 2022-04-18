@@ -23,6 +23,15 @@ export class Branch {
   name: string;
   shouldUseMemoizedResults: boolean;
 
+  static create(
+    branchName: string,
+    parentBranchName: string,
+    parentBranchRevision: string
+  ): void {
+    const branch = new Branch(branchName);
+    branch.writeMeta({ parentBranchName, parentBranchRevision });
+  }
+
   constructor(name: string, opts?: { useMemoizedResults: boolean }) {
     this.name = name;
     this.shouldUseMemoizedResults = opts?.useMemoizedResults || false;
@@ -235,6 +244,16 @@ export class Branch {
   public setParentBranchName(parentBranchName: string): void {
     const meta: TMeta = this.getMeta() || {};
     meta.parentBranchName = parentBranchName;
+    this.writeMeta(meta);
+  }
+
+  public setParentBranch(
+    parentBranchName: string,
+    parentBranchRevision: string
+  ): void {
+    const meta: TMeta = this.getMeta() || {};
+    meta.parentBranchName = parentBranchName;
+    meta.parentBranchRevision = parentBranchRevision;
     this.writeMeta(meta);
   }
 

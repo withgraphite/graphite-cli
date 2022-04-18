@@ -56,7 +56,7 @@ export async function createBranchAction(
 
   // If the branch previously existed and the stale metadata is still around,
   // make sure that we wipe that stale metadata.
-  new Branch(branchName).clearMetadata().setParentBranchName(parentBranch.name);
+  Branch.create(branchName, parentBranch.name, parentBranch.getCurrentRef());
 
   if (isAddingEmptyCommit) {
     logInfo(
