@@ -90,7 +90,7 @@ export async function stackOntoBaseRebaseContinuation(
   cache.clearAll();
   // set current branch's parent only if the rebase succeeds.
   console.log(`setting ${currentBranch.name} parent to ${onto}`);
-  currentBranch.setParentBranchName(onto);
+  currentBranch.setParentBranch(onto, new Branch(onto).getCurrentRef());
 
   // Now perform a fix starting from the onto branch:
   const stackOntoContinuationFrame = {
