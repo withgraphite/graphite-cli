@@ -8,7 +8,7 @@ import {
 } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context/context';
 import { KilledError } from '../lib/errors';
-import { checkoutBranch, getTrunk, logInfo } from '../lib/utils';
+import { checkoutBranch, getTrunk, logInfo, logTip } from '../lib/utils';
 import { Branch } from '../wrapper-classes/branch';
 import { deleteBranchAction } from './delete_branch';
 import { currentBranchOntoAction } from './onto/current_branch_onto';
@@ -23,9 +23,18 @@ export async function deleteMergedBranches(
   opts: {
     frame: TDeleteBranchesStackFrame;
     parent: TMergeConflictCallstack;
+    showSyncTip?: boolean;
   },
   context: TContext
 ): Promise<void> {
+  logInfo(`Checking if any branches have been merged and can be deleted...`);
+  if (opts.showSyncTip) {
+    logTip(
+      `Disable this behavior at any point in the future with --no-delete`,
+      context
+    );
+  }
+
   const trunkChildren = getTrunk(context).getChildrenFromMeta(context);
 
   /**
@@ -164,7 +173,7 @@ export async function deleteMergedBranches(
         ].children.filter((child) => child.name !== branch.name);
       }
 
-      await deleteBranch(branch);
+      deleteBranch(branch);
       delete branchesToDelete[branchToDeleteName];
     } while (branchToDeleteName !== undefined);
   } while (toProcess.length > 0);
@@ -246,9 +255,9 @@ function branchMerged(branch: Branch, context: TContext): boolean {
   return false;
 }
 
-async function deleteBranch(branch: Branch) {
+function deleteBranch(branch: Branch) {
   logInfo(`Deleting (${chalk.red(branch.name)})`);
-  await deleteBranchAction({
+  deleteBranchAction({
     branchName: branch.name,
     force: true,
   });

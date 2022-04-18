@@ -14,7 +14,7 @@ import { PreconditionsFailedError } from '../lib/errors';
 import { profile } from '../lib/telemetry';
 import { rebaseInProgress } from '../lib/utils/rebase_in_progress';
 import { Branch } from '../wrapper-classes/branch';
-import { branchCountSanityCheckContinuation } from './repo-commands/fix';
+import { deleteMergedBranchesContinuation } from './repo-commands/fix';
 
 const args = {
   edit: {
@@ -101,7 +101,7 @@ async function resolveCallstack(
       );
       break;
     case 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION':
-      await branchCountSanityCheckContinuation(frame);
+      deleteMergedBranchesContinuation();
       break;
     case 'REPO_SYNC_CONTINUATION':
       await repoSyncDeleteMergedBranchesContinuation(frame, context);
@@ -116,5 +116,5 @@ async function resolveCallstack(
   await resolveCallstack(remaining, context);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-function assertUnreachable(arg: never): void {}
+// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+function assertUnreachable(_arg: never): void {}
