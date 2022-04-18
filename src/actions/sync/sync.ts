@@ -1,9 +1,9 @@
 import prompts from 'prompts';
-import { TRepoSyncStackFrame } from '../lib/config/merge_conflict_callstack_config';
-import { TContext } from '../lib/context/context';
-import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
-import { currentBranchPrecondition } from '../lib/preconditions';
-import { syncPRInfoForBranches } from '../lib/sync/pr_info';
+import { TRepoSyncStackFrame } from '../../lib/config/merge_conflict_callstack_config';
+import { TContext } from '../../lib/context/context';
+import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
+import { currentBranchPrecondition } from '../../lib/preconditions';
+import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import {
   checkoutBranch,
   getTrunk,
@@ -12,11 +12,11 @@ import {
   logNewline,
   logTip,
   trackedUncommittedChanges,
-} from '../lib/utils';
-import { Branch } from '../wrapper-classes/branch';
-import { deleteMergedBranches } from './clean_branches';
-import { fixDanglingBranches } from './fix_dangling_branches';
-import { submitAction } from './submit';
+} from '../../lib/utils';
+import { Branch } from '../../wrapper-classes/branch';
+import { deleteMergedBranches } from '../clean_branches';
+import { fixDanglingBranches } from '../fix_dangling_branches';
+import { submitAction } from '../submit';
 
 export async function syncAction(
   opts: {

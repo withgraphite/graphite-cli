@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { syncAction } from '../../actions/sync';
+import { syncAction } from '../../actions/sync/sync';
 import { profile } from '../../lib/telemetry';
 
 const args = {
