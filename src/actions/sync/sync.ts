@@ -37,7 +37,6 @@ export async function syncAction(
   checkoutBranch(trunk);
 
   if (opts.pull) {
-    logNewline();
     logInfo(`Pulling in new changes...`);
     logTip(
       `Disable this behavior at any point in the future with --no-pull`,
@@ -47,6 +46,7 @@ export async function syncAction(
       checkoutBranch(oldBranch.name);
       throw new ExitFailedError(`Failed to pull trunk ${trunk}`, err);
     });
+    logNewline();
   }
 
   await syncPRInfoForBranches(Branch.allBranches(context), context);
@@ -54,13 +54,13 @@ export async function syncAction(
   // This needs to happen before we delete/resubmit so that we can potentially
   // delete or resubmit on the dangling branches.
   if (opts.fixDanglingBranches) {
-    logNewline();
     logInfo(`Ensuring tracked branches in Graphite are all well-formed...`);
     logTip(
       `Disable this behavior at any point in the future with --no-show-dangling`,
       context
     );
     await fixDanglingBranches(context, opts.force);
+    logNewline();
   }
 
   const deleteMergedBranchesContinuation = {
@@ -71,7 +71,6 @@ export async function syncAction(
   };
 
   if (opts.delete) {
-    logNewline();
     logInfo(`Checking if any branches have been merged and can be deleted...`);
     logTip(
       `Disable this behavior at any point in the future with --no-delete`,
