@@ -16,7 +16,8 @@ export function pull(context: TContext, oldBranchName: string): void {
     context
   );
   const remote = context.repoConfig.getRemote();
-  gpExecSync({ command: `git pull ${remote} --prune` }, (err) => {
+  gpExecSync({ command: `git remote prune ${remote}` });
+  gpExecSync({ command: `git pull ${remote}` }, (err) => {
     checkoutBranch(oldBranchName);
     throw new ExitFailedError(
       `Failed to pull trunk ${getTrunk(context).name}`,
