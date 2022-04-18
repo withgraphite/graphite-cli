@@ -2,7 +2,6 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { deleteMergedBranches } from '../../actions/clean_branches';
 import { fixDanglingBranches } from '../../actions/fix_dangling_branches';
-import { TRepoFixBranchCountSanityCheckStackFrame } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context/context';
 import { profile } from '../../lib/telemetry';
 import { logInfo, logNewline, logTip } from '../../lib/utils';
@@ -34,23 +33,30 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     await fixDanglingBranches(context, { force: argv.force });
-    await branchCountSanityCheck(
+
+    branchCountSanityCheck(context);
+
+    const continuationFrame = {
+      op: 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION' as const,
+    };
+
+    await deleteMergedBranches(
       {
-        force: argv.force,
-        showDeleteProgress: argv['show-delete-progress'],
+        frame: {
+          op: 'DELETE_BRANCHES_CONTINUATION',
+          showDeleteProgress: argv['show-delete-progress'],
+          force: argv.force,
+        },
+        parent: [continuationFrame],
       },
       context
     );
+
+    deleteMergedBranchesContinuation();
   });
 };
 
-async function branchCountSanityCheck(
-  opts: {
-    force: boolean;
-    showDeleteProgress: boolean;
-  },
-  context: TContext
-): Promise<void> {
+function branchCountSanityCheck(context: TContext): void {
   const branchCount = Branch.allBranches(context).length;
   if (branchCount > 50) {
     console.log(
@@ -64,31 +70,9 @@ async function branchCountSanityCheck(
     );
     logNewline();
   }
-
-  logInfo(`Searching for any stale branches that can be removed...`);
-
-  const continuationFrame = {
-    op: 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION' as const,
-  };
-
-  await deleteMergedBranches(
-    {
-      frame: {
-        op: 'DELETE_BRANCHES_CONTINUATION',
-        showDeleteProgress: opts.showDeleteProgress,
-        force: opts.force,
-      },
-      parent: [continuationFrame],
-    },
-    context
-  );
-
-  await branchCountSanityCheckContinuation(continuationFrame);
 }
 
-export async function branchCountSanityCheckContinuation(
-  frame: TRepoFixBranchCountSanityCheckStackFrame
-): Promise<void> {
+export function deleteMergedBranchesContinuation(): void {
   logNewline();
   logInfo(
     `Still seeing issues with Graphite? Send us feedback via \`gt feedback '<your_issue'> --with-debug-context\` and we'll dig in!`

@@ -46,7 +46,7 @@ export async function syncAction(
   if (opts.fixDanglingBranches) {
     await fixDanglingBranches(context, {
       force: opts.force,
-      showSyncHint: true,
+      showSyncTip: true,
     });
   }
 
@@ -58,11 +58,6 @@ export async function syncAction(
   };
 
   if (opts.delete) {
-    logInfo(`Checking if any branches have been merged and can be deleted...`);
-    logTip(
-      `Disable this behavior at any point in the future with --no-delete`,
-      context
-    );
     await deleteMergedBranches(
       {
         frame: {
@@ -71,6 +66,7 @@ export async function syncAction(
           showDeleteProgress: opts.showDeleteProgress,
         },
         parent: [deleteMergedBranchesContinuation],
+        showSyncTip: true,
       },
       context
     );

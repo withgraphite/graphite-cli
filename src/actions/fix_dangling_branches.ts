@@ -7,11 +7,11 @@ import { TContext } from './../lib/context/context';
 
 export async function fixDanglingBranches(
   context: TContext,
-  opts: { force: boolean; showSyncHint?: boolean }
+  opts: { force: boolean; showSyncTip?: boolean }
 ): Promise<void> {
   logInfo(`Ensuring tracked branches in Graphite are all well-formed...`);
 
-  if (opts.showSyncHint) {
+  if (opts.showSyncTip) {
     logTip(
       `Disable this behavior at any point in the future with --no-show-dangling`,
       context
