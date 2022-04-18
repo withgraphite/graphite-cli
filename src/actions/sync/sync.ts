@@ -1,13 +1,12 @@
 import prompts from 'prompts';
 import { TRepoSyncStackFrame } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context/context';
-import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
+import { PreconditionsFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import {
   checkoutBranch,
   getTrunk,
-  gpExecSync,
   logInfo,
   logNewline,
   logTip,
@@ -17,6 +16,7 @@ import { Branch } from '../../wrapper-classes/branch';
 import { deleteMergedBranches } from '../clean_branches';
 import { fixDanglingBranches } from '../fix_dangling_branches';
 import { submitAction } from '../submit';
+import { pull } from './pull';
 
 export async function syncAction(
   opts: {
@@ -33,20 +33,10 @@ export async function syncAction(
     throw new PreconditionsFailedError('Cannot sync with uncommitted changes');
   }
   const oldBranch = currentBranchPrecondition(context);
-  const trunk = getTrunk(context).name;
-  checkoutBranch(trunk);
+  checkoutBranch(getTrunk(context).name);
 
   if (opts.pull) {
-    logInfo(`Pulling in new changes...`);
-    logTip(
-      `Disable this behavior at any point in the future with --no-pull`,
-      context
-    );
-    gpExecSync({ command: `git pull --prune` }, (err) => {
-      checkoutBranch(oldBranch.name);
-      throw new ExitFailedError(`Failed to pull trunk ${trunk}`, err);
-    });
-    logNewline();
+    pull(context, oldBranch.name);
   }
 
   await syncPRInfoForBranches(Branch.allBranches(context), context);
