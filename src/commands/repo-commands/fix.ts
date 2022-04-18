@@ -1,10 +1,7 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { deleteMergedBranches } from '../../actions/clean_branches';
-import {
-  existsDanglingBranches,
-  fixDanglingBranches,
-} from '../../actions/fix_dangling_branches';
+import { fixDanglingBranches } from '../../actions/fix_dangling_branches';
 import { TRepoFixBranchCountSanityCheckStackFrame } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context/context';
 import { profile } from '../../lib/telemetry';
@@ -36,7 +33,7 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    await branchMetadataSanityChecks(argv.force, context);
+    await fixDanglingBranches(context, { force: argv.force });
     await branchCountSanityCheck(
       {
         force: argv.force,
@@ -46,31 +43,6 @@ export const handler = async (argv: argsT): Promise<void> => {
     );
   });
 };
-
-async function branchMetadataSanityChecks(
-  force: boolean,
-  context: TContext
-): Promise<void> {
-  logInfo(`Ensuring tracked branches in Graphite are all well-formed...`);
-  if (existsDanglingBranches(context)) {
-    logNewline();
-    console.log(
-      chalk.yellow(
-        `Found branches without a known parent to Graphite. This may cause issues detecting stacks; we recommend you select one of the proposed remediations or use \`gt upstack onto\` to restack the branch onto the appropriate parent.`
-      )
-    );
-    logTip(
-      `To ensure Graphite always has a known parent for your branch, create your branch through Graphite with \`gt branch create <branch_name>\`.`,
-      context
-    );
-    logNewline();
-    await fixDanglingBranches(context, force);
-    logNewline();
-  } else {
-    logInfo(`All branches well-formed.`);
-    logNewline();
-  }
-}
 
 async function branchCountSanityCheck(
   opts: {

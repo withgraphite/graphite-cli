@@ -32,11 +32,11 @@ export async function syncAction(
   if (trackedUncommittedChanges()) {
     throw new PreconditionsFailedError('Cannot sync with uncommitted changes');
   }
-  const oldBranch = currentBranchPrecondition(context);
+  const oldBranchName = currentBranchPrecondition(context).name;
   checkoutBranch(getTrunk(context).name);
 
   if (opts.pull) {
-    pull(context, oldBranch.name);
+    pull(context, oldBranchName);
   }
 
   await syncPRInfoForBranches(Branch.allBranches(context), context);
@@ -44,20 +44,17 @@ export async function syncAction(
   // This needs to happen before we delete/resubmit so that we can potentially
   // delete or resubmit on the dangling branches.
   if (opts.fixDanglingBranches) {
-    logInfo(`Ensuring tracked branches in Graphite are all well-formed...`);
-    logTip(
-      `Disable this behavior at any point in the future with --no-show-dangling`,
-      context
-    );
-    await fixDanglingBranches(context, opts.force);
-    logNewline();
+    await fixDanglingBranches(context, {
+      force: opts.force,
+      showSyncHint: true,
+    });
   }
 
   const deleteMergedBranchesContinuation = {
     op: 'REPO_SYNC_CONTINUATION' as const,
     force: opts.force,
     resubmit: opts.resubmit,
-    oldBranchName: oldBranch.name,
+    oldBranchName: oldBranchName,
   };
 
   if (opts.delete) {
