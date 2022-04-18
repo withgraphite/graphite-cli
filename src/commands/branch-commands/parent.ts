@@ -35,7 +35,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     if (argv.set) {
       setParent(branch, argv.set, context);
     } else if (argv.reset) {
-      branch.resetParentBranch();
+      branch.clearParentMetadata();
     } else {
       const parent = branch.getParentFromMeta(context);
       if (parent) {
