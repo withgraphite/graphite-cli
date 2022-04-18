@@ -17,10 +17,14 @@ export function pull(context: TContext, oldBranchName: string): void {
   );
   const remote = context.repoConfig.getRemote();
   gpExecSync({ command: `git remote prune ${remote}` });
-  gpExecSync({ command: `git pull ${remote}` }, (err) => {
+  gpExecSync({ command: `git fetch ${remote}` }, (err) => {
+    checkoutBranch(oldBranchName);
+    throw new ExitFailedError(`Failed to fetch from remote ${remote}`, err);
+  });
+  gpExecSync({ command: `git merge` }, (err) => {
     checkoutBranch(oldBranchName);
     throw new ExitFailedError(
-      `Failed to pull trunk ${getTrunk(context).name}`,
+      `Failed to merge trunk ${getTrunk(context).name}`,
       err
     );
   });
