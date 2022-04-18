@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { getBranchTitle } from '../../actions/print_stack';
 import { currentBranchPrecondition } from '../../lib/preconditions';
-import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
+import { syncPRInfoForBranchByName } from '../../lib/sync/pr_info';
 import { profile } from '../../lib/telemetry';
 import { logError } from '../../lib/utils';
 
@@ -16,8 +16,8 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const aliases = [];
-export const command = 'sync';
-export const canoncial = 'branch sync';
+export const command = 'pr-info';
+export const canoncial = 'branch pr-info';
 export const description =
   'Fetch GitHub PR information for the current branch.';
 export const builder = args;
@@ -30,7 +30,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       return;
     }
 
-    await syncPRInfoForBranches([branch], context);
+    await syncPRInfoForBranchByName(branch, context);
 
     const prInfo = branch.getPRInfo();
     if (prInfo === undefined) {
