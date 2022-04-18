@@ -27,6 +27,7 @@ export type TBranchPriorSubmitInfo = {
 
 export type TMeta = {
   parentBranchName?: string;
+  parentBranchRevision?: string;
   prevRef?: string;
   prInfo?: TBranchPRInfo;
   priorSubmitInfo?: TBranchPriorSubmitInfo;
