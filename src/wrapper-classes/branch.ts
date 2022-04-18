@@ -238,12 +238,6 @@ export class Branch {
     this.writeMeta(meta);
   }
 
-  public resetParentBranch(): void {
-    const meta: TMeta = this.getMeta() || {};
-    meta.parentBranchName = undefined;
-    this.writeMeta(meta);
-  }
-
   public setMetaPrevRef(prevRef: string): void {
     const meta: TMeta = this.getMeta() || {};
     meta.prevRef = prevRef;
@@ -541,7 +535,7 @@ export class Branch {
 
   public clearPRInfo(): void {
     const meta: TMeta = this.getMeta() || {};
-    meta.prInfo = undefined;
+    delete meta.prInfo;
     this.writeMeta(meta);
   }
 
