@@ -26,7 +26,9 @@ export function pull(context: TContext, oldBranchName: string): void {
 
   gpExecSync({ command: `git remote prune ${remote}` });
   gpExecSync(
-    { command: `git fetch ${remote} "+refs/heads/*:refs/remotes/${remote}/*"` },
+    {
+      command: `git fetch ${remote} "+refs/heads/*:refs/remotes/${remote}/*" "+refs/branch-metadata/*:refs/${remote}-branch-metadata/*"`,
+    },
     (err) => {
       checkoutBranch(oldBranchName);
       throw new ExitFailedError(`Failed to fetch from remote ${remote}`, err);
