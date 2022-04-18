@@ -11,8 +11,8 @@ import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';
 import { Branch } from '../wrapper-classes/branch';
 
-// 256 minus 11 (for 'refs/heads/')
-const MAX_BRANCH_NAME_BYTE_LENGTH = 245;
+// 255 minus 21 (for 'refs/branch-metadata/')
+const MAX_BRANCH_NAME_BYTE_LENGTH = 234;
 
 export async function createBranchAction(
   opts: {
