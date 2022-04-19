@@ -97,13 +97,14 @@ function printStackNode(
   context: TContext
 ): { needsFix: boolean; untracked: boolean } {
   const metaParent = node.branch.getParentFromMeta(context);
-  let untracked = !metaParent && !node.branch.isTrunk(context);
-  let needsFix: boolean =
+  const untracked = !metaParent && !node.branch.isTrunk(context);
+  const needsFix: boolean =
     !!metaParent &&
     (!node.parent || metaParent.name !== node.parent.branch.name);
+  const tips = { untracked, needsFix };
   node.children.forEach((c) => {
     if (!c.branch.isTrunk(context)) {
-      const tips = printStackNode(
+      const childTips = printStackNode(
         c,
         {
           indent: opts.indent + 1,
@@ -111,8 +112,9 @@ function printStackNode(
         },
         context
       );
-      untracked = tips.untracked || untracked;
-      needsFix = tips.needsFix || needsFix;
+
+      tips.untracked = tips.untracked || childTips.untracked;
+      tips.needsFix = tips.needsFix || childTips.needsFix;
     }
   });
   console.log(
@@ -128,7 +130,7 @@ function printStackNode(
       ...(untracked ? [chalk.yellow(`(untracked)`)] : []),
     ].join(' ')
   );
-  return { untracked, needsFix };
+  return tips;
 }
 
 function logRebaseTip(context: TContext): void {
