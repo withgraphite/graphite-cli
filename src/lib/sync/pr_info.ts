@@ -5,15 +5,32 @@ import { Branch } from '../../wrapper-classes/branch';
 import { API_SERVER } from '../api';
 import { TContext } from './../context/context';
 
-/**
- * TODO (nicholasyan): for now, this just syncs info for branches with existing
- * PR info. In the future, we can extend this method to query GitHub for PRs
- * associated with branch heads that don't have associated PR info.
- */
 export async function syncPRInfoForBranches(
   branches: Branch[],
   context: TContext
 ): Promise<void> {
+  return syncHelper(
+    {
+      numbers: branches
+        .filter((branch) => !branch.isTrunk(context))
+        .map((branch) => branch.getPRInfo()?.number)
+        .filter((value): value is number => value !== undefined),
+    },
+    context
+  );
+}
+
+export async function syncPRInfoForBranchByName(
+  branch: Branch,
+  context: TContext
+): Promise<void> {
+  return syncHelper({ headRefNames: [branch.name] }, context);
+}
+
+async function syncHelper(
+  prArgs: { numbers?: number[]; headRefNames?: string[] },
+  context: TContext
+) {
   const authToken = context.userConfig.data.authToken;
   if (authToken === undefined) {
     return;
@@ -29,11 +46,8 @@ export async function syncPRInfoForBranches(
       authToken: authToken,
       repoName: repoName,
       repoOwner: repoOwner,
-      prNumbers: branches
-        .filter((branch) => !branch.isTrunk(context))
-        .map((branch) => branch.getPRInfo()?.number)
-        .filter((value): value is number => value !== undefined),
-      prHeadRefNames: [],
+      prNumbers: prArgs.numbers ?? [],
+      prHeadRefNames: prArgs.headRefNames ?? [],
     }
   );
 
