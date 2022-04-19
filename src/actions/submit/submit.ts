@@ -415,7 +415,14 @@ async function getPRInfoForBranches(
     // The branch here should always have a parent - above, the branches we've
     // gathered should exclude trunk which ensures that every branch we're submitting
     // a PR for has a valid parent.
-    const parentBranchName = getBranchBaseName(branch, context);
+    const parent = branch.getParentFromMeta(context);
+    if (parent === undefined) {
+      throw new PreconditionsFailedError(
+        `Could not find parent for branch ${branch.name} to submit PR against. Please checkout ${branch.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
+      );
+    }
+    const parentBranchName = parent.name;
+    const parentBranchSha = parent.getParentBranchSha();
 
     const previousPRInfo = branch.getPRInfo();
     let status, reason;
@@ -425,7 +432,9 @@ async function getPRInfoForBranches(
       branchPRInfo.push({
         action: 'update',
         head: branch.name,
+        headSha: branch.getCurrentRef(),
         base: parentBranchName,
+        baseSha: parentBranchSha,
         prNumber: previousPRInfo.number,
         branch: branch,
         draft: args.draftToggle,
@@ -436,7 +445,9 @@ async function getPRInfoForBranches(
       branchPRInfo.push({
         action: 'update',
         head: branch.name,
+        headSha: branch.getCurrentRef(),
         base: parentBranchName,
+        baseSha: parentBranchSha,
         prNumber: previousPRInfo.number,
         branch: branch,
         draft: args.draftToggle,
@@ -450,7 +461,9 @@ async function getPRInfoForBranches(
       branchPRInfo.push({
         action: 'update',
         head: branch.name,
+        headSha: branch.getCurrentRef(),
         base: parentBranchName,
+        baseSha: parentBranchSha,
         prNumber: previousPRInfo.number,
         branch: branch,
         draft: args.draftToggle,
@@ -465,7 +478,14 @@ async function getPRInfoForBranches(
 
   // Prompt for PR creation info separately after printing
   for (const branch of newPrBranches) {
-    const parentBranchName = getBranchBaseName(branch, context);
+    const parent = branch.getParentFromMeta(context);
+    if (parent === undefined) {
+      throw new PreconditionsFailedError(
+        `Could not find parent for branch ${branch.name} to submit PR against. Please checkout ${branch.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
+      );
+    }
+    const parentBranchName = parent.name;
+    const parentBranchSha = parent.getParentBranchSha();
     const { title, body, draft, reviewers } = await getPRCreationInfo(
       {
         branch: branch,
@@ -480,7 +500,9 @@ async function getPRInfoForBranches(
     branchPRInfo.push({
       action: 'create',
       head: branch.name,
+      headSha: branch.getCurrentRef(),
       base: parentBranchName,
+      baseSha: parentBranchSha,
       title: title,
       body: body,
       draft: draft,
