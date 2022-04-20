@@ -66,7 +66,7 @@ export function passthrough(args: string[]): void {
 
   try {
     cp.spawnSync('git', args.slice(2), { stdio: 'inherit' });
-  } catch (err: any) {
+  } catch (err) {
     logError(err);
     // eslint-disable-next-line no-restricted-syntax
     process.exit(1);

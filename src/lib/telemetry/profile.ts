@@ -75,7 +75,7 @@ export async function profile(
     await init(context);
   }
 
-  let err: any = undefined;
+  let err = undefined;
 
   try {
     await tracer.span(
@@ -92,7 +92,7 @@ export async function profile(
       async () => {
         try {
           await handler(context);
-        } catch (err: any) {
+        } catch (err) {
           switch (err.constructor) {
             case ExitFailedError:
               logError(err.message);
@@ -142,7 +142,7 @@ export async function profile(
         }
       }
     );
-  } catch (e: any) {
+  } catch (e) {
     err = e;
   }
 

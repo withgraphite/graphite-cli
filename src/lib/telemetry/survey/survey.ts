@@ -77,7 +77,7 @@ export async function showSurvey(
       },
       context
     );
-  } catch (err: any) {
+  } catch (err) {
     switch (err.constructor) {
       case ExitedSurveyError:
         responses.exitedEarly = true;

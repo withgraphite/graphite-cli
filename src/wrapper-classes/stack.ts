@@ -1,5 +1,5 @@
 import { Branch } from './branch';
-import { StackNode } from './stack_node';
+import { StackMap, StackNode } from './stack_node';
 
 export class Stack {
   source: StackNode;
@@ -43,10 +43,6 @@ export class Stack {
       .join('\n');
   }
 
-  public toDictionary(): Record<string, any> {
-    return this.source.toDictionary();
-  }
-
   public equals(other: Stack): boolean {
     return this.base().equals(other.base());
   }
@@ -59,7 +55,7 @@ export class Stack {
     return base;
   }
 
-  static fromMap(map: Record<string, any>): Stack {
+  static fromMap(map: StackMap): Stack {
     if (Object.keys(map).length != 1) {
       throw Error(`Map must have only only top level branch name`);
     }
