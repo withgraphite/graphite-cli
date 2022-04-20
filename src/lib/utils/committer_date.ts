@@ -1,5 +1,6 @@
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils';
+import { assertUnreachable } from './assert_unreachable';
 
 export function getCommitterDate(args: {
   revision: string;
@@ -31,6 +32,3 @@ export function getCommitterDate(args: {
     .toString()
     .trim();
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-function assertUnreachable(arg: never): void {}

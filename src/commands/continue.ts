@@ -12,6 +12,7 @@ import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_
 import { TContext } from '../lib/context/context';
 import { PreconditionsFailedError } from '../lib/errors';
 import { profile } from '../lib/telemetry';
+import { assertUnreachable } from '../lib/utils/assert_unreachable';
 import { rebaseInProgress } from '../lib/utils/rebase_in_progress';
 import { Branch } from '../wrapper-classes/branch';
 import { deleteMergedBranchesContinuation } from './repo-commands/fix';
@@ -115,6 +116,3 @@ async function resolveCallstack(
 
   await resolveCallstack(remaining, context);
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-function assertUnreachable(_arg: never): void {}

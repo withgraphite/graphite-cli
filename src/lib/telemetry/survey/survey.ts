@@ -4,6 +4,7 @@ import { request } from '@withgraphite/retyped-routes';
 import prompts from 'prompts';
 import { API_SERVER } from '../../../lib/api';
 import { cliAuthPrecondition } from '../../../lib/preconditions';
+import { assertUnreachable } from '../../../lib/utils/assert_unreachable';
 import { TContext } from '../../context/context';
 import { logMessageFromGraphite, logNewline } from '../../utils';
 import { TSurveyResponse } from './../../config/survey_config';
@@ -168,9 +169,6 @@ async function askSurveyQuestions(args: {
     });
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-function assertUnreachable(arg: never): void {}
 
 async function logAnswers(
   args: {
