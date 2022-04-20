@@ -45,5 +45,5 @@ export function inferPRTitle(branch: Branch, context: TContext): string {
   if (singleCommitSubject !== null && singleCommitSubject.length > 0) {
     return singleCommitSubject;
   }
-  return `Merge ${branch.name} into ${branch.getParentFromMeta(context)!.name}`;
+  return `Merge ${branch.name} into ${branch.getParentFromMeta(context)?.name}`;
 }

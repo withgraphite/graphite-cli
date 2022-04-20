@@ -50,10 +50,11 @@ async function fetchUpgradePrompt(
 
     if (response._response.status == 200) {
       if (response.prompt) {
+        const message = response.prompt.message;
         messageConfig.update(
           (data) =>
             (data.message = {
-              contents: response.prompt!.message,
+              contents: message,
               cliVersion: version,
             })
         );
