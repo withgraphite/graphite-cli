@@ -134,18 +134,16 @@ function logState(state: StateT, refresh: boolean) {
         : state[branchName].status === '[running]'
         ? chalk.cyan
         : chalk.grey;
-    const duration: string | undefined = state[branchName].duration
-      ? new Date(state[branchName].duration!)
-          .toISOString()
-          .split(/T/)[1]
-          .replace(/\..+/, '')
+    const duration = state[branchName].duration;
+    const durationString: string | undefined = duration
+      ? new Date(duration).toISOString().split(/T/)[1].replace(/\..+/, '')
       : undefined;
     process.stdout.clearLine(0);
     // Example:
     // - [success]: tr--Track_CLI_and_Graphite_user_assoicat (00:00:22)
     logInfo(
       `- ${color(state[branchName].status)}: ${branchName}${
-        duration ? ` (${duration})` : ''
+        duration ? ` (${durationString})` : ''
       }`
     );
   });
