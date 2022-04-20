@@ -118,7 +118,6 @@ export async function submitAction(
   await submitPullRequests(
     {
       submissionInfoWithBranches: submissionInfoWithBranches,
-      branchesPushedToRemote: branchesPushedToRemote,
       cliAuthToken: cliAuthToken,
     },
     context
@@ -140,7 +139,6 @@ async function submitPullRequests(
     submissionInfoWithBranches: (Unpacked<TPRSubmissionInfo> & {
       branch: Branch;
     })[];
-    branchesPushedToRemote: Branch[];
     cliAuthToken: string;
   },
   context: TContext
