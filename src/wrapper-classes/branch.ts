@@ -292,14 +292,9 @@ export class Branch {
   }
 
   static getCurrentBranch(): Branch | null {
-    const name = gpExecSync(
-      {
-        command: `git rev-parse --abbrev-ref HEAD`,
-      },
-      (e) => {
-        return Buffer.alloc(0);
-      }
-    )
+    const name = gpExecSync({
+      command: `git rev-parse --abbrev-ref HEAD`,
+    })
       .toString()
       .trim();
 

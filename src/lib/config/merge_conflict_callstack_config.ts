@@ -111,7 +111,7 @@ export const mergeConflictCallstackConfigFactory = composeConfig({
   initialize: () => {
     return { callstack: [] };
   },
-  helperFunctions: (data, update) => {
+  helperFunctions: () => {
     return {} as const;
   },
   options: { removeIfEmpty: true, removeIfInvalid: true },

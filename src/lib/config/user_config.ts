@@ -19,7 +19,7 @@ export const userConfigFactory = composeConfig({
   initialize: () => {
     return {};
   },
-  helperFunctions: (data, update) => {
+  helperFunctions: () => {
     return {};
   },
 });

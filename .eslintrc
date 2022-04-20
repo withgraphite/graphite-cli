@@ -6,6 +6,10 @@
   },
   "plugins": ["@typescript-eslint", "import"],
   "rules": {
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_" }
+    ],
     "@typescript-eslint/no-floating-promises": "error",
     "max-lines-per-function": ["error", { "max": 120 }],
     "@typescript-eslint/explicit-module-boundary-types": "error",

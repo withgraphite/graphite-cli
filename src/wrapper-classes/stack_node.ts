@@ -45,8 +45,8 @@ export class StackNode {
     });
   }
 
-  public toDictionary(): Record<string, any> {
-    const data: Record<string, any> = {};
+  public toDictionary(): Record<string, string> {
+    const data: Record<string, string> = {};
     data[this.branch.name] = {};
     this.children.forEach(
       (child) =>
