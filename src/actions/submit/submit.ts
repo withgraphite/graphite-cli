@@ -1,46 +1,25 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import * as t from '@withgraphite/retype';
-import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
-import { API_SERVER } from '../../lib/api';
 import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context/context';
-import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
+import { ExitFailedError } from '../../lib/errors';
 import { cliAuthPrecondition } from '../../lib/preconditions';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
-import {
-  gpExecSync,
-  logError,
-  logInfo,
-  logNewline,
-  logSuccess,
-} from '../../lib/utils';
-import { assertUnreachable } from '../../lib/utils/assert_unreachable';
+import { gpExecSync, logError, logInfo, logNewline } from '../../lib/utils';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
 import { TScope } from '../scope';
 import { getPRInfoForBranches } from './prepare_branches';
 import { pushBranchesToRemote } from './push_branches';
+import { submitPullRequests } from './submit_prs';
 import { getValidBranchesToSubmit } from './validate_branches';
 
 export type TSubmitScope = TScope | 'BRANCH';
 
-type TPRSubmissionInfo = t.UnwrapSchemaMap<
-  typeof graphiteCLIRoutes.submitPullRequests.params
->['prs'];
-
 export type TSubmittedPRRequest = Unpacked<
   t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.params>['prs']
 >;
-
-type TSubmittedPRResponse = Unpacked<
-  t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.response>['prs']
->;
-
-type TSubmittedPR = {
-  request: TSubmittedPRRequest;
-  response: TSubmittedPRResponse;
-};
 
 export async function submitAction(
   args: {
@@ -108,12 +87,7 @@ export async function submitAction(
     context
   );
 
-  logInfo(
-    chalk.blueBright(
-      `📂 [Step 4] Opening/updating PRs on GitHub for pushed branches...`
-    )
-  );
-
+  // Step 4: Submit
   await submitPullRequests(
     {
       submissionInfoWithBranches: submissionInfoWithBranches,
@@ -130,83 +104,6 @@ export async function submitAction(
   const survey = await getSurvey(context);
   if (survey) {
     await showSurvey(survey, context);
-  }
-}
-
-async function submitPullRequests(
-  args: {
-    submissionInfoWithBranches: (Unpacked<TPRSubmissionInfo> & {
-      branch: Branch;
-    })[];
-    cliAuthToken: string;
-  },
-  context: TContext
-) {
-  if (!args.submissionInfoWithBranches.length) {
-    logInfo(`No eligible branches to create/update PRs for.`);
-    logNewline();
-    return;
-  }
-
-  const prInfo = await requestServerToSubmitPRs(
-    args.cliAuthToken,
-    args.submissionInfoWithBranches,
-    context
-  );
-
-  saveBranchPRInfo(prInfo, context);
-  printSubmittedPRInfo(prInfo);
-}
-
-const SUCCESS_RESPONSE_CODE = 200;
-
-const UNAUTHORIZED_RESPONSE_CODE = 401;
-
-async function requestServerToSubmitPRs(
-  cliAuthToken: string,
-  submissionInfo: TPRSubmissionInfo,
-  context: TContext
-) {
-  try {
-    const response = await request.requestWithArgs(
-      API_SERVER,
-      graphiteCLIRoutes.submitPullRequests,
-      {
-        authToken: cliAuthToken,
-        repoOwner: context.repoConfig.getRepoOwner(),
-        repoName: context.repoConfig.getRepoName(),
-        prs: submissionInfo,
-      }
-    );
-
-    if (
-      response._response.status === SUCCESS_RESPONSE_CODE &&
-      response._response.body
-    ) {
-      const requests: { [head: string]: TSubmittedPRRequest } = {};
-      submissionInfo.forEach((prRequest) => {
-        requests[prRequest.head] = prRequest;
-      });
-
-      return response.prs.map((prResponse) => {
-        return {
-          request: requests[prResponse.head],
-          response: prResponse,
-        };
-      });
-    } else if (response._response.status === UNAUTHORIZED_RESPONSE_CODE) {
-      throw new PreconditionsFailedError(
-        'Your Graphite auth token is invalid/expired.\n\nPlease obtain a new auth token by visiting https://app.graphite.dev/activate.'
-      );
-    } else {
-      throw new ExitFailedError(
-        `unexpected server response (${
-          response._response.status
-        }).\n\nResponse: ${JSON.stringify(response)}`
-      );
-    }
-  } catch (error) {
-    throw new ExitFailedError(`Failed to submit PRs`, error);
   }
 }
 
@@ -227,55 +124,5 @@ async function pushMetaStacks(branchesPushedToRemote: Branch[]): Promise<void> {
         throw new ExitFailedError(err.stderr.toString());
       }
     );
-  });
-}
-
-function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
-  if (!prs.length) {
-    logNewline();
-    logInfo(
-      chalk.blueBright('✅ All PRs up-to-date on GitHub; no updates necessary.')
-    );
-    logNewline();
-    return;
-  }
-
-  prs.forEach((pr) => {
-    let status: string = pr.response.status;
-    switch (pr.response.status) {
-      case 'updated':
-        status = `${chalk.yellow('(' + status + ')')}`;
-        break;
-      case 'created':
-        status = `${chalk.green('(' + status + ')')}`;
-        break;
-      case 'error':
-        status = `${chalk.red('(' + status + ')')}`;
-        break;
-      default:
-        assertUnreachable(pr.response);
-    }
-
-    if ('error' in pr.response) {
-      logError(`Error in submitting ${pr.response.head}: ${pr.response.error}`);
-    } else {
-      logSuccess(
-        `${pr.response.head}: ${chalk.reset(pr.response.prURL)} ${status}`
-      );
-    }
-  });
-  logNewline();
-}
-
-function saveBranchPRInfo(prs: TSubmittedPR[], context: TContext): void {
-  prs.forEach(async (pr) => {
-    if (pr.response.status === 'updated' || pr.response.status === 'created') {
-      const branch = await Branch.branchWithName(pr.response.head, context);
-      branch.setPRInfo({
-        number: pr.response.prNumber,
-        url: pr.response.prURL,
-        base: pr.request.base,
-      });
-    }
   });
 }
