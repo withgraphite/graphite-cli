@@ -11,6 +11,7 @@ import {
 import { Branch } from '../../wrapper-classes/branch';
 import { deleteMergedBranches } from '../clean_branches';
 import { fixDanglingBranches } from '../fix_dangling_branches';
+import { pruneRemoteBranchMetadata } from './prune_remote_branch_metadata';
 import { pull } from './pull';
 import { resubmitBranchesWithNewBases } from './resubmit_branches_with_new_bases';
 
@@ -22,6 +23,7 @@ export async function syncAction(
     showDeleteProgress: boolean;
     resubmit: boolean;
     fixDanglingBranches: boolean;
+    pruneRemoteMetadata: boolean;
   },
   context: TContext
 ): Promise<void> {
@@ -33,6 +35,10 @@ export async function syncAction(
 
   if (opts.pull) {
     pull(context, oldBranchName);
+
+    if (opts.pruneRemoteMetadata) {
+      await pruneRemoteBranchMetadata(context, opts.force);
+    }
   }
 
   await syncPRInfoForBranches(Branch.allBranches(context), context);
