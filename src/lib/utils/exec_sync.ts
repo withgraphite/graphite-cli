@@ -1,4 +1,4 @@
-import { execSync, ExecSyncOptions } from 'child_process';
+import { execSync, ExecSyncOptions, SpawnSyncReturns } from 'child_process';
 import { globalTracer as tracer } from '../telemetry/tracer';
 
 export type GPExecSyncOptions = {
@@ -13,7 +13,7 @@ export function gpExecSync(
     command: string;
     options?: ExecSyncOptions & GPExecSyncOptions;
   },
-  onError?: (e: any) => void
+  onError?: (e: Error & SpawnSyncReturns<Buffer>) => void
 ): Buffer {
   try {
     // Only measure if we're with an existing span.

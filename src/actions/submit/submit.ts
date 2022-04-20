@@ -540,7 +540,7 @@ function pushBranchesToRemote(branches: Branch[], context: TContext): Branch[] {
           \n Use 'git pull' to pull external changes and retry.`,
           context
         );
-        throw new ExitFailedError(err);
+        throw new ExitFailedError(err.stderr.toString());
       }
     )
       .toString()
@@ -601,7 +601,7 @@ async function requestServerToSubmitPRs(
         }).\n\nResponse: ${JSON.stringify(response)}`
       );
     }
-  } catch (error: any) {
+  } catch (error) {
     throw new ExitFailedError(`Failed to submit PRs`, error);
   }
 }
@@ -630,7 +630,7 @@ async function pushMetaStacks(branchesPushedToRemote: Branch[]): Promise<void> {
       },
       (err) => {
         logError(`Failed to push stack metadata for ${branch.name} to remote.`);
-        throw new ExitFailedError(err);
+        throw new ExitFailedError(err.stderr.toString());
       }
     );
   });

@@ -1,5 +1,6 @@
 import { Branch } from './branch';
 
+export type StackMap = { [key: string]: StackMap | undefined };
 export class StackNode {
   branch: Branch;
   parent?: StackNode;
@@ -45,20 +46,9 @@ export class StackNode {
     });
   }
 
-  public toDictionary(): Record<string, string> {
-    const data: Record<string, string> = {};
-    data[this.branch.name] = {};
-    this.children.forEach(
-      (child) =>
-        (data[this.branch.name][child.branch.name] =
-          child.toDictionary()[child.branch.name])
-    );
-    return data;
-  }
-
   public static childrenNodesFromMap(
     parent: StackNode,
-    map?: Record<string, any>
+    map?: StackMap
   ): StackNode[] {
     if (!map) {
       return [];
