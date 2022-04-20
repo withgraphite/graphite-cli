@@ -89,7 +89,10 @@ export async function getPRInfoForBranches(
               context
             );
       })
-  );
+  ).then((info) => {
+    logNewline();
+    return info;
+  });
 }
 
 function getPRAction(
@@ -160,6 +163,7 @@ async function getPRCreationInfo(
   },
   context: TContext
 ): Promise<TSubmittedPRRequestWithBranch> {
+  logNewline();
   logInfo(
     `Enter info for new pull request for ${chalk.yellow(args.branch.name)} ▸ ${
       args.parentBranchName
@@ -188,10 +192,6 @@ async function getPRCreationInfo(
   args.branch.upsertPriorSubmitInfo(submitInfo);
 
   const createAsDraft = args.draftToggle ?? (await getPRDraftStatus());
-
-  // Log newline at the end to create some visual separation to the next
-  // interactive PR section or status output.
-  logNewline();
 
   return {
     ...submitInfo,
