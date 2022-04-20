@@ -28,6 +28,7 @@ import {
   logTip,
   logWarn,
 } from '../../lib/utils';
+import { assertUnreachable } from '../../lib/utils/assert_unreachable';
 import { isEmptyBranch } from '../../lib/utils/is_empty_branch';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { MetaStackBuilder, Stack } from '../../wrapper-classes';
@@ -753,6 +754,3 @@ function saveBranchPRInfo(prs: TSubmittedPR[], context: TContext): void {
     }
   });
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-function assertUnreachable(arg: never): void {}

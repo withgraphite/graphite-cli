@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { KilledError } from '../lib/errors';
 import { getTrunk, logInfo, logNewline, logTip } from '../lib/utils';
+import { assertUnreachable } from '../lib/utils/assert_unreachable';
 import { Branch } from '../wrapper-classes/branch';
 import { TContext } from './../lib/context/context';
 
@@ -112,6 +113,3 @@ export async function fixDanglingBranches(
 
   logNewline();
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-function assertUnreachable(arg: never): void {}
