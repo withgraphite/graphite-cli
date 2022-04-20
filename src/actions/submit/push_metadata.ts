@@ -1,10 +1,13 @@
 import chalk from 'chalk';
+import { TContext } from '../../lib/context/context';
 import { ExitFailedError } from '../../lib/errors';
 import { gpExecSync, logError, logInfo, logNewline } from '../../lib/utils';
+import { MetadataRef } from '../../wrapper-classes';
 import { Branch } from '../../wrapper-classes/branch';
 
 export async function pushMetadata(
-  branchesPushedToRemote: Branch[]
+  branchesPushedToRemote: Branch[],
+  context: TContext
 ): Promise<void> {
   logInfo(chalk.blueBright(`➡️ [Step 5] Updating remote stack metadata...`));
 
@@ -13,6 +16,8 @@ export async function pushMetadata(
     logNewline();
     return;
   }
+
+  const remote = context.repoConfig.getRemote();
 
   branchesPushedToRemote.forEach((branch) => {
     logInfo(
@@ -32,5 +37,6 @@ export async function pushMetadata(
         throw new ExitFailedError(err.stderr.toString());
       }
     );
+    MetadataRef.copyMetadataRefToRemoteTracking(remote, branch.name);
   });
 }

@@ -97,7 +97,7 @@ export async function submitAction(
   );
 
   // Step 5: Metadata
-  await pushMetadata(branchesPushedToRemote);
+  await pushMetadata(branchesPushedToRemote, context);
 
   const survey = await getSurvey(context);
   if (survey) {

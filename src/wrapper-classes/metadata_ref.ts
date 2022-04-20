@@ -61,6 +61,18 @@ export class MetadataRef {
     });
   }
 
+  static copyMetadataRefToRemoteTracking(
+    remote: string,
+    branchName: string
+  ): void {
+    execSync(
+      `git update-ref refs/${remote}-branch-metadata/${branchName} $(git show-ref refs/branch-metadata/${branchName} -s)`,
+      {
+        stdio: 'ignore',
+      }
+    );
+  }
+
   public getPath(): string {
     return MetadataRef.pathForBranchName(this._branchName);
   }
