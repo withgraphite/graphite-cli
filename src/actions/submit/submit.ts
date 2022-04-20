@@ -3,15 +3,15 @@ import * as t from '@withgraphite/retype';
 import chalk from 'chalk';
 import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context/context';
-import { ExitFailedError } from '../../lib/errors';
 import { cliAuthPrecondition } from '../../lib/preconditions';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
-import { gpExecSync, logError, logInfo, logNewline } from '../../lib/utils';
+import { logInfo, logNewline } from '../../lib/utils';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
 import { TScope } from '../scope';
 import { getPRInfoForBranches } from './prepare_branches';
 import { pushBranchesToRemote } from './push_branches';
+import { pushMetadata } from './push_metadata';
 import { submitPullRequests } from './submit_prs';
 import { getValidBranchesToSubmit } from './validate_branches';
 
@@ -96,33 +96,12 @@ export async function submitAction(
     context
   );
 
-  logInfo(chalk.blueBright(`➡️ [Step 5] Pushing stack metadata to GitHub...`));
-
-  await pushMetaStacks(branchesPushedToRemote);
+  // Step 5: Metadata
+  await pushMetadata(branchesPushedToRemote);
 
   logNewline();
   const survey = await getSurvey(context);
   if (survey) {
     await showSurvey(survey, context);
   }
-}
-
-async function pushMetaStacks(branchesPushedToRemote: Branch[]): Promise<void> {
-  if (!branchesPushedToRemote.length) {
-    logInfo(`No eligible branches to push stack metadata for.`);
-    return;
-  }
-
-  branchesPushedToRemote.forEach((branch) => {
-    logInfo(`Pushing stack metadata for ${branch.name} to remote...`);
-    gpExecSync(
-      {
-        command: `git push origin "+refs/branch-metadata/${branch.name}:refs/branch-metadata/${branch.name}"`,
-      },
-      (err) => {
-        logError(`Failed to push stack metadata for ${branch.name} to remote.`);
-        throw new ExitFailedError(err.stderr.toString());
-      }
-    );
-  });
 }
