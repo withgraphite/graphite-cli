@@ -533,9 +533,9 @@ export class Branch {
     return this.getMeta()?.priorSubmitInfo?.body;
   }
 
-  public setPRInfo(prInfo: TBranchPRInfo): void {
+  public upsertPRInfo(prInfo: TBranchPRInfo): void {
     const meta: TMeta = this.getMeta() || {};
-    meta.prInfo = prInfo;
+    meta.prInfo = { ...meta.prInfo, ...prInfo };
     this.writeMeta(meta);
   }
 
