@@ -8,7 +8,12 @@ import {
 import { getCommitterDate, getTrunk, gpExecSync, logDebug } from '../lib/utils';
 import { TContext } from './../lib/context/context';
 import { Commit } from './commit';
-import { MetadataRef, TBranchPRInfo, TMeta } from './metadata_ref';
+import {
+  MetadataRef,
+  TBranchPRInfo,
+  TBranchPriorSubmitInfo,
+  TMeta,
+} from './metadata_ref';
 
 type TBranchFilters = {
   useMemoizedResults?: boolean;
@@ -507,11 +512,11 @@ export class Branch {
     return otherBranchesWithSameCommit(this, context);
   }
 
-  public setPriorSubmitTitle(title: string): void {
+  public upsertPriorSubmitInfo(priorSubmitInfo: TBranchPriorSubmitInfo): void {
     const meta: TMeta = this.getMeta() || {};
     meta.priorSubmitInfo = {
       ...meta.priorSubmitInfo,
-      title: title,
+      ...priorSubmitInfo,
     };
     this.writeMeta(meta);
   }
@@ -520,26 +525,8 @@ export class Branch {
     return this.getMeta()?.priorSubmitInfo?.title;
   }
 
-  public setPriorReviewers(reviewers: string[] | undefined): void {
-    const meta: TMeta = this.getMeta() || {};
-    meta.priorSubmitInfo = {
-      ...meta.priorSubmitInfo,
-      reviewers,
-    };
-    this.writeMeta(meta);
-  }
-
   public getPriorReviewers(): string[] | undefined {
     return this.getMeta()?.priorSubmitInfo?.reviewers;
-  }
-
-  public setPriorSubmitBody(body: string): void {
-    const meta: TMeta = this.getMeta() || {};
-    meta.priorSubmitInfo = {
-      ...meta.priorSubmitInfo,
-      body: body,
-    };
-    this.writeMeta(meta);
   }
 
   public getPriorSubmitBody(): string | undefined {

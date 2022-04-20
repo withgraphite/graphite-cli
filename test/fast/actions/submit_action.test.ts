@@ -35,7 +35,7 @@ for (const scene of [new BasicScene()]) {
 
       const branch = await Branch.branchWithName('a', scene.context);
       expect(inferPRTitle(branch, scene.context)).to.equals(title);
-      expect(inferPRBody(branch, scene.context)).to.be.null;
+      expect(inferPRBody(branch, scene.context)).to.be.undefined;
     });
 
     it('does not infer title/body for multiple commits', async () => {
@@ -48,7 +48,7 @@ for (const scene of [new BasicScene()]) {
 
       const branch = await Branch.branchWithName('a', scene.context);
       expect(inferPRTitle(branch, scene.context)).to.not.equals(title);
-      expect(inferPRBody(branch, scene.context)).to.be.null;
+      expect(inferPRBody(branch, scene.context)).to.be.undefined;
     });
 
     it('aborts if the branch is empty', async () => {

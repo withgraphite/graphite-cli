@@ -11,24 +11,25 @@ export async function getPRTitle(
   },
   context: TContext
 ): Promise<string> {
-  let title = inferPRTitle(args.branch, context);
-  if (args.editPRFieldsInline) {
-    const response = await prompts(
-      {
-        type: 'text',
-        name: 'title',
-        message: 'Title',
-        initial: title,
-      },
-      {
-        onCancel: () => {
-          throw new KilledError();
-        },
-      }
-    );
-    title = response.title ?? title;
+  const title = inferPRTitle(args.branch, context);
+  if (!args.editPRFieldsInline) {
+    return title;
   }
-  return title;
+
+  const response = await prompts(
+    {
+      type: 'text',
+      name: 'title',
+      message: 'Title',
+      initial: title,
+    },
+    {
+      onCancel: () => {
+        throw new KilledError();
+      },
+    }
+  );
+  return response.title ?? title;
 }
 
 export function inferPRTitle(branch: Branch, context: TContext): string {
@@ -38,11 +39,11 @@ export function inferPRTitle(branch: Branch, context: TContext): string {
   }
 
   // Only infer the title from the commit if the branch has just 1 commit.
-  const singleCommit = getSingleCommitOnBranch(branch, context);
-  const singleCommitSubject =
-    singleCommit === null ? null : singleCommit.messageSubject().trim();
+  const singleCommitSubject = getSingleCommitOnBranch(branch, context)
+    ?.messageSubject()
+    .trim();
 
-  if (singleCommitSubject !== null && singleCommitSubject.length > 0) {
+  if (singleCommitSubject?.length) {
     return singleCommitSubject;
   }
   return `Merge ${branch.name} into ${branch.getParentFromMeta(context)?.name}`;

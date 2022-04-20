@@ -42,16 +42,28 @@ import { getReviewers } from './reviewers';
 
 export type TSubmitScope = TScope | 'BRANCH';
 
+type TPRSubmissionAction = { branch: Branch; parent: Branch } & (
+  | { update: false }
+  | {
+      update: true;
+      prNumber: number;
+    }
+);
+
 type TPRSubmissionInfo = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.submitPullRequests.params
 >['prs'];
-type TPRSubmissionInfoWithBranch = (Unpacked<TPRSubmissionInfo> & {
-  branch: Branch;
-})[];
 
 type TSubmittedPRRequest = Unpacked<
   t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.params>['prs']
 >;
+
+type TSubmittedPRRequestWithBranch = TSubmittedPRRequest & {
+  branch: Branch;
+};
+
+type TPRSubmissionInfoWithBranch = TSubmittedPRRequestWithBranch[];
+
 type TSubmittedPRResponse = Unpacked<
   t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.response>['prs']
 >;
@@ -120,18 +132,17 @@ export async function submitAction(
     )
   );
 
-  const submissionInfoWithBranches: TPRSubmissionInfoWithBranch =
-    await getPRInfoForBranches(
-      {
-        branches: branchesToSubmit,
-        editPRFieldsInline: args.editPRFieldsInline,
-        draftToggle: args.draftToggle,
-        updateOnly: args.updateOnly,
-        reviewers: args.reviewers,
-        dryRun: args.dryRun,
-      },
-      context
-    );
+  const submissionInfoWithBranches = await getPRInfoForBranches(
+    {
+      branches: branchesToSubmit,
+      editPRFieldsInline: args.editPRFieldsInline,
+      draftToggle: args.draftToggle,
+      updateOnly: args.updateOnly,
+      reviewers: args.reviewers,
+      dryRun: args.dryRun,
+    },
+    context
+  );
 
   if (args.dryRun) {
     logInfo(chalk.blueBright('✅ Dry Run complete.'));
@@ -398,110 +409,82 @@ async function getPRInfoForBranches(
   },
   context: TContext
 ): Promise<TPRSubmissionInfoWithBranch> {
-  const branchPRInfo: TPRSubmissionInfoWithBranch = [];
-  const newPrBranches: Branch[] = [];
-  for (const branch of args.branches) {
-    // The branch here should always have a parent - above, the branches we've
-    // gathered should exclude trunk which ensures that every branch we're submitting
-    // a PR for has a valid parent.
-    const parent = branch.getParentFromMeta(context);
-    if (parent === undefined) {
-      throw new PreconditionsFailedError(
-        `Could not find parent for branch ${branch.name} to submit PR against. Please checkout ${branch.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
-      );
-    }
-    const parentBranchName = parent.name;
-    const parentBranchSha = parent.getParentBranchSha();
+  return await Promise.all(
+    args.branches
+      .map((branch) => {
+        // The branch here should always have a parent - above, the branches we've
+        // gathered should exclude trunk which ensures that every branch we're submitting
+        // a PR for has a valid parent.
+        const parent = branch.getParentFromMeta(context);
+        if (parent === undefined) {
+          throw new PreconditionsFailedError(
+            `Could not find parent for branch ${branch.name} to submit PR against. Please checkout ${branch.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
+          );
+        }
+        const prNumber = branch.getPRInfo()?.number;
 
-    const previousPRInfo = branch.getPRInfo();
-    let status, reason;
-    if (previousPRInfo && branch.isBaseSameAsRemotePr(context)) {
-      status = 'Update';
-      reason = 'restacked';
-      branchPRInfo.push({
-        action: 'update',
-        head: branch.name,
-        headSha: branch.getCurrentRef(),
-        base: parentBranchName,
-        baseSha: parentBranchSha,
-        prNumber: previousPRInfo.number,
-        branch: branch,
-        draft: args.draftToggle,
-      });
-    } else if (previousPRInfo && detectUnsubmittedChanges(branch)) {
-      status = 'Update';
-      reason = 'code changes/rebase';
-      branchPRInfo.push({
-        action: 'update',
-        head: branch.name,
-        headSha: branch.getCurrentRef(),
-        base: parentBranchName,
-        baseSha: parentBranchSha,
-        prNumber: previousPRInfo.number,
-        branch: branch,
-        draft: args.draftToggle,
-      });
-    } else if (!previousPRInfo && !args.updateOnly) {
-      status = 'Create';
-      newPrBranches.push(branch);
-    } else if (previousPRInfo && args.draftToggle !== undefined) {
-      status = args.draftToggle ? 'Draft' : 'Undraft';
-      reason = `Manually changing draft status to ${args.draftToggle}`;
-      branchPRInfo.push({
-        action: 'update',
-        head: branch.name,
-        headSha: branch.getCurrentRef(),
-        base: parentBranchName,
-        baseSha: parentBranchSha,
-        prNumber: previousPRInfo.number,
-        branch: branch,
-        draft: args.draftToggle,
-      });
-    } else {
-      status = `no-op`;
-    }
-    logInfo(
-      `▸ ${chalk.cyan(branch.name)} (${status}${reason ? ' - ' + reason : ''})`
-    );
-  }
+        const status =
+          prNumber === undefined
+            ? args.updateOnly
+              ? 'NOOP'
+              : 'CREATE'
+            : branch.isBaseSameAsRemotePr(context)
+            ? 'RESTACK'
+            : detectUnsubmittedChanges(branch)
+            ? 'CHANGE'
+            : args.draftToggle === undefined
+            ? 'NOOP'
+            : args.draftToggle
+            ? 'DRAFT'
+            : 'PUBLISH';
 
-  // Prompt for PR creation info separately after printing
-  for (const branch of newPrBranches) {
-    const parent = branch.getParentFromMeta(context);
-    if (parent === undefined) {
-      throw new PreconditionsFailedError(
-        `Could not find parent for branch ${branch.name} to submit PR against. Please checkout ${branch.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
-      );
-    }
-    const parentBranchName = parent.name;
-    const parentBranchSha = parent.getParentBranchSha();
-    const { title, body, draft, reviewers } = await getPRCreationInfo(
-      {
-        branch: branch,
-        parentBranchName: parentBranchName,
-        editPRFieldsInline: args.editPRFieldsInline,
-        draftToggle: args.draftToggle,
-        dryRun: args.dryRun,
-        reviewers: args.reviewers,
-      },
-      context
-    );
-    branchPRInfo.push({
-      action: 'create',
-      head: branch.name,
-      headSha: branch.getCurrentRef(),
-      base: parentBranchName,
-      baseSha: parentBranchSha,
-      title: title,
-      body: body,
-      draft: draft,
-      branch: branch,
-      reviewers,
-    });
-  }
-
-  logNewline();
-  return branchPRInfo;
+        logInfo(
+          `▸ ${chalk.cyan(branch.name)} (${
+            {
+              CREATE: 'Create',
+              CHANGE: 'Update - code changes/rebase',
+              DRAFT: 'Convert to draft - set draft status',
+              NOOP: 'No-op',
+              PUBLISH: 'Ready for review - set draft status',
+              RESTACK: 'Update - restacked',
+            }[status]
+          })`
+        );
+        return args.dryRun || status === 'NOOP'
+          ? undefined
+          : {
+              branch,
+              parent,
+              ...(status !== 'CREATE'
+                ? { update: true, prNumber }
+                : { update: false }),
+            };
+      })
+      .filter((action): action is TPRSubmissionAction => action !== undefined)
+      .map(async (action) => {
+        return action.update
+          ? {
+              action: 'update' as const,
+              prNumber: action.prNumber,
+              draft: args.draftToggle,
+              head: action.branch.name,
+              headSha: action.branch.getCurrentRef(),
+              base: action.parent.name,
+              baseSha: action.branch.getParentBranchSha(),
+              branch: action.branch,
+            }
+          : await getPRCreationInfo(
+              {
+                branch: action.branch,
+                parentBranchName: action.parent.name,
+                editPRFieldsInline: args.editPRFieldsInline,
+                draftToggle: args.draftToggle,
+                reviewers: args.reviewers,
+              },
+              context
+            );
+      })
+  );
 }
 
 function pushBranchesToRemote(branches: Branch[], context: TContext): Branch[] {
@@ -642,66 +625,52 @@ async function getPRCreationInfo(
     parentBranchName: string;
     editPRFieldsInline: boolean;
     draftToggle: boolean | undefined;
-    dryRun: boolean;
     reviewers: boolean;
   },
   context: TContext
-): Promise<{
-  title: string;
-  body: string | undefined;
-  draft: boolean;
-  reviewers?: string[];
-}> {
-  if (args.dryRun) {
-    return {
-      title: '',
-      body: '',
-      draft: true,
-    };
-  }
+): Promise<TSubmittedPRRequestWithBranch> {
   logInfo(
     `Enter info for new pull request for ${chalk.yellow(args.branch.name)} ▸ ${
       args.parentBranchName
     }:`
   );
 
-  const title = await getPRTitle(
-    {
-      branch: args.branch,
-      editPRFieldsInline: args.editPRFieldsInline,
-    },
-    context
-  );
-  args.branch.setPriorSubmitTitle(title);
+  const submitInfo = {
+    title: await getPRTitle(
+      {
+        branch: args.branch,
+        editPRFieldsInline: args.editPRFieldsInline,
+      },
+      context
+    ),
+    body: await getPRBody(
+      {
+        branch: args.branch,
+        editPRFieldsInline: args.editPRFieldsInline,
+      },
+      context
+    ),
+    reviewers: await getReviewers({
+      fetchReviewers: args.reviewers,
+    }),
+  };
+  args.branch.upsertPriorSubmitInfo(submitInfo);
 
-  const body = await getPRBody(
-    {
-      branch: args.branch,
-      editPRFieldsInline: args.editPRFieldsInline,
-    },
-    context
-  );
-  args.branch.setPriorSubmitBody(body);
-
-  const reviewers: string[] | undefined = await getReviewers({
-    fetchReviewers: args.reviewers,
-  });
-  args.branch.setPriorReviewers(reviewers);
-
-  const createAsDraft =
-    args.draftToggle !== undefined
-      ? args.draftToggle
-      : await getPRDraftStatus();
+  const createAsDraft = args.draftToggle ?? (await getPRDraftStatus());
 
   // Log newline at the end to create some visual separation to the next
   // interactive PR section or status output.
   logNewline();
 
   return {
-    title: title,
-    body: body,
+    ...submitInfo,
+    action: 'create',
     draft: createAsDraft,
-    reviewers,
+    head: args.branch.name,
+    headSha: args.branch.getCurrentRef(),
+    base: args.parentBranchName,
+    baseSha: args.branch.getParentBranchSha(),
+    branch: args.branch,
   };
 }
 
