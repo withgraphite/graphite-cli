@@ -2,10 +2,9 @@ import { execSync, ExecSyncOptions, SpawnSyncReturns } from 'child_process';
 import { globalTracer as tracer } from '../telemetry/tracer';
 
 export type GPExecSyncOptions = {
-  // Both 1) capture the output from stdout and return it (like normal execSync)
-  // and 2) print the output to the stdout specified in ExecSyncOptions's
-  // 'stdio'.
-  printStdout?: boolean;
+  // Output is always returned (like normal execSync).  This option lets us
+  // print it.  A lambda allows us to mutate the displayed output.
+  printStdout?: boolean | ((out: string) => string);
 };
 
 export function gpExecSync(
@@ -44,8 +43,10 @@ function gpExecSyncImpl(command: {
   const output = execSync(command.command, {
     ...command.options,
   });
-  if (command.options?.printStdout) {
+  if (command.options?.printStdout === true) {
     console.log(output.toString());
+  } else if (command.options?.printStdout) {
+    console.log(command.options?.printStdout(output.toString()));
   }
   return output;
 }
