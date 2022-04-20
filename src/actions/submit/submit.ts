@@ -14,13 +14,13 @@ import {
   logInfo,
   logNewline,
   logSuccess,
-  logTip,
 } from '../../lib/utils';
 import { assertUnreachable } from '../../lib/utils/assert_unreachable';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
 import { TScope } from '../scope';
 import { getPRInfoForBranches } from './prepare_branches';
+import { pushBranchesToRemote } from './push_branches';
 import { getValidBranchesToSubmit } from './validate_branches';
 
 export type TSubmitScope = TScope | 'BRANCH';
@@ -102,8 +102,7 @@ export async function submitAction(
     return;
   }
 
-  // Step 3: Pushing branches to remote
-  logInfo(chalk.blueBright('➡️  [Step 3] Pushing branches to remote...'));
+  // Step 3: Push
   const branchesPushedToRemote = pushBranchesToRemote(
     submissionInfoWithBranches.map((info) => info.branch),
     context
@@ -157,56 +156,6 @@ async function submitPullRequests(
 
   saveBranchPRInfo(prInfo, context);
   printSubmittedPRInfo(prInfo);
-}
-
-function pushBranchesToRemote(branches: Branch[], context: TContext): Branch[] {
-  const branchesPushedToRemote: Branch[] = [];
-
-  if (!branches.length) {
-    logInfo(`No eligible branches to push.`);
-    logNewline();
-    return [];
-  }
-
-  branches.forEach((branch) => {
-    logInfo(
-      `Pushing ${branch.name} with force-with-lease (will not override external commits to remote)...`
-    );
-
-    const output = gpExecSync(
-      {
-        // redirecting stderr to stdout here because 1) git prints the output
-        // of the push command to stderr 2) we want to analyze it but Node's
-        // execSync makes analyzing stderr extremely challenging
-        command: [
-          `git push ${context.repoConfig.getRemote()}`,
-          `--force-with-lease ${branch.name} 2>&1`,
-          ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
-        ].join(' '),
-        options: {
-          printStdout: true,
-        },
-      },
-      (err) => {
-        logError(`Failed to push changes for ${branch.name} to remote.`);
-
-        logTip(
-          `There may be external commits on remote that were not overwritten with the attempted push.
-          \n Use 'git pull' to pull external changes and retry.`,
-          context
-        );
-        throw new ExitFailedError(err.stderr.toString());
-      }
-    )
-      .toString()
-      .trim();
-
-    if (!output.includes('Everything up-to-date')) {
-      branchesPushedToRemote.push(branch);
-    }
-  });
-
-  return branchesPushedToRemote;
 }
 
 const SUCCESS_RESPONSE_CODE = 200;
