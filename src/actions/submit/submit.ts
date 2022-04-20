@@ -214,8 +214,8 @@ async function getValidBranchesToSubmit(
   );
 
   const result =
-    (await processBranchesInInvalidState(closedBranches, mergedBranches)) ===
-      'ABORT' ||
+    processMergedBranches(mergedBranches) === 'ABORT' ||
+    processClosedBranches(closedBranches) === 'ABORT' ||
     (await detectEmptyBranches(submittableBranches, context)) === 'ABORT'
       ? 'ABORT'
       : 'SUCCESS';
@@ -223,60 +223,48 @@ async function getValidBranchesToSubmit(
   return { result, submittableBranches };
 }
 
-async function processBranchesInInvalidState(
-  closedBranches: Branch[],
-  mergedBranches: Branch[]
-): Promise<'SUCCESS' | 'ABORT'> {
-  if (closedBranches.length === 0 && mergedBranches.length === 0) {
+function processMergedBranches(mergedBranches: Branch[]): 'SUCCESS' | 'ABORT' {
+  if (mergedBranches.length === 0) {
     return 'SUCCESS';
   }
 
-  const hasMultipleBranches = closedBranches.length + mergedBranches.length > 1;
+  const hasMultipleBranches = mergedBranches.length > 1;
 
-  logWarn(
+  logError(
     `PR${hasMultipleBranches ? 's' : ''} for the following branch${
       hasMultipleBranches ? 'es have' : ' has'
-    } been closed or merged:`
+    } already been merged:`
   );
-  closedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (closed)`));
-  mergedBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)} (merged)`));
-  logWarn(`This can cause unexpected issues.`);
-  logNewline();
+  mergedBranches.forEach((b) => logError(`▸ ${chalk.reset(b.name)}`));
+  logError(
+    `If this is expected, you can use 'gt repo sync' to delete ${
+      hasMultipleBranches ? 'these branches' : 'this branch'
+    } locally and restack dependencies.`
+  );
 
-  if (!execStateConfig.interactive()) {
-    return 'ABORT';
+  return 'ABORT';
+}
+
+function processClosedBranches(closedBranches: Branch[]): 'SUCCESS' | 'ABORT' {
+  if (closedBranches.length === 0) {
+    return 'SUCCESS';
   }
 
-  const response = await prompts(
-    {
-      type: 'select',
-      name: 'closed_branches_options',
-      message: `How would you like to proceed?`,
-      choices: [
-        {
-          title: `Abort command and fix manually`,
-          value: 'fix_manually',
-        },
-        {
-          title: `Continue with closed branch${
-            hasMultipleBranches ? 'es' : ''
-          } (best effort)`,
-          value: 'continue_without_fix',
-        },
-      ],
-    },
-    {
-      onCancel: () => {
-        throw new KilledError();
-      },
-    }
-  );
-  logNewline();
+  const hasMultipleBranches = closedBranches.length > 1;
 
-  return response.closed_branches_options === 'continue_without_fix'
-    ? 'SUCCESS'
-    : 'ABORT';
-  //TODO (nehasri): Fix branches automatically in the else option and modify submittableBranches
+  logError(
+    `PR${hasMultipleBranches ? 's' : ''} for the following branch${
+      hasMultipleBranches ? 'es have' : ' has'
+    } been closed:`
+  );
+  closedBranches.forEach((b) => logError(`▸ ${chalk.reset(b.name)}`));
+  logError(
+    `To submit ${
+      hasMultipleBranches ? 'these branches' : 'this branch'
+    }, please reopen the PR remotely.`
+  );
+
+  return 'ABORT';
 }
 
 export async function detectEmptyBranches(
