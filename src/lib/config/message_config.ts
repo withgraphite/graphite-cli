@@ -23,7 +23,7 @@ export const messageConfigFactory = composeConfig({
       message: undefined,
     };
   },
-  helperFunctions: (data, update) => {
+  helperFunctions: () => {
     return {};
   },
   options: { removeIfEmpty: true },
