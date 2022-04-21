@@ -26,7 +26,9 @@ export function pushBranchesToRemote(
   return branches
     .map((branch) => {
       logInfo(
-        `Pushing ${branch.name} with force-with-lease (will not override external commits to remote)...`
+        `Pushing ${chalk.cyan(
+          branch.name
+        )} with --force-with-lease (will not override external commits to remote)...`
       );
 
       return gpExecSync(
@@ -40,7 +42,11 @@ export function pushBranchesToRemote(
             ...[execStateConfig.noVerify() ? ['--no-verify'] : []],
           ].join(' '),
           options: {
-            printStdout: true,
+            printStdout: (output) =>
+              output
+                .split('\n')
+                .filter((line) => !line.startsWith('remote:'))
+                .join('\n'),
           },
         },
         (err) => {
