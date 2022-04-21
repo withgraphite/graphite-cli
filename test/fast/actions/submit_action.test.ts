@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { execSync } from 'child_process';
 import { inferPRBody, inferPRTitle } from '../../../src/actions/submit';
-import { detectEmptyBranches } from '../../../src/actions/submit/submit';
+import { checkForEmptyBranches } from '../../../src/actions/submit/validate_branches';
 import { execStateConfig } from '../../../src/lib/config/exec_state_config';
 import { Branch } from '../../../src/wrapper-classes/branch';
 import { BasicScene } from '../../lib/scenes';
@@ -55,9 +55,7 @@ for (const scene of [new BasicScene()]) {
       execStateConfig._data.interactive = false;
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       const branch = await Branch.branchWithName('a', scene.context);
-      expect(await detectEmptyBranches([branch], scene.context)).to.equals(
-        'ABORT'
-      );
+      expect(await checkForEmptyBranches([branch], scene.context)).to.be.empty;
     });
 
     it('does not abort if the branch is not empty', async () => {
@@ -65,9 +63,9 @@ for (const scene of [new BasicScene()]) {
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       const branch = await Branch.branchWithName('a', scene.context);
-      expect(await detectEmptyBranches([branch], scene.context)).to.equals(
-        'SUCCESS'
-      );
+      expect(
+        (await checkForEmptyBranches([branch], scene.context))[0].name
+      ).to.equals('a');
     });
   });
 }
