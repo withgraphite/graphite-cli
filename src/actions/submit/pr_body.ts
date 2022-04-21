@@ -16,40 +16,40 @@ export async function getPRBody(
   },
   context: TContext
 ): Promise<string> {
-  const template = await getPRTemplate();
-  const inferredBodyFromCommit = inferPRBody(args.branch, context);
-  let body =
-    inferredBodyFromCommit !== null ? inferredBodyFromCommit : template;
-  const hasPRTemplate = body !== undefined;
-  if (args.editPRFieldsInline) {
-    const defaultEditor = await getDefaultEditorOrPrompt(context);
-    const response = await prompts(
-      {
-        type: 'select',
-        name: 'body',
-        message: 'Body',
-        choices: [
-          { title: `Edit Body (using ${defaultEditor})`, value: 'edit' },
-          {
-            title: `Skip${hasPRTemplate ? ` (just paste template)` : ''}`,
-            value: 'skip',
-          },
-        ],
-      },
-      {
-        onCancel: () => {
-          throw new KilledError();
-        },
-      }
-    );
-    if (response.body === 'edit') {
-      body = await editPRBody({
-        initial: body ?? '',
-        editor: defaultEditor,
-      });
-    }
+  const body =
+    inferPRBody(args.branch, context) ?? (await getPRTemplate()) ?? '';
+  if (!args.editPRFieldsInline) {
+    return body;
   }
-  return body ?? '';
+
+  const defaultEditor = await getDefaultEditorOrPrompt(context);
+  const response = await prompts(
+    {
+      type: 'select',
+      name: 'body',
+      message: 'Body',
+      choices: [
+        { title: `Edit Body (using ${defaultEditor})`, value: 'edit' },
+        {
+          title: `Skip${body ? ` (just paste template)` : ''}`,
+          value: 'skip',
+        },
+      ],
+    },
+    {
+      onCancel: () => {
+        throw new KilledError();
+      },
+    }
+  );
+  if (response.body === 'skip') {
+    return body;
+  }
+
+  return await editPRBody({
+    initial: body,
+    editor: defaultEditor,
+  });
 }
 
 async function editPRBody(args: {
@@ -64,19 +64,22 @@ async function editPRBody(args: {
   return contents;
 }
 
-export function inferPRBody(branch: Branch, context: TContext): string | null {
+export function inferPRBody(
+  branch: Branch,
+  context: TContext
+): string | undefined {
   const priorSubmitBody = branch.getPriorSubmitBody();
   if (priorSubmitBody !== undefined) {
     return priorSubmitBody;
   }
 
   // Only infer the title from the commit if the branch has just 1 commit.
-  const singleCommit = getSingleCommitOnBranch(branch, context);
-  const singleCommitBody =
-    singleCommit === null ? null : singleCommit.messageBody().trim();
+  const singleCommitBody = getSingleCommitOnBranch(branch, context)
+    ?.messageBody()
+    .trim();
 
-  if (singleCommitBody !== null && singleCommitBody.length > 0) {
+  if (singleCommitBody?.length) {
     return singleCommitBody;
   }
-  return null;
+  return undefined;
 }
