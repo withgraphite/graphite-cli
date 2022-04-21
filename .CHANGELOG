@@ -1,3 +1,13 @@
+# 0.17.10 2021-04-22
+
+- `sync` commands no longer allow pushing to branches associated with closed/merged PRs.
+- Rename `gt branch sync` to `gt branch pr-info` as its behavior is not aligned with the other `sync` commands.
+- Fix some output formatting for `sync` and `submit` commands.
+- Fix an issue where pr data could be overwritten on `submit`.
+- Decreased max branch name length slightly to support an upcoming feature.
+- Start tracking SHA of branch parent in metadata, a requirement for some upcoming features.
+- This version includes some initial changes to sync branch metadata with remote, gated by a hidden flag.
+
 # 0.17.9 2021-04-14
 
 - Flipped `gt log short` view to match other log commands and `up`/`down` naming convention. `↳` → `↱`!
