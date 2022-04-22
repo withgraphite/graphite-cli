@@ -9,6 +9,10 @@ export async function pushMetadata(
   branchesPushedToRemote: Branch[],
   context: TContext
 ): Promise<void> {
+  if (!context.userConfig.data.multiplayerEnabled) {
+    return;
+  }
+
   logInfo(chalk.blueBright(`➡️ [Step 5] Updating remote stack metadata...`));
 
   if (!branchesPushedToRemote.length) {
