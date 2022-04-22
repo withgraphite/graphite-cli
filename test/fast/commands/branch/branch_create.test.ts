@@ -53,7 +53,7 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand("branch create a -m 'a'");
 
       const branch = await Branch.branchWithName('a', scene.context);
-      branch.setPRInfo({
+      branch.upsertPRInfo({
         number: 1,
         base: 'main',
       });

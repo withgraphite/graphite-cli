@@ -58,7 +58,7 @@ async function syncHelper(
     await Promise.all(
       response.prs.map(async (pr) => {
         const branch = await Branch.branchWithName(pr.headRefName, context);
-        branch.setPRInfo({
+        branch.upsertPRInfo({
           number: pr.prNumber,
           base: pr.baseRefName,
           url: pr.url,
