@@ -52,47 +52,48 @@ export async function getPRInfoForBranches(
     )
   );
 
-  return await Promise.all(
-    args.branches
-      .map((branch) =>
-        getPRAction(
-          {
-            branch,
-            updateOnly: args.updateOnly,
-            draftToggle: args.draftToggle,
-            dryRun: args.dryRun,
-          },
-          context
-        )
+  const branchActions = args.branches
+    .map((branch) =>
+      getPRAction(
+        {
+          branch,
+          updateOnly: args.updateOnly,
+          draftToggle: args.draftToggle,
+          dryRun: args.dryRun,
+        },
+        context
       )
-      .filter((action): action is TPRSubmissionAction => action !== undefined)
-      .map(async (action) => {
-        return action.update
-          ? {
-              action: 'update' as const,
-              prNumber: action.prNumber,
-              draft: args.draftToggle,
-              head: action.branch.name,
-              headSha: action.branch.getCurrentRef(),
-              base: action.parent.name,
-              baseSha: action.branch.getParentBranchSha(),
+    )
+    .filter((action): action is TPRSubmissionAction => action !== undefined);
+
+  const submissionInfo = [];
+  for await (const action of branchActions) {
+    submissionInfo.push(
+      action.update
+        ? {
+            action: 'update' as const,
+            prNumber: action.prNumber,
+            draft: args.draftToggle,
+            head: action.branch.name,
+            headSha: action.branch.getCurrentRef(),
+            base: action.parent.name,
+            baseSha: action.branch.getParentBranchSha(),
+            branch: action.branch,
+          }
+        : await getPRCreationInfo(
+            {
               branch: action.branch,
-            }
-          : await getPRCreationInfo(
-              {
-                branch: action.branch,
-                parentBranchName: action.parent.name,
-                editPRFieldsInline: args.editPRFieldsInline,
-                draftToggle: args.draftToggle,
-                reviewers: args.reviewers,
-              },
-              context
-            );
-      })
-  ).then((info) => {
-    logNewline();
-    return info;
-  });
+              parentBranchName: action.parent.name,
+              editPRFieldsInline: args.editPRFieldsInline,
+              draftToggle: args.draftToggle,
+              reviewers: args.reviewers,
+            },
+            context
+          )
+    );
+  }
+  logNewline();
+  return submissionInfo;
 }
 
 function getPRAction(
