@@ -1,3 +1,7 @@
+# 0.17.11 2021-04-23
+
+- Fix an issue introduced in the previous version where the async calls to fill in PR info on `submit` would not be awaited serially, resulting in a poor user experience.
+
 # 0.17.10 2021-04-22
 
 - `sync` commands no longer allow pushing to branches associated with closed/merged PRs.
