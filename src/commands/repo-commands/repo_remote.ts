@@ -14,7 +14,7 @@ const args = {
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
-export const command = 'owner';
+export const command = 'remote';
 export const canonical = 'repo remote';
 export const description =
   "Specifies the remote that graphite pushes to/pulls from (defaults to 'origin')";
