@@ -38,6 +38,13 @@ export class GitRepo {
     );
   }
 
+  execGitCommand(command: string, opts?: { cwd?: string }): void {
+    execSync(`git ${command}`, {
+      stdio: process.env.DEBUG ? 'inherit' : 'ignore',
+      cwd: opts?.cwd || this.dir,
+    });
+  }
+
   execCliCommandAndGetOutput(command: string): string {
     return execSync(
       [
