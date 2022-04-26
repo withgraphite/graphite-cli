@@ -28,8 +28,13 @@ export class CloneScene extends AbstractScene {
       `${this.dir}/.git/.graphite_repo_config`,
       JSON.stringify({ trunk: 'main' }, null, 2)
     );
+    fs.writeFileSync(
+      `${this.dir}/.git/.graphite_user_config`,
+      JSON.stringify({ multiplayerEnabled: true }, null, 2)
+    );
+
     process.chdir(this.dir);
-    this.context = initContext();
+    this.context = initContext(`${this.dir}/.git/.graphite_user_config`);
   }
 
   public cleanup(): void {
