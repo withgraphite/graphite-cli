@@ -574,7 +574,7 @@ export class Branch {
 
     const commits = gpExecSync(
       {
-        command: `git rev-list ${parent}..${this.name}`,
+        command: `git rev-list ${parent}..${this.name} --`,
       },
       (_) => {
         // just soft-fail if we can't find the commits
