@@ -1,8 +1,8 @@
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
+import { USER_CONFIG_OVERRIDE_ENV } from '../context/context';
 import { rebaseInProgress, unstagedChanges } from './';
-import { USER_CONFIG_OVERRIDE_ENV } from './../context/context';
 
 const TEXT_FILE_NAME = 'test.txt';
 export class GitRepo {

@@ -16,11 +16,13 @@ export type TContext = {
   >;
 };
 
-export function initContext(): TContext {
+export function initContext(userConfigOverride?: string): TContext {
   return {
     repoConfig: repoConfigFactory.load(),
     surveyConfig: surveyConfigFactory.load(),
-    userConfig: userConfigFactory.load(process.env[USER_CONFIG_OVERRIDE_ENV]),
+    userConfig: userConfigFactory.load(
+      userConfigOverride ?? process.env[USER_CONFIG_OVERRIDE_ENV]
+    ),
     messageConfig: messageConfigFactory.load(),
     mergeConflictCallstackConfig:
       mergeConflictCallstackConfigFactory.loadIfExists(),
