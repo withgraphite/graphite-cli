@@ -15,16 +15,7 @@ export abstract class AbstractScene {
     this.tmpDir = tmp.dirSync();
     this.dir = this.tmpDir.name;
     this.repo = new GitRepo(this.dir);
-    fs.writeFileSync(
-      `${this.dir}/.git/.graphite_repo_config`,
-      JSON.stringify({ trunk: 'main' }, null, 2)
-    );
-    fs.writeFileSync(
-      `${this.dir}/.git/.graphite_user_config`,
-      JSON.stringify({}, null, 2)
-    );
-    process.chdir(this.dir);
-    this.context = initContext();
+    this.context = initContext(`${this.dir}/.git/.graphite_user_config`);
   }
 
   abstract toString(): string;
@@ -42,7 +33,7 @@ export abstract class AbstractScene {
       JSON.stringify({}, null, 2)
     );
     process.chdir(this.dir);
-    this.context = initContext();
+    this.context = initContext(`${this.dir}/.git/.graphite_user_config`);
   }
 
   public cleanup(): void {
