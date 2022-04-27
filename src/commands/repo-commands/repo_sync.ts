@@ -44,6 +44,12 @@ const args = {
     type: 'boolean',
     alias: 's',
   },
+  'prune-remote-metadata': {
+    describe: `Prune branch metadata on remote not corresponding to a branch.`,
+    demandOption: false,
+    default: true,
+    type: 'boolean',
+  },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
@@ -63,6 +69,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         delete: argv.delete,
         showDeleteProgress: argv['show-delete-progress'],
         fixDanglingBranches: argv['show-dangling'],
+        pruneRemoteMetadata: argv['prune-remote-metadata'],
       },
       context
     );
