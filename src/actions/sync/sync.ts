@@ -11,10 +11,12 @@ import {
 import { Branch } from '../../wrapper-classes/branch';
 import { deleteMergedBranches } from '../clean_branches';
 import { fixDanglingBranches } from '../fix_dangling_branches';
+import { mergeDownstack } from './merge_downstack';
 import { pruneRemoteBranchMetadata } from './prune_remote_branch_metadata';
 import { pull } from './pull';
 import { resubmitBranchesWithNewBases } from './resubmit_branches_with_new_bases';
 
+type TSyncScope = { type: 'DOWNSTACK'; branchName: string } | { type: 'REPO' };
 export async function syncAction(
   opts: {
     pull: boolean;
@@ -25,6 +27,7 @@ export async function syncAction(
     fixDanglingBranches: boolean;
     pruneRemoteMetadata: boolean;
   },
+  scope: TSyncScope,
   context: TContext
 ): Promise<void> {
   if (trackedUncommittedChanges()) {
@@ -38,6 +41,10 @@ export async function syncAction(
 
     if (opts.pruneRemoteMetadata) {
       await pruneRemoteBranchMetadata(context, opts.force);
+    }
+
+    if (scope.type === 'DOWNSTACK') {
+      mergeDownstack(scope.branchName, context);
     }
   }
 

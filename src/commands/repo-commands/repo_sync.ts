@@ -71,6 +71,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         fixDanglingBranches: argv['show-dangling'],
         pruneRemoteMetadata: argv['prune-remote-metadata'],
       },
+      { type: 'REPO' },
       context
     );
   });

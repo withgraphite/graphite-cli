@@ -219,6 +219,51 @@ export class Branch {
     return true;
   }
 
+  public static existsOnRemote(branchName: string, remote: string): boolean {
+    try {
+      execSync(`git show-ref --quiet refs/remotes/${remote}/${branchName}`, {
+        stdio: 'ignore',
+      });
+    } catch {
+      return false;
+    }
+    return true;
+  }
+
+  public static metaExistsOnRemote(
+    branchName: string,
+    remote: string
+  ): boolean {
+    try {
+      execSync(
+        `git show-ref --quiet refs/${remote}-branch-metadata/${branchName}`,
+        {
+          stdio: 'ignore',
+        }
+      );
+    } catch {
+      return false;
+    }
+    return true;
+  }
+
+  public static getParentFromRemote(
+    branchName: string,
+    remote: string
+  ): string | undefined {
+    return MetadataRef.readRemote(remote, branchName)?.parentBranchName;
+  }
+
+  public static copyFromRemote(branchName: string, remote: string): void {
+    execSync(
+      `git update-ref refs/heads/${branchName} $(git show-ref refs/remotes/${remote}/${branchName} -s)`,
+      {
+        stdio: 'ignore',
+      }
+    );
+    MetadataRef.copyMetadataRefFromRemoteTracking(remote, branchName);
+  }
+
   private getMeta(): TMeta | undefined {
     return MetadataRef.getMeta(this.name);
   }
