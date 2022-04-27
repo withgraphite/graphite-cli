@@ -127,6 +127,16 @@ export class GitRepo {
       .trim();
   }
 
+  getRef(refName: string): string | undefined {
+    try {
+      return execSync(`git -C "${this.dir}" show-ref -s ${refName}`)
+        .toString()
+        .trim();
+    } catch {
+      return undefined;
+    }
+  }
+
   listCurrentBranchCommitMessages(): string[] {
     return execSync(`git -C "${this.dir}" log --oneline  --format=%B`)
       .toString()
