@@ -6,6 +6,7 @@ import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import {
   checkoutBranch,
   getTrunk,
+  logInfo,
   trackedUncommittedChanges,
 } from '../../lib/utils';
 import { Branch } from '../../wrapper-classes/branch';
@@ -43,8 +44,12 @@ export async function syncAction(
       await pruneRemoteBranchMetadata(context, opts.force);
     }
 
-    if (scope.type === 'DOWNSTACK') {
-      mergeDownstack(scope.branchName, context);
+    if (
+      scope.type === 'DOWNSTACK' &&
+      (await mergeDownstack(scope.branchName, context)) === 'ABORT'
+    ) {
+      logInfo('Aborting...');
+      return;
     }
   }
 

@@ -4,11 +4,13 @@ import { pushMetadata } from '../../../src/actions/submit/push_metadata';
 import { mergeDownstack } from '../../../src/actions/sync/merge_downstack';
 import { pruneRemoteBranchMetadata } from '../../../src/actions/sync/prune_remote_branch_metadata';
 import { pull } from '../../../src/actions/sync/pull';
+import { execStateConfig } from '../../../src/lib/config/exec_state_config';
 import { Branch } from '../../../src/wrapper-classes/branch';
 import { CloneScene } from '../../lib/scenes/clone_scene';
 import { configureTest } from '../../lib/utils';
 
 for (const scene of [new CloneScene()]) {
+  // eslint-disable-next-line max-lines-per-function
   describe('handle remote actions properly (sync/submit)', function () {
     configureTest(this, scene);
 
@@ -95,7 +97,7 @@ for (const scene of [new CloneScene()]) {
         scene.originRepo.getRef('refs/branch-metadata/2')
       );
 
-      mergeDownstack('2', scene.context);
+      await mergeDownstack('2', scene.context);
 
       expect(scene.repo.getRef('refs/heads/1')).to.equal(
         scene.originRepo.getRef('refs/heads/1')
@@ -112,7 +114,7 @@ for (const scene of [new CloneScene()]) {
       );
     });
 
-    it('fails to sync a branch with a local copy', async () => {
+    it("doesn't sync a branch with a local copy", async () => {
       scene.originRepo.createChange('1');
       scene.originRepo.execCliCommand(`branch create 1 -am "1"`);
 
@@ -122,7 +124,11 @@ for (const scene of [new CloneScene()]) {
       scene.repo.execCliCommand(`branch checkout main`);
       pull(scene.context, scene.repo.currentBranchName());
 
-      expect(() => mergeDownstack('1', scene.context)).to.throw();
+      execStateConfig._data.interactive = false;
+      await mergeDownstack('1', scene.context);
+      expect(scene.repo.getRef('refs/heads/1')).to.not.equal(
+        scene.originRepo.getRef('refs/heads/1')
+      );
     });
   });
 }
