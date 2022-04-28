@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from 'src/lib/context/context';
+import { execStateConfig } from '../../lib/config/exec_state_config';
 import { KilledError } from '../../lib/errors';
 import { gpExecSync, logInfo, logNewline } from '../../lib/utils';
 
@@ -52,21 +53,22 @@ export async function pruneRemoteBranchMetadata(
 
   if (
     !force &&
-    !(
-      await prompts(
-        {
-          type: 'confirm',
-          name: 'value',
-          message: `Would you like to delete the unused refs from ${remote}?`,
-          initial: true,
-        },
-        {
-          onCancel: () => {
-            throw new KilledError();
+    (!execStateConfig.interactive() ||
+      !(
+        await prompts(
+          {
+            type: 'confirm',
+            name: 'value',
+            message: `Would you like to delete the unused refs from ${remote}?`,
+            initial: true,
           },
-        }
-      )
-    ).value
+          {
+            onCancel: () => {
+              throw new KilledError();
+            },
+          }
+        )
+      ).value)
   ) {
     return;
   }

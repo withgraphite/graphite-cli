@@ -2,6 +2,7 @@ import { default as chalk } from 'chalk';
 import { execSync } from 'child_process';
 import prompts from 'prompts';
 import { cache } from '../lib/config/cache';
+import { execStateConfig } from '../lib/config/exec_state_config';
 import {
   TDeleteBranchesStackFrame,
   TMergeConflictCallstack,
@@ -193,6 +194,8 @@ async function shouldDeleteBranch(
 
   if (args.force) {
     return true;
+  } else if (!execStateConfig.interactive()) {
+    return false;
   }
 
   const githubMergedBase =
