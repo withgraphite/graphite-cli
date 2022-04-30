@@ -17,16 +17,13 @@ export class Stack {
   }
 
   public toPromptChoices(indent = 0): { title: string; value: string }[] {
-    let choices = [
-      {
-        title: `${'  '.repeat(indent)}↳ (${this.source.branch.name})`,
-        value: this.source.branch.name,
-      },
-    ];
-    this.source.children.forEach((c) => {
-      choices = choices.concat(new Stack(c).toPromptChoices(indent + 1));
-    });
-    return choices;
+    const currentChoice = {
+      title: `${'  '.repeat(indent)}↱ (${this.source.branch.name})`,
+      value: this.source.branch.name,
+    };
+    return this.source.children
+      .map((c) => new Stack(c).toPromptChoices(indent + 1))
+      .reduceRight((acc, arr) => arr.concat(acc), [currentChoice]);
   }
 
   public toString(): string {
