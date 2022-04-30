@@ -1,10 +1,9 @@
 import chalk from 'chalk';
-import { execSync } from 'child_process';
 import prompts from 'prompts';
 import { TContext } from '../lib/context/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { logInfo } from '../lib/utils';
+import { checkoutBranch, logInfo } from '../lib/utils';
 import { Branch } from '../wrapper-classes/branch';
 
 export enum TraversalDirection {
@@ -110,48 +109,14 @@ export async function switchBranchAction(
   context: TContext
 ): Promise<void> {
   const currentBranch = currentBranchPrecondition(context);
-  let nextBranch;
-  switch (direction) {
-    case TraversalDirection.Bottom: {
-      nextBranch = getDownstackBranch(
-        currentBranch,
-        TraversalDirection.Bottom,
-        context
-      );
-      break;
-    }
-    case TraversalDirection.Down: {
-      nextBranch = getDownstackBranch(
-        currentBranch,
-        TraversalDirection.Down,
-        context,
-        opts.numSteps
-      );
-      break;
-    }
-    case TraversalDirection.Top: {
-      nextBranch = await getUpstackBranch(
-        currentBranch,
-        opts.interactive,
-        TraversalDirection.Top,
-        context
-      );
-      break;
-    }
-    case TraversalDirection.Up: {
-      nextBranch = await getUpstackBranch(
-        currentBranch,
-        opts.interactive,
-        TraversalDirection.Up,
-        context,
-        opts.numSteps
-      );
-      break;
-    }
-  }
+  const nextBranch = await getNextBranch(
+    direction,
+    currentBranch,
+    context,
+    opts
+  );
   if (nextBranch && nextBranch != currentBranch.name) {
-    execSync(`git checkout "${nextBranch}"`, { stdio: 'ignore' });
-    logInfo(`Switched to ${nextBranch}`);
+    checkoutBranch(nextBranch);
   } else {
     logInfo(
       `Already at the ${
@@ -161,5 +126,47 @@ export async function switchBranchAction(
           : 'top most'
       } branch in the stack. Exiting.`
     );
+  }
+}
+
+async function getNextBranch(
+  direction: TraversalDirection,
+  currentBranch: Branch,
+  context: TContext,
+  opts: { numSteps?: number | undefined; interactive: boolean }
+) {
+  switch (direction) {
+    case TraversalDirection.Bottom: {
+      return getDownstackBranch(
+        currentBranch,
+        TraversalDirection.Bottom,
+        context
+      );
+    }
+    case TraversalDirection.Down: {
+      return getDownstackBranch(
+        currentBranch,
+        TraversalDirection.Down,
+        context,
+        opts.numSteps
+      );
+    }
+    case TraversalDirection.Top: {
+      return await getUpstackBranch(
+        currentBranch,
+        opts.interactive,
+        TraversalDirection.Top,
+        context
+      );
+    }
+    case TraversalDirection.Up: {
+      return await getUpstackBranch(
+        currentBranch,
+        opts.interactive,
+        TraversalDirection.Up,
+        context,
+        opts.numSteps
+      );
+    }
   }
 }

@@ -1,7 +1,7 @@
 import yargs from 'yargs';
-import { interactiveCheckout } from '../../actions/interactive_checkout';
+import { interactiveBranchSelection } from '../../actions/interactive_branch_selection';
 import { profile } from '../../lib/telemetry';
-import { gpExecSync } from '../../lib/utils';
+import { checkoutBranch } from '../../lib/utils';
 
 const args = {
   branch: {
@@ -21,10 +21,7 @@ export const builder = args;
 
 export const handler = async (args: argsT): Promise<void> => {
   return profile(args, canonical, async (context) => {
-    if (args.branch) {
-      gpExecSync({ command: `git checkout ${args.branch}` });
-    } else {
-      await interactiveCheckout(context);
-    }
+    const branch = args.branch ?? (await interactiveBranchSelection(context));
+    checkoutBranch(branch);
   });
 };

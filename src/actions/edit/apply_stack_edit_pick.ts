@@ -9,7 +9,7 @@ export async function applyStackEditPick(
   remainingEdits: TStackEdit[],
   context: TContext
 ): Promise<void> {
-  checkoutBranch(stackEdit.branchName);
+  checkoutBranch(stackEdit.branchName, { quiet: true });
   await stackOnto(
     {
       currentBranch: new Branch(stackEdit.branchName),

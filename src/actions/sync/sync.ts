@@ -31,7 +31,7 @@ export async function syncAction(
     throw new PreconditionsFailedError('Cannot sync with uncommitted changes');
   }
   const oldBranchName = currentBranchPrecondition(context).name;
-  checkoutBranch(getTrunk(context).name);
+  checkoutBranch(getTrunk(context).name, { quiet: true });
 
   if (opts.pull) {
     pull(context, oldBranchName);
@@ -91,7 +91,8 @@ export async function repoSyncDeleteMergedBranchesContinuation(
   checkoutBranch(
     Branch.exists(frame.oldBranchName)
       ? frame.oldBranchName
-      : getTrunk(context).name
+      : getTrunk(context).name,
+    { quiet: true }
   );
 }
 

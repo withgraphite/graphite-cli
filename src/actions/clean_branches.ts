@@ -134,7 +134,7 @@ export async function deleteMergedBranches(
       // This means that we may need to rebase it - if the branch's parent is
       // going to be deleted.
       if (parentName !== undefined && parentName in branchesToDelete) {
-        checkoutBranch(branch.name);
+        checkoutBranch(branch.name, { quiet: true });
         logInfo(`upstacking (${branch.name}) onto (${getTrunk(context).name})`);
         await currentBranchOntoAction(
           {
@@ -150,7 +150,7 @@ export async function deleteMergedBranches(
       }
     }
 
-    checkoutBranch(getTrunk(context).name);
+    checkoutBranch(getTrunk(context).name, { quiet: true });
 
     // With either of the paths above, we may have unblocked a branch that can
     // be deleted immediately. We recursively check whether we can delete a

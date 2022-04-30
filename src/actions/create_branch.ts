@@ -45,7 +45,7 @@ export async function createBranchAction(
     message: opts.commitMessage,
     rollbackOnError: () => {
       // Commit failed, usually due to precommit hooks. Rollback the branch.
-      checkoutBranch(parentBranch.name);
+      checkoutBranch(parentBranch.name, { quiet: true });
       gpExecSync({
         command: `git branch -d ${branchName}`,
         options: { stdio: 'ignore' },
