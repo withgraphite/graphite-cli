@@ -12,9 +12,6 @@ for (const scene of allScenes) {
 
       scene.repo.execCliCommand(`commit amend -m "3" -q`);
       expectCommits(scene.repo, '3, 1');
-
-      scene.repo.execCliCommand(`commit amend --no-edit -q`);
-      expectCommits(scene.repo, '3, 1');
     });
 
     it('Can amend if there are no staged changes', () => {
