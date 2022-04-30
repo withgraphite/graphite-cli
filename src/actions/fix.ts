@@ -22,8 +22,10 @@ import {
   gpExecSync,
   logDebug,
   logInfo,
+  logWarn,
   rebaseInProgress,
 } from '../lib/utils';
+import { indentMultilineString } from '../lib/utils/indent_multiline_string';
 import {
   GitStackBuilder,
   MetaStackBuilder,
@@ -32,45 +34,58 @@ import {
 } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 
+// Should be called whenever we change the tip of a branch
+export async function rebaseUpstack(context: TContext): Promise<void> {
+  try {
+    await fixAction(
+      {
+        action: 'rebase',
+        mergeConflictCallstack: [],
+        scope: 'upstack',
+      },
+      context
+    );
+  } catch {
+    logWarn(
+      'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix --rebase`'
+    );
+  }
+}
+
 async function promptStacks(opts: {
   gitStack: Stack;
   metaStack: Stack;
 }): Promise<'regen' | 'rebase'> {
-  const response = await prompts({
-    type: 'select',
-    name: 'value',
-    message: `Rebase branches or regenerate stacks metadata?`,
-    choices: ['rebase', 'regen'].map(
-      (r) => {
-        return {
+  const response = await prompts(
+    {
+      type: 'select',
+      name: 'value',
+      message: `Rebase branches or regenerate stacks metadata?`,
+      choices: [
+        {
           title:
-            r === 'rebase'
-              ? `rebase branches, using Graphite stacks as truth (${chalk.green(
-                  'common choice'
-                )})\n` +
-                opts.metaStack
-                  .toString()
-                  .split('\n')
-                  .map((l) => '    ' + l)
-                  .join('\n') +
-                '\n'
-              : `regen stack metadata, using Git commit tree as truth\n` +
-                opts.gitStack
-                  .toString()
-                  .split('\n')
-                  .map((l) => '    ' + l)
-                  .join('\n') +
-                '\n',
-          value: r,
-        };
-      },
-      {
-        onCancel: () => {
-          throw new KilledError();
+            `rebase branches, using Graphite stacks as truth (${chalk.green(
+              'common choice'
+            )})\n` +
+            indentMultilineString(opts.metaStack.toString(), 4) +
+            '\n',
+          value: 'rebase',
         },
-      }
-    ),
-  });
+        {
+          title:
+            `regen stack metadata, using Git commit tree as truth\n` +
+            indentMultilineString(opts.gitStack.toString(), 4) +
+            +'\n',
+          value: 'regen',
+        },
+      ],
+    },
+    {
+      onCancel: () => {
+        throw new KilledError();
+      },
+    }
+  );
 
   if (!response.value) {
     throw new ExitCancelledError('No changes made');
@@ -112,7 +127,7 @@ export async function fixAction(
         }).fullStackFromBranch(currentBranch, context)
       : new GitStackBuilder({
           useMemoizedResults: true,
-        }).fullStackFromBranch(currentBranch, context);
+        }).upstackInclusiveFromBranchWithParents(currentBranch, context);
   logDebug(`Found full git ${opts.scope}`);
   logDebug(gitStack.toString());
 

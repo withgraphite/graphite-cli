@@ -1,13 +1,9 @@
 import { TContext } from '../lib/context/context';
-import {
-  ensureSomeStagedChangesPrecondition,
-  uncommittedTrackedChangesPrecondition,
-} from '../lib/preconditions';
-import { logWarn } from '../lib/utils';
+import { ensureSomeStagedChangesPrecondition } from '../lib/preconditions';
 import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';
 import { Branch } from '../wrapper-classes/branch';
-import { fixAction } from './fix';
+import { rebaseUpstack } from './fix';
 
 export async function commitAmendAction(
   opts: {
@@ -35,20 +31,5 @@ export async function commitAmendAction(
 
   commit({ amend: true, noEdit: opts.noEdit, message: opts.message });
 
-  // Only restack if working tree is now clean.
-  try {
-    uncommittedTrackedChangesPrecondition();
-    await fixAction(
-      {
-        action: 'rebase',
-        mergeConflictCallstack: [],
-        scope: 'upstack',
-      },
-      context
-    );
-  } catch {
-    logWarn(
-      'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix --rebase`'
-    );
-  }
+  await rebaseUpstack(context);
 }

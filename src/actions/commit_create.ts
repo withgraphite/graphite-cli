@@ -1,12 +1,8 @@
 import { TContext } from '../lib/context/context';
-import {
-  ensureSomeStagedChangesPrecondition,
-  uncommittedTrackedChangesPrecondition,
-} from '../lib/preconditions';
-import { logWarn } from '../lib/utils';
+import { ensureSomeStagedChangesPrecondition } from '../lib/preconditions';
 import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';
-import { fixAction } from './fix';
+import { rebaseUpstack } from './fix';
 
 export async function commitCreateAction(
   opts: {
@@ -23,19 +19,5 @@ export async function commitCreateAction(
 
   commit({ message: opts.message });
 
-  try {
-    uncommittedTrackedChangesPrecondition();
-    await fixAction(
-      {
-        action: 'rebase',
-        mergeConflictCallstack: [],
-        scope: 'upstack',
-      },
-      context
-    );
-  } catch {
-    logWarn(
-      'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix --rebase`'
-    );
-  }
+  await rebaseUpstack(context);
 }
