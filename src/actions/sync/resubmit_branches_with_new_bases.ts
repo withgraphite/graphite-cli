@@ -70,6 +70,7 @@ export async function resubmitBranchesWithNewBases(
         updateOnly: false,
         branchesToSubmit: needsResubmission,
         reviewers: false,
+        confirm: false,
       },
       context
     );

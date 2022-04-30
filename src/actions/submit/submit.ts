@@ -1,8 +1,10 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import * as t from '@withgraphite/retype';
 import chalk from 'chalk';
+import prompts from 'prompts';
 import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context/context';
+import { KilledError } from '../../lib/errors';
 import { cliAuthPrecondition } from '../../lib/preconditions';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
 import { logInfo, logNewline } from '../../lib/utils';
@@ -30,6 +32,7 @@ export async function submitAction(
     updateOnly: boolean;
     branchesToSubmit?: Branch[];
     reviewers: boolean;
+    confirm: boolean;
   },
   context: TContext
 ): Promise<void> {
@@ -82,8 +85,7 @@ export async function submitAction(
     context
   );
 
-  if (args.dryRun) {
-    logInfo(chalk.blueBright('✅ Dry Run complete.'));
+  if (await shouldAbort(args.dryRun, args.confirm)) {
     return;
   }
 
@@ -109,4 +111,39 @@ export async function submitAction(
   if (survey) {
     await showSurvey(survey, context);
   }
+}
+
+async function shouldAbort(
+  dryRun: boolean,
+  confirm: boolean
+): Promise<boolean> {
+  if (dryRun) {
+    logInfo(chalk.blueBright('✅ Dry run complete.'));
+    return true;
+  }
+
+  if (
+    execStateConfig.interactive() &&
+    confirm &&
+    !(
+      await prompts(
+        {
+          type: 'confirm',
+          name: 'value',
+          message: 'Continue with this submit operation?',
+          initial: true,
+        },
+        {
+          onCancel: () => {
+            throw new KilledError();
+          },
+        }
+      )
+    ).value
+  ) {
+    logInfo(chalk.blueBright('🛑 Aborted submit.'));
+    return true;
+  }
+
+  return false;
 }

@@ -17,6 +17,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         dryRun: argv['dry-run'],
         updateOnly: argv['update-only'],
         reviewers: argv.reviewers,
+        confirm: argv.confirm,
       },
       context
     );
