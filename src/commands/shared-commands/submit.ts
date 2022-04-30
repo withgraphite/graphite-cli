@@ -21,7 +21,7 @@ export const command = 'submit';
 export const args = {
   draft: {
     describe:
-      'Creates new PRs in draft mode. If --no-interactive is true, this is automatically set to true.',
+      'If set, update draft status. If --no-interactive is true, new PRs will be created in draft mode.',
     type: 'boolean',
     alias: 'd',
   },
