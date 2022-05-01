@@ -52,15 +52,14 @@ for (const scene of allScenes) {
       scene.repo.createChange('2');
       scene.repo.execCliCommand("branch create a -m 'a'");
 
-      const branch = await Branch.branchWithName('a', scene.context);
+      const branch = Branch.branchWithName('a', scene.context);
       branch.upsertPRInfo({
         number: 1,
         base: 'main',
       });
 
       expect(
-        (await Branch.branchWithName('a', scene.context)).getPRInfo() !==
-          undefined
+        Branch.branchWithName('a', scene.context).getPRInfo() !== undefined
       ).to.be.true;
 
       scene.repo.checkoutBranch('main');
@@ -71,8 +70,7 @@ for (const scene of allScenes) {
 
       // Upon recreating the branch, the old PR info should be gone.
       expect(
-        (await Branch.branchWithName('a', scene.context)).getPRInfo() ===
-          undefined
+        Branch.branchWithName('a', scene.context).getPRInfo() === undefined
       ).to.be.true;
     });
   });

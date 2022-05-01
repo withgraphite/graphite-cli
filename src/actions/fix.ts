@@ -145,7 +145,7 @@ export async function fixAction(
   };
 
   if (action === 'regen') {
-    await regen(currentBranch, context, opts.scope);
+    regen(currentBranch, context, opts.scope);
   } else {
     // If we get interrupted and need to continue, first we'll do a stack fix
     // and then we'll continue the stack fix action.
@@ -158,7 +158,7 @@ export async function fixAction(
       ...opts.mergeConflictCallstack,
     ];
     for (const child of metaStack.source.children) {
-      await restackNode(
+      restackNode(
         {
           node: child,
           mergeConflictCallstack: mergeConflictCallstack,
@@ -168,22 +168,22 @@ export async function fixAction(
     }
   }
 
-  await stackFixActionContinuation(stackFixActionContinuationFrame);
+  stackFixActionContinuation(stackFixActionContinuationFrame);
 }
 
-export async function stackFixActionContinuation(
+export function stackFixActionContinuation(
   frame: TStackFixActionStackFrame
-): Promise<void> {
+): void {
   checkoutBranch(frame.checkoutBranchName, { quiet: true });
 }
 
-export async function restackBranch(
+export function restackBranch(
   args: {
     branch: Branch;
     mergeConflictCallstack: TMergeConflictCallstack;
   },
   context: TContext
-): Promise<void> {
+): void {
   const metaStack =
     new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
       args.branch,
@@ -204,7 +204,7 @@ export async function restackBranch(
     ...args.mergeConflictCallstack,
   ];
 
-  await restackNode(
+  restackNode(
     {
       node: metaStack.source,
       mergeConflictCallstack: mergeConflictCallstack,
@@ -212,16 +212,16 @@ export async function restackBranch(
     context
   );
 
-  await stackFixActionContinuation(stackFixActionContinuationFrame);
+  stackFixActionContinuation(stackFixActionContinuationFrame);
 }
 
-async function restackNode(
+function restackNode(
   args: {
     node: StackNode;
     mergeConflictCallstack: TMergeConflictCallstack;
   },
   context: TContext
-): Promise<void> {
+): void {
   const node = args.node;
 
   if (rebaseInProgress()) {
@@ -273,7 +273,7 @@ async function restackNode(
   }
 
   for (const child of node.children) {
-    await restackNode(
+    restackNode(
       {
         node: child,
         mergeConflictCallstack: args.mergeConflictCallstack,
@@ -283,11 +283,7 @@ async function restackNode(
   }
 }
 
-async function regen(
-  branch: Branch,
-  context: TContext,
-  scope: TFixScope
-): Promise<void> {
+function regen(branch: Branch, context: TContext, scope: TFixScope): void {
   const trunk = getTrunk(context);
   if (trunk.name == branch.name) {
     regenAllStacks(context);
@@ -301,7 +297,7 @@ async function regen(
           branch,
           context
         );
-  await recursiveRegen(gitStack.source, context);
+  recursiveRegen(gitStack.source, context);
 }
 
 function regenAllStacks(context: TContext): void {

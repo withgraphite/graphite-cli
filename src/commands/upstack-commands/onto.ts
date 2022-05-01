@@ -20,7 +20,7 @@ export const builder = args;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    await currentBranchOntoAction(
+    currentBranchOntoAction(
       {
         onto: argv.branch,
         mergeConflictCallstack: [],
