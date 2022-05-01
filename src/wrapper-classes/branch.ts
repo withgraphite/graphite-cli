@@ -312,9 +312,9 @@ export class Branch {
     this.writeMeta(meta);
   }
 
-  public setMetaPrevRef(prevRef: string): void {
+  public savePrevRef(): void {
     const meta: TMeta = this.getMeta() || {};
-    meta.prevRef = prevRef;
+    meta.prevRef = this.getCurrentRef();
     this.writeMeta(meta);
   }
 

@@ -253,7 +253,7 @@ async function restackNode(
       `Fixing (${chalk.green(node.branch.name)}) on (${parentBranch.name})`
     );
     checkoutBranch(node.branch.name, { quiet: true });
-    node.branch.setMetaPrevRef(node.branch.getCurrentRef());
+    node.branch.savePrevRef();
     gpExecSync(
       {
         command: `git rebase --onto ${parentBranch.name} ${mergeBase} ${node.branch.name}`,
