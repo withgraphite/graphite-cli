@@ -74,6 +74,7 @@ export async function createBranchAction(
       .filter((b) => b.name != branchName)
       .forEach((b) => {
         checkoutBranch(b.name, { quiet: true });
+        logInfo(`Stacking (${b.name}) onto (${branchName})...`);
         currentBranchOntoAction(
           {
             onto: branchName,
