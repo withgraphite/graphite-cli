@@ -1,8 +1,10 @@
 import { TMergeConflictCallstack } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context/context';
-import { PreconditionsFailedError } from '../../lib/errors';
-import { currentBranchPrecondition } from '../../lib/preconditions';
-import { checkoutBranch, trackedUncommittedChanges } from '../../lib/utils';
+import {
+  currentBranchPrecondition,
+  uncommittedTrackedChangesPrecondition,
+} from '../../lib/preconditions';
+import { checkoutBranch } from '../../lib/utils';
 import { stackOnto } from './stack_onto';
 
 export async function currentBranchOntoAction(
@@ -12,9 +14,7 @@ export async function currentBranchOntoAction(
   },
   context: TContext
 ): Promise<void> {
-  if (trackedUncommittedChanges()) {
-    throw new PreconditionsFailedError('Cannot fix with uncommitted changes');
-  }
+  uncommittedTrackedChangesPrecondition();
 
   const originalBranch = currentBranchPrecondition(context);
 

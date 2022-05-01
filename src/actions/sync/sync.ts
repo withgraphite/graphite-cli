@@ -1,14 +1,11 @@
 import { TRepoSyncStackFrame } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context/context';
-import { PreconditionsFailedError } from '../../lib/errors';
-import { currentBranchPrecondition } from '../../lib/preconditions';
-import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import {
-  checkoutBranch,
-  getTrunk,
-  logInfo,
-  trackedUncommittedChanges,
-} from '../../lib/utils';
+  currentBranchPrecondition,
+  uncommittedTrackedChangesPrecondition,
+} from '../../lib/preconditions';
+import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
+import { checkoutBranch, getTrunk, logInfo } from '../../lib/utils';
 import { Branch } from '../../wrapper-classes/branch';
 import { deleteMergedBranches } from '../clean_branches';
 import { fixDanglingBranches } from '../fix_dangling_branches';
@@ -16,7 +13,6 @@ import { mergeDownstack } from './merge_downstack';
 import { pruneRemoteBranchMetadata } from './prune_remote_branch_metadata';
 import { pull } from './pull';
 import { resubmitBranchesWithNewBases } from './resubmit_branches_with_new_bases';
-
 type TSyncScope = { type: 'DOWNSTACK'; branchName: string } | { type: 'REPO' };
 export async function syncAction(
   opts: {
@@ -31,9 +27,7 @@ export async function syncAction(
   scope: TSyncScope,
   context: TContext
 ): Promise<void> {
-  if (trackedUncommittedChanges()) {
-    throw new PreconditionsFailedError('Cannot sync with uncommitted changes');
-  }
+  uncommittedTrackedChangesPrecondition();
   const oldBranchName = currentBranchPrecondition(context).name;
   checkoutBranch(getTrunk(context).name, { quiet: true });
 
