@@ -7,7 +7,6 @@ import {
 } from '../lib/git-refs';
 import { getCommitterDate, getTrunk, gpExecSync, logDebug } from '../lib/utils';
 import { TContext } from './../lib/context/context';
-import { Commit } from './commit';
 import {
   MetadataRef,
   TBranchPRInfo,
@@ -466,22 +465,6 @@ export class Branch {
         opts: opts,
       },
       context
-    );
-  }
-
-  public head(): Commit {
-    return new Commit(execSync(`git rev-parse ${this.name}`).toString().trim());
-  }
-
-  public base(): Commit | undefined {
-    const parentBranchName = this.getMeta()?.parentBranchName;
-    if (!parentBranchName) {
-      return undefined;
-    }
-    return new Commit(
-      execSync(`git merge-base ${parentBranchName} ${this.name}`)
-        .toString()
-        .trim()
     );
   }
 
