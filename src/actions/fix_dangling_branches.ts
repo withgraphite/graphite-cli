@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
+import { execStateConfig } from '../lib/config/exec_state_config';
 import { KilledError } from '../lib/errors';
 import { getTrunk, logInfo, logNewline, logTip } from '../lib/utils';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
@@ -53,6 +54,11 @@ export async function fixDanglingBranches(
     if (opts.force) {
       fixStrategy = 'parent_trunk';
       logInfo(`Setting parent of ${branch.name} to ${trunk}.`);
+    } else if (!execStateConfig.interactive()) {
+      fixStrategy = 'no_fix';
+      logInfo(
+        `Skipping fix in non-interactive mode. Use '--force' to set parent to ${trunk}).`
+      );
     }
 
     if (fixStrategy === undefined) {
