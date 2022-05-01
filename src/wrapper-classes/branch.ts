@@ -302,13 +302,10 @@ export class Branch {
     this.writeMeta(meta);
   }
 
-  public setParentBranch(
-    parentBranchName: string,
-    parentBranchRevision: string
-  ): void {
+  public setParentBranch(parent: Branch): void {
     const meta: TMeta = this.getMeta() || {};
-    meta.parentBranchName = parentBranchName;
-    meta.parentBranchRevision = parentBranchRevision;
+    meta.parentBranchName = parent.name;
+    meta.parentBranchRevision = parent.getCurrentRef();
     this.writeMeta(meta);
   }
 
