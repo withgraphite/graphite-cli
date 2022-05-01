@@ -17,13 +17,10 @@ type promptOptionT = { title: string; value: string };
 
 async function promptBranches(choices: promptOptionT[]): Promise<void> {
   const currentBranch = Branch.getCurrentBranch();
-  let currentBranchIndex: undefined | number = undefined;
 
-  if (currentBranch) {
-    currentBranchIndex = choices
-      .map((c) => c.value)
-      .indexOf(currentBranch.name);
-  }
+  const currentBranchIndex = currentBranch
+    ? choices.map((c) => c.value).indexOf(currentBranch.name)
+    : undefined;
 
   const chosenBranch = (
     await prompts(
