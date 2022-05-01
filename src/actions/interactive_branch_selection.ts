@@ -6,22 +6,28 @@ import { MetaStackBuilder } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 
 export async function interactiveBranchSelection(
-  context: TContext
+  context: TContext,
+  opts: { message: string; omitCurrentUpstack?: boolean }
 ): Promise<string> {
+  const currentBranch = Branch.getCurrentBranch();
+
   const stack = new MetaStackBuilder().fullStackFromBranch(
     getTrunk(context),
     context
   );
-  return await promptBranches(stack.toPromptChoices());
-}
 
-type promptOptionT = { title: string; value: string };
+  const choices = stack.toPromptChoices(
+    opts?.omitCurrentUpstack ? currentBranch?.name : undefined
+  );
 
-async function promptBranches(choices: promptOptionT[]): Promise<string> {
-  const currentBranch = Branch.getCurrentBranch();
+  const initialBranchName = currentBranch
+    ? opts?.omitCurrentUpstack
+      ? currentBranch.getParentBranchName() ?? ''
+      : currentBranch.name
+    : undefined;
 
-  const currentBranchIndex = currentBranch
-    ? choices.map((c) => c.value).indexOf(currentBranch.name)
+  const initial = initialBranchName
+    ? choices.map((c) => c.value).indexOf(initialBranchName)
     : undefined;
 
   const chosenBranch = (
@@ -29,21 +35,17 @@ async function promptBranches(choices: promptOptionT[]): Promise<string> {
       {
         type: 'select',
         name: 'branch',
-        message: `Checkout a branch`,
-        choices: choices,
-        ...(currentBranchIndex ? { initial: currentBranchIndex } : {}),
+        message: opts.message,
+        choices,
+        initial,
       },
       {
         onCancel: () => {
-          return;
+          throw new ExitCancelledError('No branch selected');
         },
       }
     )
   ).branch;
-
-  if (!chosenBranch) {
-    throw new ExitCancelledError('No branch selected');
-  }
 
   return chosenBranch;
 }

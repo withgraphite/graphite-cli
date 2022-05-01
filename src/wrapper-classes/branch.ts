@@ -296,6 +296,11 @@ export class Branch {
     return meta.parentBranchRevision;
   }
 
+  public getParentBranchName(): string | undefined {
+    const meta: TMeta = this.getMeta() || {};
+    return meta.parentBranchName;
+  }
+
   public setParentBranchName(parentBranchName: string): void {
     const meta: TMeta = this.getMeta() || {};
     meta.parentBranchName = parentBranchName;
