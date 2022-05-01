@@ -7,18 +7,18 @@ import {
 import { checkoutBranch } from '../../lib/utils';
 import { stackOnto } from './stack_onto';
 
-export async function currentBranchOntoAction(
+export function currentBranchOntoAction(
   args: {
     onto: string;
     mergeConflictCallstack: TMergeConflictCallstack;
   },
   context: TContext
-): Promise<void> {
+): void {
   uncommittedTrackedChangesPrecondition();
 
   const originalBranch = currentBranchPrecondition(context);
 
-  await stackOnto(
+  stackOnto(
     {
       currentBranch: originalBranch,
       onto: args.onto,
