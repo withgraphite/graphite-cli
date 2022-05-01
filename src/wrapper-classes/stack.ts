@@ -10,11 +10,9 @@ export class Stack {
   }
 
   public branches(): Branch[] {
-    let branches = [this.source.branch];
-    this.source.children.forEach((c) => {
-      branches = branches.concat(new Stack(c).branches());
-    });
-    return branches;
+    return this.source.children
+      .map((c) => new Stack(c).branches())
+      .reduce((acc, arr) => acc.concat(arr), [this.source.branch]);
   }
 
   public toPromptChoices(indent = 0): { title: string; value: string }[] {

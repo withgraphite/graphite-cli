@@ -11,10 +11,8 @@ import { currentBranchPrecondition } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import { logError, logInfo, logNewline, logWarn } from '../../lib/utils';
 import { isEmptyBranch } from '../../lib/utils/is_empty_branch';
-import { MetaStackBuilder, Stack } from '../../wrapper-classes';
 import { Branch } from '../../wrapper-classes/branch';
-import { TScope } from '../scope';
-import { validateStack } from '../validate';
+import { validate } from '../validate';
 import { TSubmitScope } from './submit';
 
 export async function getValidBranchesToSubmit(
@@ -28,6 +26,7 @@ export async function getValidBranchesToSubmit(
   );
 
   const branchesToSubmit = getAllBranchesToSubmit(scope, context);
+  logNewline();
 
   await syncPRInfoForBranches(branchesToSubmit, context);
 
@@ -42,46 +41,13 @@ function getAllBranchesToSubmit(
   context: TContext
 ): Branch[] {
   if (scope === 'BRANCH') {
-    const currentBranch = currentBranchPrecondition(context);
-    return [currentBranch];
+    return [currentBranchPrecondition(context)];
   }
 
   try {
-    const stack = getStack(
-      {
-        currentBranch: currentBranchPrecondition(context),
-        scope: scope,
-      },
-      context
-    );
-    validateStack(scope, stack, context);
-    logNewline();
-    return stack.branches().filter((b) => !b.isTrunk(context));
+    return validate(scope, context);
   } catch {
     throw new ValidationFailedError(`Validation failed. Will not submit.`);
-  }
-}
-
-function getStack(
-  args: { currentBranch: Branch; scope: TScope },
-  context: TContext
-): Stack {
-  switch (args.scope) {
-    case 'UPSTACK':
-      return new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
-        args.currentBranch,
-        context
-      );
-    case 'DOWNSTACK':
-      return new MetaStackBuilder().downstackFromBranch(
-        args.currentBranch,
-        context
-      );
-    case 'FULLSTACK':
-      return new MetaStackBuilder().fullStackFromBranch(
-        args.currentBranch,
-        context
-      );
   }
 }
 
