@@ -18,10 +18,6 @@ function doChangesExist(cmd: string): boolean {
   );
 }
 
-export function uncommittedChanges(): boolean {
-  return doChangesExist(`git status -u --porcelain=v1 2>/dev/null | wc -l`); // Includes untracked and staged changes
-}
-
 export function unstagedChanges(): boolean {
   return doChangesExist(`git ls-files --others --exclude-standard | wc -l`); // untracked changes only
 }
