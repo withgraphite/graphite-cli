@@ -1,5 +1,8 @@
 import { TContext } from '../lib/context/context';
-import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
+import {
+  ensureSomeStagedChangesPrecondition,
+  uncommittedTrackedChangesPrecondition,
+} from '../lib/preconditions';
 import { logWarn } from '../lib/utils';
 import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';
@@ -16,6 +19,10 @@ export async function commitAmendAction(
 ): Promise<void> {
   if (opts.addAll) {
     addAll();
+  }
+
+  if (opts.noEdit) {
+    ensureSomeStagedChangesPrecondition(context);
   }
 
   // If we're checked out on a branch, we're going to perform a stack fix later.

@@ -10,15 +10,6 @@ import {
 } from '../utils';
 import { trackedUncommittedChanges } from '../utils/git_status_utils';
 
-function addAllAvailableTip(context: TContext): void {
-  if (unstagedChanges()) {
-    logTip(
-      'There are unstaged changes. Use -a option to stage all unstaged changes.',
-      context
-    );
-  }
-}
-
 function currentBranchPrecondition(context: TContext): Branch {
   const branch = Branch.getCurrentBranch();
   if (!branch) {
@@ -61,17 +52,19 @@ function uncommittedChangesPrecondition(): void {
   }
 }
 
-function ensureSomeStagedChangesPrecondition(
-  context: TContext,
-  addAllLogTipEnabled?: boolean
-): void {
-  if (!detectStagedChanges()) {
-    gpExecSync({ command: `git status`, options: { stdio: 'ignore' } });
-    if (addAllLogTipEnabled) {
-      addAllAvailableTip(context);
-    }
-    throw new PreconditionsFailedError(`Cannot run without staged changes.`);
+function ensureSomeStagedChangesPrecondition(context: TContext): void {
+  if (detectStagedChanges()) {
+    return;
   }
+
+  if (unstagedChanges()) {
+    logTip(
+      'There are unstaged changes. Use -a option to stage all unstaged changes.',
+      context
+    );
+  }
+
+  throw new PreconditionsFailedError(`Cannot run without staged changes.`);
 }
 
 function cliAuthPrecondition(context: TContext): string {
