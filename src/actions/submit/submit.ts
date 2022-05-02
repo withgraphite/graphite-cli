@@ -46,11 +46,17 @@ export async function submitAction(
   }
 
   if (!execStateConfig.interactive()) {
-    logInfo(
-      `Running in non-interactive mode. All new PRs will be created as draft and PR fields inline prompt will be silenced`
-    );
     args.editPRFieldsInline = false;
-    args.draftToggle = true;
+    args.reviewers = false;
+
+    logInfo(
+      `Running in non-interactive mode. Inline prompts to fill PR fields will be skipped${
+        args.draftToggle === undefined
+          ? ' and new PRs will be created in draft mode'
+          : ''
+      }.`
+    );
+    logNewline();
   }
 
   // Step 1: Validate
