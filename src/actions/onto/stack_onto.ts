@@ -39,7 +39,7 @@ export async function stackOnto(
     context
   );
   // Save the old ref from before rebasing so that children can find their bases.
-  opts.currentBranch.setMetaPrevRef(opts.currentBranch.getCurrentRef());
+  opts.currentBranch.savePrevRef();
 
   const stackOntoContinuationFrame = {
     op: 'STACK_ONTO_BASE_REBASE_CONTINUATION' as const,

@@ -26,7 +26,7 @@ export async function commitAmendAction(
   // the prev ref here.
   const currentBranch = Branch.getCurrentBranch();
   if (currentBranch !== null) {
-    currentBranch.setMetaPrevRef(currentBranch.getCurrentRef());
+    currentBranch.savePrevRef();
   }
 
   commit({ amend: true, noEdit: opts.noEdit, message: opts.message });
