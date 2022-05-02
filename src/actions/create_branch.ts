@@ -9,7 +9,9 @@ import {
 } from '../lib/utils';
 import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';
+import { MetaStackBuilder } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
+import { currentBranchOntoAction } from './onto/current_branch_onto';
 
 // 255 minus 21 (for 'refs/branch-metadata/')
 const MAX_BRANCH_NAME_BYTE_LENGTH = 234;
@@ -19,6 +21,7 @@ export async function createBranchAction(
     branchName?: string;
     commitMessage?: string;
     addAll?: boolean;
+    restack?: boolean;
   },
   context: TContext
 ): Promise<void> {
@@ -62,6 +65,24 @@ export async function createBranchAction(
     logInfo(
       'Since no changes were staged, an empty commit was added to track Graphite stack dependencies. If you wish to get rid of the empty commit you can amend, or squash when merging.'
     );
+  }
+
+  if (opts.restack) {
+    new MetaStackBuilder()
+      .upstackInclusiveFromBranchWithoutParents(parentBranch, context)
+      .source.children.map((node) => node.branch)
+      .filter((b) => b.name != branchName)
+      .forEach((b) => {
+        checkoutBranch(b.name, { quiet: true });
+        currentBranchOntoAction(
+          {
+            onto: branchName,
+            mergeConflictCallstack: [],
+          },
+          context
+        );
+      });
+    checkoutBranch(branchName, { quiet: true });
   }
 }
 
