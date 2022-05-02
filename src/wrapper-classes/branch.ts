@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { cache } from '../lib/config/cache';
 import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
 import {
   getBranchChildrenOrParentsFromGit,
@@ -20,8 +21,6 @@ type TBranchFilters = {
   maxBranches?: number;
   sort?: '-committerdate';
 };
-
-let memoizedMetaChildren: Record<string, Branch[]> | undefined;
 
 export class Branch {
   name: string;
@@ -112,11 +111,9 @@ export class Branch {
     return new Branch(parentName);
   }
 
-  public static clearMemoizedMetaChildren(): void {
-    memoizedMetaChildren = undefined;
-  }
-
-  private static calculateMemoizedMetaChildren(context: TContext): void {
+  private static calculateMemoizedMetaChildren(
+    context: TContext
+  ): Record<string, Branch[]> {
     logDebug(`Meta Children: initialize memoization | finding all branches...`);
     const metaChildren: Record<string, Branch[]> = {};
     const allBranches = Branch.allBranches(context, {
@@ -142,25 +139,29 @@ export class Branch {
     });
     logDebug(`Meta Children: initialize memoization | done`);
 
-    memoizedMetaChildren = metaChildren;
+    cache.setMetaChildren(metaChildren);
+    return metaChildren;
   }
 
   public getChildrenFromMeta(context: TContext): Branch[] {
     logDebug(`Meta Children (${this.name}): start`);
-    if (this.shouldUseMemoizedResults) {
-      if (memoizedMetaChildren === undefined) {
-        Branch.calculateMemoizedMetaChildren(context);
-      }
 
-      logDebug(`Meta Children (${this.name}): end (memoized)`);
-      return memoizedMetaChildren?.[this.name] ?? [];
+    if (!this.shouldUseMemoizedResults) {
+      const children = Branch.allBranches(context).filter(
+        (b) => MetadataRef.getMeta(b.name)?.parentBranchName === this.name
+      );
+      logDebug(`Meta Children (${this.name}): end`);
+      return children;
     }
 
-    const children = Branch.allBranches(context).filter(
-      (b) => MetadataRef.getMeta(b.name)?.parentBranchName === this.name
-    );
-    logDebug(`Meta Children (${this.name}): end`);
-    return children;
+    const memoizedMetaChildren = cache.getMetaChildren();
+    if (memoizedMetaChildren) {
+      logDebug(`Meta Children (${this.name}): end (memoized)`);
+      return memoizedMetaChildren[this.name] ?? [];
+    }
+
+    logDebug(`Meta Children (${this.name}): end (recalculated)`);
+    return Branch.calculateMemoizedMetaChildren(context)[this.name] ?? [];
   }
 
   public isUpstreamOf(commitRef: string, context: TContext): boolean {
