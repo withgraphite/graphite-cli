@@ -20,8 +20,35 @@ export function validate(scope: TScope, context: TContext): Branch[] {
     );
   }
 
+  // Stacks are valid, we can update parentRevision
+  // TODO: Remove after migrating validation to parentRevision
+  backfillParentShasOnValidatedStack(metaStack, context);
+
   logInfo(`Current stack is valid`);
-  return metaStack.branches().filter((b) => !b.isTrunk(context));
+  return metaStack
+    .branches()
+    .filter((b) => !b.isTrunk(context))
+    .map((b) => new Branch(b.name));
+}
+
+export function backfillParentShasOnValidatedStack(
+  stack: Stack,
+  context: TContext
+): void {
+  stack
+    .branches()
+    .map((b) => b.name)
+    .forEach((branchName) => {
+      const branch = Branch.branchWithName(branchName, context);
+      const parentBranch = branch.getParentFromMeta(context);
+      if (
+        parentBranch &&
+        branch.getParentBranchSha() !== parentBranch.getCurrentRef()
+      ) {
+        logDebug(`Updating parent revision of ${branch}`);
+        branch.setParentBranch(parentBranch);
+      }
+    });
 }
 
 export function getStacksForValidation(
