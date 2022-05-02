@@ -61,6 +61,18 @@ export class MetadataRef {
     });
   }
 
+  static copyMetadataRefFromRemoteTracking(
+    remote: string,
+    branchName: string
+  ): void {
+    execSync(
+      `git update-ref refs/branch-metadata/${branchName} $(git show-ref refs/${remote}-branch-metadata/${branchName} -s)`,
+      {
+        stdio: 'ignore',
+      }
+    );
+  }
+
   static copyMetadataRefToRemoteTracking(
     remote: string,
     branchName: string
@@ -71,6 +83,10 @@ export class MetadataRef {
         stdio: 'ignore',
       }
     );
+  }
+
+  static readRemote(remote: string, branchName: string): TMeta | undefined {
+    return MetadataRef.readImpl(`refs/${remote}-branch-metadata/${branchName}`);
   }
 
   public getPath(): string {
@@ -91,10 +107,12 @@ export class MetadataRef {
   }
 
   public read(): TMeta | undefined {
+    return MetadataRef.readImpl(`refs/branch-metadata/${this._branchName}`);
+  }
+
+  private static readImpl(ref: string): TMeta | undefined {
     try {
-      const metaString = execSync(
-        `git cat-file -p refs/branch-metadata/${this._branchName} 2> /dev/null`
-      )
+      const metaString = execSync(`git cat-file -p ${ref} 2> /dev/null`)
         .toString()
         .trim();
       if (metaString.length == 0) {
