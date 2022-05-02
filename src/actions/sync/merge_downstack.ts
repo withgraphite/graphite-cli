@@ -1,10 +1,15 @@
 import chalk from 'chalk';
+import prompts from 'prompts';
+import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context/context';
-import { ExitFailedError } from '../../lib/errors';
+import { ExitFailedError, KilledError } from '../../lib/errors';
 import { getTrunk, logInfo } from '../../lib/utils';
 import { Branch } from '../../wrapper-classes/branch';
 
-export function mergeDownstack(branchName: string, context: TContext): void {
+export async function mergeDownstack(
+  branchName: string,
+  context: TContext
+): Promise<'ABORT' | 'CONTINUE'> {
   const remote = context.repoConfig.getRemote();
   logInfo(`Syncing branch ${chalk.yellow(branchName)} from remote ${remote}:`);
 
@@ -14,20 +19,21 @@ export function mergeDownstack(branchName: string, context: TContext): void {
     logInfo(
       `${chalk.yellow(branchName)} depends on ${chalk.yellow(remoteParent)}...`
     );
-    mergeDownstack(remoteParent, context);
+    if ((await mergeDownstack(remoteParent, context)) === 'ABORT') {
+      return 'ABORT';
+    }
   }
 
-  if (Branch.exists(branchName)) {
-    throw new ExitFailedError(
-      'Syncing an existing branch not yet implemented.'
-    );
-  } else {
+  if (!Branch.exists(branchName)) {
     logInfo(
       `${chalk.yellow(branchName)} does not exist locally; no merge needed.`
     );
     Branch.copyFromRemote(branchName, remote);
     logInfo(`${chalk.green(branchName)} set to match remote.`);
+    return 'CONTINUE';
   }
+
+  return handleExistingBranch(branchName, remote);
 }
 
 function getRemoteParentOrThrow(branchName: string, remote: string): string {
@@ -61,4 +67,40 @@ function getRemoteParentOrThrow(branchName: string, remote: string): string {
     );
   }
   return remoteParent;
+}
+
+async function handleExistingBranch(
+  branchName: string,
+  remote: string
+): Promise<'ABORT' | 'CONTINUE'> {
+  logInfo(
+    `${chalk.yellow(
+      branchName
+    )} exists locally. Merging local state is not yet implemented.`
+  );
+
+  if (
+    !execStateConfig.interactive() ||
+    !(await prompts(
+      {
+        type: 'confirm',
+        name: 'value',
+        message: `Discard local changes to ${chalk.yellow(
+          branchName
+        )} and sync from ${remote}?`,
+        initial: false,
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    ))
+  ) {
+    return 'ABORT';
+  }
+
+  Branch.copyFromRemote(branchName, remote);
+  logInfo(`${chalk.green(branchName)} set to match remote.`);
+  return 'CONTINUE';
 }
