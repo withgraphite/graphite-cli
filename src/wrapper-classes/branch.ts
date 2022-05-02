@@ -287,6 +287,7 @@ export class Branch {
   public clearParentMetadata(): void {
     const meta: TMeta = this.getMeta() || {};
     delete meta.parentBranchName;
+    delete meta.parentBranchRevision;
     this.writeMeta(meta);
   }
 
