@@ -159,7 +159,7 @@ export async function fixAction(
 export async function stackFixActionContinuation(
   frame: TStackFixActionStackFrame
 ): Promise<void> {
-  checkoutBranch(frame.checkoutBranchName);
+  checkoutBranch(frame.checkoutBranchName, { quiet: true });
 }
 
 export async function restackBranch(
@@ -237,7 +237,7 @@ async function restackNode(
     logInfo(
       `Fixing (${chalk.green(node.branch.name)}) on (${parentBranch.name})`
     );
-    checkoutBranch(node.branch.name);
+    checkoutBranch(node.branch.name, { quiet: true });
     node.branch.setMetaPrevRef(node.branch.getCurrentRef());
     gpExecSync(
       {

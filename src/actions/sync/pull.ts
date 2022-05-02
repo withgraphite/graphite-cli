@@ -34,14 +34,14 @@ export function pull(context: TContext, oldBranchName: string): void {
       }`,
     },
     (err) => {
-      checkoutBranch(oldBranchName);
+      checkoutBranch(oldBranchName, { quiet: true });
       throw new ExitFailedError(`Failed to fetch from remote ${remote}`, err);
     }
   );
   gpExecSync(
     { command: `git merge --ff-only "refs/remotes/${remote}/${trunk}"` },
     (err) => {
-      checkoutBranch(oldBranchName);
+      checkoutBranch(oldBranchName, { quiet: true });
       throw new ExitFailedError(`Failed to fast-forward trunk ${trunk}`, err);
     }
   );
