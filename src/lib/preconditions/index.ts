@@ -5,7 +5,6 @@ import {
   detectStagedChanges,
   gpExecSync,
   logTip,
-  uncommittedChanges,
   unstagedChanges,
 } from '../utils';
 import { trackedUncommittedChanges } from '../utils/git_status_utils';
@@ -40,14 +39,6 @@ function uncommittedTrackedChangesPrecondition(): void {
   if (trackedUncommittedChanges()) {
     throw new PreconditionsFailedError(
       `There are tracked changes that have not been committed. Please resolve and then retry.`
-    );
-  }
-}
-
-function uncommittedChangesPrecondition(): void {
-  if (uncommittedChanges()) {
-    throw new PreconditionsFailedError(
-      `Cannot run with untracked or uncommitted changes present, please resolve and then retry.`
     );
   }
 }
@@ -98,7 +89,6 @@ export {
   currentBranchPrecondition,
   branchExistsPrecondition,
   uncommittedTrackedChangesPrecondition,
-  uncommittedChangesPrecondition,
   currentGitRepoPrecondition,
   ensureSomeStagedChangesPrecondition,
   cliAuthPrecondition,

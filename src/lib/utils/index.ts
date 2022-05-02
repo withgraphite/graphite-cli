@@ -3,11 +3,7 @@ import { getCommitterDate } from './committer_date';
 import { detectStagedChanges } from './detect_staged_changes';
 import { detectUnsubmittedChanges } from './detect_unsubmitted_changes';
 import { gpExecSync } from './exec_sync';
-import {
-  trackedUncommittedChanges,
-  uncommittedChanges,
-  unstagedChanges,
-} from './git_status_utils';
+import { trackedUncommittedChanges, unstagedChanges } from './git_status_utils';
 import { makeId } from './make_id';
 import { parseArgs } from './parse_args';
 import { preprocessCommand } from './preprocess_command';
@@ -40,7 +36,6 @@ export {
   rebaseInProgress,
   detectStagedChanges,
   detectUnsubmittedChanges,
-  uncommittedChanges,
   trackedUncommittedChanges,
   unstagedChanges,
   getTrunk,
