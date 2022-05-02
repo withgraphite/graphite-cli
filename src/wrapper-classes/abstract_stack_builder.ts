@@ -1,4 +1,5 @@
 import { Stack, StackNode } from '.';
+import { TScope } from '../actions/scope';
 import { TContext } from '../lib/context/context';
 import { getTrunk, logDebug } from '../lib/utils';
 import { Branch } from './branch';
@@ -15,14 +16,27 @@ export abstract class AbstractStackBuilder {
     return baseBranches.map((b) => this.fullStackFromBranch(b, context));
   }
 
+  public getStack(
+    args: { currentBranch: Branch; scope: TScope },
+    context: TContext
+  ): Stack {
+    return {
+      UPSTACK: () =>
+        this.upstackInclusiveFromBranchWithoutParents(
+          args.currentBranch,
+          context
+        ),
+      DOWNSTACK: () => this.downstackFromBranch(args.currentBranch, context),
+      FULLSTACK: () => this.fullStackFromBranch(args.currentBranch, context),
+    }[args.scope]();
+  }
+
   private memoizeBranchIfNeeded(branch: Branch): Branch {
-    let b = branch;
-    if (this.useMemoizedResults) {
-      b = new Branch(branch.name, {
-        useMemoizedResults: true,
-      });
-    }
-    return b;
+    return this.useMemoizedResults
+      ? new Branch(branch.name, {
+          useMemoizedResults: true,
+        })
+      : branch;
   }
 
   public upstackInclusiveFromBranchWithParents(
