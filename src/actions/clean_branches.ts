@@ -135,7 +135,9 @@ export async function deleteMergedBranches(
       // going to be deleted.
       if (parentName !== undefined && parentName in branchesToDelete) {
         checkoutBranch(branch.name, { quiet: true });
-        logInfo(`upstacking (${branch.name}) onto (${getTrunk(context).name})`);
+        logInfo(
+          `Stacking (${branch.name}) onto (${getTrunk(context).name})...`
+        );
         currentBranchOntoAction(
           {
             onto: getTrunk(context).name,

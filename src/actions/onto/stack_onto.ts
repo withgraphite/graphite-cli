@@ -82,7 +82,7 @@ export function stackOntoBaseRebaseContinuation(
 
   cache.clearAll();
   // set current branch's parent only if the rebase succeeds.
-  console.log(`setting ${currentBranch.name} parent to ${onto}`);
+  logInfo(`Setting parent of ${currentBranch.name} parent to ${onto}.`);
   currentBranch.setParentBranch(new Branch(onto));
 
   // Now perform a fix starting from the onto branch:
