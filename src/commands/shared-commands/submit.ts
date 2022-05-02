@@ -44,6 +44,13 @@ export const args = {
     type: 'boolean',
     default: false,
   },
+  confirm: {
+    describe:
+      'Reports the PRs that would be submitted and asks for confirmation before pushing branches and opening/updating PRs. If either of --no-interactive or --dry-run is passed, this flag is ignored.',
+    type: 'boolean',
+    default: false,
+    alias: 'c',
+  },
   'update-only': {
     describe: 'Only update the PRs that have been already been submitted.',
     type: 'boolean',
