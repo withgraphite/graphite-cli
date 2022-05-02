@@ -359,7 +359,7 @@ export class Branch {
 
   private static allBranchesImpl(
     context: TContext,
-    opts?: { sort?: '-committerdate' }
+    opts: { useMemoizedResults: boolean; sort?: '-committerdate' }
   ): Branch[] {
     const sortString = opts?.sort === undefined ? '' : `--sort='${opts?.sort}'`;
     return execSync(
@@ -371,7 +371,10 @@ export class Branch {
       .filter(
         (name) => name.length > 0 && !context.repoConfig.branchIsIgnored(name)
       )
-      .map((name) => new Branch(name));
+      .map(
+        (name) =>
+          new Branch(name, { useMemoizedResults: opts?.useMemoizedResults })
+      );
   }
 
   static allBranches(context: TContext, opts?: TBranchFilters): Branch[] {
@@ -391,16 +394,13 @@ export class Branch {
     },
     context: TContext
   ): Branch[] {
-    let branches = Branch.allBranchesImpl(context, {
+    const branches = Branch.allBranchesImpl(context, {
+      useMemoizedResults: args.opts?.useMemoizedResults ?? false,
       sort:
         args.opts?.maxDaysBehindTrunk !== undefined
           ? '-committerdate'
           : args.opts?.sort,
     });
-
-    if (args.opts?.useMemoizedResults) {
-      branches = branches.map((branch) => branch.useMemoizedResults());
-    }
 
     const maxDaysBehindTrunk = args.opts?.maxDaysBehindTrunk;
     let minUnixTimestamp = undefined;
