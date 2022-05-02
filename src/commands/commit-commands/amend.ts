@@ -22,8 +22,15 @@ const args = {
     demandOption: false,
     default: true,
   },
+  'no-edit': {
+    type: 'boolean',
+    describe:
+      "Don't modify the existing commit message. Takes precedence over --edit",
+    demandOption: false,
+    default: false,
+    alias: 'n',
+  },
 } as const;
-
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = 'amend';
@@ -37,7 +44,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     await commitAmendAction(
       {
         message: argv.message,
-        noEdit: !argv.edit,
+        noEdit: argv['no-edit'] || !argv.edit,
         addAll: argv.all,
       },
       context
