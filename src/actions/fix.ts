@@ -328,7 +328,7 @@ function recursiveRegen(node: StackNode, context: TContext): void {
           oldParent?.name
         }) to (${chalk.green(newParent.name)})`
       );
-      branch.setParentBranch(newParent.name, newParent.getCurrentRef());
+      branch.setParentBranch(newParent);
     }
   }
 
