@@ -19,7 +19,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       {
         action: argv.rebase ? 'rebase' : argv.regen ? 'regen' : undefined,
         mergeConflictCallstack: [],
-        scope: 'stack',
+        scope: 'FULLSTACK',
       },
       context
     );
