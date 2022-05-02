@@ -22,22 +22,18 @@ import { Branch } from '../../wrapper-classes/branch';
 import { restackBranch } from '../fix';
 import { validate } from '../validate';
 
-export async function stackOnto(
+export function stackOnto(
   opts: {
     currentBranch: Branch;
     onto: string;
     mergeConflictCallstack: TMergeConflictCallstack;
   },
   context: TContext
-): Promise<void> {
+): void {
   branchExistsPrecondition(opts.onto);
   checkBranchCanBeMoved(opts.currentBranch, opts.onto, context);
   validateStack(context);
-  const parent = await getParentForRebaseOnto(
-    opts.currentBranch,
-    opts.onto,
-    context
-  );
+  const parent = getParentForRebaseOnto(opts.currentBranch, opts.onto, context);
   // Save the old ref from before rebasing so that children can find their bases.
   opts.currentBranch.savePrevRef();
 
@@ -69,22 +65,19 @@ export async function stackOnto(
     }
   );
 
-  await stackOntoBaseRebaseContinuation(
+  stackOntoBaseRebaseContinuation(
     stackOntoContinuationFrame,
     opts.mergeConflictCallstack,
     context
   );
 }
 
-export async function stackOntoBaseRebaseContinuation(
+export function stackOntoBaseRebaseContinuation(
   frame: TStackOntoBaseRebaseStackFrame,
   mergeConflictCallstack: TMergeConflictCallstack,
   context: TContext
-): Promise<void> {
-  const currentBranch = await Branch.branchWithName(
-    frame.currentBranchName,
-    context
-  );
+): void {
+  const currentBranch = Branch.branchWithName(frame.currentBranchName, context);
   const onto = frame.onto;
 
   cache.clearAll();
@@ -99,7 +92,7 @@ export async function stackOntoBaseRebaseContinuation(
     onto: frame.onto,
   };
 
-  await restackBranch(
+  restackBranch(
     {
       branch: currentBranch,
       mergeConflictCallstack: [
@@ -110,12 +103,10 @@ export async function stackOntoBaseRebaseContinuation(
     context
   );
 
-  await stackOntoFixContinuation(stackOntoContinuationFrame);
+  stackOntoFixContinuation(stackOntoContinuationFrame);
 }
 
-export async function stackOntoFixContinuation(
-  frame: TStackOntoFixStackFrame
-): Promise<void> {
+export function stackOntoFixContinuation(frame: TStackOntoFixStackFrame): void {
   logInfo(
     `Successfully moved (${frame.currentBranchName}) onto (${frame.onto})`
   );

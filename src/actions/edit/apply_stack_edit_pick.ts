@@ -4,13 +4,13 @@ import { Branch } from '../../wrapper-classes/branch';
 import { stackOnto } from '../onto/stack_onto';
 import { TStackEdit, TStackEditPick } from './stack_edits';
 
-export async function applyStackEditPick(
+export function applyStackEditPick(
   stackEdit: TStackEditPick,
   remainingEdits: TStackEdit[],
   context: TContext
-): Promise<void> {
+): void {
   checkoutBranch(stackEdit.branchName, { quiet: true });
-  await stackOnto(
+  stackOnto(
     {
       currentBranch: new Branch(stackEdit.branchName),
       onto: stackEdit.onto,

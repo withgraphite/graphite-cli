@@ -70,17 +70,14 @@ async function resolveCallstack(
 
   switch (frame.op) {
     case 'STACK_ONTO_BASE_REBASE_CONTINUATION':
-      await stackOntoBaseRebaseContinuation(frame, remaining, context);
+      stackOntoBaseRebaseContinuation(frame, remaining, context);
       break;
     case 'STACK_ONTO_FIX_CONTINUATION':
-      await stackOntoFixContinuation(frame);
+      stackOntoFixContinuation(frame);
       break;
     case 'STACK_FIX': {
-      const branch = await Branch.branchWithName(
-        frame.sourceBranchName,
-        context
-      );
-      await restackBranch(
+      const branch = Branch.branchWithName(frame.sourceBranchName, context);
+      restackBranch(
         {
           branch: branch,
           mergeConflictCallstack: remaining,
@@ -90,7 +87,7 @@ async function resolveCallstack(
       break;
     }
     case 'STACK_FIX_ACTION_CONTINUATION':
-      await stackFixActionContinuation(frame);
+      stackFixActionContinuation(frame);
       break;
     case 'DELETE_BRANCHES_CONTINUATION':
       await deleteMergedBranches(
@@ -108,7 +105,7 @@ async function resolveCallstack(
       await repoSyncDeleteMergedBranchesContinuation(frame, context);
       break;
     case 'STACK_EDIT_CONTINUATION':
-      await applyStackEdits(frame.remainingEdits, context);
+      applyStackEdits(frame.remainingEdits, context);
       break;
     default:
       assertUnreachable(frame);

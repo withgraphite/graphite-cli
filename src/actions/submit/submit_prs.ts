@@ -133,9 +133,9 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
 }
 
 function saveBranchPRInfo(prs: TSubmittedPR[], context: TContext): void {
-  prs.forEach(async (pr) => {
+  prs.forEach((pr) => {
     if (pr.response.status === 'updated' || pr.response.status === 'created') {
-      const branch = await Branch.branchWithName(pr.response.head, context);
+      const branch = Branch.branchWithName(pr.response.head, context);
       branch.upsertPRInfo({
         number: pr.response.prNumber,
         url: pr.response.prURL,
