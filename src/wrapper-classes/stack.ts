@@ -1,3 +1,4 @@
+import { indentMultilineString } from '../lib/utils/indent_multiline_string';
 import { Branch } from './branch';
 import { StackMap, StackNode } from './stack_node';
 
@@ -27,15 +28,9 @@ export class Stack {
   }
 
   public toString(): string {
-    const indentMultilineString = (lines: string) =>
-      lines
-        .split('\n')
-        .map((l) => '  ' + l)
-        .join('\n');
-
     return this.source.children
       .map((c) => new Stack(c).toString())
-      .map(indentMultilineString)
+      .map((lines) => indentMultilineString(lines, 2))
       .concat([`↱ (${this.source.branch.name})`])
       .join('\n');
   }
