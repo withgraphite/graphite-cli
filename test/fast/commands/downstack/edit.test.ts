@@ -19,13 +19,13 @@ for (const scene of [new BasicScene()]) {
   describe(`(${scene}): downstack edit`, function () {
     configureTest(this, scene);
 
-    it('Can make a no-op downstack edit without conflict or error', async () => {
+    it('Can make a no-op downstack edit without conflict or error', () => {
       scene.repo.createChange('2', 'a');
       scene.repo.execCliCommand("branch create 'a' -m '2' -q");
       scene.repo.createChange('3', 'b');
       scene.repo.execCliCommand("branch create 'b' -m '3' -q");
 
-      await performInTmpDir((dirPath) => {
+      performInTmpDir((dirPath) => {
         const inputPath = createStackEditsInput({
           dirPath,
           orderedBranches: ['b', 'a'],
@@ -37,13 +37,13 @@ for (const scene of [new BasicScene()]) {
       });
     });
 
-    it('Can can resolve a conflict and continue', async () => {
+    it('Can can resolve a conflict and continue', () => {
       scene.repo.createChange('2', 'a');
       scene.repo.execCliCommand("branch create 'a' -m '2' -q");
       scene.repo.createChange('3', 'a'); // change the same file with a new value.
       scene.repo.execCliCommand("branch create 'b' -m '3' -q");
 
-      await performInTmpDir((dirPath) => {
+      performInTmpDir((dirPath) => {
         const inputPath = createStackEditsInput({
           dirPath,
           orderedBranches: ['a', 'b'], // reverse the order

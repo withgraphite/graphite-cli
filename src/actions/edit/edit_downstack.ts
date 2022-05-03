@@ -44,11 +44,14 @@ export function applyStackEdits(
   }
 }
 
-async function promptForEdit(stack: Stack, context: TContext) {
+async function promptForEdit(
+  stack: Stack,
+  context: TContext
+): Promise<TStackEdit[]> {
   const defaultEditor = await getDefaultEditorOrPrompt(context);
-  return await performInTmpDir(async (tmpDir) => {
+  return performInTmpDir((tmpDir) => {
     const editFilePath = createStackEditFile({ stack, tmpDir }, context);
-    await gpExecSync(
+    gpExecSync(
       {
         command: `${defaultEditor} "${editFilePath}"`,
         options: { stdio: 'inherit' },
