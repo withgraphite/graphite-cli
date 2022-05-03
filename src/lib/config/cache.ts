@@ -1,3 +1,5 @@
+import { Branch } from '../../wrapper-classes/branch';
+
 type branchRefsT = {
   branchToRef: Record<string, string>;
   refToBranches: Record<string, string[]>;
@@ -11,6 +13,10 @@ let parentsRevList: revListT | undefined = undefined;
 let childrenRevList: revListT | undefined = undefined;
 
 let repoRootPath: string | undefined = undefined;
+
+let metaChildren: Record<string, Branch[]> | undefined = undefined;
+
+let branchList: Record<string, string[]> | undefined = undefined;
 
 class Cache {
   public getRepoRootPath(): string | undefined {
@@ -33,10 +39,20 @@ class Cache {
     return childrenRevList;
   }
 
+  public getMetaChildren(): Record<string, Branch[]> | undefined {
+    return metaChildren;
+  }
+
+  public getBranchList(): Record<string, string[]> | undefined {
+    return branchList;
+  }
+
   clearAll(): void {
     branchRefs = undefined;
     parentsRevList = undefined;
     childrenRevList = undefined;
+    metaChildren = undefined;
+    branchList = undefined;
   }
 
   clearBranchRefs(): void {
@@ -57,6 +73,14 @@ class Cache {
 
   setRepoRootPath(newRepoRootPath: string): void {
     repoRootPath = newRepoRootPath;
+  }
+
+  setMetaChildren(newMetaChildren: Record<string, Branch[]>): void {
+    metaChildren = newMetaChildren;
+  }
+
+  setBranchList(newBranchList: Record<string, string[]>): void {
+    branchList = newBranchList;
   }
 }
 

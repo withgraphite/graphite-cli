@@ -104,18 +104,18 @@ export function getRevListGitTree(
   return revList;
 }
 
-let memoizedBranchList: Record<string, string[]>;
 function getBranchList(
   opts: {
     useMemoizedResult?: boolean;
   },
   context: TContext
 ): Record<string, string[]> {
-  if (opts.useMemoizedResult && memoizedBranchList !== undefined) {
+  const memoizedBranchList = cache.getBranchList();
+  if (opts.useMemoizedResult && memoizedBranchList) {
     return memoizedBranchList;
   }
 
-  memoizedBranchList = branchListFromShowRefOutput(
+  return branchListFromShowRefOutput(
     gpExecSync({
       command: 'git show-ref --heads',
       options: { maxBuffer: 1024 * 1024 * 1024 },
@@ -124,8 +124,6 @@ function getBranchList(
       .trim(),
     context
   );
-
-  return memoizedBranchList;
 }
 
 function traverseGitTreeFromCommitUntilBranch(
@@ -191,7 +189,7 @@ function branchListFromShowRefOutput(
   output: string,
   context: TContext
 ): Record<string, string[]> {
-  const ret: Record<string, string[]> = {};
+  const newBranchList: Record<string, string[]> = {};
 
   for (const line of output.split('\n')) {
     if (line.length > 0) {
@@ -201,16 +199,17 @@ function branchListFromShowRefOutput(
 
       if (!context.repoConfig.branchIsIgnored(branchName)) {
         logDebug(`branch ${branchName} is not ignored`);
-        if (branchRef in ret) {
-          ret[branchRef].push(branchName);
+        if (branchRef in newBranchList) {
+          newBranchList[branchRef].push(branchName);
         } else {
-          ret[branchRef] = [branchName];
+          newBranchList[branchRef] = [branchName];
         }
       }
     }
   }
 
-  return ret;
+  cache.setBranchList(newBranchList);
+  return newBranchList;
 }
 
 function gitTreeFromRevListOutput(output: string): Record<string, string[]> {
