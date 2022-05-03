@@ -8,8 +8,8 @@ const FILE_NAME = 'graphite_stack_edit';
 const COLUMN_SPACING = ' '.repeat(5);
 const FILE_FOOTER = [
   '#',
-  '# Operations:',
-  "# p, pick = stack onto the proceeding line's branch",
+  '# Operations (applied bottom to top):',
+  '# p, pick <branch> = use branch (branches are rebased onto trunk in the specified order) ',
 ];
 
 /* Example file:
@@ -20,7 +20,7 @@ pick    gf--02-09-first
 # pick  main (Bottom of stack)
 #
 # Operations:
-# pick <branch_name> stack branch upon the branch from the previous line
+# p, pick <branch> = use branch (branches are rebased onto trunk in the specified order)
 
 */
 

@@ -1,24 +1,23 @@
 import { TContext } from '../../lib/context/context';
+import { currentBranchPrecondition } from '../../lib/preconditions';
 import { checkoutBranch } from '../../lib/utils';
-import { Branch } from '../../wrapper-classes/branch';
-import { stackOnto } from '../onto/stack_onto';
-import { TStackEdit, TStackEditPick } from './stack_edits';
+import { currentBranchOntoAction } from '../onto/current_branch_onto';
+import { TStackEdit } from './stack_edits';
 
 export function applyStackEditPick(
-  stackEdit: TStackEditPick,
-  remainingEdits: TStackEdit[],
+  opts: { branchName: string; remainingEdits: TStackEdit[] },
   context: TContext
 ): void {
-  checkoutBranch(stackEdit.branchName, { quiet: true });
-  stackOnto(
+  const onto = currentBranchPrecondition(context).name;
+  checkoutBranch(opts.branchName, { quiet: true });
+  currentBranchOntoAction(
     {
-      currentBranch: new Branch(stackEdit.branchName),
-      onto: stackEdit.onto,
+      onto: onto,
       mergeConflictCallstack: [
         {
           op: 'STACK_EDIT_CONTINUATION',
-          currentBranchName: stackEdit.branchName,
-          remainingEdits: remainingEdits,
+          currentBranchName: onto,
+          remainingEdits: opts.remainingEdits,
         },
       ],
     },
