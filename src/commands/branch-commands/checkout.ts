@@ -21,7 +21,11 @@ export const builder = args;
 
 export const handler = async (args: argsT): Promise<void> => {
   return profile(args, canonical, async (context) => {
-    const branch = args.branch ?? (await interactiveBranchSelection(context));
+    const branch =
+      args.branch ??
+      (await interactiveBranchSelection(context, {
+        message: 'Checkout a branch',
+      }));
     checkoutBranch(branch);
   });
 };
