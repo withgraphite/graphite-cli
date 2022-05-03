@@ -41,14 +41,13 @@ export async function rebaseUpstack(context: TContext): Promise<void> {
     await fixAction(
       {
         action: 'rebase',
-        mergeConflictCallstack: [],
         scope: 'UPSTACK',
       },
       context
     );
   } catch {
     logWarn(
-      'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt stack fix --rebase`'
+      'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt upstack fix --rebase`'
     );
   }
 }
@@ -100,7 +99,6 @@ type TFixScope = Exclude<TScope, 'DOWNSTACK'>;
 export async function fixAction(
   opts: {
     action: 'regen' | 'rebase' | undefined;
-    mergeConflictCallstack: TMergeConflictCallstack;
     scope: TFixScope;
   },
   context: TContext
@@ -118,33 +116,33 @@ export async function fixAction(
 
   const action = opts.action || (await promptStacks({ gitStack, metaStack }));
 
+  if (action === 'regen') {
+    regen(currentBranch, context, opts.scope);
+    return;
+  }
+
   const stackFixActionContinuationFrame = {
     op: 'STACK_FIX_ACTION_CONTINUATION' as const,
     checkoutBranchName: currentBranch.name,
   };
 
-  if (action === 'regen') {
-    regen(currentBranch, context, opts.scope);
-  } else {
-    // If we get interrupted and need to continue, first we'll do a stack fix
-    // and then we'll continue the stack fix action.
-    const mergeConflictCallstack = [
+  // If we get interrupted and need to continue, first we'll do a stack fix
+  // and then we'll continue the stack fix action.
+  const mergeConflictCallstack = [
+    {
+      op: 'STACK_FIX' as const,
+      sourceBranchName: currentBranch.name,
+    },
+    stackFixActionContinuationFrame,
+  ];
+  for (const child of metaStack.source.children) {
+    restackUpstack(
       {
-        op: 'STACK_FIX' as const,
-        sourceBranchName: currentBranch.name,
+        branch: child.branch,
+        mergeConflictCallstack: mergeConflictCallstack,
       },
-      stackFixActionContinuationFrame,
-      ...opts.mergeConflictCallstack,
-    ];
-    for (const child of metaStack.source.children) {
-      restackUpstack(
-        {
-          branch: child.branch,
-          mergeConflictCallstack: mergeConflictCallstack,
-        },
-        context
-      );
-    }
+      context
+    );
   }
 
   stackFixActionContinuation(stackFixActionContinuationFrame);
