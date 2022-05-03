@@ -3,7 +3,10 @@ import { PreconditionsFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { gpExecSync } from '../lib/utils';
 
-export async function showBranchAction(context: TContext): Promise<void> {
+export async function showBranchAction(
+  context: TContext,
+  opts: { patch: boolean }
+): Promise<void> {
   const currentBranch = currentBranchPrecondition(context);
 
   const baseRev = currentBranch.getParentBranchSha();
@@ -14,7 +17,7 @@ export async function showBranchAction(context: TContext): Promise<void> {
   }
 
   gpExecSync({
-    command: `git log ${baseRev}.. --`,
+    command: `git log ${opts.patch ? '-p' : ''} ${baseRev}.. --`,
     options: { stdio: 'inherit' },
   });
 }
