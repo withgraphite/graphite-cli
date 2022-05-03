@@ -20,6 +20,7 @@ import {
   checkoutBranch,
   getTrunk,
   gpExecSync,
+  logDebug,
   logInfo,
   logWarn,
   rebaseInProgress,
@@ -33,7 +34,10 @@ import {
 } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 import { TScope } from './scope';
-import { getStacksForValidation } from './validate';
+import {
+  backfillParentShasOnValidatedStack,
+  getStacksForValidation,
+} from './validate';
 
 // Should be called whenever we change the tip of a branch
 export async function rebaseUpstack(context: TContext): Promise<void> {
@@ -111,6 +115,9 @@ export async function fixAction(
   // Consider noop
   if (metaStack.equals(gitStack)) {
     logInfo(`No fix needed`);
+    // Stacks are valid, we can update parentRevision
+    // TODO: Remove after migrating validation to parentRevision
+    backfillParentShasOnValidatedStack(metaStack, context);
     return;
   }
 
@@ -246,6 +253,13 @@ function restackUpstack(
     cache.clearAll();
   }
 
+  // Stacks are now valid, we can update parentRevision
+  // TODO: Remove after migrating validation to parentRevision
+  if (branch.getParentBranchSha() !== parentBranch.getCurrentRef()) {
+    logDebug(`Updating parent revision`);
+    branch.setParentBranch(parentBranch);
+  }
+
   for (const child of branch.getChildrenFromMeta(context)) {
     restackUpstack(
       {
@@ -296,6 +310,12 @@ function recursiveRegen(node: StackNode, context: TContext): void {
       logInfo(
         `-> No change for (${branch.name}) with branch parent (${oldParent.name})`
       );
+      // Stacks are valid, we can update parentRevision
+      // TODO: Remove after migrating validation to parentRevision
+      if (branch.getParentBranchSha() !== newParent.getCurrentRef()) {
+        logDebug(`Updating parent revision`);
+        branch.setParentBranch(newParent);
+      }
     } else {
       logInfo(
         `-> Updating (${branch.name}) branch parent from (${
