@@ -9,7 +9,6 @@ import {
   ExitFailedError,
   PreconditionsFailedError,
   RebaseConflictError,
-  ValidationFailedError,
 } from '../../lib/errors';
 import { branchExistsPrecondition } from '../../lib/preconditions';
 import {
@@ -32,7 +31,7 @@ export function stackOnto(
 ): void {
   branchExistsPrecondition(opts.onto);
   checkBranchCanBeMoved(opts.currentBranch, opts.onto, context);
-  validateStack(context);
+  validate('UPSTACK', context);
   const parent = getParentForRebaseOnto(opts.currentBranch, opts.onto, context);
   // Save the old ref from before rebasing so that children can find their bases.
   opts.currentBranch.savePrevRef();
@@ -124,16 +123,6 @@ function getParentForRebaseOnto(
   // If no meta parent, automatically recover:
   branch.setParentBranchName(onto);
   return new Branch(onto);
-}
-
-function validateStack(context: TContext) {
-  try {
-    validate('UPSTACK', context);
-  } catch {
-    throw new ValidationFailedError(
-      `Cannot stack "onto", git branches must match stack.`
-    );
-  }
 }
 
 function checkBranchCanBeMoved(
