@@ -33,9 +33,6 @@ export const handler = async (argv: argsT): Promise<void> => {
       logTip(`You can force branch deletion with -f`, context);
     }
 
-    await deleteBranchAction({
-      branchName: argv.name,
-      force: argv.force,
-    });
+    deleteBranchAction({ branchName: argv.name, force: argv.force }, context);
   });
 };
