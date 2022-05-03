@@ -10,9 +10,9 @@ export type TStackEditPick = t.TypeOf<typeof StackedEditPickSchema>;
 export type TStackEdit = t.TypeOf<typeof StackedEditPickSchema>;
 export type TStackEditType = TStackEdit['type'];
 
-export function isValidStackEditType(type: string): type is TStackEditType {
-  if (type === 'pick') {
-    return true;
+export function getStackEditType(type: string): TStackEditType | undefined {
+  if (['pick', 'p'].includes(type)) {
+    return 'pick';
   }
-  return false;
+  return undefined;
 }
