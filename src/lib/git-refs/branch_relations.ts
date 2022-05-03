@@ -73,20 +73,13 @@ export function getRevListGitTree(
   },
   context: TContext
 ): Record<string, string[]> {
-  const cachedParentsRevList = cache.getParentsRevList();
-  const cachedChildrenRevList = cache.getChildrenRevList();
-  if (
-    opts.useMemoizedResults &&
-    opts.direction === 'parents' &&
-    cachedParentsRevList
-  ) {
-    return cachedParentsRevList;
-  } else if (
-    opts.useMemoizedResults &&
-    opts.direction === 'children' &&
-    cachedChildrenRevList
-  ) {
-    return cachedChildrenRevList;
+  if (opts.useMemoizedResults) {
+    const cachedRevList =
+      opts.direction === 'parents'
+        ? cache.getParentsRevList()
+        : cache.getChildrenRevList();
+
+    if (cachedRevList) return cachedRevList;
   }
   const allBranches = Branch.allBranches(context)
     .map((b) => b.name)
