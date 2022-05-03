@@ -7,6 +7,7 @@ import {
   otherBranchesWithSameCommit,
 } from '../lib/git-refs';
 import { getCommitterDate, getTrunk, gpExecSync, logDebug } from '../lib/utils';
+import { getMergeBase } from '../lib/utils/merge_base';
 import { TContext } from './../lib/context/context';
 import {
   MetadataRef,
@@ -164,52 +165,32 @@ export class Branch {
     return Branch.calculateMemoizedMetaChildren(context)[this.name] ?? [];
   }
 
-  public isUpstreamOf(commitRef: string, context: TContext): boolean {
-    const downstreamRef = gpExecSync({
-      command: `git merge-base ${this.name} ${commitRef}`,
-    })
-      .toString()
-      .trim();
-
-    return downstreamRef !== this.ref(context);
-  }
-
   public ref(context: TContext): string {
     return getRef(this, context);
   }
 
+  // TODO: Migrate to parentRevision with validation
   public getMetaMergeBase(context: TContext): string | undefined {
     const parent = this.getParentFromMeta(context);
     if (!parent) {
       return undefined;
     }
-    const curParentRef = parent.getCurrentRef();
+
+    const curParentMergeBase = getMergeBase(parent.getCurrentRef(), this.name);
+
     const prevParentRef = parent.getMetaPrevRef();
-    const curParentMergeBase = execSync(
-      `git merge-base ${curParentRef} ${this.name}`
-    )
-      .toString()
-      .trim();
     if (!prevParentRef) {
       return curParentMergeBase;
     }
 
-    const prevParentMergeBase = execSync(
-      `git merge-base ${prevParentRef} ${this.name}`
-    )
-      .toString()
-      .trim();
+    const prevParentMergeBase = getMergeBase(prevParentRef, this.name);
 
     // The merge base of the two merge bases = the one closer to the trunk.
     // Therefore, the other must be closer or equal to the head of the branch.
-    const closestMergeBase =
-      execSync(`git merge-base ${prevParentMergeBase} ${curParentMergeBase}`)
-        .toString()
-        .trim() === curParentMergeBase
-        ? prevParentMergeBase
-        : curParentMergeBase;
-
-    return closestMergeBase;
+    return getMergeBase(prevParentMergeBase, curParentMergeBase) ===
+      curParentMergeBase
+      ? prevParentMergeBase
+      : curParentMergeBase;
   }
 
   public static exists(branchName: string): boolean {

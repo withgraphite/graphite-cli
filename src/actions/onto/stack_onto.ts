@@ -17,6 +17,7 @@ import {
   logInfo,
   rebaseInProgress,
 } from '../../lib/utils';
+import { getMergeBase } from '../../lib/utils/merge_base';
 import { Branch } from '../../wrapper-classes/branch';
 import { restackBranch } from '../fix';
 import { validate } from '../validate';
@@ -42,10 +43,12 @@ export function stackOnto(
     onto: opts.onto,
   };
 
+  const mergeBase = getMergeBase(opts.currentBranch.name, parent.name);
+
   // Add try catch check for rebase interactive....
   gpExecSync(
     {
-      command: `git rebase --onto ${opts.onto} $(git merge-base ${opts.currentBranch.name} ${parent.name}) ${opts.currentBranch.name}`,
+      command: `git rebase --onto ${opts.onto} ${mergeBase} ${opts.currentBranch.name}`,
       options: { stdio: 'ignore' },
     },
     (err) => {
