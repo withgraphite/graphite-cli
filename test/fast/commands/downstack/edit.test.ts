@@ -5,11 +5,14 @@ import { performInTmpDir } from '../../../../src/lib/utils/perform_in_tmp_dir';
 import { BasicScene } from '../../../lib/scenes/basic_scene';
 import { configureTest, expectCommits } from '../../../lib/utils';
 
+const EXEC_OUTPUT = 'output.txt';
 function createStackEditsInput(opts: {
   dirPath: string;
   orderedBranches: string[];
 }): string {
-  const contents = opts.orderedBranches.map((b) => `pick ${b}`).join('\n');
+  const contents = opts.orderedBranches
+    .map((b) => `exec echo ${b} >> ${opts.dirPath}/${EXEC_OUTPUT}\npick ${b}`)
+    .join('\n');
   const filePath = path.join(opts.dirPath, 'edits.txt');
   fs.writeFileSync(filePath, contents);
   return filePath;
@@ -34,6 +37,9 @@ for (const scene of [new BasicScene()]) {
           scene.repo.execCliCommand(`downstack edit --input "${inputPath}"`)
         ).to.not.throw(Error);
         expect(scene.repo.rebaseInProgress()).to.be.false;
+        expect(
+          fs.readFileSync(`${dirPath}/${EXEC_OUTPUT}`).toString().trim()
+        ).to.equal(['a', 'b'].join('\n'));
       });
     });
 
@@ -58,6 +64,9 @@ for (const scene of [new BasicScene()]) {
           scene.repo.execCliCommand('continue --no-edit');
         }
         expectCommits(scene.repo, '2, 3, 1');
+        expect(
+          fs.readFileSync(`${dirPath}/${EXEC_OUTPUT}`).toString().trim()
+        ).to.equal(['b', 'a'].join('\n'));
       });
     });
   });
