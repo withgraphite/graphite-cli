@@ -5,19 +5,10 @@ import {
   TStackOntoFixStackFrame,
 } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context/context';
-import {
-  ExitFailedError,
-  PreconditionsFailedError,
-  RebaseConflictError,
-} from '../../lib/errors';
-import { branchExistsPrecondition } from '../../lib/preconditions';
-import {
-  getTrunk,
-  gpExecSync,
-  logInfo,
-  rebaseInProgress,
-} from '../../lib/utils';
+import { PreconditionsFailedError } from '../../lib/errors';
+import { getTrunk, logInfo } from '../../lib/utils';
 import { getMergeBase } from '../../lib/utils/merge_base';
+import { rebaseOnto } from '../../lib/utils/rebase_onto';
 import { Branch } from '../../wrapper-classes/branch';
 import { restackBranch } from '../fix';
 import { validate } from '../validate';
@@ -30,12 +21,9 @@ export function stackOnto(
   },
   context: TContext
 ): void {
-  branchExistsPrecondition(opts.onto);
-  checkBranchCanBeMoved(opts.currentBranch, opts.onto, context);
+  const onto = Branch.branchWithName(opts.onto, context);
+  checkBranchCanBeMoved(opts.currentBranch, context);
   validate('UPSTACK', context);
-  const parent = getParentForRebaseOnto(opts.currentBranch, opts.onto, context);
-  // Save the old ref from before rebasing so that children can find their bases.
-  opts.currentBranch.savePrevRef();
 
   const stackOntoContinuationFrame = {
     op: 'STACK_ONTO_BASE_REBASE_CONTINUATION' as const,
@@ -43,29 +31,32 @@ export function stackOnto(
     onto: opts.onto,
   };
 
-  const mergeBase = getMergeBase(opts.currentBranch.name, parent.name);
+  const parent = opts.currentBranch.getParentFromMeta(context);
 
-  // Add try catch check for rebase interactive....
-  gpExecSync(
-    {
-      command: `git rebase --onto ${opts.onto} ${mergeBase} ${opts.currentBranch.name}`,
-      options: { stdio: 'ignore' },
-    },
-    (err) => {
-      if (rebaseInProgress()) {
-        throw new RebaseConflictError(
-          `Interactive rebase in progress, cannot fix (${opts.currentBranch.name}) onto (${opts.onto}).`,
-          [stackOntoContinuationFrame, ...opts.mergeConflictCallstack],
-          context
-        );
-      } else {
-        throw new ExitFailedError(
-          `Rebase failed when moving (${opts.currentBranch.name}) onto (${opts.onto}).`,
-          err
-        );
-      }
-    }
+  const mergeBase = getMergeBase(
+    opts.currentBranch.name,
+    (parent ?? onto).name
   );
+
+  const rebased = rebaseOnto(
+    {
+      onto,
+      mergeBase,
+      branch: opts.currentBranch,
+      mergeConflictCallstack: [
+        stackOntoContinuationFrame,
+        ...opts.mergeConflictCallstack,
+      ],
+    },
+    context
+  );
+
+  if (!rebased) {
+    if (!parent) {
+      opts.currentBranch.setParentBranch(onto);
+    }
+    return;
+  }
 
   stackOntoBaseRebaseContinuation(
     stackOntoContinuationFrame,
@@ -114,28 +105,10 @@ export function stackOntoFixContinuation(frame: TStackOntoFixStackFrame): void {
   );
 }
 
-function getParentForRebaseOnto(
-  branch: Branch,
-  onto: string,
-  context: TContext
-): Branch {
-  const metaParent = branch.getParentFromMeta(context);
-  if (metaParent) {
-    return metaParent;
-  }
-  // If no meta parent, automatically recover:
-  branch.setParentBranchName(onto);
-  return new Branch(onto);
-}
-
-function checkBranchCanBeMoved(
-  branch: Branch,
-  onto: string,
-  context: TContext
-) {
+function checkBranchCanBeMoved(branch: Branch, context: TContext) {
   if (branch.name === getTrunk(context).name) {
     throw new PreconditionsFailedError(
-      `Cannot stack (${branch.name}) onto ${onto}, (${branch.name}) is currently set as trunk.`
+      `Cannot move (${branch.name}) as it is currently set as trunk.`
     );
   }
 }
