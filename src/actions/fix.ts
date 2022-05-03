@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { cache } from '../lib/config/cache';
 import {
   TMergeConflictCallstack,
   TStackFixActionStackFrame,
@@ -19,13 +18,13 @@ import {
 import {
   checkoutBranch,
   getTrunk,
-  gpExecSync,
   logDebug,
   logInfo,
   logWarn,
   rebaseInProgress,
 } from '../lib/utils';
 import { indentMultilineString } from '../lib/utils/indent_multiline_string';
+import { rebaseOnto } from '../lib/utils/rebase_onto';
 import {
   GitStackBuilder,
   MetaStackBuilder,
@@ -229,31 +228,18 @@ function restackUpstack(
     );
   }
 
-  if (parentBranch.ref(context) !== mergeBase) {
-    logInfo(`Fixing (${chalk.green(branch.name)}) on (${parentBranch.name})`);
-    checkoutBranch(branch.name, { quiet: true });
-    branch.savePrevRef();
-    gpExecSync(
-      {
-        command: `git rebase --onto ${parentBranch.name} ${mergeBase} ${branch.name}`,
-        options: { stdio: 'ignore' },
-      },
-      (err) => {
-        if (rebaseInProgress()) {
-          throw new RebaseConflictError(
-            `Interactive rebase in progress, cannot fix (${branch.name}) onto (${parentBranch.name}).`,
-            args.mergeConflictCallstack,
-            context
-          );
-        } else {
-          throw new ExitFailedError(
-            `Rebase failed when moving (${branch.name}) onto (${parentBranch.name}).`,
-            err
-          );
-        }
-      }
-    );
-    cache.clearAll();
+  const rebased = rebaseOnto(
+    {
+      onto: parentBranch,
+      mergeBase,
+      branch,
+      mergeConflictCallstack: args.mergeConflictCallstack,
+    },
+    context
+  );
+
+  if (rebased) {
+    logInfo(`Fixed (${chalk.green(branch.name)}) on (${parentBranch.name})`);
   }
 
   // Stacks are now valid, we can update parentRevision
