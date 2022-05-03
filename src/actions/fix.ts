@@ -33,6 +33,7 @@ import {
   StackNode,
 } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
+import { TScope } from './scope';
 
 // Should be called whenever we change the tip of a branch
 export async function rebaseUpstack(context: TContext): Promise<void> {
@@ -41,7 +42,7 @@ export async function rebaseUpstack(context: TContext): Promise<void> {
       {
         action: 'rebase',
         mergeConflictCallstack: [],
-        scope: 'upstack',
+        scope: 'UPSTACK',
       },
       context
     );
@@ -94,7 +95,7 @@ async function promptStacks(opts: {
   return response.value;
 }
 
-type TFixScope = 'stack' | 'upstack';
+type TFixScope = Exclude<TScope, 'DOWNSTACK'>;
 
 export async function fixAction(
   opts: {
@@ -109,7 +110,7 @@ export async function fixAction(
 
   logDebug(`Determining meta ${opts.scope} from ${currentBranch.name}`);
   const metaStack =
-    opts.scope === 'stack'
+    opts.scope === 'FULLSTACK'
       ? new MetaStackBuilder({
           useMemoizedResults: true,
         }).fullStackFromBranch(currentBranch, context)
@@ -121,7 +122,7 @@ export async function fixAction(
 
   logDebug(`Determining full git ${opts.scope} from ${currentBranch.name}`);
   const gitStack =
-    opts.scope === 'stack'
+    opts.scope === 'FULLSTACK'
       ? new GitStackBuilder({
           useMemoizedResults: true,
         }).fullStackFromBranch(currentBranch, context)
@@ -158,9 +159,9 @@ export async function fixAction(
       ...opts.mergeConflictCallstack,
     ];
     for (const child of metaStack.source.children) {
-      restackNode(
+      restackUpstack(
         {
-          node: child,
+          branch: child.branch,
           mergeConflictCallstack: mergeConflictCallstack,
         },
         context
@@ -204,9 +205,9 @@ export function restackBranch(
     ...args.mergeConflictCallstack,
   ];
 
-  restackNode(
+  restackUpstack(
     {
-      node: metaStack.source,
+      branch: metaStack.source.branch,
       mergeConflictCallstack: mergeConflictCallstack,
     },
     context
@@ -215,54 +216,51 @@ export function restackBranch(
   stackFixActionContinuation(stackFixActionContinuationFrame);
 }
 
-function restackNode(
+function restackUpstack(
   args: {
-    node: StackNode;
+    branch: Branch;
     mergeConflictCallstack: TMergeConflictCallstack;
   },
   context: TContext
 ): void {
-  const node = args.node;
-
+  const branch = args.branch;
   if (rebaseInProgress()) {
     throw new RebaseConflictError(
-      `Interactive rebase still in progress, cannot fix (${node.branch.name}).`,
+      `Interactive rebase still in progress, cannot fix (${branch.name}).`,
       args.mergeConflictCallstack,
       context
     );
   }
-  const parentBranch = node.parent?.branch;
+
+  const parentBranch = branch.getParentFromMeta(context);
   if (!parentBranch) {
     throw new ExitFailedError(
-      `Cannot find parent in stack for (${node.branch.name}), stopping fix`
+      `Cannot find parent in stack for (${branch.name}), stopping fix`
     );
   }
-  const mergeBase = node.branch.getMetaMergeBase(context);
+
+  const mergeBase = branch.getMetaMergeBase(context);
   if (!mergeBase) {
     throw new ExitFailedError(
-      `Cannot find a merge base in the stack for (${node.branch.name}), stopping fix`
+      `Cannot find a merge base in the stack for (${branch.name}), stopping fix`
     );
   }
 
   if (parentBranch.ref(context) === mergeBase) {
-    logInfo(
-      `No fix needed for (${node.branch.name}) on (${parentBranch.name})`
-    );
+    logInfo(`No fix needed for (${branch.name}) on (${parentBranch.name})`);
   } else {
-    logInfo(
-      `Fixing (${chalk.green(node.branch.name)}) on (${parentBranch.name})`
-    );
-    checkoutBranch(node.branch.name, { quiet: true });
-    node.branch.savePrevRef();
+    logInfo(`Fixing (${chalk.green(branch.name)}) on (${parentBranch.name})`);
+    checkoutBranch(branch.name, { quiet: true });
+    branch.savePrevRef();
     gpExecSync(
       {
-        command: `git rebase --onto ${parentBranch.name} ${mergeBase} ${node.branch.name}`,
+        command: `git rebase --onto ${parentBranch.name} ${mergeBase} ${branch.name}`,
         options: { stdio: 'ignore' },
       },
       () => {
         if (rebaseInProgress()) {
           throw new RebaseConflictError(
-            `Interactive rebase in progress, cannot fix (${node.branch.name}) onto (${parentBranch.name}).`,
+            `Interactive rebase in progress, cannot fix (${branch.name}) onto (${parentBranch.name}).`,
             args.mergeConflictCallstack,
             context
           );
@@ -272,10 +270,10 @@ function restackNode(
     cache.clearAll();
   }
 
-  for (const child of node.children) {
-    restackNode(
+  for (const child of branch.getChildrenFromMeta(context)) {
+    restackUpstack(
       {
-        node: child,
+        branch: child,
         mergeConflictCallstack: args.mergeConflictCallstack,
       },
       context
@@ -291,7 +289,7 @@ function regen(branch: Branch, context: TContext, scope: TFixScope): void {
   }
 
   const gitStack =
-    scope === 'stack'
+    scope === 'FULLSTACK'
       ? new GitStackBuilder().fullStackFromBranch(branch, context)
       : new GitStackBuilder().upstackInclusiveFromBranchWithParents(
           branch,
