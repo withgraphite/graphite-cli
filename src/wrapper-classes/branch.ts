@@ -112,50 +112,54 @@ export class Branch {
     return new Branch(parentName);
   }
 
+  public static clearMemoizedMetaChildren(): void {
+    memoizedMetaChildren = undefined;
+  }
+
+  private static calculateMemoizedMetaChildren(context: TContext): void {
+    logDebug(`Meta Children: initialize memoization | finding all branches...`);
+    const metaChildren: Record<string, Branch[]> = {};
+    const allBranches = Branch.allBranches(context, {
+      useMemoizedResults: true,
+    });
+
+    logDebug(
+      `Meta Children: intiialize memoization | sifting through branches...`
+    );
+    allBranches.forEach((branch, i) => {
+      logDebug(
+        `               Branch ${i}/${allBranches.length} (${branch.name})`
+      );
+      const parentBranchName = branch.getParentBranchName();
+      if (parentBranchName === undefined) {
+        return;
+      }
+      if (parentBranchName in metaChildren) {
+        metaChildren[parentBranchName].push(branch);
+      } else {
+        metaChildren[parentBranchName] = [branch];
+      }
+    });
+    logDebug(`Meta Children: initialize memoization | done`);
+
+    memoizedMetaChildren = metaChildren;
+  }
+
   public getChildrenFromMeta(context: TContext): Branch[] {
     logDebug(`Meta Children (${this.name}): start`);
     if (this.shouldUseMemoizedResults) {
       if (memoizedMetaChildren === undefined) {
-        logDebug(
-          `Meta Children (${this.name}): initialize memoization | finding all branches...`
-        );
-        const metaChildren: Record<string, Branch[]> = {};
-        const allBranches = Branch.allBranches(context, {
-          useMemoizedResults: this.shouldUseMemoizedResults,
-        });
-
-        logDebug(
-          `Meta Children: intiialize memoization | sifting through branches...`
-        );
-        allBranches.forEach((branch, i) => {
-          logDebug(
-            `               Branch ${i}/${allBranches.length} (${branch.name})`
-          );
-          const parentBranchName = MetadataRef.getMeta(
-            branch.name
-          )?.parentBranchName;
-          if (parentBranchName === undefined) {
-            return;
-          }
-          if (parentBranchName in metaChildren) {
-            metaChildren[parentBranchName].push(branch);
-          } else {
-            metaChildren[parentBranchName] = [branch];
-          }
-        });
-        logDebug(`Meta Children (${this.name}): initialize memoization | done`);
-
-        memoizedMetaChildren = metaChildren;
+        Branch.calculateMemoizedMetaChildren(context);
       }
 
       logDebug(`Meta Children (${this.name}): end (memoized)`);
-      return memoizedMetaChildren[this.name] ?? [];
+      return memoizedMetaChildren?.[this.name] ?? [];
     }
 
     const children = Branch.allBranches(context).filter(
       (b) => MetadataRef.getMeta(b.name)?.parentBranchName === this.name
     );
-    logDebug(`Git Children (${this.name}): end`);
+    logDebug(`Meta Children (${this.name}): end`);
     return children;
   }
 
