@@ -1,7 +1,8 @@
 import { TContext } from '../../lib/context/context';
 import { ExitFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
-import { gpExecSync } from '../../lib/utils';
+import { checkoutBranch, getTrunk, gpExecSync } from '../../lib/utils';
+import { assertUnreachable } from '../../lib/utils/assert_unreachable';
 import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
 import { performInTmpDir } from '../../lib/utils/perform_in_tmp_dir';
 import { MetaStackBuilder } from '../../wrapper-classes';
@@ -29,19 +30,31 @@ export async function editDownstack(
   const stackEdits = opts?.inputPath
     ? parseEditFile({ filePath: opts.inputPath }, context) // allow users to pass a pre-written file, mostly for unit tests.
     : await promptForEdit(stack, context);
-  applyStackEdits(stackEdits, context);
+  applyStackEdits(getTrunk(context).name, stackEdits, context);
 }
 
 export function applyStackEdits(
+  fromBranchName: string,
   stackEdits: TStackEdit[],
   context: TContext
 ): void {
-  for (let i = 0; i < stackEdits.length; i++) {
-    switch (stackEdits[i].type) {
+  checkoutBranch(fromBranchName, { quiet: true });
+  stackEdits.forEach((stackEdit, index) => {
+    switch (stackEdit.type) {
       case 'pick':
-        applyStackEditPick(stackEdits[i], stackEdits.slice(i), context);
+        applyStackEditPick(
+          {
+            branchName: stackEdit.branchName,
+            remainingEdits: stackEdits.slice(index),
+          },
+          context
+        );
+        break;
+      default:
+        assertUnreachable(stackEdit.type);
+        break;
     }
-  }
+  });
 }
 
 async function promptForEdit(

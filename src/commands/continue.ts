@@ -105,7 +105,7 @@ async function resolveCallstack(
       await repoSyncDeleteMergedBranchesContinuation(frame, context);
       break;
     case 'STACK_EDIT_CONTINUATION':
-      applyStackEdits(frame.remainingEdits, context);
+      applyStackEdits(frame.currentBranchName, frame.remainingEdits, context);
       break;
     default:
       assertUnreachable(frame);
