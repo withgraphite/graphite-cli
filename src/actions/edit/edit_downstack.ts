@@ -8,7 +8,7 @@ import { performInTmpDir } from '../../lib/utils/perform_in_tmp_dir';
 import { MetaStackBuilder } from '../../wrapper-classes';
 import { Stack } from '../../wrapper-classes/stack';
 import { validate } from '../validate';
-import { applyStackEditPick } from './apply_stack_edit_pick';
+import { applyStackEditExec, applyStackEditPick } from './apply_stack_edit';
 import { createStackEditFile } from './create_stack_edit_file';
 import { parseEditFile } from './parse_stack_edit_file';
 import { TStackEdit } from './stack_edits';
@@ -50,8 +50,17 @@ export function applyStackEdits(
           context
         );
         break;
+      case 'exec':
+        applyStackEditExec(
+          {
+            command: stackEdit.command,
+            remainingEdits: stackEdits.slice(index),
+          },
+          context
+        );
+        break;
       default:
-        assertUnreachable(stackEdit.type);
+        assertUnreachable(stackEdit);
         break;
     }
   });
