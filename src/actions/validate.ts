@@ -1,7 +1,7 @@
 import { TContext } from '../lib/context/context';
 import { ValidationFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { logDebug, logInfo } from '../lib/utils';
+import { logDebug } from '../lib/utils';
 import { GitStackBuilder, MetaStackBuilder, Stack } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 import { TScope } from './scope';
@@ -24,7 +24,7 @@ export function validate(scope: TScope, context: TContext): Branch[] {
   // TODO: Remove after migrating validation to parentRevision
   backfillParentShasOnValidatedStack(metaStack, context);
 
-  logInfo(`Current stack is valid`);
+  logDebug(`Current stack is valid`);
   return metaStack
     .branches()
     .filter((b) => !b.isTrunk(context))
