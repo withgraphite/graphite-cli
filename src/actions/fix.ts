@@ -20,7 +20,6 @@ import {
   checkoutBranch,
   getTrunk,
   gpExecSync,
-  logDebug,
   logInfo,
   logWarn,
   rebaseInProgress,
@@ -34,6 +33,7 @@ import {
 } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 import { TScope } from './scope';
+import { getStacksForValidation } from './validate';
 
 // Should be called whenever we change the tip of a branch
 export async function rebaseUpstack(context: TContext): Promise<void> {
@@ -108,29 +108,7 @@ export async function fixAction(
   const currentBranch = currentBranchPrecondition(context);
   uncommittedTrackedChangesPrecondition();
 
-  logDebug(`Determining meta ${opts.scope} from ${currentBranch.name}`);
-  const metaStack =
-    opts.scope === 'FULLSTACK'
-      ? new MetaStackBuilder({
-          useMemoizedResults: true,
-        }).fullStackFromBranch(currentBranch, context)
-      : new MetaStackBuilder({
-          useMemoizedResults: true,
-        }).upstackInclusiveFromBranchWithParents(currentBranch, context);
-  logDebug(`Found meta ${opts.scope}.`);
-  logDebug(metaStack.toString());
-
-  logDebug(`Determining full git ${opts.scope} from ${currentBranch.name}`);
-  const gitStack =
-    opts.scope === 'FULLSTACK'
-      ? new GitStackBuilder({
-          useMemoizedResults: true,
-        }).fullStackFromBranch(currentBranch, context)
-      : new GitStackBuilder({
-          useMemoizedResults: true,
-        }).upstackInclusiveFromBranchWithParents(currentBranch, context);
-  logDebug(`Found full git ${opts.scope}`);
-  logDebug(gitStack.toString());
+  const { metaStack, gitStack } = getStacksForValidation(opts.scope, context);
 
   // Consider noop
   if (metaStack.equals(gitStack)) {
