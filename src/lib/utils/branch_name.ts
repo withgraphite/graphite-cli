@@ -24,9 +24,11 @@ export function newBranchName(
   const branchPrefix = context.userConfig.data.branchPrefix || '';
 
   const date = new Date();
-  const branchDate = `${('0' + (date.getMonth() + 1)).slice(-2)}-${(
-    '0' + date.getDate()
-  ).slice(-2)}-`;
+  const branchDate = getBranchDateEnabled(context)
+    ? `${('0' + (date.getMonth() + 1)).slice(-2)}-${(
+        '0' + date.getDate()
+      ).slice(-2)}-`
+    : '';
 
   const branchMessage = replaceUnsupportedCharacters(commitMessage);
 
@@ -43,4 +45,8 @@ export function setBranchPrefix(newPrefix: string, context: TContext): string {
   const prefix = replaceUnsupportedCharacters(newPrefix);
   context.userConfig.update((data) => (data.branchPrefix = prefix));
   return prefix;
+}
+
+export function getBranchDateEnabled(context: TContext): boolean {
+  return context.userConfig.data.branchDate ?? true;
 }

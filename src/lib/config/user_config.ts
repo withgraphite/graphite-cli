@@ -3,6 +3,7 @@ import { composeConfig } from './compose_config';
 
 const schema = t.shape({
   branchPrefix: t.optional(t.string),
+  branchDate: t.optional(t.boolean),
   authToken: t.optional(t.string),
   tips: t.optional(t.boolean),
   editor: t.optional(t.string),
