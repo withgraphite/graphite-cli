@@ -27,10 +27,18 @@ const args = {
     alias: 'a',
   },
   edit: {
-    describe: `Edit the commit message for an amended, resolved merge conflict. By default true; use --no-edit to set this to false.`,
+    describe: `Modify the existing commit message for an amended, resolved merge conflict.`,
     demandOption: false,
     default: true,
     type: 'boolean',
+  },
+  'no-edit': {
+    type: 'boolean',
+    describe:
+      "Don't modify the existing commit message. Takes precedence over --edit",
+    demandOption: false,
+    default: false,
+    alias: 'n',
   },
 } as const;
 
@@ -56,8 +64,10 @@ export const handler = async (argv: argsT): Promise<void> => {
       addAll();
     }
 
+    const edit = !argv['no-edit'] && argv.edit;
+
     if (pendingRebase) {
-      execSync(`${argv.edit ? '' : 'GIT_EDITOR=true'} git rebase --continue`, {
+      execSync(`${edit ? '' : 'GIT_EDITOR=true'} git rebase --continue`, {
         stdio: 'inherit',
       });
     }
