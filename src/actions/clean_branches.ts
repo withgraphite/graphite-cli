@@ -177,7 +177,7 @@ export async function deleteMergedBranches(
         ].children.filter((child) => child.name !== branch.name);
       }
 
-      deleteBranch(branch);
+      deleteBranch(branch, context);
       delete branchesToDelete[branchToDeleteName];
     } while (branchToDeleteName !== undefined);
   } while (toProcess.length > 0);
@@ -263,11 +263,14 @@ function branchMerged(branch: Branch, context: TContext): boolean {
   return false;
 }
 
-function deleteBranch(branch: Branch) {
+function deleteBranch(branch: Branch, context: TContext) {
   logInfo(`Deleting (${chalk.red(branch.name)})`);
-  deleteBranchAction({
-    branchName: branch.name,
-    force: true,
-  });
+  deleteBranchAction(
+    {
+      branchName: branch.name,
+      force: true,
+    },
+    context
+  );
   cache.clearAll();
 }
