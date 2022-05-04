@@ -1,0 +1,1 @@
+{"version":3,"file":"is_empty_branch.js","sourceRoot":"","sources":["../../../../src/lib/utils/is_empty_branch.ts"],"names":[],"mappings":";;;AAAA,iDAAyC;AAEzC,SAAgB,aAAa,CAAC,UAAkB,EAAE,UAAkB;IAClE,IAAI;QACF,wBAAQ,CACN,sCAAsC,UAAU,IAAI,UAAU,MAAM,CACrE,CAAC;KACH;IAAC,WAAM;QACN,OAAO,KAAK,CAAC;KACd;IACD,OAAO,IAAI,CAAC;AACd,CAAC;AATD,sCASC"}
