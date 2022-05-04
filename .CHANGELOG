@@ -1,3 +1,51 @@
+# 0.18.0 2021-05-04
+
+**New functionality**
+
+- Added an experimental command `gt downstack sync` to pull down the remote copy of a branch and its downstack dependencies from remote. This feature is gated behind a configuration by default, and we are still working on the documentation. If you would like to try it out and help us iterate on the feature, please join the #experimental channel in the Graphite community Slack server!
+- Added additional functionality to `submit` to support the experimental collaboration features. Gated by default.
+- Added additional functionality to `gt repo sync` to support the experimental collaboration features. Gated by default.
+
+**New commands**
+
+- Added a new command `gt branch edit` that runs a native `git rebase --interactive` over the commits on the current branch. This command is intended for advanced Git users who want to make use of the commit structure within a branch while working with Graphite.
+- Added a new command `gt branch show` that runs a native `git log` over the commits on the current branch. Includes a `--patch/-p` option to view the diffs.
+
+**New ways to use existing commands**
+
+- Added an `--insert` option to `gt branch create` which restacks all children of the parent of the new branch onto the new branch itself.
+- Added interactive branch selection for `gt upstack onto` (similar to `gt branch checkout`). No longer requires a positional argument.
+
+- `gt repo sync` now handles `--no-interactive` correctly.
+- `gt commit amend --no-edit` now fails and warns the user when there are no staged changes, just like `gt commmit create`.
+- `--no-edit` is now aliased to `-n` for `gt continue` and `gt commit amend`.
+- `gt continue` now supports `--all/-a` to stage all changes.
+- `submit --no-interactive` no longer un-publishes submitted PRs (unless `--draft` is specified).
+- `gt downstack edit` now supports an `exec/x` option to execute arbitrary shell commands in between branch restacks (based on `git rebase --interactive`).
+- `gt branch delete` now supports deleting the current branch. It checks out the parent (or trunk if Graphite cannot find a parent).
+
+**Fixes**
+
+- Fixed a bug where `submit --no-interactive` could prompt the user for reviewers.
+- Fixed a bug where `gt repo owner` would set the remote as well, breaking `sync` and resulting in having to manually edit the configuration file to get Graphite working again.
+- Fixed a bug where `submit` would fail for certain classes of branch name.
+- Fixed a bug where comments in the `gt downstack edit` file were not respected.
+- Fixed a bug where `p` as an alias for `pick` in `gt downstack edit` did not work properly.
+- Fixed a bug where `fix` could swallow a rebase exception and leave the repo in a bad state.
+- Fixed a bug where `gt branch checkout` interactive selection would fail if executed from an untracked branch.
+- Fixed a bug where `gt branch delete` could fail to delete the branch but leave it in a corrupt state.
+
+**Improvements**
+
+- Improved the speed of `gt downstack edit` and `gt upstack onto` by being smarter about when a rebase is actually necessary.
+- Improved the speed of stack validation for some commands.
+- Cleaned up output of various commands and added more `--debug` logging.
+
+**Under the hood**
+
+- Added infra to backfill the SHA of branch parent in metadata globally wherever it is safe to do so to prepare for an upcoming update to the stack validation algorithm that we expect to improve performance and reduce hangs.
+- Added plenty of tests and refactored code core to many commands for stability and future extensibility.
+
 # 0.17.11 2021-04-23
 
 - Fix an issue introduced in the previous version where the async calls to fill in PR info on `submit` would not be awaited serially, resulting in a poor user experience.
