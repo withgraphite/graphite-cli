@@ -10,6 +10,7 @@ import {
 import { TContext } from '../lib/context/context';
 import { KilledError } from '../lib/errors';
 import { checkoutBranch, getTrunk, logInfo, logTip } from '../lib/utils';
+import { getMergeBase } from '../lib/utils/merge_base';
 import { Branch } from '../wrapper-classes/branch';
 import { deleteBranchAction } from './delete_branch';
 import { currentBranchOntoAction } from './onto/current_branch_onto';
@@ -239,8 +240,10 @@ function branchMerged(branch: Branch, context: TContext): boolean {
 
   const branchName = branch.name;
   const trunk = getTrunk(context).name;
+
+  const mergeBase = getMergeBase(trunk, branchName);
   const cherryCheckProvesMerged = execSync(
-    `mergeBase=$(git merge-base ${trunk} ${branchName}) && git cherry ${trunk} $(git commit-tree $(git rev-parse "${branchName}^{tree}") -p $mergeBase -m _)`
+    `git cherry ${trunk} $(git commit-tree $(git rev-parse "${branchName}^{tree}") -p ${mergeBase} -m _)`
   )
     .toString()
     .trim()
