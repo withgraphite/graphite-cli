@@ -44,5 +44,11 @@ function parseLine(line: string, context: TContext): TStackEdit {
         branchName: rest,
       };
     },
+    exec: (rest: string) => {
+      return {
+        type: 'exec' as const,
+        command: rest,
+      };
+    },
   }[type](match[2]);
 }

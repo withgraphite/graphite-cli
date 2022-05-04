@@ -9,7 +9,8 @@ const COLUMN_SPACING = ' '.repeat(5);
 const FILE_FOOTER = [
   '#',
   '# Operations (applied bottom to top):',
-  '# p, pick <branch> = use branch (branches are rebased onto trunk in the specified order) ',
+  '# p, pick <branch> = use branch (branches are rebased onto trunk in the specified order)',
+  '# x, exec <command> = run command (the rest of the line) using shell',
 ];
 
 /* Example file:
@@ -21,7 +22,7 @@ pick    gf--02-09-first
 #
 # Operations:
 # p, pick <branch> = use branch (branches are rebased onto trunk in the specified order)
-
+# x, exec <command> = run command (the rest of the line) using shell
 */
 
 export function createStackEditFile(
