@@ -51,7 +51,7 @@ function getRemoteParentOrThrow(branchName: string, remote: string): string {
         `Metadata for ${chalk.yellow(
           branchName
         )} does not exist on remote ${remote}.`,
-        `Only branches submitted with a multiplayer-enabled version of Graphite can be synced from remote.`,
+        `Graphite can only sync branches from remote if they are submitted from a version of Graphite that supports collaboration.`,
       ].join('\n')
     );
   }
@@ -62,7 +62,7 @@ function getRemoteParentOrThrow(branchName: string, remote: string): string {
     throw new ExitFailedError(
       [
         `Could not find a parent for ${branchName} on remote ${remote}.`,
-        `Only branches submitted with Graphite can be synced from remote.`,
+        `Graphite can only sync branches from remote if they are submitted from a version of Graphite that supports collaboration.`,
       ].join('\n')
     );
   }
