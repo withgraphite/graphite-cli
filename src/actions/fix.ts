@@ -238,12 +238,17 @@ function restackUpstack(
         command: `git rebase --onto ${parentBranch.name} ${mergeBase} ${branch.name}`,
         options: { stdio: 'ignore' },
       },
-      () => {
+      (err) => {
         if (rebaseInProgress()) {
           throw new RebaseConflictError(
             `Interactive rebase in progress, cannot fix (${branch.name}) onto (${parentBranch.name}).`,
             args.mergeConflictCallstack,
             context
+          );
+        } else {
+          throw new ExitFailedError(
+            `Rebase failed when moving (${branch.name}) onto (${parentBranch.name}).`,
+            err
           );
         }
       }
