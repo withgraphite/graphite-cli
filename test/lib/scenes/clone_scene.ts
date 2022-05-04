@@ -30,7 +30,7 @@ export class CloneScene extends AbstractScene {
     );
     fs.writeFileSync(
       `${this.dir}/.git/.graphite_user_config`,
-      JSON.stringify({ multiplayerEnabled: true }, null, 2)
+      JSON.stringify({ experimental: true }, null, 2)
     );
 
     process.chdir(this.dir);

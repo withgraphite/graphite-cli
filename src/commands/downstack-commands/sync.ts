@@ -20,11 +20,11 @@ export const description = 'Sync a branch and its downstack from remote.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    if (!context.userConfig.data.multiplayerEnabled) {
+    if (!context.userConfig.data.experimental) {
       throw new ExitFailedError(
-        `The experimental multiplayer features are disabled in your user config. To enable, set the following property in ${chalk.yellow(
-          '$HOME/.graphite_user_config'
-        )}:\n\n\t"multiplayerEnabled": true\n\nNOTE: a trailing comma will break our fragile JSON parser.`
+        `Experimental features are disabled in your user config. To enable, run:\n\n${chalk.yellow(
+          'gt user experimental --enable'
+        )}`
       );
     }
 
