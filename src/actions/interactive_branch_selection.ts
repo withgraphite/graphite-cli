@@ -1,7 +1,7 @@
 import prompts from 'prompts';
 import { TContext } from '../lib/context/context';
 import { ExitCancelledError } from '../lib/errors';
-import { getTrunk } from '../lib/utils';
+import { getTrunk, logDebug } from '../lib/utils';
 import { MetaStackBuilder } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 
@@ -10,25 +10,22 @@ export async function interactiveBranchSelection(
   opts: { message: string; omitCurrentUpstack?: boolean }
 ): Promise<string> {
   const currentBranch = Branch.getCurrentBranch();
+  const trunk = getTrunk(context);
 
-  const stack = new MetaStackBuilder().fullStackFromBranch(
-    getTrunk(context),
-    context
-  );
+  const stack = new MetaStackBuilder().fullStackFromBranch(trunk, context);
 
   const choices = stack.toPromptChoices(
     opts?.omitCurrentUpstack ? currentBranch?.name : undefined
   );
 
-  const initialBranchName = currentBranch
-    ? opts?.omitCurrentUpstack
-      ? currentBranch.getParentBranchName() ?? ''
-      : currentBranch.name
-    : undefined;
+  const initialBranchName =
+    currentBranch && currentBranch.name in stack.branches
+      ? opts?.omitCurrentUpstack
+        ? currentBranch.getParentBranchName() ?? trunk.name
+        : currentBranch.name
+      : trunk.name;
 
-  const initial = initialBranchName
-    ? choices.map((c) => c.value).indexOf(initialBranchName)
-    : undefined;
+  const initial = choices.map((c) => c.value).indexOf(initialBranchName);
 
   const chosenBranch = (
     await prompts(
@@ -47,5 +44,6 @@ export async function interactiveBranchSelection(
     )
   ).branch;
 
+  logDebug(`Selected ${chosenBranch}`);
   return chosenBranch;
 }

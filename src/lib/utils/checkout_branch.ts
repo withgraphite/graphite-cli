@@ -7,8 +7,8 @@ export function checkoutBranch(
 ): void {
   gpExecSync(
     { command: `git switch ${opts?.quiet ? '-q' : ''} "${branch}"` },
-    (err) => {
-      throw new ExitFailedError(`Failed to checkout branch (${branch})`, err);
+    () => {
+      throw new ExitFailedError(`Failed to checkout branch (${branch})`);
     }
   );
 }
