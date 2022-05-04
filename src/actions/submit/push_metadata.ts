@@ -9,7 +9,7 @@ export async function pushMetadata(
   branchesPushedToRemote: Branch[],
   context: TContext
 ): Promise<void> {
-  if (!context.userConfig.data.multiplayerEnabled) {
+  if (!context.userConfig.data.experimental) {
     return;
   }
 

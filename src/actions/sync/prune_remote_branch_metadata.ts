@@ -9,7 +9,7 @@ export async function pruneRemoteBranchMetadata(
   context: TContext,
   force: boolean
 ): Promise<void> {
-  if (!context.userConfig.data.multiplayerEnabled) {
+  if (!context.userConfig.data.experimental) {
     return;
   }
 

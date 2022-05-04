@@ -28,7 +28,7 @@ export function pull(context: TContext, oldBranchName: string): void {
   gpExecSync(
     {
       command: `git fetch ${remote} "+refs/heads/*:refs/remotes/${remote}/*"${
-        context.userConfig.data.multiplayerEnabled
+        context.userConfig.data.experimental
           ? ` "+refs/branch-metadata/*:refs/${remote}-branch-metadata/*"`
           : ''
       }`,

@@ -6,7 +6,7 @@ const schema = t.shape({
   authToken: t.optional(t.string),
   tips: t.optional(t.boolean),
   editor: t.optional(t.string),
-  multiplayerEnabled: t.optional(t.boolean),
+  experimental: t.optional(t.boolean),
 });
 
 export const userConfigFactory = composeConfig({
