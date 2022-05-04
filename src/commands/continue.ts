@@ -12,12 +12,20 @@ import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_
 import { TContext } from '../lib/context/context';
 import { PreconditionsFailedError } from '../lib/errors';
 import { profile } from '../lib/telemetry';
+import { addAll } from '../lib/utils/addAll';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 import { rebaseInProgress } from '../lib/utils/rebase_in_progress';
 import { Branch } from '../wrapper-classes/branch';
 import { deleteMergedBranchesContinuation } from './repo-commands/fix';
 
 const args = {
+  all: {
+    describe: `Stage all changes before continuing.`,
+    demandOption: false,
+    default: false,
+    type: 'boolean',
+    alias: 'a',
+  },
   edit: {
     describe: `Edit the commit message for an amended, resolved merge conflict. By default true; use --no-edit to set this to false.`,
     demandOption: false,
@@ -42,6 +50,10 @@ export const handler = async (argv: argsT): Promise<void> => {
 
     if (!mostRecentCheckpoint && !pendingRebase) {
       throw new PreconditionsFailedError(`No Graphite command to continue.`);
+    }
+
+    if (argv.all) {
+      addAll();
     }
 
     if (pendingRebase) {
