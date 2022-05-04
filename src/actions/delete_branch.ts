@@ -6,12 +6,6 @@ export function deleteBranchAction(args: {
   branchName: string;
   force: boolean;
 }): void {
-  const meta = new MetadataRef(args.branchName);
-
-  // No need for a try-catch here; this already silently does nothing if the
-  // metadata does not exist.
-  meta.delete();
-
   gpExecSync(
     {
       command: `git branch ${args.force ? '-D' : '-d'} ${args.branchName}`,
@@ -29,4 +23,8 @@ export function deleteBranchAction(args: {
       );
     }
   );
+
+  // No need for a try-catch here; this already silently does nothing if the
+  // metadata does not exist.
+  new MetadataRef(args.branchName).delete();
 }
