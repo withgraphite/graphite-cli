@@ -48,10 +48,10 @@ function getRemoteParentOrThrow(branchName: string, remote: string): string {
   if (!Branch.metaExistsOnRemote(branchName, remote)) {
     throw new ExitFailedError(
       [
-        `Metadata for ${chalk.red(
+        `Metadata for ${chalk.yellow(
           branchName
         )} does not exist on remote ${remote}.`,
-        `Only branches submitted with Graphite can be synced from remote.`,
+        `Only branches submitted with a multiplayer-enabled version of Graphite can be synced from remote.`,
       ].join('\n')
     );
   }
