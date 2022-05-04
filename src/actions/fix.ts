@@ -229,9 +229,7 @@ function restackUpstack(
     );
   }
 
-  if (parentBranch.ref(context) === mergeBase) {
-    logInfo(`No fix needed for (${branch.name}) on (${parentBranch.name})`);
-  } else {
+  if (parentBranch.ref(context) !== mergeBase) {
     logInfo(`Fixing (${chalk.green(branch.name)}) on (${parentBranch.name})`);
     checkoutBranch(branch.name, { quiet: true });
     branch.savePrevRef();
