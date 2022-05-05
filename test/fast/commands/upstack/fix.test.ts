@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { Branch } from '../../../../src/wrapper-classes/branch';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
 import { expectCommits } from '../../../lib/utils/expect_commits';
@@ -29,7 +28,7 @@ for (const scene of allScenes) {
         scene.repo.listCurrentBranchCommitMessages().slice(0, 2).join(', ')
       ).to.equal('1.5, 1');
 
-      scene.repo.execCliCommand('upstack fix --rebase -q');
+      scene.repo.execCliCommand('upstack fix -q');
 
       expect(scene.repo.currentBranchName()).to.equal('main');
 
@@ -47,13 +46,13 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('main');
       scene.repo.createChangeAndCommit('1.5');
 
-      scene.repo.execCliCommand('upstack fix --rebase -q');
+      scene.repo.execCliCommand('upstack fix -q');
       scene.repo.finishInteractiveRebase();
 
       expect(scene.repo.rebaseInProgress()).to.eq(false);
       expect(scene.repo.currentBranchName()).to.eq('a');
 
-      scene.repo.execCliCommand('upstack fix --rebase -q');
+      scene.repo.execCliCommand('upstack fix -q');
       scene.repo.finishInteractiveRebase();
 
       expect(scene.repo.currentBranchName()).to.eq('b');
@@ -72,7 +71,7 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('a');
       scene.repo.createChangeAndCommit('1.5', '1.5');
 
-      scene.repo.execCliCommand('upstack fix --rebase -q');
+      scene.repo.execCliCommand('upstack fix -q');
 
       scene.repo.checkoutBranch('b');
 
@@ -95,85 +94,12 @@ for (const scene of allScenes) {
 
       scene.repo.checkoutBranch('a');
 
-      scene.repo.execCliCommand('upstack fix --rebase -q');
+      scene.repo.execCliCommand('upstack fix -q');
 
       scene.repo.checkoutBranch('b');
 
       expect(scene.repo.currentBranchName()).to.eq('b');
       expectCommits(scene.repo, 'b, 2.5, a, 1');
-    });
-
-    // regen tests
-
-    it('Can regen a stack from scratch', () => {
-      scene.repo.createChange('2', '2');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
-
-      scene.repo.createChangeAndCommit('3');
-      scene.repo.createAndCheckoutBranch('b');
-      scene.repo.createChangeAndCommit('4');
-
-      const branch = new Branch('b');
-
-      expect(
-        branch.stackByTracingMetaParents(scene.context).join(',')
-      ).not.to.equal(branch.stackByTracingGitParents(scene.context).join(','));
-
-      scene.repo.checkoutBranch('a');
-
-      scene.repo.execCliCommand('upstack fix --regen -q');
-
-      scene.repo.checkoutBranch('b');
-
-      expect(
-        branch.stackByTracingMetaParents(scene.context).join(',')
-      ).to.equal(branch.stackByTracingGitParents(scene.context).join(','));
-    });
-
-    it('Can regen from trunk branch', () => {
-      scene.repo.createChange('a');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
-      scene.repo.createAndCheckoutBranch('b');
-      scene.repo.createChangeAndCommit('b');
-
-      scene.repo.checkoutBranch('main');
-      scene.repo.createChangeAndCommit('2');
-
-      scene.repo.createAndCheckoutBranch('c');
-      scene.repo.createChangeAndCommit('c');
-
-      scene.repo.checkoutBranch('main');
-      scene.repo.execCliCommand('upstack fix --regen -q');
-
-      scene.repo.checkoutBranch('b');
-      scene.repo.execCliCommand(`branch prev --no-interactive`);
-      expect(scene.repo.currentBranchName()).to.eq('a');
-      scene.repo.execCliCommand(`branch prev --no-interactive`);
-      expect(scene.repo.currentBranchName()).to.eq('main');
-
-      scene.repo.checkoutBranch('c');
-      scene.repo.execCliCommand(`branch prev --no-interactive`);
-      expect(scene.repo.currentBranchName()).to.eq('main');
-    });
-
-    it('Expect a branch matching main to throw an error', () => {
-      scene.repo.createAndCheckoutBranch('a');
-      expect(() =>
-        scene.repo.execCliCommand('upstack fix --regen -q')
-      ).to.throw(Error);
-    });
-
-    it('Can gen a stack branch head is behind main', () => {
-      scene.repo.createAndCheckoutBranch('a');
-
-      scene.repo.checkoutBranch('main');
-      scene.repo.createChangeAndCommit('2');
-
-      scene.repo.checkoutBranch('a');
-      scene.repo.execCliCommand('upstack fix --regen -q');
-
-      scene.repo.execCliCommand(`branch prev --no-interactive`);
-      expect(scene.repo.currentBranchName()).to.eq('main');
     });
   });
 }
