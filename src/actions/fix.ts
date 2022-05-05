@@ -23,7 +23,6 @@ import { logDebug, logInfo, logWarn } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { GitStackBuilder } from '../wrapper-classes/git_stack_builder';
-import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
 import { Stack } from '../wrapper-classes/stack';
 import { StackNode } from '../wrapper-classes/stack_node';
 import { TScope } from './scope';
@@ -135,15 +134,16 @@ export async function fixAction(
     },
     stackFixActionContinuationFrame,
   ];
-  for (const child of metaStack.source.children) {
+
+  metaStack.source.children.forEach((child) =>
     restackUpstack(
       {
         branch: child.branch,
         mergeConflictCallstack: mergeConflictCallstack,
       },
       context
-    );
-  }
+    )
+  );
 
   stackFixActionContinuation(stackFixActionContinuationFrame);
 }
@@ -161,12 +161,6 @@ export function restackBranch(
   },
   context: TContext
 ): void {
-  const metaStack =
-    new MetaStackBuilder().upstackInclusiveFromBranchWithParents(
-      args.branch,
-      context
-    );
-
   const stackFixActionContinuationFrame = {
     op: 'STACK_FIX_ACTION_CONTINUATION' as const,
     checkoutBranchName: args.branch.name,
@@ -183,7 +177,7 @@ export function restackBranch(
 
   restackUpstack(
     {
-      branch: metaStack.source.branch,
+      branch: args.branch,
       mergeConflictCallstack: mergeConflictCallstack,
     },
     context
@@ -243,15 +237,15 @@ function restackUpstack(
     branch.setParentBranch(parentBranch);
   }
 
-  for (const child of branch.getChildrenFromMeta(context)) {
+  branch.getChildrenFromMeta(context).forEach((child) =>
     restackUpstack(
       {
         branch: child,
         mergeConflictCallstack: args.mergeConflictCallstack,
       },
       context
-    );
-  }
+    )
+  );
 }
 
 function regen(branch: Branch, context: TContext, scope: TFixScope): void {
