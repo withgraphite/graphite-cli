@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context';
 import { PreconditionsFailedError } from '../../lib/errors';
 import { detectUnsubmittedChanges } from '../../lib/utils/detect_unsubmitted_changes';
@@ -164,12 +165,14 @@ async function getPRCreationInfo(
   },
   context: TContext
 ): Promise<TSubmittedPRRequestWithBranch> {
-  logNewline();
-  logInfo(
-    `Enter info for new pull request for ${chalk.yellow(args.branch.name)} ▸ ${
-      args.parentBranchName
-    }:`
-  );
+  if (execStateConfig.interactive()) {
+    logNewline();
+    logInfo(
+      `Enter info for new pull request for ${chalk.yellow(
+        args.branch.name
+      )} ▸ ${args.parentBranchName}:`
+    );
+  }
 
   const submitInfo = {
     title: await getPRTitle(
