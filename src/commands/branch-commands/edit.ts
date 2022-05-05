@@ -12,7 +12,5 @@ export const description =
   'Run an interactive rebase on the entire current branch and fix upstack branches.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
-    await editBranchAction(context);
-  });
+  return profile(argv, canonical, async (context) => editBranchAction(context));
 };
