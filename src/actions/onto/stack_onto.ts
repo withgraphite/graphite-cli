@@ -11,7 +11,7 @@ import { rebaseOnto } from '../../lib/git/rebase';
 import { logInfo } from '../../lib/utils/splog';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
-import { restackBranch } from '../fix';
+import { fixAction } from '../fix';
 import { validate } from '../validate';
 
 export function stackOnto(
@@ -86,9 +86,9 @@ export function stackOntoBaseRebaseContinuation(
     onto: frame.onto,
   };
 
-  restackBranch(
+  fixAction(
     {
-      branch: currentBranch,
+      scope: 'UPSTACK',
       mergeConflictCallstack: [
         stackOntoContinuationFrame,
         ...mergeConflictCallstack,

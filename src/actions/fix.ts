@@ -21,9 +21,12 @@ import {
 } from './validate';
 
 // Should be called whenever we change the tip of a branch
-export function rebaseUpstack(context: TContext): void {
+export function rebaseUpstack(
+  context: TContext,
+  mergeConflictCallstack: TMergeConflictCallstack = []
+): void {
   try {
-    fixAction('UPSTACK', context);
+    fixAction({ scope: 'UPSTACK', mergeConflictCallstack }, context);
   } catch {
     logWarn(
       'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt upstack fix`'
@@ -33,7 +36,16 @@ export function rebaseUpstack(context: TContext): void {
 
 type TFixScope = Exclude<TScope, 'DOWNSTACK'>;
 
-export function fixAction(scope: TFixScope, context: TContext): void {
+export function fixAction(
+  {
+    scope,
+    mergeConflictCallstack = [],
+  }: {
+    scope: TFixScope;
+    mergeConflictCallstack?: TMergeConflictCallstack;
+  },
+  context: TContext
+): void {
   const currentBranch = currentBranchPrecondition();
   uncommittedTrackedChangesPrecondition();
 
@@ -52,26 +64,27 @@ export function fixAction(scope: TFixScope, context: TContext): void {
     return;
   }
 
+  // If we get interrupted and need to continue, first we'll do a stack fix
+  // and then we'll continue the stack fix action.
+  const stackFixFrame = {
+    op: 'STACK_FIX' as const,
+    sourceBranchName: currentBranch.name,
+  };
+
   const stackFixActionContinuationFrame = {
     op: 'STACK_FIX_ACTION_CONTINUATION' as const,
     checkoutBranchName: currentBranch.name,
   };
 
-  // If we get interrupted and need to continue, first we'll do a stack fix
-  // and then we'll continue the stack fix action.
-  const mergeConflictCallstack = [
-    {
-      op: 'STACK_FIX' as const,
-      sourceBranchName: currentBranch.name,
-    },
-    stackFixActionContinuationFrame,
-  ];
-
   metaStack.source.children.forEach((child) =>
     restackUpstack(
       {
         branch: child.branch,
-        mergeConflictCallstack: mergeConflictCallstack,
+        mergeConflictCallstack: [
+          stackFixFrame,
+          stackFixActionContinuationFrame,
+          ...mergeConflictCallstack,
+        ],
       },
       context
     )
@@ -84,38 +97,6 @@ export function stackFixActionContinuation(
   frame: TStackFixActionStackFrame
 ): void {
   checkoutBranch(frame.checkoutBranchName, { quiet: true });
-}
-
-export function restackBranch(
-  args: {
-    branch: Branch;
-    mergeConflictCallstack: TMergeConflictCallstack;
-  },
-  context: TContext
-): void {
-  const stackFixActionContinuationFrame = {
-    op: 'STACK_FIX_ACTION_CONTINUATION' as const,
-    checkoutBranchName: args.branch.name,
-  };
-
-  const mergeConflictCallstack = [
-    {
-      op: 'STACK_FIX' as const,
-      sourceBranchName: args.branch.name,
-    },
-    stackFixActionContinuationFrame,
-    ...args.mergeConflictCallstack,
-  ];
-
-  restackUpstack(
-    {
-      branch: args.branch,
-      mergeConflictCallstack: mergeConflictCallstack,
-    },
-    context
-  );
-
-  stackFixActionContinuation(stackFixActionContinuationFrame);
 }
 
 function restackUpstack(

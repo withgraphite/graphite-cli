@@ -9,6 +9,6 @@ export const description =
 
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    fixAction('UPSTACK', context);
+    fixAction({ scope: 'UPSTACK' }, context);
   });
 };
