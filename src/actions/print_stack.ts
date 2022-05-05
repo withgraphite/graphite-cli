@@ -162,22 +162,22 @@ export function getBranchTitle(
     config.currentBranch?.name === branch.name
       ? chalk.cyan(`${branch.name} (current)`)
       : branch.name;
-  const prNumber = prInfo !== undefined ? `PR #${prInfo.number}` : '';
+  const prNumber = prInfo?.number !== undefined ? `PR #${prInfo.number}` : '';
 
   if (prInfo?.state === 'MERGED') {
-    return `${branchName} ${prNumber} ${getPRState(prInfo) ?? ''}`;
+    return `${branchName} ${prNumber} ${getPRState(prInfo)}`;
   } else if (prInfo?.state === 'CLOSED') {
-    return `${chalk.strikethrough(`${branchName} ${prNumber}`)} ${
-      getPRState(prInfo) ?? ''
-    }`;
+    return `${chalk.strikethrough(`${branchName} ${prNumber}`)} ${getPRState(
+      prInfo
+    )}`;
   } else {
-    return `${chalk.blueBright(branchName)} ${chalk.yellow(prNumber)} ${
-      getPRState(prInfo) ?? ''
-    }`;
+    return `${chalk.blueBright(branchName)} ${chalk.yellow(
+      prNumber
+    )} ${getPRState(prInfo)}`;
   }
 }
 
-function getPRState(prInfo: TBranchPRInfo | undefined): string | undefined {
+function getPRState(prInfo: TBranchPRInfo | undefined): string {
   if (prInfo === undefined) {
     return '';
   }

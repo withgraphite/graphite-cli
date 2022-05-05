@@ -9,12 +9,7 @@ import {
 import { getCommitterDate, getTrunk, gpExecSync, logDebug } from '../lib/utils';
 import { getMergeBase } from '../lib/utils/merge_base';
 import { TContext } from './../lib/context/context';
-import {
-  MetadataRef,
-  TBranchPRInfo,
-  TBranchPriorSubmitInfo,
-  TMeta,
-} from './metadata_ref';
+import { MetadataRef, TBranchPRInfo, TMeta } from './metadata_ref';
 
 type TBranchFilters = {
   useMemoizedResults?: boolean;
@@ -524,27 +519,6 @@ export class Branch {
 
   public branchesWithSameCommit(context: TContext): Branch[] {
     return otherBranchesWithSameCommit(this, context);
-  }
-
-  public upsertPriorSubmitInfo(priorSubmitInfo: TBranchPriorSubmitInfo): void {
-    const meta: TMeta = this.getMeta() || {};
-    meta.priorSubmitInfo = {
-      ...meta.priorSubmitInfo,
-      ...priorSubmitInfo,
-    };
-    this.writeMeta(meta);
-  }
-
-  public getPriorSubmitTitle(): string | undefined {
-    return this.getMeta()?.priorSubmitInfo?.title;
-  }
-
-  public getPriorReviewers(): string[] | undefined {
-    return this.getMeta()?.priorSubmitInfo?.reviewers;
-  }
-
-  public getPriorSubmitBody(): string | undefined {
-    return this.getMeta()?.priorSubmitInfo?.body;
   }
 
   public upsertPRInfo(prInfo: TBranchPRInfo): void {

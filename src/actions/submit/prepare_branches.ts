@@ -190,7 +190,7 @@ async function getPRCreationInfo(
       fetchReviewers: args.reviewers,
     }),
   };
-  args.branch.upsertPriorSubmitInfo(submitInfo);
+  args.branch.upsertPRInfo(submitInfo);
 
   const createAsDraft = args.draftToggle ?? (await getPRDraftStatus());
 
