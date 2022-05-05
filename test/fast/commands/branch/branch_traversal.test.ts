@@ -1,5 +1,7 @@
 import { expect } from 'chai';
-import { allScenes, BasicScene, TrailingProdScene } from '../../../lib/scenes';
+import { allScenes } from '../../../lib/scenes/all_scenes';
+import { BasicScene } from '../../../lib/scenes/basic_scene';
+import { TrailingProdScene } from '../../../lib/scenes/trailing_prod_scene';
 import { configureTest } from '../../../lib/utils/configure_test';
 
 function setupStack(scene: BasicScene | TrailingProdScene) {

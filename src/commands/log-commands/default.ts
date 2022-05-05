@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { printStack } from '../../actions/print_stack';
-import { TContext } from '../../lib/context/context';
-import { profile } from '../../lib/telemetry';
+import { TContext } from '../../lib/context';
+import { profile } from '../../lib/telemetry/profile';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
 

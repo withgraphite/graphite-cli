@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import fs from 'fs-extra';
-import { TrailingProdScene } from '../../../lib/scenes';
+import { TrailingProdScene } from '../../../lib/scenes/trailing_prod_scene';
 import { configureTest } from '../../../lib/utils/configure_test';
 
 for (const scene of [new TrailingProdScene()]) {

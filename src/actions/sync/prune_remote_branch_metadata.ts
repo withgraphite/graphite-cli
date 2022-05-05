@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { TContext } from 'src/lib/context/context';
+import { TContext } from 'src/lib/context';
 import { execStateConfig } from '../../lib/config/exec_state_config';
 import { KilledError } from '../../lib/errors';
 import { gpExecSync } from '../../lib/utils/exec_sync';

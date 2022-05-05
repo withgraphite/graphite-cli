@@ -1,4 +1,4 @@
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { addAll } from '../lib/utils/addAll';
@@ -7,8 +7,8 @@ import { commit } from '../lib/utils/commit';
 import { detectStagedChanges } from '../lib/utils/detect_staged_changes';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { logInfo } from '../lib/utils/splog';
-import { MetaStackBuilder } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
+import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
 import { currentBranchOntoAction } from './onto/current_branch_onto';
 
 // 255 minus 21 (for 'refs/branch-metadata/')

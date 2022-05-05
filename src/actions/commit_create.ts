@@ -1,4 +1,4 @@
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { ensureSomeStagedChangesPrecondition } from '../lib/preconditions';
 import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';

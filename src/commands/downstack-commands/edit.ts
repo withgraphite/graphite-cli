@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { editDownstack } from '../../actions/edit/edit_downstack';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {
   input: {

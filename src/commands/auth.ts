@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { profile } from '../lib/telemetry';
+import { profile } from '../lib/telemetry/profile';
 import { logInfo, logSuccess } from '../lib/utils/splog';
 
 const args = {

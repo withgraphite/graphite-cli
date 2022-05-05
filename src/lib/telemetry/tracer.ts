@@ -181,4 +181,4 @@ class Tracer {
   }
 }
 
-export const globalTracer = new Tracer();
+export const tracer = new Tracer();

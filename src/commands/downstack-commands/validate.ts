@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { validate } from '../../actions/validate';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {} as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;

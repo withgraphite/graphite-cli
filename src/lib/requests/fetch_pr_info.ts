@@ -1,7 +1,7 @@
 import { Branch } from '../../wrapper-classes/branch';
+import { initContext, TContext } from '../context';
 import { syncPRInfoForBranches } from '../sync/pr_info';
 import { spawnDetached } from '../utils/spawn';
-import { initContext, TContext } from './../context/context';
 
 export function refreshPRInfoInBackground(context: TContext): void {
   if (!context.repoConfig.graphiteInitialized()) {

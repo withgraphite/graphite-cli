@@ -1,5 +1,5 @@
-import { submitAction } from '../../actions/submit';
-import { profile } from '../../lib/telemetry';
+import { submitAction } from '../../actions/submit/submit_action';
+import { profile } from '../../lib/telemetry/profile';
 import { argsT } from '../shared-commands/submit';
 
 export { aliases, args, builder, command } from '../shared-commands/submit';

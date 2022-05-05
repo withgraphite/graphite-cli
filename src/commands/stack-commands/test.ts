@@ -3,15 +3,15 @@ import fs from 'fs-extra';
 import tmp from 'tmp';
 import yargs from 'yargs';
 import { validate } from '../../actions/validate';
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import { ValidationFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 import { checkoutBranch } from '../../lib/utils/checkout_branch';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { logInfo } from '../../lib/utils/splog';
 import { getTrunk } from '../../lib/utils/trunk';
-import { GitStackBuilder } from '../../wrapper-classes';
+import { GitStackBuilder } from '../../wrapper-classes/git_stack_builder';
 
 const args = {
   command: {

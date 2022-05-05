@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { execStateConfig } from '../config/exec_state_config';
+import { execStateConfig } from './config/exec_state_config';
 
 const globalArgumentsOptions = {
   interactive: {

@@ -1,10 +1,10 @@
 import prompts from 'prompts';
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { ExitCancelledError } from '../lib/errors';
 import { logDebug } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
-import { MetaStackBuilder } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
+import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
 
 export async function interactiveBranchSelection(
   context: TContext,

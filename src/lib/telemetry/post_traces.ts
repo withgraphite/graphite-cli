@@ -4,11 +4,14 @@ import { request } from '@withgraphite/retyped-routes';
 import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
-import { getUserEmail, SHOULD_REPORT_TELEMETRY, tracer } from '.';
 import { version } from '../../../package.json';
 import { API_SERVER } from '../api';
-import { initContext, TContext } from '../context/context';
+import { initContext, TContext } from '../context';
+import { tracer } from '../telemetry/tracer';
 import { spawnDetached } from '../utils/spawn';
+import { getUserEmail } from './context';
+
+export const SHOULD_REPORT_TELEMETRY = process.env.NODE_ENV != 'development';
 
 type oldTelemetryT = {
   canonicalCommandName: string;

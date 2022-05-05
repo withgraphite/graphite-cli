@@ -1,11 +1,13 @@
 import chalk from 'chalk';
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { logDebug, logTip } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
-import { GitStackBuilder, Stack, StackNode } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
+import { GitStackBuilder } from '../wrapper-classes/git_stack_builder';
+import { Stack } from '../wrapper-classes/stack';
+import { StackNode } from '../wrapper-classes/stack_node';
 
 function getStacks(context: TContext): {
   fallenStacks: Stack[];

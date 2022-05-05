@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { commitCreateAction } from '../../actions/commit_create';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {
   all: {

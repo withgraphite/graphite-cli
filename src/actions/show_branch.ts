@@ -1,4 +1,4 @@
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { PreconditionsFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { gpExecSync } from '../lib/utils/exec_sync';

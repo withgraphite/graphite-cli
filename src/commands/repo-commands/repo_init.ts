@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { init } from '../../actions/init';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {
   trunk: {

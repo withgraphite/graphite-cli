@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import fs from 'fs-extra';
-import { BasicScene } from '../../lib/scenes';
+import { BasicScene } from '../../lib/scenes/basic_scene';
 import { configureTest } from '../../lib/utils/configure_test';
 
 for (const scene of [new BasicScene()]) {

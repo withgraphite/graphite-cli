@@ -1,4 +1,4 @@
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import {
   ExitFailedError,
   PreconditionsFailedError,

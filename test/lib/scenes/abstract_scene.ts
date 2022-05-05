@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import tmp from 'tmp';
-import { initContext, TContext } from '../../../src/lib/context/context';
+import { initContext, TContext } from '../../../src/lib/context';
 import { GitRepo } from '../../../src/lib/utils/git_repo';
 
 export abstract class AbstractScene {

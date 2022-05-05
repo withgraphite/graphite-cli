@@ -1,10 +1,10 @@
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
 import { checkoutBranch } from '../lib/utils/checkout_branch';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { getTrunk } from '../lib/utils/trunk';
-import { MetadataRef } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
+import { MetadataRef } from '../wrapper-classes/metadata_ref';
 
 export function deleteBranchAction(
   args: {

@@ -1,6 +1,6 @@
 import * as t from '@withgraphite/retype';
+import { TContext } from '../context';
 import { StackedEditSchema } from './../../actions/edit/stack_edits';
-import { TContext } from './../context/context';
 import { composeConfig } from './compose_config';
 
 /**

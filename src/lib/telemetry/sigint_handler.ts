@@ -1,5 +1,6 @@
-import { postTelemetryInBackground, tracer } from '.';
 import { KilledError } from '../errors';
+import { postTelemetryInBackground } from './post_traces';
+import { tracer } from './tracer';
 
 export function registerSigintHandler(opts: {
   commandName: string;

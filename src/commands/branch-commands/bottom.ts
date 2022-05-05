@@ -4,7 +4,7 @@ import {
   TraversalDirection,
 } from '../../actions/branch_traversal';
 import { execStateConfig } from '../../lib/config/exec_state_config';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {} as const;
 

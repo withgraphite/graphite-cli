@@ -1,4 +1,4 @@
-import { allScenes } from '../../../lib/scenes';
+import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
 import { expectCommits } from '../../../lib/utils/expect_commits';
 

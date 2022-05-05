@@ -1,9 +1,9 @@
-import { Branch } from '../../wrapper-classes/branch';
+import { Branch } from '../wrapper-classes/branch';
 import {
   persistMergeConflictCallstack,
   TMergeConflictCallstack,
-} from '../config/merge_conflict_callstack_config';
-import { TContext } from '../context/context';
+} from './config/merge_conflict_callstack_config';
+import { TContext } from './context';
 
 class ExitError extends Error {}
 class ExitCancelledError extends ExitError {

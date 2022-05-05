@@ -2,8 +2,8 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { deleteMergedBranches } from '../../actions/clean_branches';
 import { fixDanglingBranches } from '../../actions/fix_dangling_branches';
-import { TContext } from '../../lib/context/context';
-import { profile } from '../../lib/telemetry';
+import { TContext } from '../../lib/context';
+import { profile } from '../../lib/telemetry/profile';
 import { logInfo, logNewline, logTip } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 

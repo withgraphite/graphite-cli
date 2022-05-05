@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import yargs from 'yargs';
-import { captureState, recreateState } from '../../lib/debug-context';
-import { profile } from '../../lib/telemetry';
+import { captureState, recreateState } from '../../lib/debugContext';
+import { profile } from '../../lib/telemetry/profile';
 import { logInfo } from '../../lib/utils/splog';
 
 const args = {

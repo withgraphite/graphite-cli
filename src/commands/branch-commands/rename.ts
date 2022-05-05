@@ -3,11 +3,11 @@ import yargs from 'yargs';
 import { cache } from '../../lib/config/cache';
 import { ExitFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { logInfo } from '../../lib/utils/splog';
-import { MetadataRef } from '../../wrapper-classes';
 import { Branch } from '../../wrapper-classes/branch';
+import { MetadataRef } from '../../wrapper-classes/metadata_ref';
 
 const args = {
   'new-branch-name': {

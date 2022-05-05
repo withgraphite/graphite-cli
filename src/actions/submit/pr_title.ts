@@ -1,5 +1,5 @@
 import prompts from 'prompts';
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
 import { getSingleCommitOnBranch } from '../../lib/utils/single_commit';
 import { Branch } from '../../wrapper-classes/branch';

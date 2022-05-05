@@ -4,7 +4,7 @@ import {
   TMergeConflictCallstack,
   TStackFixActionStackFrame,
 } from '../lib/config/merge_conflict_callstack_config';
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import {
   ExitCancelledError,
   ExitFailedError,
@@ -21,13 +21,11 @@ import { rebaseInProgress } from '../lib/utils/rebase_in_progress';
 import { rebaseOnto } from '../lib/utils/rebase_onto';
 import { logDebug, logInfo, logWarn } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
-import {
-  GitStackBuilder,
-  MetaStackBuilder,
-  Stack,
-  StackNode,
-} from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
+import { GitStackBuilder } from '../wrapper-classes/git_stack_builder';
+import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
+import { Stack } from '../wrapper-classes/stack';
+import { StackNode } from '../wrapper-classes/stack_node';
 import { TScope } from './scope';
 import {
   backfillParentShasOnValidatedStack,

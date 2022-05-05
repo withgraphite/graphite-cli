@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { syncAction } from '../../actions/sync/sync';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {
   delete: {

@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import cp from 'child_process';
-import { logError, logInfo } from '../utils/splog';
+import { logError, logInfo } from './utils/splog';
 
 const GIT_COMMAND_ALLOWLIST = [
   'add',

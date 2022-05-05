@@ -1,8 +1,8 @@
 import prompts from 'prompts';
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import { logInfo, logNewline, logTip } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
-import { submitAction } from '../submit';
+import { submitAction } from '../submit/submit_action';
 
 export async function resubmitBranchesWithNewBases(
   force: boolean,

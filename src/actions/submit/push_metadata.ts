@@ -1,10 +1,10 @@
 import chalk from 'chalk';
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import { ExitFailedError } from '../../lib/errors';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { logError, logInfo, logNewline } from '../../lib/utils/splog';
-import { MetadataRef } from '../../wrapper-classes';
 import { Branch } from '../../wrapper-classes/branch';
+import { MetadataRef } from '../../wrapper-classes/metadata_ref';
 
 export async function pushMetadata(
   branchesPushedToRemote: Branch[],

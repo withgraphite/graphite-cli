@@ -1,9 +1,10 @@
-import { Stack, StackNode } from '.';
 import { TScope } from '../actions/scope';
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { logDebug } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from './branch';
+import { Stack } from './stack';
+import { StackNode } from './stack_node';
 
 export abstract class AbstractStackBuilder {
   useMemoizedResults: boolean;

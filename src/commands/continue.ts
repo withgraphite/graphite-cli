@@ -9,9 +9,9 @@ import {
 } from '../actions/onto/stack_onto';
 import { repoSyncDeleteMergedBranchesContinuation } from '../actions/sync/sync';
 import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_config';
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { PreconditionsFailedError } from '../lib/errors';
-import { profile } from '../lib/telemetry';
+import { profile } from '../lib/telemetry/profile';
 import { addAll } from '../lib/utils/addAll';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 import { rebaseInProgress } from '../lib/utils/rebase_in_progress';

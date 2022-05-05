@@ -1,5 +1,5 @@
 import yargs, { Arguments } from 'yargs';
-import { initContext } from '../lib/context/context';
+import { initContext } from '../lib/context';
 import { Branch } from '../wrapper-classes/branch';
 
 yargs.completion('completion', (current, argv) => {
