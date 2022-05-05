@@ -1,6 +1,6 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
-import { logError } from '../../lib/utils';
+import { logError } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { API_SERVER } from '../api';
 import { TContext } from './../context/context';

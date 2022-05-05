@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import { API_SERVER } from '../../lib/api';
 import { TContext } from '../../lib/context/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
-import { logError, logInfo, logNewline } from '../../lib/utils';
+import { logError, logInfo, logNewline } from '../../lib/utils/splog';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
 import { TSubmittedPRRequest } from './submit';

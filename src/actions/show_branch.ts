@@ -1,7 +1,7 @@
 import { TContext } from '../lib/context/context';
 import { PreconditionsFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { gpExecSync } from '../lib/utils';
+import { gpExecSync } from '../lib/utils/exec_sync';
 
 export async function showBranchAction(
   context: TContext,

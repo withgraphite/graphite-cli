@@ -1,5 +1,5 @@
 import { ExitFailedError } from '../errors';
-import { gpExecSync } from './index';
+import { gpExecSync } from './exec_sync';
 
 export function checkoutBranch(
   branch: string,

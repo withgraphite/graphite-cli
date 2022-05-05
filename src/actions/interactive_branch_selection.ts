@@ -1,7 +1,8 @@
 import prompts from 'prompts';
 import { TContext } from '../lib/context/context';
 import { ExitCancelledError } from '../lib/errors';
-import { getTrunk, logDebug } from '../lib/utils';
+import { logDebug } from '../lib/utils/splog';
+import { getTrunk } from '../lib/utils/trunk';
 import { MetaStackBuilder } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 

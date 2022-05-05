@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { profile } from '../lib/telemetry';
-import { logInfo, logSuccess } from '../lib/utils';
+import { logInfo, logSuccess } from '../lib/utils/splog';
 
 const args = {
   token: {

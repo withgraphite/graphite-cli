@@ -5,7 +5,8 @@ import { MetadataRef } from '../../wrapper-classes/metadata_ref';
 import { getBranchToRefMapping } from '../git-refs/branch_ref';
 import { getRevListGitTree } from '../git-refs/branch_relations';
 import { currentBranchPrecondition } from '../preconditions';
-import { gpExecSync, logInfo, logWarn } from '../utils';
+import { gpExecSync } from '../utils/exec_sync';
+import { logInfo, logWarn } from '../utils/splog';
 import { TContext } from './../context/context';
 
 type stateT = {

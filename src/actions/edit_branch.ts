@@ -5,7 +5,8 @@ import {
   RebaseConflictError,
 } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { gpExecSync, rebaseInProgress } from '../lib/utils';
+import { gpExecSync } from '../lib/utils/exec_sync';
+import { rebaseInProgress } from '../lib/utils/rebase_in_progress';
 import { rebaseUpstack } from './fix';
 
 export async function editBranchAction(context: TContext): Promise<void> {

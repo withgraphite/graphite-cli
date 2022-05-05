@@ -1,7 +1,8 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry';
-import { gpExecSync, logInfo, logWarn } from '../../lib/utils';
+import { gpExecSync } from '../../lib/utils/exec_sync';
+import { logInfo, logWarn } from '../../lib/utils/splog';
 
 const args = {
   add: {

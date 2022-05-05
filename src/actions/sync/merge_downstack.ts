@@ -3,7 +3,8 @@ import prompts from 'prompts';
 import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context/context';
 import { ExitFailedError, KilledError } from '../../lib/errors';
-import { getTrunk, logInfo } from '../../lib/utils';
+import { logInfo } from '../../lib/utils/splog';
+import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
 
 export async function mergeDownstack(

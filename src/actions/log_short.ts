@@ -2,7 +2,8 @@ import chalk from 'chalk';
 import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { getTrunk, logDebug, logTip } from '../lib/utils';
+import { logDebug, logTip } from '../lib/utils/splog';
+import { getTrunk } from '../lib/utils/trunk';
 import { GitStackBuilder, Stack, StackNode } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 

@@ -1,5 +1,5 @@
-import { gpExecSync } from '.';
 import { ExitFailedError } from '../errors';
+import { gpExecSync } from './exec_sync';
 
 function doChangesExist(cmd: string): boolean {
   return (

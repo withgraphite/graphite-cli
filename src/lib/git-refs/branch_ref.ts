@@ -2,7 +2,7 @@ import { Branch } from '../../wrapper-classes/branch';
 import { cache } from '../config/cache';
 import { TContext } from '../context/context';
 import { ExitFailedError } from '../errors';
-import { gpExecSync } from '../utils';
+import { gpExecSync } from '../utils/exec_sync';
 
 function refreshRefsCache(context: TContext): void {
   cache.clearBranchRefs();

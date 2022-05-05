@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { gpExecSync } from '../lib/utils';
+import { gpExecSync } from '../lib/utils/exec_sync';
 
 export class Commit {
   sha: string;

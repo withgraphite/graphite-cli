@@ -4,7 +4,7 @@ import { deleteMergedBranches } from '../../actions/clean_branches';
 import { fixDanglingBranches } from '../../actions/fix_dangling_branches';
 import { TContext } from '../../lib/context/context';
 import { profile } from '../../lib/telemetry';
-import { logInfo, logNewline, logTip } from '../../lib/utils';
+import { logInfo, logNewline, logTip } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 
 const args = {

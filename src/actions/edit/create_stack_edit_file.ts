@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { TContext } from '../../lib/context/context';
-import { getTrunk } from '../../lib/utils';
+import { getTrunk } from '../../lib/utils/trunk';
 import { Stack } from '../../wrapper-classes/stack';
 
 const FILE_NAME = 'graphite_stack_edit';

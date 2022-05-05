@@ -4,7 +4,7 @@ import { getBranchTitle } from '../../actions/print_stack';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { syncPRInfoForBranchByName } from '../../lib/sync/pr_info';
 import { profile } from '../../lib/telemetry';
-import { logError } from '../../lib/utils';
+import { logError } from '../../lib/utils/splog';
 
 const args = {
   reset: {

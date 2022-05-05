@@ -1,6 +1,6 @@
-import { gpExecSync } from '.';
 import { execStateConfig } from '../config/exec_state_config';
 import { ExitFailedError } from '../errors';
+import { gpExecSync } from './exec_sync';
 
 const EMPTY_COMMIT_MESSAGE_INFO = [
   '\n',

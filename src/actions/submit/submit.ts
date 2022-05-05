@@ -7,7 +7,7 @@ import { TContext } from '../../lib/context/context';
 import { KilledError } from '../../lib/errors';
 import { cliAuthPrecondition } from '../../lib/preconditions';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
-import { logInfo, logNewline } from '../../lib/utils';
+import { logInfo, logNewline } from '../../lib/utils/splog';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
 import { TScope } from '../scope';

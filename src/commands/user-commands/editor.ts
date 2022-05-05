@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry';
-import { logInfo } from '../../lib/utils';
 import { setDefaultEditor } from '../../lib/utils/default_editor';
+import { logInfo } from '../../lib/utils/splog';
 
 const args = {
   set: {

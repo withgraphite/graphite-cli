@@ -6,7 +6,7 @@ import { API_SERVER } from '../../../lib/api';
 import { cliAuthPrecondition } from '../../../lib/preconditions';
 import { assertUnreachable } from '../../../lib/utils/assert_unreachable';
 import { TContext } from '../../context/context';
-import { logMessageFromGraphite, logNewline } from '../../utils';
+import { logMessageFromGraphite, logNewline } from '../../utils/splog';
 import { TSurveyResponse } from './../../config/survey_config';
 import { postSurveyResponse } from './post_survey';
 

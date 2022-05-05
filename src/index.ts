@@ -8,11 +8,9 @@ import {
 } from './lib/global-arguments';
 import { passthrough } from './lib/passthrough';
 import { postTelemetryInBackground } from './lib/telemetry';
-import {
-  logError,
-  preprocessCommand,
-  signpostDeprecatedCommands,
-} from './lib/utils';
+import { preprocessCommand } from './lib/utils/preprocess_command';
+import { signpostDeprecatedCommands } from './lib/utils/signpost_deprecated_commands';
+import { logError } from './lib/utils/splog';
 
 // https://www.npmjs.com/package/tmp#graceful-cleanup
 tmp.setGracefulCleanup();

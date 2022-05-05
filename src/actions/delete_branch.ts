@@ -1,6 +1,8 @@
 import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
-import { checkoutBranch, getTrunk, gpExecSync } from '../lib/utils';
+import { checkoutBranch } from '../lib/utils/checkout_branch';
+import { gpExecSync } from '../lib/utils/exec_sync';
+import { getTrunk } from '../lib/utils/trunk';
 import { MetadataRef } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 

@@ -9,8 +9,8 @@ import {
 } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
-import { logError, logInfo, logNewline, logWarn } from '../../lib/utils';
 import { isEmptyBranch } from '../../lib/utils/is_empty_branch';
+import { logError, logInfo, logNewline, logWarn } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { validate } from '../validate';
 import { TSubmitScope } from './submit';

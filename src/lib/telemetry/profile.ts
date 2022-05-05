@@ -24,15 +24,10 @@ import {
   ValidationFailedError,
 } from '../errors';
 import { refreshPRInfoInBackground } from '../requests';
-import {
-  logError,
-  logInfo,
-  logNewline,
-  logWarn,
-  parseArgs,
-  VALIDATION_HELPER_MESSAGE,
-} from '../utils';
 import { printGraphiteMergeConflictStatus } from '../utils/merge_conflict_help';
+import { parseArgs } from '../utils/parse_args';
+import { logError, logInfo, logNewline, logWarn } from '../utils/splog';
+import { VALIDATION_HELPER_MESSAGE } from '../utils/validation_helper_message';
 import { TContext } from './../context/context';
 import { getUserEmail } from './context';
 import { postSurveyResponsesInBackground } from './survey/post_survey';

@@ -2,7 +2,8 @@ import chalk from 'chalk';
 import { Branch } from '../../wrapper-classes/branch';
 import { cache } from '../config/cache';
 import { tracer } from '../telemetry';
-import { gpExecSync, logDebug } from '../utils';
+import { gpExecSync } from '../utils/exec_sync';
+import { logDebug } from '../utils/splog';
 import { TContext } from './../context/context';
 import { getRef } from './branch_ref';
 

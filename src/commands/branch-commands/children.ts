@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry';
-import { logInfo } from '../../lib/utils';
+import { logInfo } from '../../lib/utils/splog';
 
 const args = {} as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;

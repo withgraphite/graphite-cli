@@ -1,14 +1,12 @@
 import { TContext } from '../lib/context/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import {
-  checkoutBranch,
-  detectStagedChanges,
-  gpExecSync,
-  logInfo,
-} from '../lib/utils';
 import { addAll } from '../lib/utils/addAll';
+import { checkoutBranch } from '../lib/utils/checkout_branch';
 import { commit } from '../lib/utils/commit';
+import { detectStagedChanges } from '../lib/utils/detect_staged_changes';
+import { gpExecSync } from '../lib/utils/exec_sync';
+import { logInfo } from '../lib/utils/splog';
 import { MetaStackBuilder } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 import { currentBranchOntoAction } from './onto/current_branch_onto';

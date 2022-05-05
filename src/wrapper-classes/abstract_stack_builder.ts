@@ -1,7 +1,8 @@
 import { Stack, StackNode } from '.';
 import { TScope } from '../actions/scope';
 import { TContext } from '../lib/context/context';
-import { getTrunk, logDebug } from '../lib/utils';
+import { logDebug } from '../lib/utils/splog';
+import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from './branch';
 
 export abstract class AbstractStackBuilder {

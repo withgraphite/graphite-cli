@@ -2,13 +2,8 @@ import chalk from 'chalk';
 import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context/context';
 import { ExitFailedError } from '../../lib/errors';
-import {
-  gpExecSync,
-  logError,
-  logInfo,
-  logNewline,
-  logTip,
-} from '../../lib/utils';
+import { gpExecSync } from '../../lib/utils/exec_sync';
+import { logError, logInfo, logNewline, logTip } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 
 export function pushBranchesToRemote(
