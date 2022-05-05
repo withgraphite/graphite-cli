@@ -4,7 +4,6 @@ import { configureTest } from '../../../lib/utils/configure_test';
 import { expectCommits } from '../../../lib/utils/expect_commits';
 
 for (const scene of allScenes) {
-  // eslint-disable-next-line max-lines-per-function
   describe(`(${scene}): continue upstack onto`, function () {
     configureTest(this, scene);
 

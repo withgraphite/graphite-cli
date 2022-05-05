@@ -18,7 +18,7 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('a');
       scene.repo.createChangeAndAmend('1');
 
-      scene.repo.execCliCommand('stack fix --rebase -q');
+      scene.repo.execCliCommand('stack fix -q');
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
@@ -58,7 +58,7 @@ for (const scene of allScenes) {
 
       scene.repo.checkoutBranch('a');
 
-      scene.repo.execCliCommand('stack fix --rebase -q');
+      scene.repo.execCliCommand('stack fix -q');
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
