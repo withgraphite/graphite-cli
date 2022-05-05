@@ -5,7 +5,6 @@ import { expectBranches } from '../../../lib/utils/expect_branches';
 import { fakeGitSquashAndMerge } from '../../../lib/utils/fake_squash_and_merge';
 
 for (const scene of allScenes) {
-  // eslint-disable-next-line max-lines-per-function
   describe(`(${scene}): repo fix continue`, function () {
     configureTest(this, scene);
 
