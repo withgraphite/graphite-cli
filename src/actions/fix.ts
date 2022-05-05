@@ -102,7 +102,11 @@ export async function fixAction(
   const currentBranch = currentBranchPrecondition(context);
   uncommittedTrackedChangesPrecondition();
 
-  const { metaStack, gitStack } = getStacksForValidation(opts.scope, context);
+  const { metaStack, gitStack } = getStacksForValidation(
+    currentBranch,
+    opts.scope,
+    context
+  );
 
   // Consider noop
   if (metaStack.equals(gitStack)) {
