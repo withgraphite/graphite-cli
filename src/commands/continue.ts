@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import { cleanBranches } from '../actions/clean_branches';
 import { applyStackEdits } from '../actions/edit/edit_downstack';
-import { restackBranch, stackFixActionContinuation } from '../actions/fix';
+import { fixAction, stackFixActionContinuation } from '../actions/fix';
 import {
   stackOntoBaseRebaseContinuation,
   stackOntoFixContinuation,
@@ -15,7 +15,7 @@ import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { profile } from '../lib/telemetry/profile';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 import { gpExecSync } from '../lib/utils/exec_sync';
-import { Branch } from '../wrapper-classes/branch';
+import { logDebug } from '../lib/utils/splog';
 import { deleteMergedBranchesContinuation } from './repo-commands/fix';
 
 const args = {
@@ -93,6 +93,8 @@ async function resolveCallstack(
   const frame = callstack[0];
   const remaining = callstack.slice(1);
 
+  logDebug(`Resolving frame: ${frame.op}`);
+
   switch (frame.op) {
     case 'STACK_ONTO_BASE_REBASE_CONTINUATION':
       stackOntoBaseRebaseContinuation(frame, remaining, context);
@@ -101,12 +103,8 @@ async function resolveCallstack(
       stackOntoFixContinuation(frame);
       break;
     case 'STACK_FIX': {
-      const branch = Branch.branchWithName(frame.sourceBranchName);
-      restackBranch(
-        {
-          branch: branch,
-          mergeConflictCallstack: remaining,
-        },
+      fixAction(
+        { scope: 'UPSTACK', mergeConflictCallstack: remaining },
         context
       );
       break;
