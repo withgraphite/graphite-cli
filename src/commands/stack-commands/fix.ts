@@ -29,7 +29,7 @@ export const handler = async (argv: argsT): Promise<void> => {
   });
 =======
   return profile(argv, canonical, async (context) =>
-    fixAction('FULLSTACK', context)
+    fixAction({ scope: 'FULLSTACK' }, context)
   );
 >>>>>>> 87405014 (feat: remove sf ==regen)
 };
