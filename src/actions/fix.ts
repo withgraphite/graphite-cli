@@ -21,7 +21,7 @@ import {
 } from './validate';
 
 // Should be called whenever we change the tip of a branch
-export async function rebaseUpstack(context: TContext): Promise<void> {
+export function rebaseUpstack(context: TContext): void {
   try {
     fixAction('UPSTACK', context);
   } catch {

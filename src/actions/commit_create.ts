@@ -7,13 +7,13 @@ import {
 } from '../lib/preconditions';
 import { rebaseUpstack } from './fix';
 
-export async function commitCreateAction(
+export function commitCreateAction(
   opts: {
     addAll: boolean;
     message: string | undefined;
   },
   context: TContext
-): Promise<void> {
+): void {
   if (opts.addAll) {
     addAll();
   }
@@ -28,5 +28,5 @@ export async function commitCreateAction(
 
   commit({ message: opts.message });
 
-  await rebaseUpstack(context);
+  rebaseUpstack(context);
 }

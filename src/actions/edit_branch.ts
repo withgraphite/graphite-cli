@@ -4,7 +4,7 @@ import { rebaseInteractive } from '../lib/git/rebase';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { rebaseUpstack } from './fix';
 
-export async function editBranchAction(context: TContext): Promise<void> {
+export function editBranchAction(context: TContext): void {
   const currentBranch = currentBranchPrecondition();
 
   const base = currentBranch.getParentBranchSha();
@@ -24,5 +24,5 @@ export async function editBranchAction(context: TContext): Promise<void> {
 
   rebaseInteractive({ base, currentBranchName: currentBranch.name }, context);
 
-  await rebaseUpstack(context);
+  rebaseUpstack(context);
 }
