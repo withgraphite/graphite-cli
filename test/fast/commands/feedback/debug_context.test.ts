@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import fs from 'fs-extra';
 import { GitRepo } from '../../../../src/lib/utils/git_repo';
 import { TrailingProdScene } from '../../../lib/scenes';
-import { configureTest } from '../../../lib/utils';
+import { configureTest } from '../../../lib/utils/configure_test';
 
 for (const scene of [new TrailingProdScene()]) {
   describe(`(${scene}): feedback debug-context`, function () {

@@ -3,7 +3,8 @@ import fs from 'fs-extra';
 import path from 'path';
 import { performInTmpDir } from '../../../../src/lib/utils/perform_in_tmp_dir';
 import { BasicScene } from '../../../lib/scenes/basic_scene';
-import { configureTest, expectCommits } from '../../../lib/utils';
+import { configureTest } from '../../../lib/utils/configure_test';
+import { expectCommits } from '../../../lib/utils/expect_commits';
 
 const EXEC_OUTPUT = 'output.txt';
 function createStackEditsInput(opts: {

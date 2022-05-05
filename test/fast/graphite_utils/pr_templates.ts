@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import fs from 'fs-extra';
 import path from 'path';
 import { BasicScene } from '../../lib/scenes';
-import { configureTest } from '../../lib/utils';
+import { configureTest } from '../../lib/utils/configure_test';
 
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): find all PR templates`, function () {

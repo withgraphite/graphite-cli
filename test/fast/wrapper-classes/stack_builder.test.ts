@@ -6,7 +6,7 @@ import {
 } from '../../../src/wrapper-classes';
 import { Branch } from '../../../src/wrapper-classes/branch';
 import { allScenes } from '../../lib/scenes';
-import { configureTest } from '../../lib/utils';
+import { configureTest } from '../../lib/utils/configure_test';
 
 for (const scene of allScenes) {
   // eslint-disable-next-line max-lines-per-function

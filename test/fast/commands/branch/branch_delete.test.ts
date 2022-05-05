@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { MetadataRef } from '../../../../src/wrapper-classes';
 import { Branch } from '../../../../src/wrapper-classes/branch';
 import { allScenes } from '../../../lib/scenes';
-import { configureTest } from '../../../lib/utils';
+import { configureTest } from '../../../lib/utils/configure_test';
 import { expectBranches } from '../../../lib/utils/expect_branches';
 
 for (const scene of allScenes) {

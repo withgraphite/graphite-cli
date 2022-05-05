@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import fs from 'fs-extra';
 import { TrailingProdScene } from '../../../lib/scenes';
-import { configureTest } from '../../../lib/utils';
+import { configureTest } from '../../../lib/utils/configure_test';
 
 for (const scene of [new TrailingProdScene()]) {
   describe(`(${scene}): repo ignored-branches`, function () {

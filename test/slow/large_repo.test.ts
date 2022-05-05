@@ -1,5 +1,5 @@
 import { PublicRepoScene } from '../lib/scenes';
-import { configureTest } from '../lib/utils';
+import { configureTest } from '../lib/utils/configure_test';
 
 for (const scene of [
   new PublicRepoScene({

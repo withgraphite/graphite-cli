@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { validate } from '../../../src/actions/validate';
 import { cache } from '../../../src/lib/config/cache';
 import { allScenes, BasicScene, TrailingProdScene } from '../../lib/scenes';
-import { configureTest } from '../../lib/utils';
+import { configureTest } from '../../lib/utils/configure_test';
 
 function setupScene(scene: BasicScene | TrailingProdScene) {
   scene.repo.createChange('a');

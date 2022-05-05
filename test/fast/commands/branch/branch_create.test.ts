@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { unstagedChanges } from '../../../../src/lib/utils/git_status_utils';
 import { Branch } from '../../../../src/wrapper-classes/branch';
 import { allScenes } from '../../../lib/scenes';
-import { configureTest } from '../../../lib/utils';
+import { configureTest } from '../../../lib/utils/configure_test';
 
 for (const scene of allScenes) {
   describe(`(${scene}): branch create`, function () {

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { allScenes } from '../../lib/scenes';
-import { configureTest } from '../../lib/utils';
+import { configureTest } from '../../lib/utils/configure_test';
 
 for (const scene of allScenes) {
   describe(`(${scene}): log short`, function () {

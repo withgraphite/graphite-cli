@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { BasicScene } from '../../lib/scenes';
-import { configureTest } from '../../lib/utils';
+import { configureTest } from '../../lib/utils/configure_test';
 
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): two letter shortcuts`, function () {

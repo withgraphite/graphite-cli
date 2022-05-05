@@ -5,11 +5,9 @@ import fs from 'fs-extra';
 import nock from 'nock';
 import { API_SERVER } from '../../../../src/lib/api';
 import { allScenes } from '../../../lib/scenes';
-import {
-  configureTest,
-  expectBranches,
-  expectCommits,
-} from '../../../lib/utils';
+import { configureTest } from '../../../lib/utils/configure_test';
+import { expectBranches } from '../../../lib/utils/expect_branches';
+import { expectCommits } from '../../../lib/utils/expect_commits';
 import { fakeGitSquashAndMerge } from '../../../lib/utils/fake_squash_and_merge';
 
 for (const scene of allScenes) {

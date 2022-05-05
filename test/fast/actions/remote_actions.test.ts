@@ -7,7 +7,7 @@ import { pull } from '../../../src/actions/sync/pull';
 import { execStateConfig } from '../../../src/lib/config/exec_state_config';
 import { Branch } from '../../../src/wrapper-classes/branch';
 import { CloneScene } from '../../lib/scenes/clone_scene';
-import { configureTest } from '../../lib/utils';
+import { configureTest } from '../../lib/utils/configure_test';
 
 for (const scene of [new CloneScene()]) {
   // eslint-disable-next-line max-lines-per-function

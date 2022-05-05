@@ -5,7 +5,7 @@ import { checkForEmptyBranches } from '../../../src/actions/submit/validate_bran
 import { execStateConfig } from '../../../src/lib/config/exec_state_config';
 import { Branch } from '../../../src/wrapper-classes/branch';
 import { BasicScene } from '../../lib/scenes';
-import { configureTest } from '../../lib/utils';
+import { configureTest } from '../../lib/utils/configure_test';
 
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): correctly infers submit info from commits`, function () {
