@@ -142,8 +142,8 @@ function logRebaseTip(context: TContext): void {
       `Some branch merge-bases have fallen behind their parent branch's latest commit. Consider:`,
       `> gt branch checkout ${getTrunk(
         context
-      )} && gt stack fix --rebase # fix all stacks`,
-      `> gt branch checkout <branch> && gt stack fix --rebase # fix a specific stack`,
+      )} && gt stack fix # fix all stacks`,
+      `> gt branch checkout <branch> && gt stack fix # fix a specific stack`,
       `> gt branch checkout <branch> && gt upstack onto <parent> # fix a stack and update the parent`,
     ].join('\n'),
     context
@@ -155,7 +155,6 @@ function logRegenTip(context: TContext): void {
     [
       'Graphite does not know the parent of untracked branches. Consider:',
       `> gt branch checkout <branch> && gt upstack onto <parent> # fix a stack and update the parent`,
-      `> gt branch checkout <branch> && gt stack fix --regen # generate stack based on current commit tree`,
       `> gt branch delete -f <branch> # delete branch from git`,
     ].join('\n'),
     context
