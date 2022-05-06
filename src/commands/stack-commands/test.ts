@@ -4,7 +4,6 @@ import tmp from 'tmp';
 import yargs from 'yargs';
 import { validate } from '../../actions/validate';
 import { TContext } from '../../lib/context';
-import { ValidationFailedError } from '../../lib/errors';
 import { checkoutBranch } from '../../lib/git/checkout_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry/profile';
@@ -53,7 +52,7 @@ function testStack(
   opts: { skipTrunk: boolean }
 ): void {
   const originalBranch = currentBranchPrecondition();
-  validateStack(context);
+  validate('FULLSTACK', context);
 
   logInfo(chalk.grey(`Getting stack...`));
   const stack = new GitStackBuilder().fullStackFromBranch(
@@ -150,14 +149,4 @@ function logState(state: StateT, refresh: boolean) {
       }`
     );
   });
-}
-
-function validateStack(context: TContext): void {
-  try {
-    validate('FULLSTACK', context);
-  } catch (err) {
-    throw new ValidationFailedError(
-      `Failed to validate fullstack before testing`
-    );
-  }
 }
