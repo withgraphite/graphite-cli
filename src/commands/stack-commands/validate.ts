@@ -12,7 +12,9 @@ export const description =
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
-    validate('FULLSTACK', context);
-  });
+  return profile(
+    argv,
+    canonical,
+    async (context) => void validate('FULLSTACK', context)
+  );
 };
