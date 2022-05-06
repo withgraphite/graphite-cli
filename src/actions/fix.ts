@@ -13,24 +13,10 @@ import { checkoutBranch } from '../lib/git/checkout_branch';
 import { rebaseOnto } from '../lib/git/rebase';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
-import { logDebug, logInfo, logWarn } from '../lib/utils/splog';
+import { logDebug, logInfo } from '../lib/utils/splog';
 import { Branch } from '../wrapper-classes/branch';
 import { TScope } from './scope';
 import { validate } from './validate';
-
-// Should be called whenever we change the tip of a branch
-export function rebaseUpstack(
-  context: TContext,
-  mergeConflictCallstack: TMergeConflictCallstack = []
-): void {
-  try {
-    fixAction({ scope: 'UPSTACK', mergeConflictCallstack }, context);
-  } catch {
-    logWarn(
-      'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt upstack fix`'
-    );
-  }
-}
 
 type TFixScope = Exclude<TScope, 'DOWNSTACK'>;
 
@@ -103,7 +89,7 @@ function restackUpstack(
   const branch = args.branch;
   if (rebaseInProgress()) {
     throw new RebaseConflictError(
-      `Interactive rebase still in progress, cannot fix (${branch.name}).`,
+      'Cannot fix upstack yet; some uncommitted changes remain. Please commit or stash, and then run `gt continue`',
       args.mergeConflictCallstack,
       context
     );
