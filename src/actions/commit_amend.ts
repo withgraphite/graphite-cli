@@ -5,7 +5,7 @@ import {
   currentBranchPrecondition,
   ensureSomeStagedChangesPrecondition,
 } from '../lib/preconditions';
-import { rebaseUpstack } from './fix';
+import { fixAction } from './fix';
 
 export function commitAmendAction(
   opts: {
@@ -31,5 +31,5 @@ export function commitAmendAction(
 
   commit({ amend: true, noEdit: opts.noEdit, message: opts.message });
 
-  rebaseUpstack(context);
+  fixAction({ scope: 'UPSTACK' }, context);
 }
