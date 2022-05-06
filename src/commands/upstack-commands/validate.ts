@@ -12,7 +12,9 @@ export const builder = args;
 export const canonical = 'upstack validate';
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
-    validate('UPSTACK', context);
-  });
+  return profile(
+    argv,
+    canonical,
+    async (context) => void validate('UPSTACK', context)
+  );
 };

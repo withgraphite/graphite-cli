@@ -2,11 +2,7 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context';
-import {
-  KilledError,
-  PreconditionsFailedError,
-  ValidationFailedError,
-} from '../../lib/errors';
+import { KilledError, PreconditionsFailedError } from '../../lib/errors';
 import { isEmptyBranch } from '../../lib/git/is_empty_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
@@ -44,11 +40,7 @@ function getAllBranchesToSubmit(
     return [currentBranchPrecondition()];
   }
 
-  try {
-    return validate(scope, context);
-  } catch {
-    throw new ValidationFailedError(`Validation failed. Will not submit.`);
-  }
+  return validate(scope, context);
 }
 
 function hasAnyMergedBranches(branchesToSubmit: Branch[]): boolean {
