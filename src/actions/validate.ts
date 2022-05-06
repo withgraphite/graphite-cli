@@ -53,12 +53,18 @@ function backfillParentShasOnValidatedStack(
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 function getStacksForValidation(
   currentBranch: Branch,
 ||||||| parent of e12a2701 (refactor: clean up CBP call in validation)
 export function getStacksForValidation(
 =======
 export function getStacksForValidation(
+||||||| parent of 63026503 (refactor: clean up validation some more)
+export function getStacksForValidation(
+=======
+function getStacksForValidation(
+>>>>>>> 63026503 (refactor: clean up validation some more)
   currentBranch: Branch,
 >>>>>>> e12a2701 (refactor: clean up CBP call in validation)
   scope: TScope,
