@@ -2,7 +2,7 @@ import { TContext } from '../lib/context';
 import { PreconditionsFailedError } from '../lib/errors';
 import { rebaseInteractive } from '../lib/git/rebase';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { rebaseUpstack } from './fix';
+import { fixAction } from './fix';
 
 export function editBranchAction(context: TContext): void {
   const currentBranch = currentBranchPrecondition();
@@ -24,5 +24,5 @@ export function editBranchAction(context: TContext): void {
 
   rebaseInteractive({ base, currentBranchName: currentBranch.name }, context);
 
-  rebaseUpstack(context);
+  fixAction({ scope: 'UPSTACK' }, context);
 }
