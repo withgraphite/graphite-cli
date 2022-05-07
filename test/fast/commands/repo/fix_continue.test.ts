@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { allScenes } from '../../../lib/scenes';
-import { configureTest, expectBranches } from '../../../lib/utils';
+import { configureTest } from '../../../lib/utils/configure_test';
+import { expectBranches } from '../../../lib/utils/expect_branches';
 import { fakeGitSquashAndMerge } from '../../../lib/utils/fake_squash_and_merge';
 
 for (const scene of allScenes) {

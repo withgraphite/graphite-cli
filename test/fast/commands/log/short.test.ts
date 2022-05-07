@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import { TrailingProdScene } from '../../../lib/scenes';
-import { configureTest } from '../../../lib/utils';
+import { configureTest } from '../../../lib/utils/configure_test';
 
 for (const scene of [new TrailingProdScene()]) {
   describe(`(${scene}): log short`, function () {

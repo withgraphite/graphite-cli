@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { DEFAULT_GRAPHITE_EDITOR } from '../../../../src/commands/user-commands/editor';
 import { logInfo } from '../../../../src/lib/utils/splog';
 import { BasicScene } from '../../../lib/scenes';
-import { configureTest } from '../../../lib/utils';
+import { configureTest } from '../../../lib/utils/configure_test';
 
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): user editor`, function () {

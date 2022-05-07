@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { allScenes, BasicScene, TrailingProdScene } from '../../../lib/scenes';
-import { configureTest } from '../../../lib/utils';
+import { configureTest } from '../../../lib/utils/configure_test';
 
 function setupStack(scene: BasicScene | TrailingProdScene) {
   scene.repo.createChange('a', 'a');

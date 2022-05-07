@@ -1,5 +1,6 @@
 import { allScenes } from '../../../lib/scenes';
-import { configureTest, expectCommits } from '../../../lib/utils';
+import { configureTest } from '../../../lib/utils/configure_test';
+import { expectCommits } from '../../../lib/utils/expect_commits';
 
 for (const scene of allScenes) {
   describe(`(${scene}): commit create`, function () {
