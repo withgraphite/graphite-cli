@@ -24,11 +24,5 @@ export function editBranchAction(context: TContext): void {
 
   rebaseInteractive({ base, currentBranchName: currentBranch.name }, context);
 
-<<<<<<< HEAD
   fixAction({ scope: 'UPSTACK' }, context);
-||||||| parent of 7ed01259 (refactor: kill all the awaits that lets us kill)
-  await rebaseUpstack(context);
-=======
-  rebaseUpstack(context);
->>>>>>> 7ed01259 (refactor: kill all the awaits that lets us kill)
 }

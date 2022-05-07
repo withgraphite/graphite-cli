@@ -6,6 +6,12 @@ import {
   ensureSomeStagedChangesPrecondition,
 } from '../lib/preconditions';
 import { fixAction } from './fix';
+<<<<<<< HEAD
+||||||| parent of 40b0546e (fix: make fix behavior even more consistent)
+import { rebaseUpstack } from './fix';
+=======
+import { fixAction } from './fix';
+>>>>>>> 40b0546e (fix: make fix behavior even more consistent)
 
 export function commitCreateAction(
   opts: {
@@ -28,11 +34,5 @@ export function commitCreateAction(
 
   commit({ message: opts.message });
 
-<<<<<<< HEAD
   fixAction({ scope: 'UPSTACK' }, context);
-||||||| parent of 7ed01259 (refactor: kill all the awaits that lets us kill)
-  await rebaseUpstack(context);
-=======
-  rebaseUpstack(context);
->>>>>>> 7ed01259 (refactor: kill all the awaits that lets us kill)
 }
