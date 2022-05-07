@@ -3,7 +3,7 @@ import { request } from '@withgraphite/retyped-routes';
 import { logError } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { API_SERVER } from '../api';
-import { TContext } from './../context/context';
+import { TContext } from '../context';
 
 export async function syncPRInfoForBranches(
   branches: Branch[],

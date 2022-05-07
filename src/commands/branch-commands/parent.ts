@@ -1,11 +1,11 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import {
   branchExistsPrecondition,
   currentBranchPrecondition,
 } from '../../lib/preconditions';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 import { logInfo } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 

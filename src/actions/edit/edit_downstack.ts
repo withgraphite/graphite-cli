@@ -1,4 +1,4 @@
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import { ExitFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { assertUnreachable } from '../../lib/utils/assert_unreachable';
@@ -7,7 +7,7 @@ import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { performInTmpDir } from '../../lib/utils/perform_in_tmp_dir';
 import { getTrunk } from '../../lib/utils/trunk';
-import { MetaStackBuilder } from '../../wrapper-classes';
+import { MetaStackBuilder } from '../../wrapper-classes/meta_stack_builder';
 import { Stack } from '../../wrapper-classes/stack';
 import { validate } from '../validate';
 import { applyStackEditExec, applyStackEditPick } from './apply_stack_edit';

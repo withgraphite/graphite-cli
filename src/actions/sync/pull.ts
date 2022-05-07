@@ -1,4 +1,4 @@
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { checkoutBranch } from '../../lib/utils/checkout_branch';

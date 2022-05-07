@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { allScenes } from '../../../lib/scenes';
+import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
 import { expectBranches } from '../../../lib/utils/expect_branches';
 import { fakeGitSquashAndMerge } from '../../../lib/utils/fake_squash_and_merge';

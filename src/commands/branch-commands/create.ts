@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { createBranchAction } from '../../actions/create_branch';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {
   name: {

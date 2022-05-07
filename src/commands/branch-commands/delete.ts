@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { deleteBranchAction } from '../../actions/delete_branch';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 import { logTip } from '../../lib/utils/splog';
 
 const args = {

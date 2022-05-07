@@ -1,5 +1,5 @@
 import { TMergeConflictCallstack } from '../../lib/config/merge_conflict_callstack_config';
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import {
   currentBranchPrecondition,
   uncommittedTrackedChangesPrecondition,

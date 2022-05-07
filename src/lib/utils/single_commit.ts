@@ -1,6 +1,6 @@
-import { Commit } from '../../wrapper-classes';
 import { Branch } from '../../wrapper-classes/branch';
-import { TContext } from '../context/context';
+import { Commit } from '../../wrapper-classes/commit';
+import { TContext } from '../context';
 
 export function getSingleCommitOnBranch(
   branch: Branch,

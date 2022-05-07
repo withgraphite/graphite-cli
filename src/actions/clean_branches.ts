@@ -7,7 +7,7 @@ import {
   TDeleteBranchesStackFrame,
   TMergeConflictCallstack,
 } from '../lib/config/merge_conflict_callstack_config';
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
 import { checkoutBranch } from '../lib/utils/checkout_branch';
 import { getMergeBase } from '../lib/utils/merge_base';

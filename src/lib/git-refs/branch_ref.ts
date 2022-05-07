@@ -1,6 +1,6 @@
 import { Branch } from '../../wrapper-classes/branch';
 import { cache } from '../config/cache';
-import { TContext } from '../context/context';
+import { TContext } from '../context';
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
 

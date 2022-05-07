@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import prompts from 'prompts';
 import tmp from 'tmp';
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
 import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
 import { getPRTemplate } from '../../lib/utils/pr_templates';

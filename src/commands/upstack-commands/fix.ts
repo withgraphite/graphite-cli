@@ -1,6 +1,6 @@
 import { fixAction } from '../../actions/fix';
 import { ExitFailedError } from '../../lib/errors';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 import { argsT } from '../shared-commands/fix';
 export { aliases, args, builder, command } from '../shared-commands/fix';
 

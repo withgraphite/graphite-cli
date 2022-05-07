@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { execStateConfig } from '../config/exec_state_config';
-import { TContext } from '../context/context';
+import { TContext } from '../context';
 
 export function logMessageFromGraphite(msg: string): void {
   console.log(chalk.yellow(msg) + '\n\n');

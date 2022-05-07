@@ -1,4 +1,4 @@
-import { initContext, TContext } from '../../context/context';
+import { initContext, TContext } from '../../context';
 import { spawnDetached } from '../../utils/spawn';
 
 export function postSurveyResponsesInBackground(context: TContext): void {

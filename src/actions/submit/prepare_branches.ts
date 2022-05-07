@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import { PreconditionsFailedError } from '../../lib/errors';
 import { detectUnsubmittedChanges } from '../../lib/utils/detect_unsubmitted_changes';
 import { logInfo, logNewline } from '../../lib/utils/splog';
@@ -8,7 +8,7 @@ import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import { getReviewers } from './reviewers';
-import { TSubmittedPRRequest } from './submit';
+import { TSubmittedPRRequest } from './submit_action';
 
 type TSubmittedPRRequestWithBranch = TSubmittedPRRequest & {
   branch: Branch;

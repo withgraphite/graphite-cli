@@ -1,5 +1,5 @@
-import { AbstractStackBuilder } from '.';
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
+import { AbstractStackBuilder } from './abstract_stack_builder';
 import { Branch } from './branch';
 
 export class MetaStackBuilder extends AbstractStackBuilder {

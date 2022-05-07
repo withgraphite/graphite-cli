@@ -1,9 +1,11 @@
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { ValidationFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { logDebug } from '../lib/utils/splog';
-import { GitStackBuilder, MetaStackBuilder, Stack } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
+import { GitStackBuilder } from '../wrapper-classes/git_stack_builder';
+import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
+import { Stack } from '../wrapper-classes/stack';
 import { TScope } from './scope';
 
 export function validate(scope: TScope, context: TContext): Branch[] {

@@ -1,9 +1,9 @@
 import chalk from 'chalk';
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { getCommitterDate } from '../lib/utils/committer_date';
 import { getTrunk } from '../lib/utils/trunk';
-import { Commit } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
+import { Commit } from '../wrapper-classes/commit';
 import { TBranchPRInfo } from '../wrapper-classes/metadata_ref';
 
 type TPrintStackConfig = {

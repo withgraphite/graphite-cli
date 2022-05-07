@@ -1,6 +1,6 @@
-import { AbstractStackBuilder } from '.';
-import { TContext } from '../lib/context/context';
+import { TContext } from '../lib/context';
 import { MultiParentError, SiblingBranchError } from '../lib/errors';
+import { AbstractStackBuilder } from './abstract_stack_builder';
 import { Branch } from './branch';
 
 export class GitStackBuilder extends AbstractStackBuilder {

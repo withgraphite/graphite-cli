@@ -1,13 +1,13 @@
 import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
-import { MetadataRef } from '../../wrapper-classes/metadata_ref';
-import { getBranchToRefMapping } from '../git-refs/branch_ref';
-import { getRevListGitTree } from '../git-refs/branch_relations';
-import { currentBranchPrecondition } from '../preconditions';
-import { gpExecSync } from '../utils/exec_sync';
-import { logInfo, logWarn } from '../utils/splog';
-import { TContext } from './../context/context';
+import { MetadataRef } from '../wrapper-classes/metadata_ref';
+import { TContext } from './context';
+import { getBranchToRefMapping } from './git-refs/branch_ref';
+import { getRevListGitTree } from './git-refs/branch_relations';
+import { currentBranchPrecondition } from './preconditions';
+import { gpExecSync } from './utils/exec_sync';
+import { logInfo, logWarn } from './utils/splog';
 
 type stateT = {
   refTree: Record<string, string[]>;

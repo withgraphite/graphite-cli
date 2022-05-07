@@ -1,6 +1,6 @@
 import open from 'open';
 import yargs from 'yargs';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {} as const;
 

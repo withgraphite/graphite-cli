@@ -3,12 +3,12 @@ import * as t from '@withgraphite/retype';
 import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
 import { API_SERVER } from '../../lib/api';
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
 import { logError, logInfo, logNewline } from '../../lib/utils/splog';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
-import { TSubmittedPRRequest } from './submit';
+import { TSubmittedPRRequest } from './submit_action';
 
 type TPRSubmissionInfo = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.submitPullRequests.params

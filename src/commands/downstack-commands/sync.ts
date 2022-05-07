@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { syncAction } from '../../actions/sync/sync';
 import { ExitFailedError } from '../../lib/errors';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {
   branch: {

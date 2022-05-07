@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Branch } from '../../../src/wrapper-classes/branch';
-import { allScenes } from '../../lib/scenes';
+import { allScenes } from '../../lib/scenes/all_scenes';
 import { configureTest } from '../../lib/utils/configure_test';
 
 for (const scene of allScenes) {

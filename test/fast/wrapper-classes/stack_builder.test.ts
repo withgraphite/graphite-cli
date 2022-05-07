@@ -1,11 +1,9 @@
 import { expect } from 'chai';
-import {
-  GitStackBuilder,
-  MetaStackBuilder,
-  Stack,
-} from '../../../src/wrapper-classes';
 import { Branch } from '../../../src/wrapper-classes/branch';
-import { allScenes } from '../../lib/scenes';
+import { GitStackBuilder } from '../../../src/wrapper-classes/git_stack_builder';
+import { MetaStackBuilder } from '../../../src/wrapper-classes/meta_stack_builder';
+import { Stack } from '../../../src/wrapper-classes/stack';
+import { allScenes } from '../../lib/scenes/all_scenes';
 import { configureTest } from '../../lib/utils/configure_test';
 
 for (const scene of allScenes) {

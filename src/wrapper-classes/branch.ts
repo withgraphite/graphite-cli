@@ -1,17 +1,17 @@
 import { execSync } from 'child_process';
 import { cache } from '../lib/config/cache';
+import { TContext } from '../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
 import {
-  getBranchChildrenOrParentsFromGit,
   getRef,
   otherBranchesWithSameCommit,
-} from '../lib/git-refs';
+} from '../lib/git-refs/branch_ref';
+import { getBranchChildrenOrParentsFromGit } from '../lib/git-refs/branch_relations';
 import { getCommitterDate } from '../lib/utils/committer_date';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { getMergeBase } from '../lib/utils/merge_base';
 import { logDebug } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
-import { TContext } from './../lib/context/context';
 import { MetadataRef, TBranchPRInfo, TMeta } from './metadata_ref';
 
 type TBranchFilters = {

@@ -1,8 +1,8 @@
-import { mergeConflictCallstackConfigFactory } from '../config/merge_conflict_callstack_config';
-import { messageConfigFactory } from './../config/message_config';
-import { repoConfigFactory } from './../config/repo_config';
-import { surveyConfigFactory } from './../config/survey_config';
-import { userConfigFactory } from './../config/user_config';
+import { mergeConflictCallstackConfigFactory } from './config/merge_conflict_callstack_config';
+import { messageConfigFactory } from './config/message_config';
+import { repoConfigFactory } from './config/repo_config';
+import { surveyConfigFactory } from './config/survey_config';
+import { userConfigFactory } from './config/user_config';
 
 export const USER_CONFIG_OVERRIDE_ENV = 'GRAPHITE_USER_CONFIG_PATH' as const;
 

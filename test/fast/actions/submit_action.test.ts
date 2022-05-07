@@ -1,10 +1,11 @@
 import { expect } from 'chai';
 import { execSync } from 'child_process';
-import { inferPRBody, inferPRTitle } from '../../../src/actions/submit';
+import { inferPRBody } from '../../../src/actions/submit/pr_body';
+import { inferPRTitle } from '../../../src/actions/submit/pr_title';
 import { checkForEmptyBranches } from '../../../src/actions/submit/validate_branches';
 import { execStateConfig } from '../../../src/lib/config/exec_state_config';
 import { Branch } from '../../../src/wrapper-classes/branch';
-import { BasicScene } from '../../lib/scenes';
+import { BasicScene } from '../../lib/scenes/basic_scene';
 import { configureTest } from '../../lib/utils/configure_test';
 
 for (const scene of [new BasicScene()]) {

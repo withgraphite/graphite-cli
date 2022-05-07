@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { allScenes } from '../../lib/scenes';
+import { allScenes } from '../../lib/scenes/all_scenes';
 import { configureTest } from '../../lib/utils/configure_test';
 
 for (const scene of allScenes) {

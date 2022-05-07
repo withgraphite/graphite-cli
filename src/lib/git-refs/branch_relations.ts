@@ -1,10 +1,10 @@
 import chalk from 'chalk';
 import { Branch } from '../../wrapper-classes/branch';
 import { cache } from '../config/cache';
-import { tracer } from '../telemetry';
+import { TContext } from '../context';
+import { tracer } from '../telemetry/tracer';
 import { gpExecSync } from '../utils/exec_sync';
 import { logDebug } from '../utils/splog';
-import { TContext } from './../context/context';
 import { getRef } from './branch_ref';
 
 export function getBranchChildrenOrParentsFromGit(

@@ -3,9 +3,10 @@ import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { API_SERVER } from '../../lib/api';
-import { captureState } from '../../lib/debug-context';
+import { captureState } from '../../lib/debugContext';
 import { ExitFailedError } from '../../lib/errors';
-import { getUserEmail, profile } from '../../lib/telemetry';
+import { getUserEmail } from '../../lib/telemetry/context';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {
   message: {

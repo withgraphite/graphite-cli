@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 import { getPRTemplateFilepaths } from '../../lib/utils/pr_templates';
 
 const args = {} as const;

@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { DEFAULT_GRAPHITE_EDITOR } from '../../commands/user-commands/editor';
-import { TContext } from '../context/context';
+import { TContext } from '../context';
 import { KilledError } from '../errors';
 import { gpExecSync } from './exec_sync';
 import { logInfo, logTip } from './splog';

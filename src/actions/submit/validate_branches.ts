@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { execStateConfig } from '../../lib/config/exec_state_config';
-import { TContext } from '../../lib/context/context';
+import { TContext } from '../../lib/context';
 import {
   KilledError,
   PreconditionsFailedError,
@@ -13,7 +13,7 @@ import { isEmptyBranch } from '../../lib/utils/is_empty_branch';
 import { logError, logInfo, logNewline, logWarn } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { validate } from '../validate';
-import { TSubmitScope } from './submit';
+import { TSubmitScope } from './submit_action';
 
 export async function getValidBranchesToSubmit(
   scope: TSubmitScope,

@@ -1,7 +1,7 @@
 import { Branch } from '../../wrapper-classes/branch';
 import { cache } from '../config/cache';
 import { TMergeConflictCallstack } from '../config/merge_conflict_callstack_config';
-import { TContext } from '../context/context';
+import { TContext } from '../context';
 import { ExitFailedError, RebaseConflictError } from '../errors';
 import { gpExecSync } from './exec_sync';
 import { rebaseInProgress } from './rebase_in_progress';

@@ -3,15 +3,10 @@
 // All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
 import chalk from 'chalk';
 import yargs from 'yargs';
-import {
-  fetchUpgradePromptInBackground,
-  postTelemetryInBackground,
-  registerSigintHandler,
-} from '.';
 import { version } from '../../../package.json';
 import { init } from '../../actions/init';
 import { execStateConfig } from '../config/exec_state_config';
-import { initContext } from '../context/context';
+import { initContext, TContext } from '../context';
 import {
   ConfigError,
   ExitCancelledError,
@@ -23,15 +18,17 @@ import {
   SiblingBranchError,
   ValidationFailedError,
 } from '../errors';
-import { refreshPRInfoInBackground } from '../requests';
+import { refreshPRInfoInBackground } from '../requests/fetch_pr_info';
 import { printGraphiteMergeConflictStatus } from '../utils/merge_conflict_help';
 import { parseArgs } from '../utils/parse_args';
 import { logError, logInfo, logNewline, logWarn } from '../utils/splog';
 import { VALIDATION_HELPER_MESSAGE } from '../utils/validation_helper_message';
-import { TContext } from './../context/context';
 import { getUserEmail } from './context';
+import { postTelemetryInBackground } from './post_traces';
+import { registerSigintHandler } from './sigint_handler';
 import { postSurveyResponsesInBackground } from './survey/post_survey';
-import { globalTracer as tracer } from './tracer';
+import { tracer } from './tracer';
+import { fetchUpgradePromptInBackground } from './upgrade_prompt';
 
 function initalizeContext(): TContext {
   const context = initContext();

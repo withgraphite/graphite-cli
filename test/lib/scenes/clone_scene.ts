@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import tmp from 'tmp';
-import { initContext } from '../../../src/lib/context/context';
+import { initContext } from '../../../src/lib/context';
 import { GitRepo } from '../../../src/lib/utils/git_repo';
 import { AbstractScene } from './abstract_scene';
 

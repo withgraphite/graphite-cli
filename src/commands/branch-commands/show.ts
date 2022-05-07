@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { showBranchAction } from '../../actions/show_branch';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {
   patch: {

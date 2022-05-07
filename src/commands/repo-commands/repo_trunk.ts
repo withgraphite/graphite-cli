@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { branchExistsPrecondition } from '../../lib/preconditions';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 import { getTrunk } from '../../lib/utils/trunk';
 
 const args = {

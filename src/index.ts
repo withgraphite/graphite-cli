@@ -5,9 +5,9 @@ import yargs from 'yargs';
 import {
   globalArgumentsOptions,
   processGlobalArgumentsMiddleware,
-} from './lib/global-arguments';
+} from './lib/globalArguments';
 import { passthrough } from './lib/passthrough';
-import { postTelemetryInBackground } from './lib/telemetry';
+import { postTelemetryInBackground } from './lib/telemetry/post_traces';
 import { preprocessCommand } from './lib/utils/preprocess_command';
 import { signpostDeprecatedCommands } from './lib/utils/signpost_deprecated_commands';
 import { logError } from './lib/utils/splog';

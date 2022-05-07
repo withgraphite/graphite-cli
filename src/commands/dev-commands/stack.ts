@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import yargs from 'yargs';
 import { currentGitRepoPrecondition } from '../../lib/preconditions';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 import { GitRepo } from '../../lib/utils/git_repo';
 import { makeId } from '../../lib/utils/make_id';
 

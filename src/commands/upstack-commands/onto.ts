@@ -3,7 +3,7 @@ import yargs from 'yargs';
 import { interactiveBranchSelection } from '../../actions/interactive_branch_selection';
 import { currentBranchOntoAction } from '../../actions/onto/current_branch_onto';
 import { currentBranchPrecondition } from '../../lib/preconditions';
-import { profile } from '../../lib/telemetry';
+import { profile } from '../../lib/telemetry/profile';
 
 const args = {
   branch: {
