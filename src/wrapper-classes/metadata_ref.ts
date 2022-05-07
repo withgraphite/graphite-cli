@@ -14,6 +14,7 @@ export type TBranchPRInfo = {
   base: string;
   url?: string;
   title?: string;
+  body?: string;
   state?: TBranchPRState;
   reviewDecision?: TBranchPRReviewDecision;
   isDraft?: boolean;

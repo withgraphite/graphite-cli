@@ -62,7 +62,7 @@ async function requestServerToSubmitPRs(
   cliAuthToken: string,
   submissionInfo: TPRSubmissionInfo,
   context: TContext
-) {
+): Promise<TSubmittedPR[]> {
   try {
     const response = await request.requestWithArgs(
       API_SERVER,
@@ -133,14 +133,28 @@ function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
 }
 
 function saveBranchPRInfo(prs: TSubmittedPR[], context: TContext): void {
-  prs.forEach((pr) => {
-    if (pr.response.status === 'updated' || pr.response.status === 'created') {
+  prs
+    .filter(
+      (
+        pr
+      ): pr is TSubmittedPR & { response: { status: 'created' | 'updated' } } =>
+        pr.response.status === 'created' || pr.response.status === 'updated'
+    )
+    .forEach((pr) => {
       const branch = Branch.branchWithName(pr.response.head, context);
       branch.upsertPRInfo({
         number: pr.response.prNumber,
         url: pr.response.prURL,
         base: pr.request.base,
+        state: 'OPEN', // We know this is not closed or merged because submit succeeded
+        ...(pr.request.action === 'create'
+          ? {
+              title: pr.request.title,
+              body: pr.request.body,
+              reviewDecision: 'REVIEW_REQUIRED', // Because we just opened this PR
+            }
+          : {}),
+        ...(pr.request.draft !== undefined ? { draft: pr.request.draft } : {}),
       });
-    }
-  });
+    });
 }
