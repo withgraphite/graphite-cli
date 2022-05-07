@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
 import { Branch } from '../../wrapper-classes/branch';
-import { ConfigError, ExitFailedError, SiblingBranchError } from '../errors';
+import { ConfigError, ExitFailedError } from '../errors';
 import { TContext } from './../context/context';
 
 function findRemoteOriginBranch(context: TContext): Branch | undefined {
@@ -44,41 +44,21 @@ function findCommonlyNamedTrunk(context: TContext): Branch | undefined {
   return undefined;
 }
 
-let memoizedTrunk: Branch;
 export function inferTrunk(context: TContext): Branch | undefined {
   return findRemoteOriginBranch(context) || findCommonlyNamedTrunk(context);
 }
 export function getTrunk(context: TContext): Branch {
-  if (memoizedTrunk) {
-    return memoizedTrunk;
-  }
   const configTrunkName = context.repoConfig.data.trunk;
-  if (configTrunkName) {
-    if (!Branch.exists(configTrunkName)) {
-      throw new ExitFailedError(
-        `Configured trunk branch (${configTrunkName}) not found in the current repo. Consider updating the trunk name by running "gt repo init".`
-      );
-    }
-    memoizedTrunk = new Branch(configTrunkName, { useMemoizedResults: true });
+  if (!configTrunkName) {
+    throw new ConfigError(
+      `No configured trunk branch. Consider setting the trunk name by running "gt repo init".`
+    );
   }
 
-  // No configured trunk, infer
-  if (!memoizedTrunk) {
-    const inferredTrunk = inferTrunk(context);
-    if (inferredTrunk) {
-      memoizedTrunk = inferredTrunk.useMemoizedResults();
-      return memoizedTrunk;
-    }
-    throw new ConfigError(
-      `No configured trunk branch, and unable to infer. Consider setting the trunk name by running "gt repo init".`
+  if (!Branch.exists(configTrunkName)) {
+    throw new ExitFailedError(
+      `Configured trunk branch (${configTrunkName}) not found in the current repo. Consider updating the trunk name by running "gt repo init".`
     );
   }
-  const trunkSiblings = memoizedTrunk.branchesWithSameCommit(context);
-  if (trunkSiblings.length > 0) {
-    throw new SiblingBranchError(
-      [memoizedTrunk].concat(trunkSiblings),
-      context
-    );
-  }
-  return memoizedTrunk;
+  return new Branch(configTrunkName);
 }
