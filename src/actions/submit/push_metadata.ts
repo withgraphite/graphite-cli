@@ -1,7 +1,8 @@
 import chalk from 'chalk';
 import { TContext } from '../../lib/context/context';
 import { ExitFailedError } from '../../lib/errors';
-import { gpExecSync, logError, logInfo, logNewline } from '../../lib/utils';
+import { gpExecSync } from '../../lib/utils/exec_sync';
+import { logError, logInfo, logNewline } from '../../lib/utils/splog';
 import { MetadataRef } from '../../wrapper-classes';
 import { Branch } from '../../wrapper-classes/branch';
 

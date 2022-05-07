@@ -1,7 +1,9 @@
 import { TContext } from '../../lib/context/context';
 import { RebaseConflictError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
-import { checkoutBranch, gpExecSync, logInfo } from '../../lib/utils';
+import { checkoutBranch } from '../../lib/utils/checkout_branch';
+import { gpExecSync } from '../../lib/utils/exec_sync';
+import { logInfo } from '../../lib/utils/splog';
 import { currentBranchOntoAction } from '../onto/current_branch_onto';
 import { TStackEdit } from './stack_edits';
 

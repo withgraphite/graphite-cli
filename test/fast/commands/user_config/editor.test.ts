@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { DEFAULT_GRAPHITE_EDITOR } from '../../../../src/commands/user-commands/editor';
-import { logInfo } from '../../../../src/lib/utils';
+import { logInfo } from '../../../../src/lib/utils/splog';
 import { BasicScene } from '../../../lib/scenes';
 import { configureTest } from '../../../lib/utils';
 

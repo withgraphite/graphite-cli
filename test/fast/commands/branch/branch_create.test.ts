@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { unstagedChanges } from '../../../../src/lib/utils/git_status_utils';
 import { Branch } from '../../../../src/wrapper-classes/branch';
 import { allScenes } from '../../../lib/scenes';
 import { configureTest } from '../../../lib/utils';
@@ -35,9 +36,9 @@ for (const scene of allScenes) {
 
     it('Can create a branch with add all option', () => {
       scene.repo.createChange('23', 'test', true);
-      expect(scene.repo.unstagedChanges()).to.be.true;
+      expect(unstagedChanges()).to.be.true;
       scene.repo.execCliCommand(`branch create test-branch -m "add all" -a -q`);
-      expect(scene.repo.unstagedChanges()).to.be.false;
+      expect(unstagedChanges()).to.be.false;
     });
 
     it('Cant create a branch off an ignored branch', () => {

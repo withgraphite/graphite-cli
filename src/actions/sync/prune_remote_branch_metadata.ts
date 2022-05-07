@@ -3,7 +3,8 @@ import prompts from 'prompts';
 import { TContext } from 'src/lib/context/context';
 import { execStateConfig } from '../../lib/config/exec_state_config';
 import { KilledError } from '../../lib/errors';
-import { gpExecSync, logInfo, logNewline } from '../../lib/utils';
+import { gpExecSync } from '../../lib/utils/exec_sync';
+import { logInfo, logNewline } from '../../lib/utils/splog';
 
 export async function pruneRemoteBranchMetadata(
   context: TContext,

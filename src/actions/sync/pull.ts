@@ -1,14 +1,10 @@
 import { TContext } from '../../lib/context/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
-import {
-  checkoutBranch,
-  getTrunk,
-  gpExecSync,
-  logInfo,
-  logNewline,
-  logTip,
-} from '../../lib/utils';
+import { checkoutBranch } from '../../lib/utils/checkout_branch';
+import { gpExecSync } from '../../lib/utils/exec_sync';
+import { logInfo, logNewline, logTip } from '../../lib/utils/splog';
+import { getTrunk } from '../../lib/utils/trunk';
 
 export function pull(context: TContext, oldBranchName: string): void {
   logInfo(`Pulling in new changes...`);

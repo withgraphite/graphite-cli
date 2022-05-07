@@ -4,8 +4,8 @@ import { getUserEmail, SHOULD_REPORT_TELEMETRY } from '.';
 import { version } from '../../../package.json';
 import { API_SERVER } from '../api';
 import { TContext } from '../context/context';
-import { logMessageFromGraphite } from '../utils';
 import { spawnDetached } from '../utils/spawn';
+import { logMessageFromGraphite } from '../utils/splog';
 import {
   messageConfigFactory,
   TMessageConfig,

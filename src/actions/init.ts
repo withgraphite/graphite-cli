@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import prompts from 'prompts';
 import { PreconditionsFailedError } from '../lib/errors';
 import { currentGitRepoPrecondition } from '../lib/preconditions';
-import { logError, logInfo, logNewline } from '../lib/utils';
+import { logError, logInfo, logNewline } from '../lib/utils/splog';
 import { inferTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { TContext } from './../lib/context/context';

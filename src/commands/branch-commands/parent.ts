@@ -6,7 +6,7 @@ import {
   currentBranchPrecondition,
 } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry';
-import { logInfo } from '../../lib/utils';
+import { logInfo } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 
 const args = {

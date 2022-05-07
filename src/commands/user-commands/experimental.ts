@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry';
-import { logInfo } from '../../lib/utils';
+import { logInfo } from '../../lib/utils/splog';
 
 const args = {
   enable: {

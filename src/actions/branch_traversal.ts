@@ -3,7 +3,8 @@ import prompts from 'prompts';
 import { TContext } from '../lib/context/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { checkoutBranch, logInfo } from '../lib/utils';
+import { checkoutBranch } from '../lib/utils/checkout_branch';
+import { logInfo } from '../lib/utils/splog';
 import { Branch } from '../wrapper-classes/branch';
 
 export enum TraversalDirection {

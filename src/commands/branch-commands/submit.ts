@@ -1,6 +1,6 @@
 import { submitAction } from '../../actions/submit/submit';
 import { profile } from '../../lib/telemetry';
-import { logTip } from '../../lib/utils';
+import { logTip } from '../../lib/utils/splog';
 import type { argsT } from '../shared-commands/submit';
 
 export { aliases, args, builder, command } from '../shared-commands/submit';

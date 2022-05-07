@@ -5,7 +5,9 @@ import {
   uncommittedTrackedChangesPrecondition,
 } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
-import { checkoutBranch, getTrunk, logInfo } from '../../lib/utils';
+import { checkoutBranch } from '../../lib/utils/checkout_branch';
+import { logInfo } from '../../lib/utils/splog';
+import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
 import { deleteMergedBranches } from '../clean_branches';
 import { fixDanglingBranches } from '../fix_dangling_branches';

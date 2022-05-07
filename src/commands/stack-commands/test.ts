@@ -7,7 +7,10 @@ import { TContext } from '../../lib/context/context';
 import { ValidationFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry';
-import { checkoutBranch, getTrunk, gpExecSync, logInfo } from '../../lib/utils';
+import { checkoutBranch } from '../../lib/utils/checkout_branch';
+import { gpExecSync } from '../../lib/utils/exec_sync';
+import { logInfo } from '../../lib/utils/splog';
+import { getTrunk } from '../../lib/utils/trunk';
 import { GitStackBuilder } from '../../wrapper-classes';
 
 const args = {

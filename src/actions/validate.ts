@@ -1,7 +1,7 @@
 import { TContext } from '../lib/context/context';
 import { ValidationFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { logDebug } from '../lib/utils';
+import { logDebug } from '../lib/utils/splog';
 import { GitStackBuilder, MetaStackBuilder, Stack } from '../wrapper-classes';
 import { Branch } from '../wrapper-classes/branch';
 import { TScope } from './scope';

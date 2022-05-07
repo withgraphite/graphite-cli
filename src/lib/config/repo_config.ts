@@ -1,7 +1,7 @@
 import * as t from '@withgraphite/retype';
 import { isMatch } from 'micromatch';
 import { ExitFailedError } from '../errors';
-import { gpExecSync } from '../utils';
+import { gpExecSync } from '../utils/exec_sync';
 import { composeConfig } from './compose_config';
 
 const schema = t.shape({

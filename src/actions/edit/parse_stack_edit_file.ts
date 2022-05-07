@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import { TContext } from '../../lib/context/context';
 import { ExitFailedError } from '../../lib/errors';
-import { getTrunk } from '../../lib/utils';
+import { getTrunk } from '../../lib/utils/trunk';
 import { getStackEditType, TStackEdit } from './stack_edits';
 
 // https://regex101.com/r/j0ohLA/1

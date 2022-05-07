@@ -1,6 +1,6 @@
 import prompts from 'prompts';
 import { TContext } from '../../lib/context/context';
-import { logInfo, logNewline, logTip } from '../../lib/utils';
+import { logInfo, logNewline, logTip } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { submitAction } from '../submit';
 

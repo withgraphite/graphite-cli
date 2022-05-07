@@ -1,10 +1,12 @@
 import { TContext } from '../../lib/context/context';
 import { ExitFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
-import { checkoutBranch, getTrunk, gpExecSync } from '../../lib/utils';
 import { assertUnreachable } from '../../lib/utils/assert_unreachable';
+import { checkoutBranch } from '../../lib/utils/checkout_branch';
 import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
+import { gpExecSync } from '../../lib/utils/exec_sync';
 import { performInTmpDir } from '../../lib/utils/perform_in_tmp_dir';
+import { getTrunk } from '../../lib/utils/trunk';
 import { MetaStackBuilder } from '../../wrapper-classes';
 import { Stack } from '../../wrapper-classes/stack';
 import { validate } from '../validate';

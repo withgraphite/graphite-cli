@@ -1,5 +1,5 @@
 import { ExitFailedError } from '../errors';
-import { gpExecSync } from '../utils';
+import { gpExecSync } from '../utils/exec_sync';
 import { assertUnreachable } from './assert_unreachable';
 
 export function getCommitterDate(args: {

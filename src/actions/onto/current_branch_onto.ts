@@ -4,7 +4,7 @@ import {
   currentBranchPrecondition,
   uncommittedTrackedChangesPrecondition,
 } from '../../lib/preconditions';
-import { checkoutBranch } from '../../lib/utils';
+import { checkoutBranch } from '../../lib/utils/checkout_branch';
 import { stackOnto } from './stack_onto';
 
 export function currentBranchOntoAction(

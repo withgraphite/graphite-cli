@@ -4,7 +4,8 @@ import { cache } from '../../lib/config/cache';
 import { ExitFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry';
-import { gpExecSync, logInfo } from '../../lib/utils';
+import { gpExecSync } from '../../lib/utils/exec_sync';
+import { logInfo } from '../../lib/utils/splog';
 import { MetadataRef } from '../../wrapper-classes';
 import { Branch } from '../../wrapper-classes/branch';
 

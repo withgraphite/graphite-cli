@@ -2,8 +2,8 @@ import { execSync } from 'child_process';
 import tmp from 'tmp';
 import yargs from 'yargs';
 import { profile } from '../lib/telemetry';
-import { makeId } from '../lib/utils';
 import { GitRepo } from '../lib/utils/git_repo';
+import { makeId } from '../lib/utils/make_id';
 
 export const command = 'demo';
 export const canonical = 'demo';
