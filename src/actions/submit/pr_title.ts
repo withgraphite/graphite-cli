@@ -33,7 +33,7 @@ export async function getPRTitle(
 }
 
 export function inferPRTitle(branch: Branch, context: TContext): string {
-  const priorSubmitTitle = branch.getPriorSubmitTitle();
+  const priorSubmitTitle = branch.getPRInfo()?.title;
   if (priorSubmitTitle !== undefined) {
     return priorSubmitTitle;
   }

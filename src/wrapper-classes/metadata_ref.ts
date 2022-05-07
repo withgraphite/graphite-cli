@@ -10,8 +10,8 @@ export type TBranchPRReviewDecision =
   | 'REVIEW_REQUIRED'
   | 'CHANGES_REQUESTED';
 export type TBranchPRInfo = {
-  number: number;
-  base: string;
+  number?: number;
+  base?: string;
   url?: string;
   title?: string;
   body?: string;
@@ -20,18 +20,11 @@ export type TBranchPRInfo = {
   isDraft?: boolean;
 };
 
-export type TBranchPriorSubmitInfo = {
-  title?: string;
-  body?: string;
-  reviewers?: string[];
-};
-
 export type TMeta = {
   parentBranchName?: string;
   parentBranchRevision?: string;
   prevRef?: string;
   prInfo?: TBranchPRInfo;
-  priorSubmitInfo?: TBranchPriorSubmitInfo;
 };
 
 export class MetadataRef {
