@@ -4,8 +4,18 @@ import { TContext } from '../context';
 const MAX_BRANCH_NAME_BYTE_LENGTH = 234;
 const BRANCH_NAME_REPLACE_REGEX = /[^-_a-zA-Z0-9]+/g;
 
-function replaceUnsupportedCharacters(input: string): string {
-  return input.replace(BRANCH_NAME_REPLACE_REGEX, '_');
+function replaceUnsupportedCharacters(
+  input: string,
+  context: TContext
+): string {
+  return input.replace(
+    BRANCH_NAME_REPLACE_REGEX,
+    getBranchReplacement(context)
+  );
+}
+
+export function getBranchReplacement(context: TContext): string {
+  return context.userConfig.data.branchReplacement ?? '_';
 }
 
 export function newBranchName(
@@ -14,7 +24,7 @@ export function newBranchName(
   context: TContext
 ): string | undefined {
   if (branchName) {
-    return replaceUnsupportedCharacters(branchName);
+    return replaceUnsupportedCharacters(branchName, context);
   }
 
   if (!commitMessage) {
@@ -30,7 +40,7 @@ export function newBranchName(
       ).slice(-2)}-`
     : '';
 
-  const branchMessage = replaceUnsupportedCharacters(commitMessage);
+  const branchMessage = replaceUnsupportedCharacters(commitMessage, context);
 
   // https://stackoverflow.com/questions/60045157/what-is-the-maximum-length-of-a-github-branch-name
   // GitHub's max branch name size is computed based on a maximum ref name length of 256 bytes.
@@ -42,7 +52,7 @@ export function newBranchName(
 }
 
 export function setBranchPrefix(newPrefix: string, context: TContext): string {
-  const prefix = replaceUnsupportedCharacters(newPrefix);
+  const prefix = replaceUnsupportedCharacters(newPrefix, context);
   context.userConfig.update((data) => (data.branchPrefix = prefix));
   return prefix;
 }
