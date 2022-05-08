@@ -1,0 +1,34 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const chai_1 = require("chai");
+const fs_extra_1 = __importDefault(require("fs-extra"));
+const trailing_prod_scene_1 = require("../../../lib/scenes/trailing_prod_scene");
+const configure_test_1 = require("../../../lib/utils/configure_test");
+for (const scene of [new trailing_prod_scene_1.TrailingProdScene()]) {
+    describe(`(${scene}): repo init`, function () {
+        configure_test_1.configureTest(this, scene);
+        it('Can run repo init', () => {
+            const repoConfigPath = `${scene.repo.dir}/.git/.graphite_repo_config`;
+            fs_extra_1.default.removeSync(repoConfigPath);
+            scene.repo.execCliCommand('repo init --trunk main');
+            const savedConfig = JSON.parse(fs_extra_1.default.readFileSync(repoConfigPath).toString());
+            chai_1.expect(savedConfig['trunk']).to.eq('main');
+        });
+        it('Can ignore branches at init', () => {
+            const repoConfigPath = `${scene.repo.dir}/.git/.graphite_repo_config`;
+            fs_extra_1.default.removeSync(repoConfigPath);
+            const branchToIgnore = 'prod';
+            scene.repo.execCliCommand(`repo init --trunk main --ignore-branches ${branchToIgnore}`);
+            const savedConfig = JSON.parse(fs_extra_1.default.readFileSync(repoConfigPath).toString());
+            chai_1.expect(savedConfig['trunk']).to.eq('main');
+            chai_1.expect(savedConfig['ignoreBranches'][0]).to.eq(branchToIgnore);
+        });
+        it('Cannot set an invalid trunk', () => {
+            chai_1.expect(() => scene.repo.execCliCommand('repo init --trunk random')).to.throw(Error);
+        });
+    });
+}
+//# sourceMappingURL=init.test.js.map
