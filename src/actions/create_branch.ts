@@ -38,7 +38,7 @@ export async function createBranchAction(
     addAll();
   }
 
-  checkoutNewBranch(branchName);
+  checkoutBranch(branchName, { new: true });
 
   const isAddingEmptyCommit = !detectStagedChanges();
 
@@ -90,18 +90,4 @@ export async function createBranchAction(
       });
     checkoutBranch(branchName, { quiet: true });
   }
-}
-
-function checkoutNewBranch(branchName: string): void {
-  gpExecSync(
-    {
-      command: `git checkout -b "${branchName}"`,
-    },
-    (err) => {
-      throw new ExitFailedError(
-        `Failed to checkout new branch ${branchName}`,
-        err
-      );
-    }
-  );
 }
