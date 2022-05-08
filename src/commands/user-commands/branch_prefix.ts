@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry/profile';
+import { setBranchPrefix } from '../../lib/utils/branch_name';
 import { logInfo } from '../../lib/utils/splog';
 
 const args = {
@@ -9,7 +10,7 @@ const args = {
     optional: true,
     type: 'string',
     alias: 's',
-    describe: 'Override the value of the branch-prefix in the Graphite config.',
+    describe: 'Set a new prefix for .',
   },
 } as const;
 
@@ -23,8 +24,11 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     if (argv.set) {
-      context.userConfig.update((data) => (data.branchPrefix = argv.set));
-      logInfo(`Set branch-prefix to "${chalk.green(argv.set)}"`);
+      logInfo(
+        `Set branch-prefix to "${chalk.green(
+          setBranchPrefix(argv.set, context)
+        )}"`
+      );
     } else {
       logInfo(
         context.userConfig.data.branchPrefix ||

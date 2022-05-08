@@ -2,6 +2,7 @@ import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { addAll } from '../lib/utils/addAll';
+import { newBranchName } from '../lib/utils/branch_name';
 import { checkoutBranch } from '../lib/utils/checkout_branch';
 import { commit } from '../lib/utils/commit';
 import { detectStagedChanges } from '../lib/utils/detect_staged_changes';
@@ -10,9 +11,6 @@ import { logInfo } from '../lib/utils/splog';
 import { Branch } from '../wrapper-classes/branch';
 import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
 import { currentBranchOntoAction } from './onto/current_branch_onto';
-
-// 255 minus 21 (for 'refs/branch-metadata/')
-const MAX_BRANCH_NAME_BYTE_LENGTH = 234;
 
 export async function createBranchAction(
   opts: {
@@ -25,12 +23,21 @@ export async function createBranchAction(
 ): Promise<void> {
   const parentBranch = currentBranchPrecondition(context);
 
+  const branchName = newBranchName(
+    opts.branchName,
+    opts.commitMessage,
+    context
+  );
+  if (!branchName) {
+    throw new ExitFailedError(
+      `Must specify either a branch name or commit message`
+    );
+  }
+
   if (opts.addAll) {
     addAll();
   }
 
-  const branchName =
-    opts.branchName ?? newBranchName(context, opts.commitMessage);
   checkoutNewBranch(branchName);
 
   const isAddingEmptyCommit = !detectStagedChanges();
@@ -85,39 +92,6 @@ export async function createBranchAction(
   }
 }
 
-function newBranchName(context: TContext, commitMessage?: string): string {
-  if (!commitMessage) {
-    throw new ExitFailedError(
-      `Must specify at least a branch name or commit message`
-    );
-  }
-
-  const branchPrefix = context.userConfig.data.branchPrefix || '';
-
-  const date = new Date();
-  const branchDate = `${('0' + (date.getMonth() + 1)).slice(-2)}-${(
-    '0' + date.getDate()
-  ).slice(-2)}-`;
-
-  const branchMessage = commitMessage
-    .split('')
-    .map((c) => {
-      if (ALLOWED_BRANCH_CHARACTERS.includes(c)) {
-        return c;
-      }
-      return '_'; // Replace all disallowed characters with _
-    })
-    .join('')
-    .replace(/_+/g, '_'); // Condense underscores
-
-  // https://stackoverflow.com/questions/60045157/what-is-the-maximum-length-of-a-github-branch-name
-  // GitHub's max branch name size is computed based on a maximum ref name length (including
-  // 'refs/heads/') of 256 bytes, so we need to convert to a Buffer and back to slice correctly.
-  return Buffer.from(branchPrefix + branchDate + branchMessage)
-    .slice(0, MAX_BRANCH_NAME_BYTE_LENGTH)
-    .toString();
-}
-
 function checkoutNewBranch(branchName: string): void {
   gpExecSync(
     {
@@ -131,70 +105,3 @@ function checkoutNewBranch(branchName: string): void {
     }
   );
 }
-
-const ALLOWED_BRANCH_CHARACTERS = [
-  '_',
-  '-',
-  '0',
-  '1',
-  '2',
-  '3',
-  '4',
-  '5',
-  '6',
-  '7',
-  '8',
-  '9',
-  'a',
-  'b',
-  'c',
-  'd',
-  'e',
-  'f',
-  'g',
-  'h',
-  'i',
-  'j',
-  'k',
-  'l',
-  'm',
-  'n',
-  'o',
-  'p',
-  'q',
-  'r',
-  's',
-  't',
-  'u',
-  'v',
-  'w',
-  'x',
-  'y',
-  'z',
-  'A',
-  'B',
-  'C',
-  'D',
-  'E',
-  'F',
-  'G',
-  'H',
-  'I',
-  'J',
-  'K',
-  'L',
-  'M',
-  'N',
-  'O',
-  'P',
-  'Q',
-  'R',
-  'S',
-  'T',
-  'U',
-  'V',
-  'W',
-  'X',
-  'Y',
-  'Z',
-];
