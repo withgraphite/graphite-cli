@@ -82,21 +82,23 @@ async function handleExistingBranch(
 
   if (
     !execStateConfig.interactive() ||
-    !(await prompts(
-      {
-        type: 'confirm',
-        name: 'value',
-        message: `Discard local changes to ${chalk.yellow(
-          branchName
-        )} and sync from ${remote}?`,
-        initial: false,
-      },
-      {
-        onCancel: () => {
-          throw new KilledError();
+    !(
+      await prompts(
+        {
+          type: 'confirm',
+          name: 'value',
+          message: `Discard local changes to ${chalk.yellow(
+            branchName
+          )} and sync from ${remote}?`,
+          initial: false,
         },
-      }
-    ))
+        {
+          onCancel: () => {
+            throw new KilledError();
+          },
+        }
+      )
+    ).value
   ) {
     return 'ABORT';
   }
