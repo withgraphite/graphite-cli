@@ -9,29 +9,6 @@ export const description =
 
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-<<<<<<< HEAD
-<<<<<<< HEAD
     fixAction({ scope: 'UPSTACK' }, context);
-||||||| parent of 87405014 (feat: remove sf ==regen)
-    if (argv.rebase && argv.regen) {
-      throw new ExitFailedError(
-        'Please specify either the "--rebase" or "--regen" method, not both'
-      );
-    }
-    await fixAction(
-      {
-        action: argv.rebase ? 'rebase' : argv.regen ? 'regen' : undefined,
-        scope: 'UPSTACK',
-      },
-      context
-    );
-=======
-    fixAction('UPSTACK', context);
->>>>>>> 87405014 (feat: remove sf ==regen)
-||||||| parent of ad8c76c2 (refactor: clean up fix calls)
-    fixAction('UPSTACK', context);
-=======
-    fixAction({ scope: 'UPSTACK' }, context);
->>>>>>> ad8c76c2 (refactor: clean up fix calls)
   });
 };

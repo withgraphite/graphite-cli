@@ -6,12 +6,6 @@ import {
   ensureSomeStagedChangesPrecondition,
 } from '../lib/preconditions';
 import { fixAction } from './fix';
-<<<<<<< HEAD
-||||||| parent of 40b0546e (fix: make fix behavior even more consistent)
-import { rebaseUpstack } from './fix';
-=======
-import { fixAction } from './fix';
->>>>>>> 40b0546e (fix: make fix behavior even more consistent)
 
 export function commitCreateAction(
   opts: {
