@@ -9,7 +9,7 @@ import { checkoutBranch } from '../../lib/utils/checkout_branch';
 import { logInfo } from '../../lib/utils/splog';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
-import { deleteMergedBranches } from '../clean_branches';
+import { cleanBranches as cleanBranches } from '../clean_branches';
 import { fixDanglingBranches } from '../fix_dangling_branches';
 import { mergeDownstack } from './merge_downstack';
 import { pruneRemoteBranchMetadata } from './prune_remote_branch_metadata';
@@ -68,7 +68,7 @@ export async function syncAction(
   };
 
   if (opts.delete) {
-    await deleteMergedBranches(
+    await cleanBranches(
       {
         frame: {
           op: 'DELETE_BRANCHES_CONTINUATION',
@@ -82,13 +82,10 @@ export async function syncAction(
     );
   }
 
-  await repoSyncDeleteMergedBranchesContinuation(
-    deleteMergedBranchesContinuation,
-    context
-  );
+  await cleanBranchesContinuation(deleteMergedBranchesContinuation, context);
 }
 
-export async function repoSyncDeleteMergedBranchesContinuation(
+export async function cleanBranchesContinuation(
   frame: TRepoSyncStackFrame,
   context: TContext
 ): Promise<void> {

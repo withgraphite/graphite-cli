@@ -42,14 +42,24 @@ export class MetadataRef {
     return path.join(MetadataRef.branchMetadataDirPath(), branchName);
   }
 
-  static getMeta(branchName: string): TMeta | undefined {
-    return new MetadataRef(branchName).read();
+  static getMeta(
+    branchName: string,
+    opts?: { dir: string }
+  ): TMeta | undefined {
+    return new MetadataRef(branchName).read(opts);
   }
 
-  static updateOrCreate(branchName: string, meta: TMeta): void {
-    const metaSha = execSync(`git hash-object -w --stdin`, {
-      input: JSON.stringify(meta),
-    }).toString();
+  static updateOrCreate(
+    branchName: string,
+    meta: TMeta,
+    opts?: { dir: string }
+  ): void {
+    const metaSha = execSync(
+      `git ${opts ? `-C "${opts.dir}"` : ''} hash-object -w --stdin`,
+      {
+        input: JSON.stringify(meta),
+      }
+    ).toString();
     execSync(`git update-ref refs/branch-metadata/${branchName} ${metaSha}`, {
       stdio: 'ignore',
     });
@@ -100,13 +110,21 @@ export class MetadataRef {
     this._branchName = newBranchName;
   }
 
-  public read(): TMeta | undefined {
-    return MetadataRef.readImpl(`refs/branch-metadata/${this._branchName}`);
+  public read(opts?: { dir: string }): TMeta | undefined {
+    return MetadataRef.readImpl(
+      `refs/branch-metadata/${this._branchName}`,
+      opts
+    );
   }
 
-  private static readImpl(ref: string): TMeta | undefined {
+  private static readImpl(
+    ref: string,
+    opts?: { dir: string }
+  ): TMeta | undefined {
     try {
-      const metaString = execSync(`git cat-file -p ${ref} 2> /dev/null`)
+      const metaString = execSync(
+        `git ${opts ? `-C "${opts.dir}"` : ''}cat-file -p ${ref} 2> /dev/null`
+      )
         .toString()
         .trim();
       if (metaString.length == 0) {

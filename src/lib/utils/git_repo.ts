@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
+import { MetadataRef, TMeta } from '../../wrapper-classes/metadata_ref';
 import { USER_CONFIG_OVERRIDE_ENV } from '../context';
 import { rebaseInProgress } from './rebase_in_progress';
 
@@ -154,6 +155,15 @@ export class GitRepo {
       {
         stdio: 'ignore',
       }
+    );
+  }
+
+  upsertMeta(name: string, partialMeta: Partial<TMeta>): void {
+    const meta = new MetadataRef(name).read({ dir: this.dir }) ?? {};
+    MetadataRef.updateOrCreate(
+      name,
+      { ...meta, ...partialMeta },
+      { dir: this.dir }
     );
   }
 }

@@ -23,7 +23,7 @@ import { currentBranchOntoAction } from './onto/current_branch_onto';
  * continue`.
  */
 // eslint-disable-next-line max-lines-per-function
-export async function deleteMergedBranches(
+export async function cleanBranches(
   opts: {
     frame: TDeleteBranchesStackFrame;
     parent: TMergeConflictCallstack;
@@ -31,7 +31,9 @@ export async function deleteMergedBranches(
   },
   context: TContext
 ): Promise<void> {
-  logInfo(`Checking if any branches have been merged and can be deleted...`);
+  logInfo(
+    `Checking if any branches have been merged/closed and can be deleted...`
+  );
   if (opts.showSyncTip) {
     logTip(
       `Disable this behavior at any point in the future with --no-delete`,
@@ -42,9 +44,9 @@ export async function deleteMergedBranches(
   const trunkChildren = getTrunk(context).getChildrenFromMeta(context);
 
   /**
-   * To find and delete all of the merged branches, we traverse all of the
-   * stacks off of trunk, greedily deleting the merged-in base branches and
-   * rebasing the remaining branches.
+   * To find and delete all of the merged/closed branches, we traverse all of
+   * the stacks off of trunk, greedily deleting the base branches and rebasing
+   * the remaining branches.
    *
    * To greedily delete the branches, we keep track of the branches we plan
    * to delete as well as a live snapshot of their children. When a branch
@@ -107,7 +109,7 @@ export async function deleteMergedBranches(
       logInfo(
         `${
           trunkChildrenProgressMarkers[branch.name]
-        } done searching for merged branches to delete...`
+        } done searching for merged/closed branches to delete...`
       );
     }
 
@@ -192,8 +194,8 @@ async function shouldDeleteBranch(
   },
   context: TContext
 ): Promise<boolean> {
-  const merged = branchMerged(args.branch, context);
-  if (!merged) {
+  const mergedBase = mergedBaseIfMerged(args.branch, context);
+  if (!mergedBase && args.branch.getPRInfo()?.state !== 'CLOSED') {
     return false;
   }
 
@@ -203,46 +205,42 @@ async function shouldDeleteBranch(
     return false;
   }
 
-  const githubMergedBase =
-    args.branch.getPRInfo()?.state === 'MERGED'
-      ? args.branch.getPRInfo()?.base
-      : undefined;
-
-  // If we've reached this point, we know that the branch was merged - it's
-  // just a question of where. If it was merged on GitHub, we see where it was
-  // merged into. If we don't detect that it was merged in GitHub but we do
-  // see the code in trunk, we fallback to say that it was merged into trunk.
-  // This extra check (rather than just saying trunk) is used to catch the
-  // case where one feature branch is merged into another on GitHub.
-  const mergedBase = githubMergedBase ?? getTrunk(context).name;
-
-  const response = await prompts(
-    {
-      type: 'confirm',
-      name: 'value',
-      message: `Delete (${chalk.green(
-        args.branch.name
-      )}), which has been merged into (${mergedBase})?`,
-      initial: true,
-    },
-    {
-      onCancel: () => {
-        throw new KilledError();
-      },
-    }
+  return (
+    (
+      await prompts(
+        {
+          type: 'confirm',
+          name: 'value',
+          message: `Delete (${chalk.green(args.branch.name)}), which has been ${
+            mergedBase ? `merged into (${mergedBase})` : 'closed on GitHub'
+          }?`,
+          initial: true,
+        },
+        {
+          onCancel: () => {
+            throw new KilledError();
+          },
+        }
+      )
+    ).value === true
   );
-  return response.value === true;
 }
 
-function branchMerged(branch: Branch, context: TContext): boolean {
-  const prMerged = branch.getPRInfo()?.state === 'MERGED';
-  if (prMerged) {
-    return true;
+// Where did we merge this? If it was merged on GitHub, we see where it was
+// merged into. If we don't detect that it was merged in GitHub but we do
+// see the code in trunk, we fallback to say that it was merged into trunk.
+// This extra check (rather than just saying trunk) is used to catch the
+// case where one feature branch is merged into another on GitHub.
+function mergedBaseIfMerged(
+  branch: Branch,
+  context: TContext
+): string | undefined {
+  const trunk = getTrunk(context).name;
+  if (branch.getPRInfo()?.state === 'MERGED') {
+    return branch.getPRInfo()?.base ?? trunk;
   }
 
   const branchName = branch.name;
-  const trunk = getTrunk(context).name;
-
   const mergeBase = getMergeBase(trunk, branchName);
   const cherryCheckProvesMerged = execSync(
     `git cherry ${trunk} $(git commit-tree $(git rev-parse "${branchName}^{tree}") -p ${mergeBase} -m _)`
@@ -251,7 +249,7 @@ function branchMerged(branch: Branch, context: TContext): boolean {
     .trim()
     .startsWith('-');
   if (cherryCheckProvesMerged) {
-    return true;
+    return trunk;
   }
 
   const diffCheckProvesMerged =
@@ -259,10 +257,10 @@ function branchMerged(branch: Branch, context: TContext): boolean {
       .toString()
       .trim() === '0';
   if (diffCheckProvesMerged) {
-    return true;
+    return trunk;
   }
 
-  return false;
+  return undefined;
 }
 
 function deleteBranch(branch: Branch, context: TContext) {
