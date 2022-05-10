@@ -77,7 +77,7 @@ export async function pruneRemoteBranchMetadata(
   logInfo(`Pruning remote metadata...`);
   branchesNeedingPruning.forEach((branchName) => {
     gpExecSync({
-      command: `git push ${remote} -d refs/branch-metadata/${branchName}`,
+      command: `git push ${remote} -d "refs/branch-metadata/${branchName}" 2>&1`,
     });
     gpExecSync({
       command: `git update-ref -d refs/${remote}-branch-metadata/${branchName}`,
