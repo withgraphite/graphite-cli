@@ -1,3 +1,14 @@
+# 0.18.1 2021-05-10
+
+- `gt repo sync` and `gt repo fix` now prompt to delete closed branches in addition to merged ones.
+- Added more customization for auto-generated branch name prefixes. Check out `gt user branch-date` and `gt user branch-replacement`.
+- Config files are now written with 600 permissions instead of 644.
+- Fixed an issue where `downstack sync` would overwrite the local copy of a branch even if the user chose not to.
+- Fixed an issue where a misconfigured trunk wouldn't be brought to the user's attention.
+- Fixed an issue where Graphite would fail to parse repo owner/name.
+- Removed deprecation warning for `gt stacks` - it's been long enough.
+- Cleaned up interactive mode copy for `submit`.
+
 # 0.18.0 2021-05-04
 
 **New functionality**
