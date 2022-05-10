@@ -5,10 +5,13 @@ import chalk from 'chalk';
 import { API_SERVER } from '../../lib/api';
 import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
-import { logError, logInfo, logNewline } from '../../lib/utils/splog';
+import { logInfo } from '../../lib/utils/splog';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
-import { TSubmittedPRRequest } from './submit_action';
+import {
+  TPRSubmissionInfoWithBranch,
+  TSubmittedPRRequest,
+} from './submit_action';
 
 type TPRSubmissionInfo = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.submitPullRequests.params
@@ -23,42 +26,34 @@ type TSubmittedPR = {
   response: TSubmittedPRResponse;
 };
 
-export async function submitPullRequests(
+export async function submitPullRequest(
   args: {
-    submissionInfoWithBranches: (Unpacked<TPRSubmissionInfo> & {
-      branch: Branch;
-    })[];
+    submissionInfoWithBranch: TPRSubmissionInfoWithBranch;
     cliAuthToken: string;
   },
   context: TContext
 ): Promise<void> {
-  logInfo(
-    chalk.blueBright(
-      `📂 [Step 4] Opening/updating PRs on GitHub for pushed branches...`
-    )
-  );
-
-  if (!args.submissionInfoWithBranches.length) {
-    logInfo(`No eligible branches to create/update PRs for.`);
-    logNewline();
-    return;
-  }
-
-  const prInfo = await requestServerToSubmitPRs(
-    args.cliAuthToken,
-    args.submissionInfoWithBranches,
+  const { errorMessage } = handlePRReponse(
+    (
+      await requestServerToSubmitPRs(
+        args.cliAuthToken,
+        [args.submissionInfoWithBranch],
+        context
+      )
+    )[0],
     context
   );
-
-  saveBranchPRInfo(prInfo, context);
-  printSubmittedPRInfo(prInfo);
+  if (errorMessage) {
+    throw new ExitFailedError(errorMessage);
+  }
 }
 
 const SUCCESS_RESPONSE_CODE = 200;
-
 const UNAUTHORIZED_RESPONSE_CODE = 401;
 
-async function requestServerToSubmitPRs(
+// This endpoint is plural for legacy reasons.
+// Leaving the function plural in case we want to revert.
+export async function requestServerToSubmitPRs(
   cliAuthToken: string,
   submissionInfo: TPRSubmissionInfo,
   context: TContext
@@ -102,59 +97,42 @@ async function requestServerToSubmitPRs(
       );
     }
   } catch (error) {
-    throw new ExitFailedError(`Failed to submit PRs`, error);
-  }
-}
-
-function printSubmittedPRInfo(prs: TSubmittedPR[]): void {
-  if (!prs.length) {
-    logNewline();
-    logInfo(
-      chalk.blueBright('✅ All PRs up-to-date on GitHub; no updates necessary.')
+    throw new ExitFailedError(
+      `Failed to submit PR${submissionInfo.length > 1 ? 's' : ''}`,
+      error
     );
-    logNewline();
-    return;
   }
-
-  prs.forEach((pr) => {
-    if ('error' in pr.response) {
-      logError(`Error in submitting ${pr.response.head}: ${pr.response.error}`);
-    } else {
-      logInfo(
-        `${chalk.green(pr.response.head)}: ${pr.response.prURL} (${{
-          updated: chalk.yellow,
-          created: chalk.green,
-          error: chalk.red,
-        }[pr.response.status](pr.response.status)})`
-      );
-    }
-  });
-  logNewline();
 }
 
-function saveBranchPRInfo(prs: TSubmittedPR[], context: TContext): void {
-  prs
-    .filter(
-      (
-        pr
-      ): pr is TSubmittedPR & { response: { status: 'created' | 'updated' } } =>
-        pr.response.status === 'created' || pr.response.status === 'updated'
-    )
-    .forEach((pr) => {
-      const branch = Branch.branchWithName(pr.response.head, context);
-      branch.upsertPRInfo({
-        number: pr.response.prNumber,
-        url: pr.response.prURL,
-        base: pr.request.base,
-        state: 'OPEN', // We know this is not closed or merged because submit succeeded
-        ...(pr.request.action === 'create'
-          ? {
-              title: pr.request.title,
-              body: pr.request.body,
-              reviewDecision: 'REVIEW_REQUIRED', // Because we just opened this PR
-            }
-          : {}),
-        ...(pr.request.draft !== undefined ? { draft: pr.request.draft } : {}),
-      });
-    });
+export function handlePRReponse(
+  pr: TSubmittedPR,
+  context: TContext
+): { errorMessage?: string } {
+  if (pr.response.status === 'error') {
+    return {
+      errorMessage: `Error in submitting ${pr.response.head}: ${pr.response.error}`,
+    };
+  }
+
+  Branch.branchWithName(pr.response.head, context).upsertPRInfo({
+    number: pr.response.prNumber,
+    url: pr.response.prURL,
+    base: pr.request.base,
+    state: 'OPEN', // We know this is not closed or merged because submit succeeded
+    ...(pr.request.action === 'create'
+      ? {
+          title: pr.request.title,
+          body: pr.request.body,
+          reviewDecision: 'REVIEW_REQUIRED', // Because we just opened this PR
+        }
+      : {}),
+    ...(pr.request.draft !== undefined ? { draft: pr.request.draft } : {}),
+  });
+  logInfo(
+    `${chalk.green(pr.response.head)}: ${pr.response.prURL} (${{
+      updated: chalk.yellow,
+      created: chalk.green,
+    }[pr.response.status](pr.response.status)})`
+  );
+  return {};
 }

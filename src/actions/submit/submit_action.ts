@@ -12,9 +12,9 @@ import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
 import { TScope } from '../scope';
 import { getPRInfoForBranches } from './prepare_branches';
-import { pushBranchesToRemote } from './push_branches';
-import { pushMetadata } from './push_metadata';
-import { submitPullRequests } from './submit_prs';
+import { push } from './push_branch';
+import { pushMetadataRef } from './push_metadata';
+import { submitPullRequest } from './submit_prs';
 import { getValidBranchesToSubmit } from './validate_branches';
 
 export type TSubmitScope = TScope | 'BRANCH';
@@ -22,6 +22,11 @@ export type TSubmitScope = TScope | 'BRANCH';
 export type TSubmittedPRRequest = Unpacked<
   t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.params>['prs']
 >;
+export type TPRSubmissionInfoWithBranch = TSubmittedPRRequest & {
+  branch: Branch;
+};
+
+export type TPRSubmissionInfoWithBranches = TPRSubmissionInfoWithBranch[];
 
 export async function submitAction(
   args: {
@@ -62,8 +67,7 @@ export async function submitAction(
     logNewline();
   }
 
-  // Step 1: Validate
-  // args.branchesToSubmit is for the sync flow. Skips Steps 1.
+  // args.branchesToSubmit is for the sync flow. Skips validation.
   const branchesToSubmit =
     args.branchesToSubmit ??
     (await getValidBranchesToSubmit(args.scope, context));
@@ -72,7 +76,6 @@ export async function submitAction(
     return;
   }
 
-  // Step 2: Prepare
   const submissionInfoWithBranches = await getPRInfoForBranches(
     {
       branches: branchesToSubmit,
@@ -89,23 +92,18 @@ export async function submitAction(
     return;
   }
 
-  // Step 3: Push
-  const branchesPushedToRemote = pushBranchesToRemote(
-    submissionInfoWithBranches.map((info) => info.branch),
-    context
+  logInfo(
+    chalk.blueBright('📂 Pushing to remote and creating/updating PRs...')
   );
 
-  // Step 4: Submit
-  await submitPullRequests(
-    {
-      submissionInfoWithBranches: submissionInfoWithBranches,
-      cliAuthToken: cliAuthToken,
-    },
-    context
-  );
-
-  // Step 5: Metadata
-  await pushMetadata(branchesPushedToRemote, context);
+  for (const submissionInfoWithBranch of submissionInfoWithBranches) {
+    push(submissionInfoWithBranch.branch, context);
+    await submitPullRequest(
+      { submissionInfoWithBranch, cliAuthToken },
+      context
+    );
+    pushMetadataRef(submissionInfoWithBranch.branch, context);
+  }
 
   const survey = await getSurvey(context);
   if (survey) {

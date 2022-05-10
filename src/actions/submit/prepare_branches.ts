@@ -9,13 +9,10 @@ import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import { getReviewers } from './reviewers';
-import { TSubmittedPRRequest } from './submit_action';
-
-type TSubmittedPRRequestWithBranch = TSubmittedPRRequest & {
-  branch: Branch;
-};
-
-type TPRSubmissionInfoWithBranch = TSubmittedPRRequestWithBranch[];
+import {
+  TPRSubmissionInfoWithBranch,
+  TPRSubmissionInfoWithBranches,
+} from './submit_action';
 
 type TPRSubmissionAction = { branch: Branch; parent: Branch } & (
   | { update: false }
@@ -46,11 +43,9 @@ export async function getPRInfoForBranches(
     reviewers: boolean;
   },
   context: TContext
-): Promise<TPRSubmissionInfoWithBranch> {
+): Promise<TPRSubmissionInfoWithBranches> {
   logInfo(
-    chalk.blueBright(
-      '🥞 [Step 2] Preparing to submit PRs for the following branches...'
-    )
+    chalk.blueBright('🥞 Preparing to submit PRs for the following branches...')
   );
 
   const branchActions = args.branches
@@ -164,7 +159,7 @@ async function getPRCreationInfo(
     reviewers: boolean;
   },
   context: TContext
-): Promise<TSubmittedPRRequestWithBranch> {
+): Promise<TPRSubmissionInfoWithBranch> {
   if (execStateConfig.interactive()) {
     logNewline();
     logInfo(
