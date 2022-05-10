@@ -21,7 +21,7 @@ export async function getValidBranchesToSubmit(
 ): Promise<Branch[]> {
   logInfo(
     chalk.blueBright(
-      `✏️  [Step 1] Validating that this Graphite stack is ready to submit...`
+      `✏️  Validating that this Graphite stack is ready to submit...`
     )
   );
 
