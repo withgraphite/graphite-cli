@@ -67,7 +67,9 @@ export function composeConfig<TConfigData, THelperFunctions>(
       if (shouldRemoveBecauseEmpty) {
         fs.removeSync(curPath);
       } else {
-        fs.writeFileSync(curPath, JSON.stringify(_data, null, 2));
+        fs.writeFileSync(curPath, JSON.stringify(_data, null, 2), {
+          mode: 0o600,
+        });
       }
     };
     return {
