@@ -1,13 +1,13 @@
 import { execSync } from 'child_process';
 import yargs from 'yargs';
-import { deleteMergedBranches } from '../actions/clean_branches';
+import { cleanBranches } from '../actions/clean_branches';
 import { applyStackEdits } from '../actions/edit/edit_downstack';
 import { restackBranch, stackFixActionContinuation } from '../actions/fix';
 import {
   stackOntoBaseRebaseContinuation,
   stackOntoFixContinuation,
 } from '../actions/onto/stack_onto';
-import { repoSyncDeleteMergedBranchesContinuation } from '../actions/sync/sync';
+import { cleanBranchesContinuation } from '../actions/sync/sync';
 import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context';
 import { PreconditionsFailedError } from '../lib/errors';
@@ -112,7 +112,7 @@ async function resolveCallstack(
       stackFixActionContinuation(frame);
       break;
     case 'DELETE_BRANCHES_CONTINUATION':
-      await deleteMergedBranches(
+      await cleanBranches(
         {
           frame: frame,
           parent: remaining,
@@ -124,7 +124,7 @@ async function resolveCallstack(
       deleteMergedBranchesContinuation();
       break;
     case 'REPO_SYNC_CONTINUATION':
-      await repoSyncDeleteMergedBranchesContinuation(frame, context);
+      await cleanBranchesContinuation(frame, context);
       break;
     case 'STACK_EDIT_CONTINUATION':
       applyStackEdits(frame.currentBranchName, frame.remainingEdits, context);

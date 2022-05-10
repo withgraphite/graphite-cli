@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { deleteMergedBranches } from '../../actions/clean_branches';
+import { cleanBranches } from '../../actions/clean_branches';
 import { fixDanglingBranches } from '../../actions/fix_dangling_branches';
 import { TContext } from '../../lib/context';
 import { profile } from '../../lib/telemetry/profile';
@@ -40,7 +40,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       op: 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION' as const,
     };
 
-    await deleteMergedBranches(
+    await cleanBranches(
       {
         frame: {
           op: 'DELETE_BRANCHES_CONTINUATION',

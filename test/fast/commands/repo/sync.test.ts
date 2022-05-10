@@ -46,6 +46,33 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, 'main');
     });
 
+    it('Can delete a branch marked as merged', async () => {
+      scene.repo.createChange('2', 'a');
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+
+      expectBranches(scene.repo, 'a, main');
+
+      scene.repo.upsertMeta('a', { prInfo: { state: 'MERGED' } });
+
+      scene.repo.execCliCommand(`repo owner`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
+
+      expectBranches(scene.repo, 'main');
+    });
+
+    it('Can delete a branch marked as closed', async () => {
+      scene.repo.createChange('2', 'a');
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+
+      expectBranches(scene.repo, 'a, main');
+      scene.repo.upsertMeta('a', { prInfo: { state: 'CLOSED' } });
+
+      scene.repo.execCliCommand(`repo owner`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
+
+      expectBranches(scene.repo, 'main');
+    });
+
     it('Can noop sync if there are no stacks', () => {
       expect(() =>
         scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`)
