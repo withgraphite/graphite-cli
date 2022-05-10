@@ -10,7 +10,14 @@ const args = {
     optional: true,
     type: 'string',
     alias: 's',
-    describe: 'Set a new prefix for .',
+    describe: 'Set a new prefix for branch names.',
+  },
+  reset: {
+    demandOption: false,
+    optional: true,
+    type: 'boolean',
+    alias: 'r',
+    describe: 'Turn off branch prefixing. Takes precendence over --set',
   },
 } as const;
 
@@ -23,7 +30,10 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    if (argv.set) {
+    if (argv.reset) {
+      logInfo(`Reset branch-prefix`);
+      setBranchPrefix('', context);
+    } else if (argv.set) {
       logInfo(
         `Set branch-prefix to "${chalk.green(
           setBranchPrefix(argv.set, context)
