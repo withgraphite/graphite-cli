@@ -142,12 +142,12 @@ function inferRepoGitHubInfo(remote: string): {
   };
 }
 
-function getOwnerAndNameFromURL(originURL: string): {
+const OWNER_NAME_REGEX = /.*github\.com[:/]([^/]+)\/(.+)/;
+
+export function getOwnerAndNameFromURL(originURL: string): {
   owner: string | undefined;
   name: string | undefined;
 } {
-  let regex = undefined;
-
   // Most of the time these URLs end with '.git', but sometimes they don't. To
   // keep things clean, when we see it we'll just chop it off.
   let url = originURL;
@@ -155,31 +155,13 @@ function getOwnerAndNameFromURL(originURL: string): {
     url = url.slice(0, -'.git'.length);
   }
 
-  if (url.startsWith('git@github.com')) {
-    regex = /git@github.com:([^/]+)\/(.+)/;
-  } else if (url.startsWith('https://')) {
-    regex = /https:\/\/github.com\/([^/]+)\/(.+)/;
-  } else {
-    return {
-      owner: undefined,
-      name: undefined,
-    };
-  }
-
   // e.g. in withgraphite/graphite-cli we're trying to get the owner
   // ('withgraphite') and the repo name ('graphite-cli')
-  const matches = regex.exec(url);
+  const matches = OWNER_NAME_REGEX.exec(url);
   return {
     owner: matches?.[1],
     name: matches?.[2],
   };
-}
-
-export function getOwnerAndNameFromURLForTesting(originURL: string): {
-  owner: string | undefined;
-  name: string | undefined;
-} {
-  return getOwnerAndNameFromURL(originURL);
 }
 
 export type TRepoConfig = ReturnType<typeof repoConfigFactory.load>;
