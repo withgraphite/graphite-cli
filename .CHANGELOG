@@ -1,3 +1,10 @@
+# 0.18.2 2021-05-12
+
+- Fixed certain cases of an issue where restacking after `stack edit` and `commit create` would use an incorrect upstream. A broader fix is coming in v0.19.0.
+- Fixed an issue where after certain `downstack edit` or `upstack onto` flows, branches would be pushed to GitHub in an order that caused them to be closed prematurely.
+- Added `gt branch-prefix --reset` to turn off the user prefix for automatically generated branch names.
+- Cleaned up copy in `submit` commands.
+
 # 0.18.1 2021-05-10
 
 - `gt repo sync` and `gt repo fix` now prompt to delete closed branches in addition to merged ones.

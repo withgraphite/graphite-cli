@@ -21,6 +21,7 @@ export async function commitAmendAction(
     ensureSomeStagedChangesPrecondition(context);
   }
 
+  // TODO we will kill this once we cut over to relying on parentRevision for fix
   // If we're checked out on a branch, we're going to perform a stack fix later.
   // In order to allow the stack fix to cut out the old commit, we need to set
   // the prev ref here.
