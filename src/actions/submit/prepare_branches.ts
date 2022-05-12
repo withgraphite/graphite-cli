@@ -5,6 +5,7 @@ import { PreconditionsFailedError } from '../../lib/errors';
 import { detectUnsubmittedChanges } from '../../lib/utils/detect_unsubmitted_changes';
 import { logInfo, logNewline } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
+import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
@@ -169,31 +170,39 @@ async function getPRCreationInfo(
     );
   }
 
-  const submitInfo = {
-    title: await getPRTitle(
+  const submitInfo: TBranchPRInfo = {};
+
+  try {
+    submitInfo.title = await getPRTitle(
       {
         branch: args.branch,
         editPRFieldsInline: args.editPRFieldsInline,
       },
       context
-    ),
-    body: await getPRBody(
+    );
+
+    submitInfo.body = await getPRBody(
       {
         branch: args.branch,
         editPRFieldsInline: args.editPRFieldsInline,
       },
       context
-    ),
-    reviewers: await getReviewers({
-      fetchReviewers: args.reviewers,
-    }),
-  };
-  args.branch.upsertPRInfo(submitInfo);
+    );
+  } finally {
+    // Save locally in case this command fails
+    args.branch.upsertPRInfo(submitInfo);
+  }
+
+  const reviewers = await getReviewers({
+    fetchReviewers: args.reviewers,
+  });
 
   const createAsDraft = args.draftToggle ?? (await getPRDraftStatus());
 
   return {
-    ...submitInfo,
+    title: submitInfo.title,
+    body: submitInfo.body,
+    reviewers,
     action: 'create',
     draft: createAsDraft,
     head: args.branch.name,
