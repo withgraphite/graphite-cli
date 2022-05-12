@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { push } from '../../../src/actions/submit/push_branch';
-import { pushMetadataRef } from '../../../src/actions/submit/push_metadata';
 import { mergeDownstack } from '../../../src/actions/sync/merge_downstack';
 import { pruneRemoteBranchMetadata } from '../../../src/actions/sync/prune_remote_branch_metadata';
 import { pull } from '../../../src/actions/sync/pull';
@@ -14,19 +13,15 @@ for (const scene of [new CloneScene()]) {
   describe('handle remote actions properly (sync/submit)', function () {
     configureTest(this, scene);
 
-    it('can push a branch and its metadata to remote', async () => {
+    it('can push a branch to remote', async () => {
       scene.repo.createChange('1');
       scene.repo.execCliCommand(`branch create 1 -am "1"`);
       expect(scene.repo.currentBranchName()).to.equal('1');
 
       push(new Branch('1'), scene.context);
-      pushMetadataRef(new Branch('1'), scene.context);
 
       expect(scene.repo.getRef('refs/heads/1')).to.equal(
         scene.originRepo.getRef('refs/heads/1')
-      );
-      expect(scene.repo.getRef('refs/branch-metadata/1')).to.equal(
-        scene.originRepo.getRef('refs/branch-metadata/1')
       );
     });
 
