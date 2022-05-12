@@ -244,7 +244,6 @@ export class Branch {
         stdio: 'ignore',
       }
     );
-    MetadataRef.copyMetadataRefFromRemoteTracking(remote, branchName);
   }
 
   private getMeta(): TMeta | undefined {
