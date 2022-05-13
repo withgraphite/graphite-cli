@@ -12,7 +12,6 @@ import { Branch } from '../../wrapper-classes/branch';
 import { cleanBranches as cleanBranches } from '../clean_branches';
 import { fixDanglingBranches } from '../fix_dangling_branches';
 import { mergeDownstack } from './merge_downstack';
-import { pruneRemoteBranchMetadata } from './prune_remote_branch_metadata';
 import { pull } from './pull';
 import { resubmitBranchesWithNewBases } from './resubmit_branches_with_new_bases';
 type TSyncScope = { type: 'DOWNSTACK'; branchName: string } | { type: 'REPO' };
@@ -24,7 +23,6 @@ export async function syncAction(
     showDeleteProgress: boolean;
     resubmit: boolean;
     fixDanglingBranches: boolean;
-    pruneRemoteMetadata: boolean;
   },
   scope: TSyncScope,
   context: TContext
@@ -35,10 +33,6 @@ export async function syncAction(
 
   if (opts.pull) {
     pull(context, oldBranchName);
-
-    if (opts.pruneRemoteMetadata) {
-      await pruneRemoteBranchMetadata(context, opts.force);
-    }
 
     if (
       scope.type === 'DOWNSTACK' &&

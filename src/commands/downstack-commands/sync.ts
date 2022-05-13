@@ -40,7 +40,6 @@ export const handler = async (argv: argsT): Promise<void> => {
         delete: false,
         showDeleteProgress: false, // TODO(jacob) implement
         fixDanglingBranches: false, // TODO(jacob) implement
-        pruneRemoteMetadata: true,
       },
       { type: 'DOWNSTACK', branchName: argv.branch },
       context
