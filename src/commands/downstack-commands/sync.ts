@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { syncAction } from '../../actions/sync/sync';
 import { ExitFailedError } from '../../lib/errors';
 import { profile } from '../../lib/telemetry/profile';
 
@@ -27,22 +26,6 @@ export const handler = async (argv: argsT): Promise<void> => {
         )}`
       );
     }
-
-    if (!argv.branch) {
-      throw new ExitFailedError('Remote branch picker not yet implemented');
-    }
-
-    await syncAction(
-      {
-        pull: true,
-        force: false,
-        resubmit: false, // TODO(jacob) implement
-        delete: false,
-        showDeleteProgress: false, // TODO(jacob) implement
-        fixDanglingBranches: false, // TODO(jacob) implement
-      },
-      { type: 'DOWNSTACK', branchName: argv.branch },
-      context
-    );
+    throw new ExitFailedError('Downstack sync not yet implemented');
   });
 };

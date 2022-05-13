@@ -6,12 +6,10 @@ import {
 } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import { checkoutBranch } from '../../lib/utils/checkout_branch';
-import { logInfo } from '../../lib/utils/splog';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
 import { cleanBranches as cleanBranches } from '../clean_branches';
 import { fixDanglingBranches } from '../fix_dangling_branches';
-import { mergeDownstack } from './merge_downstack';
 import { pull } from './pull';
 import { resubmitBranchesWithNewBases } from './resubmit_branches_with_new_bases';
 type TSyncScope = { type: 'DOWNSTACK'; branchName: string } | { type: 'REPO' };
@@ -33,14 +31,6 @@ export async function syncAction(
 
   if (opts.pull) {
     pull(context, oldBranchName);
-
-    if (
-      scope.type === 'DOWNSTACK' &&
-      (await mergeDownstack(scope.branchName, context)) === 'ABORT'
-    ) {
-      logInfo('Aborting...');
-      return;
-    }
   }
 
   await syncPRInfoForBranches(Branch.allBranches(context), context);

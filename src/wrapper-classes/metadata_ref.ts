@@ -65,10 +65,6 @@ export class MetadataRef {
     });
   }
 
-  static readRemote(remote: string, branchName: string): TMeta | undefined {
-    return MetadataRef.readImpl(`refs/${remote}-branch-metadata/${branchName}`);
-  }
-
   public getPath(): string {
     return MetadataRef.pathForBranchName(this._branchName);
   }
