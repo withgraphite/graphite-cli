@@ -1,0 +1,51 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.handler = exports.builder = exports.description = exports.canonical = exports.command = void 0;
+const chalk_1 = __importDefault(require("chalk"));
+const sync_1 = require("../../actions/sync/sync");
+const errors_1 = require("../../lib/errors");
+const profile_1 = require("../../lib/telemetry/profile");
+const args = {
+    branch: {
+        describe: `Optional branch to sync from`,
+        demandOption: false,
+        type: 'string',
+        positional: true,
+    },
+};
+exports.command = 'sync [branch]';
+exports.canonical = 'downstack sync';
+exports.description = 'Sync a branch and its downstack from remote.';
+exports.builder = args;
+const handler = (argv) => __awaiter(void 0, void 0, void 0, function* () {
+    return profile_1.profile(argv, exports.canonical, (context) => __awaiter(void 0, void 0, void 0, function* () {
+        if (!context.userConfig.data.experimental) {
+            throw new errors_1.ExitFailedError(`Experimental features are disabled in your user config. To enable, run:\n\n${chalk_1.default.yellow('gt user experimental --enable')}`);
+        }
+        if (!argv.branch) {
+            throw new errors_1.ExitFailedError('Remote branch picker not yet implemented');
+        }
+        yield sync_1.syncAction({
+            pull: true,
+            force: false,
+            resubmit: false,
+            delete: false,
+            showDeleteProgress: false,
+            fixDanglingBranches: false, // TODO(jacob) implement
+        }, { type: 'DOWNSTACK', branchName: argv.branch }, context);
+    }));
+});
+exports.handler = handler;
+//# sourceMappingURL=sync.js.map
