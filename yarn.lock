@@ -687,14 +687,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@withgraphite/graphite-cli-routes@npm:^0.16.0":
-  version: 0.16.0
-  resolution: "@withgraphite/graphite-cli-routes@npm:0.16.0"
+"@withgraphite/graphite-cli-routes@npm:^0.18.0":
+  version: 0.18.0
+  resolution: "@withgraphite/graphite-cli-routes@npm:0.18.0"
   dependencies:
     "@types/node": ^14.14.37
     "@withgraphite/retype": ^0.3.1
     "@withgraphite/retyped-routes": ^0.3.0
-  checksum: 855e13dedb722b71752f0c2e0747f02e19303fab8572098eff01af50581c0c2051d41baf6ed621d488ea357b49706c66ec4c9e7ba9dd9900050d130d95787963
+  checksum: e95572a0f9ad4c8604b2c5dc22dc3e627676c34c2a76f49144a9281a5fce995941634344e5cc234faaf726e9d66b2fb0081e381a58e7607fe220708439d26881
   languageName: node
   linkType: hard
 
@@ -717,7 +717,7 @@ __metadata:
     "@types/yargs": ^15.0.5
     "@typescript-eslint/eslint-plugin": ^4.26.1
     "@typescript-eslint/parser": ^5.7.0
-    "@withgraphite/graphite-cli-routes": ^0.16.0
+    "@withgraphite/graphite-cli-routes": ^0.18.0
     "@withgraphite/retype": ^0.3.1
     "@withgraphite/retyped-routes": ^0.3.0
     "@yarnpkg/pnpify": ^3.0.0-rc.10
