@@ -35,6 +35,13 @@ export async function getDownstackDependencies(
     throw new ExitFailedError(
       `Failed to get dependencies: ${response._response.body}`
     );
+  } else if (
+    response.downstackBranchNames &&
+    response.downstackBranchNames.reverse().shift() !== getTrunk(context).name
+  ) {
+    throw new ExitFailedError(
+      `Received invalid dependency response: ${response.downstackBranchNames}`
+    );
   }
 
   return response.downstackBranchNames;

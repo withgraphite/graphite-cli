@@ -40,7 +40,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       context
     );
 
-    logDebug(`Downstack branch list:\n ${downstackToSync.join('\n')}\n`);
+    logDebug(`Downstack branch list:\n${downstackToSync.join('\n')}\n`);
 
     await syncAction(
       {
