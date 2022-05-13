@@ -64,7 +64,6 @@ export const handler = async (argv: argsT): Promise<void> => {
         showDeleteProgress: argv['show-delete-progress'],
         fixDanglingBranches: argv['show-dangling'],
       },
-      { type: 'REPO' },
       context
     );
   });
