@@ -30,7 +30,13 @@ export async function syncAction(
   checkoutBranch(getTrunk(context).name, { quiet: true });
 
   if (opts.pull) {
-    pull(context, oldBranchName);
+    pull(
+      {
+        oldBranchName,
+        branchesToFetch: Branch.allBranches(context).map((b) => b.name),
+      },
+      context
+    );
   }
 
   await syncPRInfoForBranches(Branch.allBranches(context), context);
