@@ -13,7 +13,6 @@ import { Branch } from '../../wrapper-classes/branch';
 import { TScope } from '../scope';
 import { getPRInfoForBranches } from './prepare_branches';
 import { push } from './push_branch';
-import { pushMetadataRef } from './push_metadata';
 import { submitPullRequest } from './submit_prs';
 import { getValidBranchesToSubmit } from './validate_branches';
 
@@ -102,7 +101,6 @@ export async function submitAction(
       { submissionInfoWithBranch, cliAuthToken },
       context
     );
-    pushMetadataRef(submissionInfoWithBranch.branch, context);
   }
 
   const survey = await getSurvey(context);

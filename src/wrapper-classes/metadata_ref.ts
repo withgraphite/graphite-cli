@@ -77,18 +77,6 @@ export class MetadataRef {
     );
   }
 
-  static copyMetadataRefToRemoteTracking(
-    remote: string,
-    branchName: string
-  ): void {
-    execSync(
-      `git update-ref refs/${remote}-branch-metadata/${branchName} $(git show-ref refs/branch-metadata/${branchName} -s)`,
-      {
-        stdio: 'ignore',
-      }
-    );
-  }
-
   static readRemote(remote: string, branchName: string): TMeta | undefined {
     return MetadataRef.readImpl(`refs/${remote}-branch-metadata/${branchName}`);
   }
