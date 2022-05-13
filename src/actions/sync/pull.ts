@@ -23,11 +23,7 @@ export function pull(context: TContext, oldBranchName: string): void {
   gpExecSync({ command: `git remote prune ${remote}` });
   gpExecSync(
     {
-      command: `git fetch ${remote} "+refs/heads/*:refs/remotes/${remote}/*"${
-        context.userConfig.data.experimental
-          ? ` "+refs/branch-metadata/*:refs/${remote}-branch-metadata/*"`
-          : ''
-      }`,
+      command: `git fetch ${remote} "+refs/heads/*:refs/remotes/${remote}/*"`,
     },
     (err) => {
       checkoutBranch(oldBranchName, { quiet: true });
