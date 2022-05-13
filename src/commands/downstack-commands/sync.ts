@@ -1,12 +1,14 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
+import { getDownstackDependencies } from '../../actions/sync/get_downstack_dependencies';
 import { ExitFailedError } from '../../lib/errors';
 import { profile } from '../../lib/telemetry/profile';
+import { logDebug } from '../../lib/utils/splog';
 
 const args = {
   branch: {
-    describe: `Optional branch to sync from`,
-    demandOption: false,
+    describe: `Branch to sync from`,
+    demandOption: true,
     type: 'string',
     positional: true,
   },
@@ -26,6 +28,18 @@ export const handler = async (argv: argsT): Promise<void> => {
         )}`
       );
     }
+
+    if (!argv.branch) {
+      // TODO implement a picker that allows selection of legal remote branches (open PRs)
+      throw new ExitFailedError('Remote branch picker not yet implemented');
+    }
+
+    const downstackDependencies = await getDownstackDependencies(
+      argv.branch,
+      context
+    );
+
+    logDebug(`Downstack branch list: ${downstackDependencies}`);
     throw new ExitFailedError('Downstack sync not yet implemented');
   });
 };
