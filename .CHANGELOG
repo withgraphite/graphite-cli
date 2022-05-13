@@ -1,3 +1,9 @@
+# 0.18.3 2021-05-13
+
+- Rewrote `gt downstack sync` using a different mechanism for fetching remote stack dependencies.
+- `gt downstack sync` no longer requires turning on a configuration option to use.
+- Fixed an issue in `submit` where in-progress PR title wouldn't be saved if the user cancelled while writing the body.
+
 # 0.18.2 2021-05-12
 
 - Fixed certain cases of an issue where restacking after `stack edit` and `commit create` would use an incorrect upstream. A broader fix is coming in v0.19.0.
