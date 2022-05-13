@@ -10,6 +10,7 @@ import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
 import { cleanBranches as cleanBranches } from '../clean_branches';
 import { fixDanglingBranches } from '../fix_dangling_branches';
+import { mergeDownstack } from './merge_downstack';
 import { pull } from './pull';
 import { resubmitBranchesWithNewBases } from './resubmit_branches_with_new_bases';
 export async function syncAction(
@@ -38,6 +39,10 @@ export async function syncAction(
       },
       context
     );
+  }
+
+  if (opts.downstackToSync) {
+    await mergeDownstack(opts.downstackToSync, context);
   }
 
   await syncPRInfoForBranches(Branch.allBranches(context), context);
