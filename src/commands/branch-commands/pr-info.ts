@@ -30,7 +30,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       return;
     }
 
-    await syncPRInfoForBranchByName(branch, context);
+    await syncPRInfoForBranchByName([branch.name], context);
 
     const prInfo = branch.getPRInfo();
     if (prInfo === undefined) {

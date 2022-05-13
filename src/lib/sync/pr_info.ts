@@ -21,10 +21,10 @@ export async function syncPRInfoForBranches(
 }
 
 export async function syncPRInfoForBranchByName(
-  branch: Branch,
+  branchNames: string[],
   context: TContext
 ): Promise<void> {
-  return syncHelper({ headRefNames: [branch.name] }, context);
+  return syncHelper({ headRefNames: branchNames }, context);
 }
 
 async function syncHelper(

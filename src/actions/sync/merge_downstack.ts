@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
+import { syncPRInfoForBranchByName } from '../../lib/sync/pr_info';
 import { copyFromRemote } from '../../lib/utils/copy_from_remote';
 import { getMergeBase } from '../../lib/utils/merge_base';
 import { logInfo, logNewline, logWarn } from '../../lib/utils/splog';
@@ -57,6 +58,8 @@ export async function mergeDownstack(
 
     parent = branchName;
   }
+
+  await syncPRInfoForBranchByName(downstack, context);
 }
 
 function calculateOverwrittenBranches(
