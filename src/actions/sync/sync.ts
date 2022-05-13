@@ -12,7 +12,6 @@ import { cleanBranches as cleanBranches } from '../clean_branches';
 import { fixDanglingBranches } from '../fix_dangling_branches';
 import { pull } from './pull';
 import { resubmitBranchesWithNewBases } from './resubmit_branches_with_new_bases';
-type TSyncScope = { type: 'DOWNSTACK'; branchName: string } | { type: 'REPO' };
 export async function syncAction(
   opts: {
     pull: boolean;
@@ -21,8 +20,8 @@ export async function syncAction(
     showDeleteProgress: boolean;
     resubmit: boolean;
     fixDanglingBranches: boolean;
+    downstackToSync?: string[];
   },
-  scope: TSyncScope,
   context: TContext
 ): Promise<void> {
   uncommittedTrackedChangesPrecondition();
@@ -33,7 +32,9 @@ export async function syncAction(
     pull(
       {
         oldBranchName,
-        branchesToFetch: Branch.allBranches(context).map((b) => b.name),
+        branchesToFetch: Branch.allBranches(context)
+          .map((b) => b.name)
+          .concat(opts.downstackToSync ?? []),
       },
       context
     );

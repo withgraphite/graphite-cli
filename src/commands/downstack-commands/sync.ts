@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { getDownstackDependencies } from '../../actions/sync/get_downstack_dependencies';
+import { syncAction } from '../../actions/sync/sync';
 import { ExitFailedError } from '../../lib/errors';
 import { profile } from '../../lib/telemetry/profile';
 import { logDebug } from '../../lib/utils/splog';
@@ -34,12 +35,24 @@ export const handler = async (argv: argsT): Promise<void> => {
       throw new ExitFailedError('Remote branch picker not yet implemented');
     }
 
-    const downstackDependencies = await getDownstackDependencies(
+    const downstackToSync = await getDownstackDependencies(
       argv.branch,
       context
     );
 
-    logDebug(`Downstack branch list: ${downstackDependencies}`);
-    throw new ExitFailedError('Downstack sync not yet implemented');
+    logDebug(`Downstack branch list:\n ${downstackToSync.join('\n')}\n`);
+
+    await syncAction(
+      {
+        pull: true,
+        fixDanglingBranches: false,
+        delete: false,
+        showDeleteProgress: false,
+        resubmit: false,
+        force: false,
+        downstackToSync,
+      },
+      context
+    );
   });
 };
