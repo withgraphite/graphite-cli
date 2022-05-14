@@ -4,6 +4,7 @@ import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { PreconditionsFailedError } from '../lib/errors';
 import { currentGitRepoPrecondition } from '../lib/preconditions';
+import { branchExists } from '../lib/utils/branch_exists';
 import { logError, logInfo, logNewline } from '../lib/utils/splog';
 import { inferTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
@@ -39,7 +40,7 @@ export async function init(
   // Trunk
   let newTrunkName: string;
   if (trunk) {
-    if (Branch.exists(trunk)) {
+    if (branchExists(trunk)) {
       newTrunkName = trunk;
       context.repoConfig.setTrunk(newTrunkName);
       logInfo(`Trunk set to (${newTrunkName})`);
@@ -56,7 +57,7 @@ export async function init(
   // Ignore Branches
   if (ignoreBranches) {
     ignoreBranches.forEach((branchName) => {
-      if (!Branch.exists(branchName)) {
+      if (!branchExists(branchName)) {
         throw new PreconditionsFailedError(
           `Cannot set (${branchName}) to be ignore, branch not found in current repo.`
         );
