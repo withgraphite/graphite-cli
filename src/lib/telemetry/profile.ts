@@ -30,8 +30,8 @@ import { postSurveyResponsesInBackground } from './survey/post_survey';
 import { tracer } from './tracer';
 import { fetchUpgradePromptInBackground } from './upgrade_prompt';
 
-function initalizeContext(): TContext {
-  const context = initContext();
+function initalizeContext(useMetaCache: boolean): TContext {
+  const context = initContext({ useMetaCache });
 
   fetchUpgradePromptInBackground(context);
   refreshPRInfoInBackground(context);
@@ -57,7 +57,7 @@ export async function profile(
     startTime: start,
   });
 
-  const context = initalizeContext();
+  const context = initalizeContext(canonicalName === 'dev migration');
   if (
     parsedArgs.command !== 'repo init' &&
     !context.repoConfig.graphiteInitialized()

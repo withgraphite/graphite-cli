@@ -3,6 +3,7 @@ import { messageConfigFactory } from './config/message_config';
 import { repoConfigFactory } from './config/repo_config';
 import { surveyConfigFactory } from './config/survey_config';
 import { userConfigFactory } from './config/user_config';
+import { loadCache, TMetaCache } from './validation/cache';
 
 export const USER_CONFIG_OVERRIDE_ENV = 'GRAPHITE_USER_CONFIG_PATH' as const;
 
@@ -14,17 +15,26 @@ export type TContext = {
   mergeConflictCallstackConfig: ReturnType<
     typeof mergeConflictCallstackConfigFactory.loadIfExists
   >;
+  metaCache: TMetaCache;
 };
 
-export function initContext(userConfigOverride?: string): TContext {
+export function initContext(opts?: {
+  userConfigOverride?: string;
+  useMetaCache?: boolean;
+}): TContext {
+  const repoConfig = repoConfigFactory.load();
   return {
-    repoConfig: repoConfigFactory.load(),
+    repoConfig,
     surveyConfig: surveyConfigFactory.load(),
     userConfig: userConfigFactory.load(
-      userConfigOverride ?? process.env[USER_CONFIG_OVERRIDE_ENV]
+      opts?.userConfigOverride ?? process.env[USER_CONFIG_OVERRIDE_ENV]
     ),
     messageConfig: messageConfigFactory.load(),
     mergeConflictCallstackConfig:
       mergeConflictCallstackConfigFactory.loadIfExists(),
+    metaCache:
+      opts?.useMetaCache && repoConfig.data.trunk
+        ? loadCache(repoConfig.data.trunk)
+        : new Map(),
   };
 }

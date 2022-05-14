@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry/profile';
-import { validate } from '../../lib/validation/validate';
+import { logInfo } from '../../lib/utils/splog';
 
 export const command = 'migration';
 export const canonical = 'dev migration';
@@ -13,6 +13,6 @@ export const builder = args;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    validate(context);
+    logInfo(`cache size: ${context.metaCache.size}`);
   });
 };
