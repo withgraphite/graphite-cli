@@ -10,7 +10,7 @@ export async function interactiveBranchSelection(
   context: TContext,
   opts: { message: string; omitCurrentUpstack?: boolean }
 ): Promise<string> {
-  const currentBranch = Branch.getCurrentBranch();
+  const currentBranch = Branch.currentBranch();
   const trunk = getTrunk(context);
 
   const stack = new MetaStackBuilder().fullStackFromBranch(trunk, context);

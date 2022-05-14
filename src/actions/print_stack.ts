@@ -7,7 +7,7 @@ import { Commit } from '../wrapper-classes/commit';
 import { TBranchPRInfo } from '../wrapper-classes/metadata_ref';
 
 type TPrintStackConfig = {
-  currentBranch: Branch | null;
+  currentBranchName?: string;
   offTrunk: boolean;
   visited: string[];
 };
@@ -159,7 +159,7 @@ export function getBranchTitle(
 ): string {
   const prInfo = branch.getPRInfo();
   const branchName =
-    config.currentBranch?.name === branch.name
+    config.currentBranchName === branch.name
       ? chalk.cyan(`${branch.name} (current)`)
       : branch.name;
   const prNumber = prInfo?.number !== undefined ? `PR #${prInfo.number}` : '';
@@ -242,7 +242,7 @@ function prefixWithBranchStem(args: {
   branch: Branch;
   config: TPrintStackConfig;
 }): string[] {
-  const isCurrentBranch = args.config.currentBranch?.name === args.branch.name;
+  const isCurrentBranch = args.config.currentBranchName === args.branch.name;
   const dot = isCurrentBranch ? chalk.cyan('◉') : '◯';
   return args.lines.map((line, index) =>
     index === 0 ? `${dot} ${line}` : `│ ${line}`

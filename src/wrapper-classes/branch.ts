@@ -9,6 +9,7 @@ import {
 import { getBranchChildrenOrParentsFromGit } from '../lib/git-refs/branch_relations';
 import { branchExists } from '../lib/utils/branch_exists';
 import { getCommitterDate } from '../lib/utils/committer_date';
+import { currentBranchName } from '../lib/utils/current_branch_name';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { getMergeBase } from '../lib/utils/merge_base';
 import { logDebug } from '../lib/utils/splog';
@@ -266,17 +267,13 @@ export class Branch {
     return new Branch(name);
   }
 
-  static getCurrentBranch(): Branch | null {
-    const name = gpExecSync({
-      command: `git rev-parse --abbrev-ref HEAD`,
-    })
-      .toString()
-      .trim();
+  static currentBranch(): Branch | undefined {
+    const name = currentBranchName();
 
     // When the object we've checked out is a commit (and not a branch),
     // git rev-parse --abbrev-ref HEAD returns 'HEAD'. This isn't a valid
     // branch.
-    return name.length > 0 && name !== 'HEAD' ? new Branch(name) : null;
+    return name ? new Branch(name) : undefined;
   }
 
   private static allBranchesImpl(
