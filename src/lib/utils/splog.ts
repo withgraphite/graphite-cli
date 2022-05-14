@@ -1,10 +1,6 @@
 import chalk from 'chalk';
 
-export function composeSplog(opts: {
-  quiet?: boolean;
-  outputDebugLogs?: boolean;
-  tips?: boolean;
-}): {
+export type TSplog = {
   logNewline: () => void;
   logInfo: (msg: string) => void;
   logDebug: (msg: string) => void;
@@ -12,7 +8,13 @@ export function composeSplog(opts: {
   logWarn: (msg: string) => void;
   logMessageFromGraphite: (msg: string) => void;
   logTip: (msg: string) => void;
-} {
+};
+
+export function composeSplog(opts: {
+  quiet?: boolean;
+  outputDebugLogs?: boolean;
+  tips?: boolean;
+}): TSplog {
   return {
     logNewline: opts.quiet ? () => void 0 : () => console.log('\n'),
     logInfo: opts.quiet ? () => void 0 : (s: string) => console.log(s),
