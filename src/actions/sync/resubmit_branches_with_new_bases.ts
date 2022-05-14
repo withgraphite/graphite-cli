@@ -9,20 +9,17 @@ export async function resubmitBranchesWithNewBases(
   context: TContext
 ): Promise<void> {
   const needsResubmission: Branch[] = [];
-  Branch.allBranchesWithFilter(
-    {
-      filter: (b) => {
-        const prState = b.getPRInfo()?.state;
-        return (
-          !b.isTrunk(context) &&
-          b.getParentFromMeta(context) !== undefined &&
-          prState !== 'MERGED' &&
-          prState !== 'CLOSED'
-        );
-      },
+  Branch.allBranches(context, {
+    filter: (b) => {
+      const prState = b.getPRInfo()?.state;
+      return (
+        !b.isTrunk(context) &&
+        b.getParentFromMeta(context) !== undefined &&
+        prState !== 'MERGED' &&
+        prState !== 'CLOSED'
+      );
     },
-    context
-  ).forEach((b) => {
+  }).forEach((b) => {
     const currentBase = b.getParentFromMeta(context)?.name;
     const githubBase = b.getPRInfo()?.base;
 

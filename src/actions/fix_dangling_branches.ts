@@ -21,13 +21,10 @@ export async function fixDanglingBranches(
     );
   }
 
-  const danglingBranches = Branch.allBranchesWithFilter(
-    {
-      filter: (b) =>
-        !b.isTrunk(context) && b.getParentFromMeta(context) === undefined,
-    },
-    context
-  );
+  const danglingBranches = Branch.allBranches(context, {
+    filter: (b) =>
+      !b.isTrunk(context) && b.getParentFromMeta(context) === undefined,
+  });
 
   if (danglingBranches.length === 0) {
     logInfo(`All branches well-formed.`);

@@ -9,12 +9,9 @@ yargs.completion('completion', (current, argv) => {
     return;
   }
 
-  return Branch.allBranchesWithFilter(
-    {
-      filter: (b) => b.name.startsWith(branchArg),
-    },
-    context
-  )
+  return Branch.allBranches(context, {
+    filter: (b) => b.name.startsWith(branchArg),
+  })
     .map((b) => b.name)
     .sort();
 });
