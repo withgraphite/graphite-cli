@@ -98,7 +98,7 @@ async function resolveCallstack(
       stackOntoFixContinuation(frame);
       break;
     case 'STACK_FIX': {
-      const branch = Branch.branchWithName(frame.sourceBranchName, context);
+      const branch = Branch.branchWithName(frame.sourceBranchName);
       restackBranch(
         {
           branch: branch,

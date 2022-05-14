@@ -21,7 +21,7 @@ for (const scene of [new BasicScene()]) {
       scene.repo.createChange('a');
       execSync(`git commit -m "${title}" -m "${body}"`);
 
-      const branch = Branch.branchWithName('a', scene.context);
+      const branch = Branch.branchWithName('a');
 
       expect(inferPRTitle(branch, scene.context)).to.equals(title);
       expect(inferPRBody(branch, scene.context)).to.equals(body);
@@ -34,7 +34,7 @@ for (const scene of [new BasicScene()]) {
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "${commitMessage}" -q`);
 
-      const branch = Branch.branchWithName('a', scene.context);
+      const branch = Branch.branchWithName('a');
       expect(inferPRTitle(branch, scene.context)).to.equals(title);
       expect(inferPRBody(branch, scene.context)).to.be.undefined;
     });
@@ -47,7 +47,7 @@ for (const scene of [new BasicScene()]) {
       scene.repo.execCliCommand(`branch create "a" -m "${commitMessage}" -q`);
       scene.repo.createChangeAndCommit(commitMessage);
 
-      const branch = Branch.branchWithName('a', scene.context);
+      const branch = Branch.branchWithName('a');
       expect(inferPRTitle(branch, scene.context)).to.not.equals(title);
       expect(inferPRBody(branch, scene.context)).to.be.undefined;
     });
@@ -55,7 +55,7 @@ for (const scene of [new BasicScene()]) {
     it('aborts if the branch is empty', async () => {
       execStateConfig._data.interactive = false;
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
-      const branch = Branch.branchWithName('a', scene.context);
+      const branch = Branch.branchWithName('a');
       expect(await checkForEmptyBranches([branch], scene.context)).to.be.empty;
     });
 
@@ -63,7 +63,7 @@ for (const scene of [new BasicScene()]) {
       execStateConfig._data.interactive = false;
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
-      const branch = Branch.branchWithName('a', scene.context);
+      const branch = Branch.branchWithName('a');
       expect(
         (await checkForEmptyBranches([branch], scene.context))[0].name
       ).to.equals('a');
