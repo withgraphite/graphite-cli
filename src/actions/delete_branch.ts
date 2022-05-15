@@ -1,6 +1,7 @@
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
 import { checkoutBranch } from '../lib/utils/checkout_branch';
+import { currentBranchName } from '../lib/utils/current_branch_name';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
@@ -18,11 +19,14 @@ export function deleteBranchAction(
     throw new ExitFailedError('Cannot delete trunk!');
   }
 
-  const currentBranch = Branch.getCurrentBranch();
-  if (currentBranch?.name === args.branchName) {
-    checkoutBranch(currentBranch.getParentFromMeta(context)?.name ?? trunk, {
-      quiet: true,
-    });
+  const current = currentBranchName();
+  if (current === args.branchName) {
+    checkoutBranch(
+      Branch.branchWithName(current).getParentFromMeta(context)?.name ?? trunk,
+      {
+        quiet: true,
+      }
+    );
   }
 
   gpExecSync(
@@ -31,8 +35,8 @@ export function deleteBranchAction(
       options: { stdio: 'pipe' },
     },
     (err) => {
-      if (currentBranch?.name === args.branchName) {
-        checkoutBranch(currentBranch.name, {
+      if (current === args.branchName) {
+        checkoutBranch(current, {
           quiet: true,
         });
       }

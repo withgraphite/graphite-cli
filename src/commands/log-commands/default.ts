@@ -3,6 +3,7 @@ import yargs from 'yargs';
 import { printStack } from '../../actions/print_stack';
 import { TContext } from '../../lib/context';
 import { profile } from '../../lib/telemetry/profile';
+import { currentBranchName } from '../../lib/utils/current_branch_name';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
 
@@ -50,7 +51,7 @@ function printTrunkLog(context: TContext): void {
       baseBranch: trunk.useMemoizedResults(),
       indentLevel: 0,
       config: {
-        currentBranch: Branch.getCurrentBranch(),
+        currentBranchName: currentBranchName(),
         offTrunk: true,
         visited: [],
       },
@@ -89,7 +90,7 @@ async function printStacksBehindTrunk(context: TContext): Promise<void> {
         baseBranch: branch.useMemoizedResults(),
         indentLevel: 1,
         config: {
-          currentBranch: Branch.getCurrentBranch(),
+          currentBranchName: currentBranchName(),
           offTrunk: false,
           visited: [],
         },

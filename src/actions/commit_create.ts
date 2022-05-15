@@ -1,8 +1,10 @@
 import { TContext } from '../lib/context';
-import { ensureSomeStagedChangesPrecondition } from '../lib/preconditions';
+import {
+  currentBranchPrecondition,
+  ensureSomeStagedChangesPrecondition,
+} from '../lib/preconditions';
 import { addAll } from '../lib/utils/addAll';
 import { commit } from '../lib/utils/commit';
-import { Branch } from '../wrapper-classes/branch';
 import { rebaseUpstack } from './fix';
 
 export async function commitCreateAction(
@@ -22,10 +24,7 @@ export async function commitCreateAction(
   // If we're checked out on a branch, we're going to perform a stack fix later.
   // In order to allow the stack fix to cut out the old commit, we need to set
   // the prev ref here.
-  const currentBranch = Branch.getCurrentBranch();
-  if (currentBranch !== null) {
-    currentBranch.savePrevRef();
-  }
+  currentBranchPrecondition(context).savePrevRef();
 
   commit({ message: opts.message });
 

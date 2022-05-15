@@ -11,7 +11,7 @@ import {
 import { logTip } from './utils/splog';
 
 function currentBranchPrecondition(context: TContext): Branch {
-  const branch = Branch.getCurrentBranch();
+  const branch = Branch.currentBranch();
   if (!branch) {
     throw new PreconditionsFailedError(
       `Cannot find current branch. Please ensure you're running this command atop a checked-out branch.`
