@@ -81,7 +81,7 @@ async function getUpstackBranch(
     } else {
       if (interactive) {
         const stack_base_branch = await getStackBranch(candidates);
-        branch = Branch.branchWithName(stack_base_branch, context);
+        branch = Branch.branchWithName(stack_base_branch);
       } else {
         throw new ExitFailedError(
           `Cannot get upstack branch, multiple choices available: [${candidates.join(

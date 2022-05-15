@@ -56,7 +56,7 @@ async function syncHelper(
     // that is being merged into multiple other branches; we expect this to
     // be a rare case and will develop it lazily.
     response.prs.forEach((pr) => {
-      const branch = Branch.branchWithName(pr.headRefName, context);
+      const branch = Branch.branchWithName(pr.headRefName);
       branch.upsertPRInfo({
         number: pr.prNumber,
         base: pr.baseRefName,

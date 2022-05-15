@@ -40,8 +40,7 @@ export async function submitPullRequest(
         [args.submissionInfoWithBranch],
         context
       )
-    )[0],
-    context
+    )[0]
   );
   if (errorMessage) {
     throw new ExitFailedError(errorMessage);
@@ -104,17 +103,14 @@ export async function requestServerToSubmitPRs(
   }
 }
 
-export function handlePRReponse(
-  pr: TSubmittedPR,
-  context: TContext
-): { errorMessage?: string } {
+export function handlePRReponse(pr: TSubmittedPR): { errorMessage?: string } {
   if (pr.response.status === 'error') {
     return {
       errorMessage: `Error in submitting ${pr.response.head}: ${pr.response.error}`,
     };
   }
 
-  Branch.branchWithName(pr.response.head, context).upsertPRInfo({
+  Branch.branchWithName(pr.response.head).upsertPRInfo({
     number: pr.response.prNumber,
     url: pr.response.prURL,
     base: pr.request.base,

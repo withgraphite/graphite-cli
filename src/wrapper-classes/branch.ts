@@ -259,9 +259,8 @@ export class Branch {
     return this.name === getTrunk(context).name;
   }
 
-  static branchWithName(name: string, context: TContext): Branch {
-    const branch = Branch.allBranches(context).find((b) => b.name === name);
-    if (!branch) {
+  static branchWithName(name: string): Branch {
+    if (!branchExists(name)) {
       throw new Error(`Failed to find branch named ${name}`);
     }
     return new Branch(name);

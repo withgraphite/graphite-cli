@@ -22,7 +22,7 @@ export function stackOnto(
   },
   context: TContext
 ): void {
-  const onto = Branch.branchWithName(opts.onto, context);
+  const onto = Branch.branchWithName(opts.onto);
   checkBranchCanBeMoved(opts.currentBranch, context);
   validate('UPSTACK', context);
 
@@ -71,7 +71,7 @@ export function stackOntoBaseRebaseContinuation(
   mergeConflictCallstack: TMergeConflictCallstack,
   context: TContext
 ): void {
-  const currentBranch = Branch.branchWithName(frame.currentBranchName, context);
+  const currentBranch = Branch.branchWithName(frame.currentBranchName);
   const onto = frame.onto;
 
   cache.clearAll();

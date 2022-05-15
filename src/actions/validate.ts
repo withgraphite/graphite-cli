@@ -41,7 +41,7 @@ export function backfillParentShasOnValidatedStack(
     .branches()
     .map((b) => b.name)
     .forEach((branchName) => {
-      const branch = Branch.branchWithName(branchName, context);
+      const branch = Branch.branchWithName(branchName);
       const parentBranch = branch.getParentFromMeta(context);
       if (
         parentBranch &&
