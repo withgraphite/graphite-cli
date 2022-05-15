@@ -1,9 +1,9 @@
-import { execSync } from 'child_process';
 import {
   MetadataRef,
   TBranchPRInfo,
   TMeta,
 } from '../../wrapper-classes/metadata_ref';
+import { getBranchRevision } from '../git/get_branch_revision';
 import { getMergeBase } from '../git/merge_base';
 import { branchNamesAndRevisions } from '../git/sorted_branch_names';
 import { logDebug } from '../utils/splog';
@@ -38,13 +38,9 @@ type TCachedMeta = { children: string[]; branchRevision: string } & (
 export function loadCache(trunkName: string): TMetaCache {
   const cache: TMetaCache = new Map();
 
-  const trunkRevision = execSync(`git rev-parse ${trunkName}`)
-    .toString()
-    .trim();
-
   cache.set(trunkName, {
     validationResult: 'TRUNK',
-    branchRevision: trunkRevision,
+    branchRevision: getBranchRevision(trunkName),
     fixed: true,
     children: [],
   });
