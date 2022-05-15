@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import { TContext } from '../../lib/context';
 import { PreconditionsFailedError } from '../../lib/errors';
 import { detectUnsubmittedChanges } from '../../lib/git/detect_unsubmitted_changes';
+import { getBranchRevision } from '../../lib/git/get_branch_revision';
 import { Branch } from '../../wrapper-classes/branch';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
 import { getPRBody } from './pr_body';
@@ -70,7 +71,7 @@ export async function getPRInfoForBranches(
             prNumber: action.prNumber,
             draft: args.draftToggle,
             head: action.branch.name,
-            headSha: action.branch.getCurrentRef(),
+            headSha: getBranchRevision(action.branch.name),
             base: action.parent.name,
             baseSha: action.branch.getParentBranchSha(),
             branch: action.branch,
@@ -204,7 +205,7 @@ async function getPRCreationInfo(
     action: 'create',
     draft: createAsDraft,
     head: args.branch.name,
-    headSha: args.branch.getCurrentRef(),
+    headSha: getBranchRevision(args.branch.name),
     base: args.parentBranchName,
     baseSha: args.branch.getParentBranchSha(),
     branch: args.branch,
