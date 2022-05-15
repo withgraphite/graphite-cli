@@ -7,6 +7,7 @@ import {
   otherBranchesWithSameCommit,
 } from '../lib/git-refs/branch_ref';
 import { getBranchChildrenOrParentsFromGit } from '../lib/git-refs/branch_relations';
+import { branchExists } from '../lib/utils/branch_exists';
 import { getCommitterDate } from '../lib/utils/committer_date';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { getMergeBase } from '../lib/utils/merge_base';
@@ -89,16 +90,14 @@ export class Branch {
     }
 
     // Cycle until we find a parent that has a real branch, or just is undefined.
-    if (!Branch.exists(parentName)) {
-      while (parentName && !Branch.exists(parentName)) {
-        parentName = MetadataRef.getMeta(parentName)?.parentBranchName;
-      }
-      if (parentName) {
-        this.setParentBranchName(parentName);
-      } else {
-        this.clearParentMetadata();
-        return undefined;
-      }
+    while (parentName && !branchExists(parentName)) {
+      parentName = MetadataRef.getMeta(parentName)?.parentBranchName;
+    }
+    if (parentName) {
+      this.setParentBranchName(parentName);
+    } else {
+      this.clearParentMetadata();
+      return undefined;
     }
 
     if (parentName === this.name) {
@@ -189,17 +188,6 @@ export class Branch {
       curParentMergeBase
       ? prevParentMergeBase
       : curParentMergeBase;
-  }
-
-  public static exists(branchName: string): boolean {
-    try {
-      execSync(`git show-ref --quiet refs/heads/${branchName}`, {
-        stdio: 'ignore',
-      });
-    } catch {
-      return false;
-    }
-    return true;
   }
 
   private getMeta(): TMeta | undefined {

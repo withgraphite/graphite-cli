@@ -5,6 +5,7 @@ import {
   uncommittedTrackedChangesPrecondition,
 } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
+import { branchExists } from '../../lib/utils/branch_exists';
 import { checkoutBranch } from '../../lib/utils/checkout_branch';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
@@ -90,7 +91,7 @@ export async function cleanBranchesContinuation(
   }
 
   checkoutBranch(
-    Branch.exists(frame.oldBranchName)
+    branchExists(frame.oldBranchName)
       ? frame.oldBranchName
       : getTrunk(context).name,
     { quiet: true }
@@ -108,7 +109,7 @@ export async function cleanBranchesContinuation(
 function cleanDanglingMetadata(): void {
   const allMetadataRefs = MetadataRef.allMetadataRefs();
   allMetadataRefs.forEach((ref) => {
-    if (!Branch.exists(ref._branchName)) {
+    if (!branchExists(ref._branchName)) {
       logDebug(`Deleting metadata for ${ref._branchName}`);
       ref.delete();
     }

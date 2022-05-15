@@ -4,6 +4,7 @@ import path from 'path';
 import { Branch } from '../../wrapper-classes/branch';
 import { TContext } from '../context';
 import { ConfigError, ExitFailedError } from '../errors';
+import { branchExists } from './branch_exists';
 
 function findRemoteOriginBranch(context: TContext): Branch | undefined {
   let config;
@@ -55,7 +56,7 @@ export function getTrunk(context: TContext): Branch {
     );
   }
 
-  if (!Branch.exists(configTrunkName)) {
+  if (!branchExists(configTrunkName)) {
     throw new ExitFailedError(
       `Configured trunk branch (${configTrunkName}) not found in the current repo. Consider updating the trunk name by running "gt repo init".`
     );

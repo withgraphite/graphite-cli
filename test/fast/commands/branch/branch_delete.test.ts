@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Branch } from '../../../../src/wrapper-classes/branch';
+import { branchExists } from '../../../../src/lib/utils/branch_exists';
 import { MetadataRef } from '../../../../src/wrapper-classes/metadata_ref';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
@@ -22,7 +22,7 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch delete "${branchName}" -f -q`);
 
       expectBranches(scene.repo, 'main');
-      expect(Branch.exists(branchName)).to.be.false;
+      expect(branchExists(branchName)).to.be.false;
 
       expect(
         MetadataRef.allMetadataRefs().find(
@@ -41,7 +41,7 @@ for (const scene of allScenes) {
       scene.repo.execCliCommandAndGetOutput(`bdl "${branchName}" -f -q`);
 
       expectBranches(scene.repo, 'main');
-      expect(Branch.exists(branchName)).to.be.false;
+      expect(branchExists(branchName)).to.be.false;
 
       expect(
         MetadataRef.allMetadataRefs().find(

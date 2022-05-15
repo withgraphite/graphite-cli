@@ -1,6 +1,7 @@
 import { Branch } from '../wrapper-classes/branch';
 import { TContext } from './context';
 import { PreconditionsFailedError } from './errors';
+import { branchExists } from './utils/branch_exists';
 import { detectStagedChanges } from './utils/detect_staged_changes';
 import { gpExecSync } from './utils/exec_sync';
 import {
@@ -28,7 +29,7 @@ function currentBranchPrecondition(context: TContext): Branch {
 }
 
 function branchExistsPrecondition(branchName: string): void {
-  if (!Branch.exists(branchName)) {
+  if (!branchExists(branchName)) {
     throw new PreconditionsFailedError(
       `Cannot find branch named: (${branchName}).`
     );
