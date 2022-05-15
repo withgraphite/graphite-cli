@@ -10,14 +10,12 @@ for (const scene of allScenes) {
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       scene.repo.checkoutBranch('main');
-      console.log('main1');
       scene.repo.createChange('b');
       scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
       scene.repo.checkoutBranch('main');
-      console.log('main2');
-      expect(scene.repo.execCliCommandAndGetOutput(`branch children`)).to.eq(
-        `a\nb`
-      );
+      expect(
+        scene.repo.execCliCommandAndGetOutput(`branch children`)
+      ).to.be.oneOf([`a\nb`, `b\na`]);
     });
 
     it('Can list no children', () => {

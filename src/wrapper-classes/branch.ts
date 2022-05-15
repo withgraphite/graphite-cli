@@ -12,16 +12,10 @@ import { getCommitterDate } from '../lib/utils/committer_date';
 import { currentBranchName } from '../lib/utils/current_branch_name';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { getMergeBase } from '../lib/utils/merge_base';
+import { sortedBranchNames } from '../lib/utils/sorted_branch_names';
 import { logDebug } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { MetadataRef, TBranchPRInfo, TMeta } from './metadata_ref';
-
-type TBranchFilters = {
-  useMemoizedResults?: boolean;
-  maxDaysBehindTrunk?: number;
-  maxBranches?: number;
-  sort?: '-committerdate';
-};
 
 export class Branch {
   name: string;
@@ -276,52 +270,18 @@ export class Branch {
     return name ? new Branch(name) : undefined;
   }
 
-  private static allBranchesImpl(
+  static allBranches(
     context: TContext,
-    opts: { useMemoizedResults: boolean; sort?: '-committerdate' }
+    opts?: {
+      useMemoizedResults?: boolean;
+      maxDaysBehindTrunk?: number;
+      maxBranches?: number;
+      filter?: (branch: Branch) => boolean;
+    }
   ): Branch[] {
-    const sortString = opts?.sort === undefined ? '' : `--sort='${opts?.sort}'`;
-    return execSync(
-      `git for-each-ref --format='%(refname:short)' ${sortString} refs/heads/`
-    )
-      .toString()
-      .trim()
-      .split('\n')
-      .filter(
-        (name) => name.length > 0 && !context.repoConfig.branchIsIgnored(name)
-      )
-      .map(
-        (name) =>
-          new Branch(name, { useMemoizedResults: opts?.useMemoizedResults })
-      );
-  }
+    const branchNames = sortedBranchNames();
 
-  static allBranches(context: TContext, opts?: TBranchFilters): Branch[] {
-    return Branch.allBranchesWithFilter(
-      {
-        filter: () => true,
-        opts: opts,
-      },
-      context
-    );
-  }
-
-  static allBranchesWithFilter(
-    args: {
-      filter: (branch: Branch) => boolean;
-      opts?: TBranchFilters;
-    },
-    context: TContext
-  ): Branch[] {
-    const branches = Branch.allBranchesImpl(context, {
-      useMemoizedResults: args.opts?.useMemoizedResults ?? false,
-      sort:
-        args.opts?.maxDaysBehindTrunk !== undefined
-          ? '-committerdate'
-          : args.opts?.sort,
-    });
-
-    const maxDaysBehindTrunk = args.opts?.maxDaysBehindTrunk;
+    const maxDaysBehindTrunk = opts?.maxDaysBehindTrunk;
     let minUnixTimestamp = undefined;
     if (maxDaysBehindTrunk) {
       const trunkUnixTimestamp = parseInt(
@@ -333,10 +293,13 @@ export class Branch {
       const secondsInDay = 24 * 60 * 60;
       minUnixTimestamp = trunkUnixTimestamp - maxDaysBehindTrunk * secondsInDay;
     }
-    const maxBranches = args.opts?.maxBranches;
+    const maxBranches = opts?.maxBranches;
 
     const filteredBranches = [];
-    for (let i = 0; i < branches.length; i++) {
+    for (const branchName of branchNames) {
+      if (context.repoConfig.branchIsIgnored(branchName)) {
+        continue;
+      }
       if (filteredBranches.length === maxBranches) {
         break;
       }
@@ -347,7 +310,7 @@ export class Branch {
       if (minUnixTimestamp !== undefined) {
         const committed = parseInt(
           getCommitterDate({
-            revision: branches[i].name,
+            revision: branchName,
             timeFormat: 'UNIX_TIMESTAMP',
           })
         );
@@ -356,45 +319,16 @@ export class Branch {
         }
       }
 
-      if (args.filter(branches[i])) {
-        filteredBranches.push(branches[i]);
+      const branch = new Branch(branchName, {
+        useMemoizedResults: opts?.useMemoizedResults ?? false,
+      });
+
+      if (!opts?.filter || opts.filter(branch)) {
+        filteredBranches.push(branch);
       }
     }
 
     return filteredBranches;
-  }
-
-  static async getAllBranchesWithoutParents(
-    context: TContext,
-    opts?: TBranchFilters & {
-      excludeTrunk?: boolean;
-    }
-  ): Promise<Branch[]> {
-    return this.allBranchesWithFilter(
-      {
-        filter: (branch) => {
-          if (opts?.excludeTrunk && branch.name === getTrunk(context).name) {
-            return false;
-          }
-          return branch.getParentsFromGit(context).length === 0;
-        },
-        opts: opts,
-      },
-      context
-    );
-  }
-
-  static async getAllBranchesWithParents(
-    context: TContext,
-    opts?: TBranchFilters
-  ): Promise<Branch[]> {
-    return this.allBranchesWithFilter(
-      {
-        filter: (branch) => branch.getParentsFromGit(context).length > 0,
-        opts: opts,
-      },
-      context
-    );
   }
 
   public getChildrenFromGit(context: TContext): Branch[] {

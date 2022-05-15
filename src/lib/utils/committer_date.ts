@@ -1,22 +1,14 @@
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
-import { assertUnreachable } from './assert_unreachable';
 
 export function getCommitterDate(args: {
   revision: string;
   timeFormat: 'UNIX_TIMESTAMP' | 'RELATIVE_READABLE';
 }): string {
-  let logFormat;
-  switch (args.timeFormat) {
-    case 'UNIX_TIMESTAMP':
-      logFormat = '%ct';
-      break;
-    case 'RELATIVE_READABLE':
-      logFormat = '%cr';
-      break;
-    default:
-      assertUnreachable(args.timeFormat);
-  }
+  const logFormat = {
+    UNIX_TIMESTAMP: '%ct',
+    RELATIVE_READABLE: '%cr',
+  }[args.timeFormat];
 
   return gpExecSync(
     {

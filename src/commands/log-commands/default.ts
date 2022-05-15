@@ -62,15 +62,17 @@ function printTrunkLog(context: TContext): void {
 
 async function printStacksBehindTrunk(context: TContext): Promise<void> {
   const trunk = getTrunk(context);
-  const branchesWithoutParents = await Branch.getAllBranchesWithoutParents(
-    context,
-    {
-      useMemoizedResults: true,
-      maxDaysBehindTrunk: context.repoConfig.getMaxDaysShownBehindTrunk(),
-      maxBranches: context.repoConfig.getMaxStacksShownBehindTrunk(),
-      excludeTrunk: true,
-    }
-  );
+  const branchesWithoutParents = Branch.allBranches(context, {
+    useMemoizedResults: true,
+    maxDaysBehindTrunk: context.repoConfig.getMaxDaysShownBehindTrunk(),
+    maxBranches: context.repoConfig.getMaxStacksShownBehindTrunk(),
+    filter: (branch) => {
+      if (branch.name === getTrunk(context).name) {
+        return false;
+      }
+      return branch.getParentsFromGit(context).length === 0;
+    },
+  });
   if (branchesWithoutParents.length === 0) {
     return;
   }
