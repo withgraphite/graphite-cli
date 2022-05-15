@@ -4,21 +4,22 @@ import { TMergeConflictCallstack } from '../config/merge_conflict_callstack_conf
 import { TContext } from '../context';
 import { ExitFailedError, RebaseConflictError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
+import { getBranchRevision } from './get_branch_revision';
 import { rebaseInProgress } from './rebase_in_progress';
 
 // TODO migrate mergeBase to use parentRevision of the current branch
 export function rebaseOnto(
   args: {
-    onto: Branch;
+    ontoBranchName: string;
     mergeBase: string;
     branch: Branch;
     mergeConflictCallstack: TMergeConflictCallstack;
   },
   context: TContext
 ): boolean {
-  if (args.mergeBase === args.onto.getCurrentRef()) {
+  if (args.mergeBase === getBranchRevision(args.ontoBranchName)) {
     context.splog.logDebug(
-      `No rebase needed for (${args.branch.name}) onto (${args.onto.name}).`
+      `No rebase needed for (${args.branch.name}) onto (${args.ontoBranchName}).`
     );
     return false;
   }
@@ -28,19 +29,19 @@ export function rebaseOnto(
   args.branch.savePrevRef();
   gpExecSync(
     {
-      command: `git rebase --onto ${args.onto.name} ${args.mergeBase} ${args.branch.name}`,
+      command: `git rebase --onto ${args.ontoBranchName} ${args.mergeBase} ${args.branch.name}`,
       options: { stdio: 'ignore' },
     },
     (err) => {
       if (rebaseInProgress()) {
         throw new RebaseConflictError(
-          `Interactive rebase in progress, cannot fix (${args.branch.name}) onto (${args.onto.name}).`,
+          `Interactive rebase in progress, cannot fix (${args.branch.name}) onto (${args.ontoBranchName}).`,
           args.mergeConflictCallstack,
           context
         );
       } else {
         throw new ExitFailedError(
-          `Rebase failed when moving (${args.branch.name}) onto (${args.onto.name}).`,
+          `Rebase failed when moving (${args.branch.name}) onto (${args.ontoBranchName}).`,
           err
         );
       }

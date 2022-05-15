@@ -3,6 +3,7 @@ import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
 import { copyFromRemote } from '../../lib/git/copy_from_remote';
+import { getBranchRevision } from '../../lib/git/get_branch_revision';
 import { getMergeBase } from '../../lib/git/merge_base';
 import { syncPRInfoForBranchByName } from '../../lib/sync/pr_info';
 import { getTrunk } from '../../lib/utils/trunk';
@@ -77,7 +78,7 @@ function calculateOverwrittenBranches(
       getMergeBase(
         branchName,
         `${context.repoConfig.getRemote()}/${branchName}`
-      ) !== branch.getCurrentRef()
+      ) !== getBranchRevision(branchName)
     );
   });
 }

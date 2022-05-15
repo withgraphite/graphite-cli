@@ -9,6 +9,7 @@ import { getBranchChildrenOrParentsFromGit } from '../lib/git-refs/branch_relati
 import { branchExists } from '../lib/git/branch_exists';
 import { getCommitterDate } from '../lib/git/committer_date';
 import { currentBranchName } from '../lib/git/current_branch_name';
+import { getBranchRevision } from '../lib/git/get_branch_revision';
 import { getMergeBase } from '../lib/git/merge_base';
 import { sortedBranchNames } from '../lib/git/sorted_branch_names';
 import { gpExecSync } from '../lib/utils/exec_sync';
@@ -168,7 +169,7 @@ export class Branch {
       return undefined;
     }
 
-    const curParentMergeBase = getMergeBase(parent.getCurrentRef(), this.name);
+    const curParentMergeBase = getMergeBase(parent.name, this.name);
 
     const prevParentRef = parent.getMetaPrevRef();
     if (!prevParentRef) {
@@ -195,12 +196,6 @@ export class Branch {
 
   public getMetaPrevRef(): string | undefined {
     return MetadataRef.getMeta(this.name)?.prevRef;
-  }
-
-  public getCurrentRef(): string {
-    return gpExecSync({
-      command: `git rev-parse ${this.name}`,
-    });
   }
 
   public clearMetadata(): this {
@@ -231,16 +226,16 @@ export class Branch {
     this.writeMeta(meta);
   }
 
-  public setParentBranch(parent: Branch): void {
+  public setParentBranch(parentBranchName: string): void {
     const meta: TMeta = this.getMeta() || {};
-    meta.parentBranchName = parent.name;
-    meta.parentBranchRevision = parent.getCurrentRef();
+    meta.parentBranchName = parentBranchName;
+    meta.parentBranchRevision = getBranchRevision(parentBranchName);
     this.writeMeta(meta);
   }
 
   public savePrevRef(): void {
     const meta: TMeta = this.getMeta() || {};
-    meta.prevRef = this.getCurrentRef();
+    meta.prevRef = getBranchRevision(this.name);
     this.writeMeta(meta);
   }
 
