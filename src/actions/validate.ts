@@ -9,7 +9,14 @@ import { Stack } from '../wrapper-classes/stack';
 import { TScope } from './scope';
 
 export function validate(scope: TScope, context: TContext): Branch[] {
-  const { metaStack, gitStack } = getStacksForValidation(scope, context);
+  const currentBranch = currentBranchPrecondition(context);
+
+  const { metaStack, gitStack } = getStacksForValidation(
+    currentBranch,
+    scope,
+    context
+  );
+
   if (!metaStack.equals(gitStack)) {
     throw new ValidationFailedError(
       [
@@ -54,11 +61,10 @@ export function backfillParentShasOnValidatedStack(
 }
 
 export function getStacksForValidation(
+  currentBranch: Branch,
   scope: TScope,
   context: TContext
 ): { metaStack: Stack; gitStack: Stack } {
-  const currentBranch = currentBranchPrecondition(context);
-
   logDebug(`Determining meta ${scope} from ${currentBranch.name}`);
   const metaStack = new MetaStackBuilder({ useMemoizedResults: true }).getStack(
     { currentBranch, scope },
