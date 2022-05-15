@@ -1,5 +1,6 @@
 import { TContext } from '../lib/context';
 import { ValidationFailedError } from '../lib/errors';
+import { getBranchRevision } from '../lib/git/get_branch_revision';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { logDebug } from '../lib/utils/splog';
 import { Branch } from '../wrapper-classes/branch';
@@ -44,10 +45,10 @@ function backfillParentShasOnValidatedStack(
       const parentBranch = branch.getParentFromMeta(context);
       if (
         parentBranch &&
-        branch.getParentBranchSha() !== parentBranch.getCurrentRef()
+        branch.getParentBranchSha() !== getBranchRevision(parentBranch.name)
       ) {
         logDebug(`Updating parent revision of ${branch}`);
-        branch.setParentBranch(parentBranch);
+        branch.setParentBranch(parentBranch.name);
       }
     });
 }

@@ -10,6 +10,7 @@ import {
   ValidationFailedError,
 } from '../lib/errors';
 import { checkoutBranch } from '../lib/git/checkout_branch';
+import { getBranchRevision } from '../lib/git/get_branch_revision';
 import { rebaseOnto } from '../lib/git/rebase';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
@@ -111,7 +112,7 @@ function restackUpstack(
 
   const rebased = rebaseOnto(
     {
-      onto: parentBranch,
+      ontoBranchName: parentBranch.name,
       mergeBase,
       branch,
       mergeConflictCallstack: args.mergeConflictCallstack,
@@ -125,9 +126,9 @@ function restackUpstack(
 
   // Stacks are now valid, we can update parentRevision
   // TODO: Remove after migrating validation to parentRevision
-  if (branch.getParentBranchSha() !== parentBranch.getCurrentRef()) {
+  if (branch.getParentBranchSha() !== getBranchRevision(parentBranch.name)) {
     logDebug(`Updating parent revision`);
-    branch.setParentBranch(parentBranch);
+    branch.setParentBranch(parentBranch.name);
   }
 
   branch.getChildrenFromMeta(context).forEach((child) =>

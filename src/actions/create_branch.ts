@@ -5,6 +5,7 @@ import { checkoutBranch } from '../lib/git/checkout_branch';
 import { commit } from '../lib/git/commit';
 import { deleteBranch } from '../lib/git/deleteBranch';
 import { detectStagedChanges } from '../lib/git/detect_staged_changes';
+import { getBranchRevision } from '../lib/git/get_branch_revision';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { newBranchName } from '../lib/utils/branch_name';
 import { logInfo } from '../lib/utils/splog';
@@ -60,7 +61,11 @@ export async function createBranchAction(
 
   // If the branch previously existed and the stale metadata is still around,
   // make sure that we wipe that stale metadata.
-  Branch.create(branchName, parentBranch.name, parentBranch.getCurrentRef());
+  Branch.create(
+    branchName,
+    parentBranch.name,
+    getBranchRevision(parentBranch.name)
+  );
 
   if (isAddingEmptyCommit) {
     logInfo(

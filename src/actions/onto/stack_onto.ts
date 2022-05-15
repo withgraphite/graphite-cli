@@ -8,6 +8,7 @@ import { TContext } from '../../lib/context';
 import { PreconditionsFailedError } from '../../lib/errors';
 import { getMergeBase } from '../../lib/git/merge_base';
 import { rebaseOnto } from '../../lib/git/rebase';
+import { branchExistsPrecondition } from '../../lib/preconditions';
 import { logInfo } from '../../lib/utils/splog';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
@@ -22,7 +23,7 @@ export function stackOnto(
   },
   context: TContext
 ): void {
-  const onto = Branch.branchWithName(opts.onto);
+  branchExistsPrecondition(opts.onto);
   checkBranchCanBeMoved(opts.currentBranch, context);
   validate('UPSTACK', context);
 
@@ -36,12 +37,12 @@ export function stackOnto(
 
   const mergeBase = getMergeBase(
     opts.currentBranch.name,
-    (parent ?? onto).name
+    parent?.name ?? opts.onto
   );
 
   const rebased = rebaseOnto(
     {
-      onto,
+      ontoBranchName: opts.onto,
       mergeBase,
       branch: opts.currentBranch,
       mergeConflictCallstack: [
@@ -54,7 +55,7 @@ export function stackOnto(
 
   if (!rebased) {
     if (!parent) {
-      opts.currentBranch.setParentBranch(onto);
+      opts.currentBranch.setParentBranch(opts.onto);
     }
     return;
   }
@@ -77,7 +78,7 @@ export function stackOntoBaseRebaseContinuation(
   cache.clearAll();
   // set current branch's parent only if the rebase succeeds.
   logInfo(`Setting parent of ${currentBranch.name} to ${onto}.`);
-  currentBranch.setParentBranch(new Branch(onto));
+  currentBranch.setParentBranch(onto);
 
   // Now perform a fix starting from the onto branch:
   const stackOntoContinuationFrame = {
