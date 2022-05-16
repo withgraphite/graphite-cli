@@ -1,3 +1,7 @@
+# 0.18.4 2021-05-16
+
+- `gt downstack sync` no longer requires turning on a configuration option to use (for real this time)
+
 # 0.18.3 2021-05-13
 
 - Rewrote `gt downstack sync` using a different mechanism for fetching remote stack dependencies.

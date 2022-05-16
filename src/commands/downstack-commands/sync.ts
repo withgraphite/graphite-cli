@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import yargs from 'yargs';
 import { getDownstackDependencies } from '../../actions/sync/get_downstack_dependencies';
 import { syncAction } from '../../actions/sync/sync';
@@ -22,14 +21,6 @@ export const description = 'Sync a branch and its downstack from remote.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    if (!context.userConfig.data.experimental) {
-      throw new ExitFailedError(
-        `Experimental features are disabled in your user config. To enable, run:\n\n${chalk.yellow(
-          'gt user experimental --enable'
-        )}`
-      );
-    }
-
     if (!argv.branch) {
       // TODO implement a picker that allows selection of legal remote branches (open PRs)
       throw new ExitFailedError('Remote branch picker not yet implemented');
