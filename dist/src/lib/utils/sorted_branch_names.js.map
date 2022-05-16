@@ -1,0 +1,1 @@
+{"version":3,"file":"sorted_branch_names.js","sourceRoot":"","sources":["../../../../src/lib/utils/sorted_branch_names.ts"],"names":[],"mappings":";;;AAAA,iDAAyC;AAEzC,SAAgB,iBAAiB;IAC/B,OAAO,wBAAQ,CACb,gFAAgF,CACjF;SACE,QAAQ,EAAE;SACV,IAAI,EAAE;SACN,KAAK,CAAC,IAAI,CAAC;SACX,MAAM,CAAC,CAAC,UAAU,EAAE,EAAE,CAAC,UAAU,CAAC,MAAM,GAAG,CAAC,CAAC,CAAC;AACnD,CAAC;AARD,8CAQC"}
