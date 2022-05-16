@@ -19,14 +19,18 @@ export async function interactiveBranchSelection(
     opts?.omitCurrentUpstack ? currentBranch?.name : undefined
   );
 
-  const initialBranchName =
-    currentBranch && currentBranch.name in stack.branches
-      ? opts?.omitCurrentUpstack
-        ? currentBranch.getParentBranchName() ?? trunk.name
-        : currentBranch.name
-      : trunk.name;
+  const indexOfCurrentIfPresent = choices.findIndex(
+    (choice) =>
+      choice.value ===
+      (opts?.omitCurrentUpstack
+        ? currentBranch?.getParentBranchName()
+        : currentBranch?.name)
+  );
 
-  const initial = choices.map((c) => c.value).indexOf(initialBranchName);
+  const initial =
+    indexOfCurrentIfPresent !== -1
+      ? indexOfCurrentIfPresent
+      : choices.findIndex((choice) => choice.value === trunk.name);
 
   const chosenBranch = (
     await prompts(
