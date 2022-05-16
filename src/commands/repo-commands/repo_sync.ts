@@ -37,13 +37,6 @@ const args = {
     type: 'boolean',
     alias: 'p',
   },
-  'show-dangling': {
-    describe: `Show prompts to fix dangling branches (branches for whose parent is unknown to Graphite).`,
-    demandOption: false,
-    default: true,
-    type: 'boolean',
-    alias: 's',
-  },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
@@ -62,7 +55,6 @@ export const handler = async (argv: argsT): Promise<void> => {
         resubmit: argv.resubmit,
         delete: argv.delete,
         showDeleteProgress: argv['show-delete-progress'],
-        fixDanglingBranches: argv['show-dangling'],
       },
       context
     );
