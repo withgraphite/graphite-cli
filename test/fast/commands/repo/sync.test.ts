@@ -210,32 +210,5 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('e');
       expectCommits(scene.repo, 'e, squash_d, squash_b, squash_a');
     });
-
-    it('Deletes merged, dangling branches that trail trunk', async () => {
-      // We'll come back to this - for now we're just saving a place behind
-      // main.
-      scene.repo.createAndCheckoutBranch('dangling');
-
-      scene.repo.checkoutBranch('main');
-      scene.repo.createChangeAndCommit('2', '2');
-      scene.repo.createChangeAndCommit('3', '3');
-      scene.repo.createChangeAndCommit('4', '4');
-
-      // Now create the dangling branch that trails main.
-      scene.repo.checkoutBranch('dangling');
-      scene.repo.createChangeAndCommit('a', 'a');
-
-      scene.repo.checkoutBranch('main');
-
-      expectBranches(scene.repo, 'dangling, main');
-
-      fakeGitSquashAndMerge(scene.repo, 'dangling', 'squash_dangling');
-
-      // The idea here is that repo sync fixes dangling branch back onto main,
-      // which then gets deleted as the deletion logic makes a pass through
-      // all of trunk's children.
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
-      expectBranches(scene.repo, 'main');
-    });
   });
 }
