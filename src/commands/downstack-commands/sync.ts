@@ -36,7 +36,6 @@ export const handler = async (argv: argsT): Promise<void> => {
     await syncAction(
       {
         pull: true,
-        fixDanglingBranches: false,
         delete: false,
         showDeleteProgress: false,
         resubmit: false,
