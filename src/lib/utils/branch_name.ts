@@ -2,7 +2,7 @@ import { TContext } from '../context';
 
 // 255 minus 21 (for 'refs/branch-metadata/')
 const MAX_BRANCH_NAME_BYTE_LENGTH = 234;
-const BRANCH_NAME_REPLACE_REGEX = /[^-_a-zA-Z0-9]+/g;
+const BRANCH_NAME_REPLACE_REGEX = /[^-_/.a-zA-Z0-9]+/g;
 
 function replaceUnsupportedCharacters(
   input: string,
