@@ -98,7 +98,7 @@ export class MetadataRef {
   ): TMeta | undefined {
     const metaString = gpExecSync({
       command: `git ${
-        opts ? `-C "${opts.dir}"` : ''
+        opts ? `-C "${opts.dir}" ` : ''
       }cat-file -p ${ref} 2> /dev/null`,
     });
     if (metaString.length == 0) {
