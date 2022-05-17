@@ -30,8 +30,19 @@ import { postSurveyResponsesInBackground } from './survey/post_survey';
 import { tracer } from './tracer';
 import { fetchUpgradePromptInBackground } from './upgrade_prompt';
 
-function initalizeContext(useMetaCache: boolean): TContext {
-  const context = initContext({ useMetaCache });
+// TODO temporary: while implementing cache, only initialize for these
+const MIGRATED_COMMANDS = [
+  'dev migration',
+  'branch up',
+  'branch down',
+  'branch top',
+  'branch bottom',
+];
+
+function initalizeContext(canonicalName: string): TContext {
+  const context = initContext({
+    useMetaCache: MIGRATED_COMMANDS.includes(canonicalName),
+  });
 
   fetchUpgradePromptInBackground(context);
   refreshPRInfoInBackground(context);
@@ -43,6 +54,7 @@ function initalizeContext(useMetaCache: boolean): TContext {
   return context;
 }
 
+// TODO this function should be split up
 export async function profile(
   args: yargs.Arguments,
   canonicalName: string,
@@ -57,7 +69,7 @@ export async function profile(
     startTime: start,
   });
 
-  const context = initalizeContext(canonicalName === 'dev migration');
+  const context = initalizeContext(canonicalName);
   if (
     parsedArgs.command !== 'repo init' &&
     !context.repoConfig.graphiteInitialized()
