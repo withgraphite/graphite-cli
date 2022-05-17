@@ -102,8 +102,7 @@ export function composeMetaCache(
       if (!getValidMeta(branchName)) {
         return false;
       }
-      // TODO quiet should be the default here
-      checkoutBranch(branchName, { quiet: true });
+      checkoutBranch(branchName);
       cache.currentBranch = branchName;
       return true;
     },
