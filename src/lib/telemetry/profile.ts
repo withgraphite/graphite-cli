@@ -37,6 +37,8 @@ const MIGRATED_COMMANDS = [
   'branch down',
   'branch top',
   'branch bottom',
+  'branch checkout',
+  'upstack onto',
 ];
 
 function initalizeContext(canonicalName: string): TContext {
