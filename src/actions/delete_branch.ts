@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
 import { checkoutBranch } from '../lib/git/checkout_branch';
-import { currentBranchName } from '../lib/git/current_branch_name';
+import { getCurrentBranchName } from '../lib/git/current_branch_name';
 import { deleteBranch } from '../lib/git/deleteBranch';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
@@ -21,7 +21,7 @@ export function deleteBranchAction(
     throw new ExitFailedError('Cannot delete trunk!');
   }
 
-  const current = currentBranchName();
+  const current = getCurrentBranchName();
 
   if (
     !args.force &&
