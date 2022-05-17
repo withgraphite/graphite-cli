@@ -1,9 +1,9 @@
 import { gpExecSync } from '../utils/exec_sync';
 
-export function currentBranchName(): string | undefined {
-  const head = gpExecSync({
-    command: `git rev-parse --abbrev-ref HEAD`,
+export function getCurrentBranchName(): string | undefined {
+  const branchName = gpExecSync({
+    command: `git branch --show-current`,
   });
 
-  return head.length > 0 && head !== 'HEAD' ? head : undefined;
+  return branchName.length > 0 ? branchName : undefined;
 }

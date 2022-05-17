@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { printStack } from '../../actions/print_stack';
 import { TContext } from '../../lib/context';
-import { currentBranchName } from '../../lib/git/current_branch_name';
+import { getCurrentBranchName } from '../../lib/git/current_branch_name';
 import { profile } from '../../lib/telemetry/profile';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
@@ -51,7 +51,7 @@ function printTrunkLog(context: TContext): void {
       baseBranch: trunk.useMemoizedResults(),
       indentLevel: 0,
       config: {
-        currentBranchName: currentBranchName(),
+        currentBranchName: getCurrentBranchName(),
         offTrunk: true,
         visited: [],
       },
@@ -92,7 +92,7 @@ async function printStacksBehindTrunk(context: TContext): Promise<void> {
         baseBranch: branch.useMemoizedResults(),
         indentLevel: 1,
         config: {
-          currentBranchName: currentBranchName(),
+          currentBranchName: getCurrentBranchName(),
           offTrunk: false,
           visited: [],
         },
