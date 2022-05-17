@@ -12,7 +12,7 @@ export function applyStackEditPick(
   context: TContext
 ): void {
   const onto = currentBranchPrecondition().name;
-  checkoutBranch(opts.branchName, { quiet: true });
+  checkoutBranch(opts.branchName);
   currentBranchOntoAction(
     {
       onto: onto,

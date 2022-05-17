@@ -39,7 +39,7 @@ export function pull(
       options: { input },
     },
     (err) => {
-      checkoutBranch(oldBranchName, { quiet: true });
+      checkoutBranch(oldBranchName);
       throw new ExitFailedError(`Failed to fetch from remote ${remote}`, err);
     }
   );
@@ -47,7 +47,7 @@ export function pull(
   gpExecSync(
     { command: `git merge --ff-only "refs/remotes/${remote}/${trunk}"` },
     (err) => {
-      checkoutBranch(oldBranchName, { quiet: true });
+      checkoutBranch(oldBranchName);
       throw new ExitFailedError(`Failed to fast-forward trunk ${trunk}`, err);
     }
   );
