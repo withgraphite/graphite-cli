@@ -46,7 +46,6 @@
     "@commitlint/config-conventional": "^13.1.0",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.4",
-    "@types/chalk": "^2.2.0",
     "@types/fs-extra": "^9.0.1",
     "@types/micromatch": "^4.0.2",
     "@types/mocha": "^8.2.3",
