@@ -39,16 +39,26 @@ type TCachedMeta = { children: string[]; branchRevision: string } & (
     }
 );
 
+type TValidCachedMeta = TCachedMeta & { validationResult: 'TRUNK' | 'VALID' };
+
 export function composeMetaCache(trunkName?: string): TMetaCache {
   const cache: Map<string, TCachedMeta> = trunkName
     ? loadCache(trunkName)
     : new Map();
 
+  const getValidMeta = (branchName: string): TValidCachedMeta | undefined => {
+    const cachedMeta = cache.get(branchName);
+    return cachedMeta?.validationResult === 'TRUNK' ||
+      cachedMeta?.validationResult === 'VALID'
+      ? cachedMeta
+      : undefined;
+  };
+
   return {
     get size() {
       return cache.size;
     },
-    getChildren: (branchName: string) => cache.get(branchName)?.children,
+    getChildren: (branchName: string) => getValidMeta(branchName)?.children,
   };
 }
 
@@ -102,6 +112,8 @@ export function loadCache(trunkName: string): Map<string, TCachedMeta> {
       continue;
     }
 
+    parentCachedMeta.children.push(branchName);
+
     // Check if the parent is valid (or trunk)
     if (
       parentCachedMeta.validationResult !== 'VALID' &&
@@ -135,7 +147,6 @@ export function loadCache(trunkName: string): Map<string, TCachedMeta> {
 
     // This branch and its recursive parents are valid
     logDebug(`validated: ${branchName}`);
-    parentCachedMeta.children.push(branchName);
     cache.set(branchName, {
       validationResult: 'VALID',
       parentBranchName,
