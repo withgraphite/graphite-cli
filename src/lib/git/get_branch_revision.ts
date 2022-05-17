@@ -1,5 +1,5 @@
-import { execSync } from 'child_process';
+import { gpExecSync } from '../utils/exec_sync';
 
 export function getBranchRevision(branchName: string): string {
-  return execSync(`git rev-parse ${branchName}`).toString().trim();
+  return gpExecSync({ command: `git rev-parse ${branchName}` });
 }

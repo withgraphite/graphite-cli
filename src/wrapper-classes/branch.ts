@@ -8,7 +8,7 @@ import {
 import { getBranchChildrenOrParentsFromGit } from '../lib/git-refs/branch_relations';
 import { branchExists } from '../lib/git/branch_exists';
 import { getCommitterDate } from '../lib/git/committer_date';
-import { currentBranchName } from '../lib/git/current_branch_name';
+import { getCurrentBranchName } from '../lib/git/current_branch_name';
 import { getBranchRevision } from '../lib/git/get_branch_revision';
 import { getMergeBase } from '../lib/git/merge_base';
 import { sortedBranchNames } from '../lib/git/sorted_branch_names';
@@ -256,7 +256,7 @@ export class Branch {
   }
 
   static currentBranch(): Branch | undefined {
-    const name = currentBranchName();
+    const name = getCurrentBranchName();
 
     // When the object we've checked out is a commit (and not a branch),
     // git rev-parse --abbrev-ref HEAD returns 'HEAD'. This isn't a valid
