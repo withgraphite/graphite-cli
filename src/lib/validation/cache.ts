@@ -15,6 +15,7 @@ export type TMetaCache = {
   size: number;
   currentBranch: string | undefined;
   currentBranchPrecondition: string;
+  trunk: string;
   isTrunk: (branchName: string) => boolean;
   getChildren: (branchName: string) => string[];
   getParent: (branchName: string) => string | undefined;
@@ -78,6 +79,12 @@ export function composeMetaCache(trunkName?: string): TMetaCache {
         );
       }
       return cache.currentBranch;
+    },
+    get trunk() {
+      if (!trunkName) {
+        throw new PreconditionsFailedError(`No trunk found.`);
+      }
+      return trunkName;
     },
     isTrunk: (branchName: string) =>
       cache.branches[branchName]?.validationResult === 'TRUNK',

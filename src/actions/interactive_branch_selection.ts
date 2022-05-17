@@ -2,35 +2,60 @@ import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitCancelledError } from '../lib/errors';
 import { logDebug } from '../lib/utils/splog';
-import { getTrunk } from '../lib/utils/trunk';
-import { Branch } from '../wrapper-classes/branch';
-import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
+
+function getPromptChoices(
+  opts: {
+    from: string;
+    omit?: string;
+    indent?: number;
+  },
+  context: TContext
+): { title: string; value: string }[] {
+  const currentChoice = {
+    title: `${'  '.repeat(opts.indent ?? 0)}↱ (${opts.from})`,
+    value: opts.from,
+  };
+  return (
+    context.metaCache
+      .getChildren(opts.from)
+      ?.filter((b) => b !== opts.omit)
+      .map((b) =>
+        getPromptChoices(
+          { from: b, omit: opts.omit, indent: (opts.indent ?? 0) + 1 },
+          context
+        )
+      )
+      .reduceRight((acc, arr) => arr.concat(acc), [currentChoice]) ?? []
+  );
+}
 
 export async function interactiveBranchSelection(
   context: TContext,
   opts: { message: string; omitCurrentUpstack?: boolean }
 ): Promise<string> {
-  const currentBranch = Branch.currentBranch();
-  const trunk = getTrunk(context);
-
-  const stack = new MetaStackBuilder().fullStackFromBranch(trunk, context);
-
-  const choices = stack.toPromptChoices(
-    opts?.omitCurrentUpstack ? currentBranch?.name : undefined
+  const choices = getPromptChoices(
+    {
+      from: context.metaCache.trunk,
+      omit: opts.omitCurrentUpstack
+        ? context.metaCache.currentBranch
+        : undefined,
+    },
+    context
   );
-
   const indexOfCurrentIfPresent = choices.findIndex(
     (choice) =>
       choice.value ===
-      (opts?.omitCurrentUpstack
-        ? currentBranch?.getParentBranchName()
-        : currentBranch?.name)
+      (opts.omitCurrentUpstack
+        ? context.metaCache.getParent(
+            context.metaCache.currentBranchPrecondition
+          )
+        : context.metaCache.currentBranch)
   );
 
   const initial =
     indexOfCurrentIfPresent !== -1
       ? indexOfCurrentIfPresent
-      : choices.findIndex((choice) => choice.value === trunk.name);
+      : choices.length - 1;
 
   const chosenBranch = (
     await prompts(
