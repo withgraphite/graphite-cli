@@ -53,11 +53,11 @@ type TValidCachedMeta = TCachedMeta & { validationResult: 'TRUNK' | 'VALID' };
 export function composeMetaCache(trunkName?: string): TMetaCache {
   const cache = {
     currentBranch: getCurrentBranchName(),
-    branches: trunkName ? loadCache(trunkName) : new Map(),
+    branches: trunkName ? loadCache(trunkName) : {},
   };
 
   const getValidMeta = (branchName: string): TValidCachedMeta | undefined => {
-    const cachedMeta = cache.branches.get(branchName);
+    const cachedMeta = cache.branches[branchName];
     return cachedMeta?.validationResult === 'TRUNK' ||
       cachedMeta?.validationResult === 'VALID'
       ? cachedMeta
@@ -66,7 +66,7 @@ export function composeMetaCache(trunkName?: string): TMetaCache {
 
   return {
     get size() {
-      return cache.branches.size;
+      return Object.keys(cache).length;
     },
     get currentBranch() {
       return cache.currentBranch;
@@ -80,11 +80,14 @@ export function composeMetaCache(trunkName?: string): TMetaCache {
       return cache.currentBranch;
     },
     isTrunk: (branchName: string) =>
-      cache.branches.get(branchName)?.validationResult === 'TRUNK',
-    getChildren: (branchName: string) =>
-      cache.branches.get(branchName).children,
-    getParent: (branchName: string) =>
-      cache.branches.get(branchName)?.parentBranchName,
+      cache.branches[branchName]?.validationResult === 'TRUNK',
+    getChildren: (branchName: string) => cache.branches[branchName].children,
+    getParent: (branchName: string) => {
+      const meta = cache.branches[branchName];
+      return meta.validationResult === 'BAD_PARENT_NAME'
+        ? undefined
+        : meta.parentBranchName;
+    },
     checkoutBranch: (branchName: string): boolean => {
       if (!getValidMeta(branchName)) {
         return false;
@@ -97,15 +100,16 @@ export function composeMetaCache(trunkName?: string): TMetaCache {
   };
 }
 
-export function loadCache(trunkName: string): Map<string, TCachedMeta> {
-  const cache = new Map();
+export function loadCache(trunkName: string): Record<string, TCachedMeta> {
+  const branches: Record<string, TCachedMeta> = {};
 
-  cache.set(trunkName, {
+  branches[trunkName] = {
     validationResult: 'TRUNK',
+    parentBranchName: undefined,
     branchRevision: getBranchRevision(trunkName),
     fixed: true,
     children: [],
-  });
+  };
 
   logDebug('Reading metadata...');
   const metaToValidate = readAllMeta();
@@ -132,16 +136,16 @@ export function loadCache(trunkName: string): Map<string, TCachedMeta> {
       !allBranchNames.has(parentBranchName)
     ) {
       logDebug(`bad parent name: ${branchName}`);
-      cache.set(branchName, {
+      branches[branchName] = {
         validationResult: 'BAD_PARENT_NAME',
         branchRevision,
         children: [],
-      });
+      };
       continue;
     }
 
     // If parent hasn't been checked yet, we'll come back to this branch
-    const parentCachedMeta = cache.get(parentBranchName);
+    const parentCachedMeta = branches[parentBranchName];
     if (typeof parentCachedMeta === 'undefined') {
       metaToValidate.push(current);
       continue;
@@ -155,13 +159,13 @@ export function loadCache(trunkName: string): Map<string, TCachedMeta> {
       parentCachedMeta.validationResult !== 'TRUNK'
     ) {
       logDebug(`invalid parent: ${branchName}`);
-      cache.set(branchName, {
+      branches[branchName] = {
         validationResult: 'INVALID_PARENT',
         parentBranchName,
         parentBranchRevision,
         branchRevision,
         children: [],
-      });
+      };
       continue;
     }
 
@@ -171,28 +175,28 @@ export function loadCache(trunkName: string): Map<string, TCachedMeta> {
       getMergeBase(branchName, parentBranchRevision) !== parentBranchRevision
     ) {
       logDebug(`bad parent rev: ${branchName}`);
-      cache.set(branchName, {
+      branches[branchName] = {
         validationResult: 'BAD_PARENT_REVISION',
         parentBranchName,
         branchRevision,
         children: [],
-      });
+      };
       continue;
     }
 
     // This branch and its recursive parents are valid
     logDebug(`validated: ${branchName}`);
-    cache.set(branchName, {
+    branches[branchName] = {
       validationResult: 'VALID',
       parentBranchName,
       parentBranchRevision,
       branchRevision,
       fixed: parentBranchRevision === parentCachedMeta.branchRevision,
       children: [],
-    });
+    };
   }
 
-  return cache;
+  return branches;
 }
 
 function readAllMeta(): Array<
