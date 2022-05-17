@@ -76,7 +76,7 @@ export function fixAction(
 export function stackFixActionContinuation(
   frame: TStackFixActionStackFrame
 ): void {
-  checkoutBranch(frame.checkoutBranchName, { quiet: true });
+  checkoutBranch(frame.checkoutBranchName);
 }
 
 function restackUpstack(
