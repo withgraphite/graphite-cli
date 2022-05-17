@@ -1,7 +1,7 @@
 {
   "name": "@withgraphite/graphite-cli",
   "version": "0.18.4",
-  "license": "None",
+  "license": "AGPL-3.0-or-later",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/withgraphite/graphite-cli",

@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import cp from 'child_process';
+import { assertIsError } from './errors';
 import { logError, logInfo } from './utils/splog';
 
 const GIT_COMMAND_ALLOWLIST = [
@@ -67,7 +68,8 @@ export function passthrough(args: string[]): void {
   try {
     cp.spawnSync('git', args.slice(2), { stdio: 'inherit' });
   } catch (err) {
-    logError(err);
+    assertIsError(err);
+    logError(err.message);
     // eslint-disable-next-line no-restricted-syntax
     process.exit(1);
   }

@@ -3,6 +3,7 @@ import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import { version } from '../../../package.json';
 import { API_SERVER } from '../api';
+import { assertIsError } from '../errors';
 
 type spanNameT = 'function' | 'execSync' | 'command';
 
@@ -118,6 +119,7 @@ class Tracer {
     try {
       result = handler();
     } catch (err) {
+      assertIsError(err);
       span.end(err);
       throw err;
     }
@@ -140,6 +142,7 @@ class Tracer {
     try {
       result = await handler();
     } catch (err) {
+      assertIsError(err);
       span.end(err);
       throw err;
     }

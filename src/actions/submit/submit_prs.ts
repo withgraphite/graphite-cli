@@ -4,7 +4,11 @@ import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
 import { API_SERVER } from '../../lib/api';
 import { TContext } from '../../lib/context';
-import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
+import {
+  assertIsError,
+  ExitFailedError,
+  PreconditionsFailedError,
+} from '../../lib/errors';
 import { logInfo } from '../../lib/utils/splog';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
@@ -95,10 +99,11 @@ export async function requestServerToSubmitPRs(
         }).\n\nResponse: ${JSON.stringify(response)}`
       );
     }
-  } catch (error) {
+  } catch (err) {
+    assertIsError(err);
     throw new ExitFailedError(
       `Failed to submit PR${submissionInfo.length > 1 ? 's' : ''}`,
-      error
+      err
     );
   }
 }

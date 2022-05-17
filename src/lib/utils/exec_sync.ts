@@ -1,4 +1,5 @@
 import { execSync, ExecSyncOptions, SpawnSyncReturns } from 'child_process';
+import { assertIsError } from '../errors';
 import { tracer } from '../telemetry/tracer';
 
 export type GPExecSyncOptions = {
@@ -12,8 +13,8 @@ export function gpExecSync(
     command: string;
     options?: ExecSyncOptions & GPExecSyncOptions;
   },
-  onError?: (e: Error & SpawnSyncReturns<Buffer>) => void
-): Buffer {
+  onError?: (e: Error & SpawnSyncReturns<string>) => void
+): string {
   try {
     // Only measure if we're with an existing span.
     if (tracer.currentSpanId) {
@@ -31,17 +32,19 @@ export function gpExecSync(
       return gpExecSyncImpl(command);
     }
   } catch (e) {
-    onError?.(e);
-    return Buffer.alloc(0);
+    assertIsError(e);
+    onError?.(e as Error & SpawnSyncReturns<string>);
+    return '';
   }
 }
 
 function gpExecSyncImpl(command: {
   command: string;
   options?: ExecSyncOptions & GPExecSyncOptions;
-}): Buffer {
+}): string {
   const output = execSync(command.command, {
     ...command.options,
+    encoding: 'utf8',
   });
   if (command.options?.printStdout === true) {
     console.log(output.toString());

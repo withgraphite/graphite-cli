@@ -8,6 +8,7 @@ import { init } from '../../actions/init';
 import { execStateConfig } from '../config/exec_state_config';
 import { initContext, TContext } from '../context';
 import {
+  assertIsError,
   ConfigError,
   ExitCancelledError,
   ExitFailedError,
@@ -85,6 +86,7 @@ export async function profile(
         try {
           await handler(context);
         } catch (err) {
+          assertIsError(err);
           switch (err.constructor) {
             case ExitFailedError:
               logError(err.message);
@@ -135,6 +137,7 @@ export async function profile(
       }
     );
   } catch (e) {
+    assertIsError(e);
     err = e;
   }
 
@@ -147,9 +150,10 @@ export async function profile(
   });
 
   if (err) {
+    assertIsError(err);
     if (execStateConfig.outputDebugLogs()) {
-      logInfo(err);
-      logInfo(err.stack);
+      logInfo(err.message);
+      logInfo(err.stack || '');
     }
 
     // eslint-disable-next-line no-restricted-syntax

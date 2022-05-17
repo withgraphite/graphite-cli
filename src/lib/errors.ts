@@ -1,9 +1,14 @@
+import assert from 'assert';
 import { Branch } from '../wrapper-classes/branch';
 import {
   persistMergeConflictCallstack,
   TMergeConflictCallstack,
 } from './config/merge_conflict_callstack_config';
 import { TContext } from './context';
+
+export function assertIsError(error: unknown): asserts error is Error {
+  assert(error instanceof Error);
+}
 
 class ExitError extends Error {}
 class ExitCancelledError extends ExitError {

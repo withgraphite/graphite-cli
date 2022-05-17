@@ -5,6 +5,7 @@ import prompts from 'prompts';
 import { assertUnreachable } from '../../../lib/utils/assert_unreachable';
 import { API_SERVER } from '../../api';
 import { TContext } from '../../context';
+import { assertIsError } from '../../errors';
 import { cliAuthPrecondition } from '../../preconditions';
 import { logMessageFromGraphite, logNewline } from '../../utils/splog';
 import { TSurveyResponse } from './../../config/survey_config';
@@ -78,6 +79,7 @@ export async function showSurvey(
       context
     );
   } catch (err) {
+    assertIsError(err);
     switch (err.constructor) {
       case ExitedSurveyError:
         responses.exitedEarly = true;

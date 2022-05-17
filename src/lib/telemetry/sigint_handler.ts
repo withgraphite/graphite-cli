@@ -16,11 +16,7 @@ export function registerSigintHandler(opts: {
       commandName: opts.commandName,
       canonicalCommandName: opts.canonicalCommandName,
       durationMiliSeconds: Date.now() - opts.startTime,
-      err: {
-        errName: err.name,
-        errMessage: err.message,
-        errStack: err.stack || '',
-      },
+      err,
     });
     // eslint-disable-next-line no-restricted-syntax
     process.exit(0);

@@ -20,11 +20,7 @@ process.on('uncaughtException', (err) => {
     canonicalCommandName: 'unknown',
     commandName: 'unknown',
     durationMiliSeconds: 0,
-    err: {
-      errName: err.name,
-      errMessage: err.message,
-      errStack: err.stack || '',
-    },
+    err,
   });
   logError(err.message);
   // eslint-disable-next-line no-restricted-syntax
