@@ -35,10 +35,7 @@ export function deleteBranchAction(
 
   if (current === args.branchName) {
     checkoutBranch(
-      Branch.branchWithName(current).getParentFromMeta(context)?.name ?? trunk,
-      {
-        quiet: true,
-      }
+      Branch.branchWithName(current).getParentFromMeta(context)?.name ?? trunk
     );
   }
 

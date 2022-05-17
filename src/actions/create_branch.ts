@@ -54,7 +54,7 @@ export async function createBranchAction(
     message: opts.commitMessage,
     rollbackOnError: () => {
       // Commit failed, usually due to precommit hooks. Rollback the branch.
-      checkoutBranch(parentBranch.name, { quiet: true });
+      checkoutBranch(parentBranch.name);
       deleteBranch(branchName);
     },
   });
@@ -79,7 +79,7 @@ export async function createBranchAction(
       .source.children.map((node) => node.branch)
       .filter((b) => b.name != branchName)
       .forEach((b) => {
-        checkoutBranch(b.name, { quiet: true });
+        checkoutBranch(b.name);
         logInfo(`Stacking (${b.name}) onto (${branchName})...`);
         currentBranchOntoAction(
           {
@@ -89,6 +89,6 @@ export async function createBranchAction(
           context
         );
       });
-    checkoutBranch(branchName, { quiet: true });
+    checkoutBranch(branchName);
   }
 }

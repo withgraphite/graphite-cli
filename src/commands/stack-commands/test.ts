@@ -88,7 +88,7 @@ function testStack(
   });
 
   // Finish off.
-  checkoutBranch(originalBranch.name, { quiet: true });
+  checkoutBranch(originalBranch.name);
 }
 
 function testBranch(opts: {
@@ -97,7 +97,7 @@ function testBranch(opts: {
   command: string;
   outputPath: string;
 }) {
-  checkoutBranch(opts.branchName, { quiet: true });
+  checkoutBranch(opts.branchName);
 
   // Mark the branch as running.
   opts.state[opts.branchName].status = '[running]';
