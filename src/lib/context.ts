@@ -15,7 +15,7 @@ export type TContext = {
   mergeConflictCallstackConfig: ReturnType<
     typeof mergeConflictCallstackConfigFactory.loadIfExists
   >;
-  metaCache?: TMetaCache;
+  metaCache: TMetaCache;
 };
 
 export function initContext(opts?: {
