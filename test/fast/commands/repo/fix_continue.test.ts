@@ -42,8 +42,7 @@ for (const scene of allScenes) {
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      const output =
-        scene.repo.execCliCommandAndGetOutput('continue --no-edit');
+      const output = scene.repo.execCliCommandAndGetOutput('continue');
 
       // Continue correctly finishes the command including the upsell at the
       // end to submit feedback.
@@ -86,12 +85,12 @@ for (const scene of allScenes) {
       expect(scene.repo.rebaseInProgress()).to.be.true;
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
+      scene.repo.execCliCommand('continue');
 
       expect(scene.repo.rebaseInProgress()).to.be.true;
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
+      scene.repo.execCliCommand('continue');
 
       expectBranches(scene.repo, 'c, d, main');
     });

@@ -30,21 +30,8 @@ import { postSurveyResponsesInBackground } from './survey/post_survey';
 import { tracer } from './tracer';
 import { fetchUpgradePromptInBackground } from './upgrade_prompt';
 
-// TODO temporary: while implementing cache, only initialize for these
-const MIGRATED_COMMANDS = [
-  'dev cache',
-  'branch up',
-  'branch down',
-  'branch top',
-  'branch bottom',
-  'branch checkout',
-  'upstack onto',
-];
-
-function initalizeContext(canonicalName: string): TContext {
-  const context = initContext({
-    useMetaCache: MIGRATED_COMMANDS.includes(canonicalName),
-  });
+function initalizeContext(): TContext {
+  const context = initContext();
 
   fetchUpgradePromptInBackground(context);
   refreshPRInfoInBackground(context);
@@ -71,7 +58,7 @@ export async function profile(
     startTime: start,
   });
 
-  const context = initalizeContext(canonicalName);
+  const context = initalizeContext();
   if (
     parsedArgs.command !== 'repo init' &&
     !context.repoConfig.graphiteInitialized()
@@ -107,8 +94,7 @@ export async function profile(
               logInfo(err.message);
               throw err;
             case RebaseConflictError:
-              logNewline();
-              logError(`Rebase conflict. ${err.message}`);
+              logInfo(`Rebase Conflict: ${err.message}`);
               logNewline();
               printStatus();
               logNewline();
@@ -140,7 +126,7 @@ export async function profile(
               logError(err.message);
               throw err;
             case KilledError:
-              return; // don't log output if user manually kills.
+              return;
             default:
               logError(err.message);
               throw err;

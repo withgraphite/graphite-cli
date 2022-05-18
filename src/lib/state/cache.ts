@@ -4,10 +4,12 @@ import {
   TMeta,
 } from '../../wrapper-classes/metadata_ref';
 import { PreconditionsFailedError } from '../errors';
+import { branchExists } from '../git/branch_exists';
 import { checkoutBranch } from '../git/checkout_branch';
 import { getCurrentBranchName } from '../git/current_branch_name';
 import { getBranchRevision } from '../git/get_branch_revision';
 import { getMergeBase } from '../git/merge_base';
+import { restack, restackContinue } from '../git/rebase';
 import { branchNamesAndRevisions } from '../git/sorted_branch_names';
 import { cuteString } from '../utils/cute_string';
 import { logDebug } from '../utils/splog';
@@ -20,7 +22,12 @@ export type TMetaCache = {
   isTrunk: (branchName: string) => boolean;
   getChildren: (branchName: string) => string[];
   getParent: (branchName: string) => string | undefined;
+  getParentPrecondition: (branchName: string) => string;
   checkoutBranch: (branchName: string) => boolean;
+  restackBranch: (
+    branchName: string
+  ) => 'REBASE_CONFLICT' | 'REBASE_DONE' | 'REBASE_UNNEEDED';
+  continueRebase: () => 'REBASE_CONFLICT' | 'REBASE_DONE';
 };
 
 type TCachedMeta = { children: string[]; branchRevision: string } & (
@@ -52,18 +59,63 @@ type TCachedMeta = { children: string[]; branchRevision: string } & (
 
 type TValidCachedMeta = TCachedMeta & { validationResult: 'TRUNK' | 'VALID' };
 
+// eslint-disable-next-line max-lines-per-function
 export function composeMetaCache(trunkName?: string): TMetaCache {
   const cache = {
     currentBranch: getCurrentBranchName(),
     branches: trunkName ? loadCache(trunkName) : {},
   };
 
-  const getValidMeta = (branchName: string): TValidCachedMeta | undefined => {
+  const getValidMeta = (
+    branchName: string | undefined
+  ): TValidCachedMeta | undefined => {
+    if (!branchName) return undefined;
     const cachedMeta = cache.branches[branchName];
     return cachedMeta?.validationResult === 'TRUNK' ||
       cachedMeta?.validationResult === 'VALID'
       ? cachedMeta
       : undefined;
+  };
+
+  function assertBranchIsValid(
+    branchName: string | undefined
+  ): asserts branchName is string {
+    if (!getValidMeta(branchName)) {
+      throw new PreconditionsFailedError(
+        `${branchName} is not a valid Graphite branch.`
+      );
+    }
+  }
+
+  const handleRestack = (
+    result: 'REBASE_CONFLICT' | 'REBASE_DONE'
+  ): 'REBASE_CONFLICT' | 'REBASE_DONE' => {
+    if (result === 'REBASE_CONFLICT') {
+      cache.currentBranch = undefined;
+      return 'REBASE_CONFLICT';
+    }
+
+    cache.currentBranch = getCurrentBranchName();
+    assertBranchIsValid(cache.currentBranch);
+    const cachedMeta = cache.branches[cache.currentBranch] as TValidCachedMeta;
+    if (cachedMeta.validationResult === 'TRUNK') {
+      throw new PreconditionsFailedError(
+        `${cache.currentBranch} is trunk and cannot be restacked.`
+      );
+    }
+
+    cachedMeta.parentBranchRevision =
+      cache.branches[cachedMeta.parentBranchName].branchRevision;
+    cachedMeta.fixed = true;
+    cachedMeta.branchRevision = getBranchRevision(cache.currentBranch);
+    logDebug(`Restacked: ${cache.currentBranch}\n${cuteString(cachedMeta)}`);
+
+    MetadataRef.updateOrCreate(cache.currentBranch, {
+      parentBranchName: cachedMeta.parentBranchName,
+      parentBranchRevision: cachedMeta.parentBranchRevision,
+      prInfo: cachedMeta.prInfo,
+    });
+    return 'REBASE_DONE';
   };
 
   return {
@@ -73,12 +125,8 @@ export function composeMetaCache(trunkName?: string): TMetaCache {
     get currentBranch() {
       return cache.currentBranch;
     },
-    get currentBranchPrecondition() {
-      if (!cache.currentBranch || !getValidMeta(cache.currentBranch)) {
-        throw new PreconditionsFailedError(
-          `Please check out a valid Graphite branch.`
-        );
-      }
+    get currentBranchPrecondition(): string {
+      assertBranchIsValid(cache.currentBranch);
       return cache.currentBranch;
     },
     get trunk() {
@@ -96,6 +144,18 @@ export function composeMetaCache(trunkName?: string): TMetaCache {
         ? undefined
         : meta.parentBranchName;
     },
+    getParentPrecondition: (branchName: string) => {
+      const meta = cache.branches[branchName];
+      if (
+        meta.validationResult === 'BAD_PARENT_NAME' ||
+        !meta.parentBranchName
+      ) {
+        throw new PreconditionsFailedError(
+          `${branchName} does not have a parent.`
+        );
+      }
+      return meta.parentBranchName;
+    },
     checkoutBranch: (branchName: string): boolean => {
       if (!getValidMeta(branchName)) {
         return false;
@@ -104,11 +164,33 @@ export function composeMetaCache(trunkName?: string): TMetaCache {
       cache.currentBranch = branchName;
       return true;
     },
+    restackBranch: (branchName: string) => {
+      assertBranchIsValid(branchName);
+      const cachedMeta = cache.branches[branchName] as TValidCachedMeta;
+      if (cachedMeta.fixed) {
+        return 'REBASE_UNNEEDED';
+      }
+
+      return handleRestack(
+        restack({
+          parentBranchName: cachedMeta.parentBranchName,
+          oldParentBranchRevision: cachedMeta.parentBranchRevision,
+          branchName,
+        })
+      );
+    },
+    continueRebase: () => {
+      return handleRestack(restackContinue());
+    },
   };
 }
 
 export function loadCache(trunkName: string): Record<string, TCachedMeta> {
   const branches: Record<string, TCachedMeta> = {};
+
+  if (!branchExists(trunkName)) {
+    return branches;
+  }
 
   branches[trunkName] = {
     validationResult: 'TRUNK',

@@ -8,7 +8,28 @@ import { logDebug } from '../utils/splog';
 import { getBranchRevision } from './get_branch_revision';
 import { rebaseInProgress } from './rebase_in_progress';
 
-// TODO migrate mergeBase to use parentRevision of the current branch
+type TRebaseResult = 'REBASE_CONFLICT' | 'REBASE_DONE';
+export function restack(args: {
+  parentBranchName: string;
+  oldParentBranchRevision: string;
+  branchName: string;
+}): TRebaseResult {
+  gpExecSync({
+    command: `git rebase --onto ${args.parentBranchName} ${args.oldParentBranchRevision} ${args.branchName}`,
+    options: { stdio: 'ignore' },
+  });
+  return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
+}
+
+export function restackContinue(): TRebaseResult {
+  gpExecSync({
+    command: `GIT_EDITOR=true git rebase --continue`,
+    options: { stdio: 'ignore' },
+  });
+  return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
+}
+
+// TODO deprecate this version
 export function rebaseOnto(
   args: {
     ontoBranchName: string;
