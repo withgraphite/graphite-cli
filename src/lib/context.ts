@@ -3,7 +3,7 @@ import { messageConfigFactory } from './config/message_config';
 import { repoConfigFactory } from './config/repo_config';
 import { surveyConfigFactory } from './config/survey_config';
 import { userConfigFactory } from './config/user_config';
-import { composeMetaCache, TMetaCache } from './validation/cache';
+import { composeMetaCache, TMetaCache } from './state/cache';
 
 export const USER_CONFIG_OVERRIDE_ENV = 'GRAPHITE_USER_CONFIG_PATH' as const;
 
