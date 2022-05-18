@@ -17,7 +17,7 @@ import {
   SiblingBranchError,
   ValidationFailedError,
 } from '../errors';
-import { printStatus } from '../git/merge_conflict_help';
+import { getUnmergedFiles } from '../git/merge_conflict_help';
 import { TGlobalArguments } from '../global_arguments';
 import { refreshPRInfoInBackground } from '../requests/fetch_pr_info';
 import { parseArgs } from '../utils/parse_args';
@@ -28,6 +28,8 @@ import { registerSigintHandler } from './sigint_handler';
 import { postSurveyResponsesInBackground } from './survey/post_survey';
 import { tracer } from './tracer';
 import { fetchUpgradePromptInBackground } from './upgrade_prompt';
+
+// eslint-disable-next-line max-lines-per-function
 export async function profile(
   args: yargs.Arguments,
   canonicalName: string,
@@ -48,7 +50,6 @@ export async function profile(
   fetchUpgradePromptInBackground(context);
   refreshPRInfoInBackground(context);
   postSurveyResponsesInBackground(context);
-
   if (
     parsedArgs.command !== 'repo init' &&
     !context.repoConfig.graphiteInitialized()
@@ -86,21 +87,30 @@ export async function profile(
               context.splog.logInfo(err.message);
               throw err;
             case RebaseConflictError:
-              context.splog.logInfo(`Rebase Conflict: ${err.message}`);
-              context.splog.logNewline();
-              printStatus();
-              context.splog.logNewline();
               context.splog.logInfo(
-                [
-                  `To fix and continue your previous Graphite command:`,
-                  `(1) resolve the listed merge conflicts`,
-                  `(2) mark them as resolved with "git add"`,
-                  `(3) run "gt continue" to continue executing your previous Graphite command`,
-                ]
-                  .map((line) => chalk.yellow(line))
+                `${chalk.red(`Rebase Conflict`)}: ${err.message}`
+              );
+              context.splog.logNewline();
+              context.splog.logInfo(chalk.yellow(`Unmerged files:`));
+              context.splog.logInfo(
+                getUnmergedFiles()
+                  .map((line) => chalk.red(line))
                   .join('\n')
               );
-              return;
+              context.splog.logNewline();
+              context.splog.logInfo(
+                `To fix and continue your previous Graphite command:`
+              );
+              context.splog.logInfo(`(1) resolve the listed merge conflicts`);
+              context.splog.logInfo(
+                `(2) mark them as resolved with ${chalk.cyan(`gt add`)}`
+              );
+              context.splog.logInfo(
+                `(3) run ${chalk.cyan(
+                  `gt continue`
+                )} to continue executing your previous Graphite command`
+              );
+              throw err;
             case ValidationFailedError:
               context.splog.logError(`Validation: ${err.message}`);
               context.splog.logInfo(VALIDATION_HELPER_MESSAGE);
