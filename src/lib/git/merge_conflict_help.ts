@@ -1,10 +1,7 @@
 import { gpExecSync } from '../utils/exec_sync';
 
-export function printStatus(): void {
-  gpExecSync({
-    command: `git status`,
-    options: {
-      printStdout: (out) => out.replace('git rebase --continue', 'gt continue'),
-    },
-  });
+export function getUnmergedFiles(): string[] {
+  return gpExecSync({
+    command: `git diff --name-only --diff-filter=U`,
+  }).split('\n');
 }
