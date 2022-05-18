@@ -62,7 +62,7 @@ for (const scene of [new BasicScene()]) {
         while (scene.repo.rebaseInProgress()) {
           scene.repo.resolveMergeConflicts();
           scene.repo.markMergeConflictsAsResolved();
-          scene.repo.execCliCommand('continue --no-edit');
+          scene.repo.execCliCommand('continue');
         }
         expectCommits(scene.repo, '2, 3, 1');
         expect(

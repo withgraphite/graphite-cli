@@ -22,7 +22,7 @@ for (const scene of allScenes) {
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
+      scene.repo.execCliCommand('continue');
 
       // Continue should finish the work that stack fix started, not only
       // completing the rebase but also re-checking out the original
@@ -55,12 +55,12 @@ for (const scene of allScenes) {
       expect(scene.repo.rebaseInProgress()).to.be.true;
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
+      scene.repo.execCliCommand('continue');
 
       expect(scene.repo.rebaseInProgress()).to.be.true;
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
+      scene.repo.execCliCommand('continue');
 
       // Note that even though multiple continues have been run, the original
       // context - that the original commit amend was kicked off at 'a' -

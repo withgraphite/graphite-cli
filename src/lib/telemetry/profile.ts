@@ -28,7 +28,6 @@ import { registerSigintHandler } from './sigint_handler';
 import { postSurveyResponsesInBackground } from './survey/post_survey';
 import { tracer } from './tracer';
 import { fetchUpgradePromptInBackground } from './upgrade_prompt';
-
 export async function profile(
   args: yargs.Arguments,
   canonicalName: string,
@@ -45,6 +44,7 @@ export async function profile(
   const context = initContext({
     globalArguments: args as TGlobalArguments,
   });
+
   fetchUpgradePromptInBackground(context);
   refreshPRInfoInBackground(context);
   postSurveyResponsesInBackground(context);
@@ -86,8 +86,7 @@ export async function profile(
               context.splog.logInfo(err.message);
               throw err;
             case RebaseConflictError:
-              context.splog.logNewline();
-              context.splog.logError(`Rebase conflict. ${err.message}`);
+              context.splog.logInfo(`Rebase Conflict: ${err.message}`);
               context.splog.logNewline();
               printStatus();
               context.splog.logNewline();
@@ -119,7 +118,7 @@ export async function profile(
               context.splog.logError(err.message);
               throw err;
             case KilledError:
-              return; // don't log output if user manually kills.
+              return;
             default:
               context.splog.logError(err.message);
               throw err;
