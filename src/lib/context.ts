@@ -18,14 +18,9 @@ export type TContext = {
   metaCache: TMetaCache;
 };
 
-export function initContext(opts?: {
-  userConfigOverride?: string;
-  useMetaCache?: boolean;
-}): TContext {
+export function initContext(opts?: { userConfigOverride?: string }): TContext {
   const repoConfig = repoConfigFactory.load();
-  const metaCache = composeMetaCache(
-    opts?.useMetaCache ? repoConfig.data.trunk : undefined
-  );
+  const metaCache = composeMetaCache(repoConfig.data.trunk);
   return {
     repoConfig,
     surveyConfig: surveyConfigFactory.load(),

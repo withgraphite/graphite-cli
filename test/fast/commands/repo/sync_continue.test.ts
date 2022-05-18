@@ -65,7 +65,7 @@ for (const scene of allScenes) {
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
+      scene.repo.execCliCommand('continue');
 
       expectBranches(scene.repo, 'c, main');
     });
@@ -104,12 +104,12 @@ for (const scene of allScenes) {
       expect(scene.repo.rebaseInProgress()).to.be.true;
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
+      scene.repo.execCliCommand('continue');
 
       expect(scene.repo.rebaseInProgress()).to.be.true;
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
+      scene.repo.execCliCommand('continue');
 
       expectBranches(scene.repo, 'c, d, main');
     });

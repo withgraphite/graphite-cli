@@ -6,15 +6,15 @@ import {
   stackOntoBaseRebaseContinuation,
   stackOntoFixContinuation,
 } from '../actions/onto/stack_onto';
+import { finishRestack } from '../actions/restack';
 import { cleanBranchesContinuation } from '../actions/sync/sync';
 import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context';
-import { PreconditionsFailedError } from '../lib/errors';
+import { PreconditionsFailedError, RebaseConflictError } from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { profile } from '../lib/telemetry/profile';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
-import { gpExecSync } from '../lib/utils/exec_sync';
 import { logDebug } from '../lib/utils/splog';
 import { deleteMergedBranchesContinuation } from './repo-commands/fix';
 
@@ -25,20 +25,6 @@ const args = {
     default: false,
     type: 'boolean',
     alias: 'a',
-  },
-  edit: {
-    describe: `Modify the existing commit message for an amended, resolved merge conflict.`,
-    demandOption: false,
-    default: true,
-    type: 'boolean',
-  },
-  'no-edit': {
-    type: 'boolean',
-    describe:
-      "Don't modify the existing commit message. Takes precedence over --edit",
-    demandOption: false,
-    default: false,
-    alias: 'n',
   },
 } as const;
 
@@ -56,6 +42,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     const mostRecentCheckpoint =
       context.mergeConflictCallstackConfig?.data.callstack;
 
+    // TODO  would we ever have this without a pending rebase?
     if (!mostRecentCheckpoint && !pendingRebase) {
       throw new PreconditionsFailedError(`No Graphite command to continue.`);
     }
@@ -64,15 +51,12 @@ export const handler = async (argv: argsT): Promise<void> => {
       addAll();
     }
 
-    const edit = !argv['no-edit'] && argv.edit;
-
+    // TODO change this to early exit if we don't have a rebase in progress
     if (pendingRebase) {
-      gpExecSync({
-        command: `${edit ? '' : 'GIT_EDITOR=true'} git rebase --continue`,
-        options: {
-          stdio: 'inherit',
-        },
-      });
+      if (context.metaCache.continueRebase() === 'REBASE_CONFLICT') {
+        throw new RebaseConflictError(`Rebase conflict is not yet resolved.`);
+      }
+      finishRestack(context);
     }
 
     if (mostRecentCheckpoint) {
