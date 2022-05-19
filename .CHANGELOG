@@ -1,3 +1,9 @@
+# 0.18.5 2021-05-19
+
+- `.` and `/` are no longer replaced in branch names.
+- Fixed a regression where the current branch wouldn't be selected by default in `gt branch checkout` interactive mode.
+- Upgraded `node` and `yarn` dependencies, please let us know if you see any weirdness!
+
 # 0.18.4 2021-05-16
 
 - `gt downstack sync` no longer requires turning on a configuration option to use (for real this time)
