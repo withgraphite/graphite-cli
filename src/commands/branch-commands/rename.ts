@@ -4,6 +4,7 @@ import { cache } from '../../lib/config/cache';
 import { ExitFailedError } from '../../lib/errors';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry/profile';
+import { replaceUnsupportedCharacters } from '../../lib/utils/branch_name';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { logInfo } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
@@ -36,7 +37,10 @@ export const handler = async (args: argsT): Promise<void> => {
   return profile(args, canonical, async (context) => {
     const currentBranch = currentBranchPrecondition(context);
     const oldName = currentBranch.name;
-    const newName = args['new-branch-name'];
+    const newName = replaceUnsupportedCharacters(
+      args['new-branch-name'],
+      context
+    );
     const allBranches = Branch.allBranches(context);
 
     if (currentBranch.getPRInfo()?.number && !args.force) {
