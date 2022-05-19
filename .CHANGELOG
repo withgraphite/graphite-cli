@@ -1,3 +1,9 @@
+# 0.18.6 2021-05-20
+
+- Fixed a bug where running `gt branch rename` on submitted branches would result in `gt` becoming largely unusable.
+- Added a new `--force/-f` option to `gt branch rename` that is required for already-submitted branches.
+- `gt branch rename` now respects character replacement settings.
+
 # 0.18.5 2021-05-19
 
 - `.` and `/` are no longer replaced in branch names.
