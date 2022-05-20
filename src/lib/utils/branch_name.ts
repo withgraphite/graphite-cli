@@ -4,7 +4,7 @@ import { TContext } from '../context';
 const MAX_BRANCH_NAME_BYTE_LENGTH = 234;
 const BRANCH_NAME_REPLACE_REGEX = /[^-_/.a-zA-Z0-9]+/g;
 
-function replaceUnsupportedCharacters(
+export function replaceUnsupportedCharacters(
   input: string,
   context: TContext
 ): string {
