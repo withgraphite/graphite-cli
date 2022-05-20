@@ -1,0 +1,1 @@
+{"version":3,"file":"spawn.js","sourceRoot":"","sources":["../../../../src/lib/utils/spawn.ts"],"names":[],"mappings":";;;;;;AAAA,kEAA+B;AAE/B,2DAA2D;AAC3D,SAAgB,aAAa,CAAC,QAAgB,EAAE,OAAiB,EAAE;IACjE,uBAAE,CAAC,KAAK,CAAC,cAAc,EAAE,CAAC,MAAM,EAAE,QAAQ,EAAE,GAAG,IAAI,CAAC,EAAE;QACpD,QAAQ,EAAE,IAAI;QACd,KAAK,EAAE,QAAQ;KAChB,CAAC,CAAC,KAAK,EAAE,CAAC;AACb,CAAC;AALD,sCAKC"}
