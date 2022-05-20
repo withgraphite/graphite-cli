@@ -16,6 +16,13 @@ const args = {
     type: 'string',
     positional: true,
   },
+  force: {
+    describe: `Allow renaming a branch that is already associated with a GitHub pull request.`,
+    demandOption: false,
+    type: 'boolean',
+    alias: 'f',
+    default: false,
+  },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
@@ -32,12 +39,20 @@ export const handler = async (args: argsT): Promise<void> => {
     const newName = args['new-branch-name'];
     const allBranches = Branch.allBranches(context);
 
+    if (currentBranch.getPRInfo()?.number && !args.force) {
+      throw new ExitFailedError(
+        'Renaming a branch for a submitted PR requires the `--force` option'
+      );
+    }
+
     gpExecSync({ command: `git branch -m ${newName}` }, (err) => {
       throw new ExitFailedError(`Failed to rename the current branch.`, err);
     });
 
     // Good habit to clear cache after write operations.
     cache.clearAll();
+
+    currentBranch.clearPRInfo();
 
     const curBranchMetadataRef = new MetadataRef(currentBranch.name);
     curBranchMetadataRef.rename(newName);
