@@ -13,8 +13,6 @@ export function detectUnsubmittedChanges(branch: Branch): boolean {
           `Failed to check current dir for untracked/uncommitted changes.`
         );
       }
-    )
-      .toString()
-      .trim().length !== 0
+    ).length !== 0
   );
 }

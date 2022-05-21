@@ -112,7 +112,7 @@ function testBranch(opts: {
     () => {
       opts.state[opts.branchName].status = '[fail]';
     }
-  ).toString();
+  );
   fs.appendFileSync(opts.outputPath, output);
   if (opts.state[opts.branchName].status !== '[fail]') {
     opts.state[opts.branchName].status = '[success]';

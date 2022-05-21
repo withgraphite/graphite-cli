@@ -77,9 +77,7 @@ function currentGitRepoPrecondition(): string {
     () => {
       return Buffer.alloc(0);
     }
-  )
-    .toString()
-    .trim();
+  );
   if (!repoRootPath || repoRootPath.length === 0) {
     throw new PreconditionsFailedError('No .git repository found.');
   }

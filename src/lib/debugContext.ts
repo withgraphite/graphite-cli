@@ -94,7 +94,7 @@ function createMetadata(opts: {
       options: {
         input: opts.metadata[branchName],
       },
-    }).toString();
+    });
     fs.writeFileSync(
       `${opts.tmpDir}/.git/refs/branch-metadata/${branchName}`,
       metaSha
@@ -159,9 +159,7 @@ function recreateCommits(opts: {
               .map((newParentRef) => `-p ${newParentRef}`)
               .join(' ')
       }`,
-    })
-      .toString()
-      .trim();
+    });
 
     // Save mapping so we can later associate branches.
     opts.refMappingsOldToNew[originalCommitRef] = newCommitRef;
@@ -206,7 +204,5 @@ function commitRefsWithNoParents(refTree: Record<string, string[]>): string[] {
 function getTreeObjectId(): string {
   return gpExecSync({
     command: `git cat-file -p HEAD | grep tree | awk '{print $2}'`,
-  })
-    .toString()
-    .trim();
+  });
 }

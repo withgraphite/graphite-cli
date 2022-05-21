@@ -29,9 +29,9 @@ export function setDefaultEditor(context: TContext): void {
 async function setDefaultEditorOrPrompt(context: TContext): Promise<void> {
   if (!context.userConfig.data.editor) {
     // Check if any env variable is set.
-    const systemEditor = gpExecSync({ command: `echo \${GIT_EDITOR:-$EDITOR}` })
-      .toString()
-      .trim();
+    const systemEditor = gpExecSync({
+      command: `echo \${GIT_EDITOR:-$EDITOR}`,
+    });
 
     let editorPref: string;
     if (systemEditor.length) {

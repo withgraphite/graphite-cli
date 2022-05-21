@@ -120,9 +120,7 @@ function inferRepoGitHubInfo(remote: string): {
     (_) => {
       return Buffer.alloc(0);
     }
-  )
-    .toString()
-    .trim();
+  );
 
   const inferError = new ExitFailedError(
     `Failed to infer the owner and name of this repo from remote ${remote} "${url}". Please run \`gt repo owner --set <owner>\` and \`gt repo name --set <name>\` to manually set the repo owner/name. (e.g. in the repo 'withgraphite/graphite-cli', 'withgraphite' is the repo owner and 'graphite-cli' is the repo name)`

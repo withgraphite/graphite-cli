@@ -20,7 +20,5 @@ export function getCommitterDate(args: {
         err
       );
     }
-  )
-    .toString()
-    .trim();
+  );
 }
