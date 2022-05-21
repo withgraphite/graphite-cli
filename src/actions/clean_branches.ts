@@ -1,5 +1,4 @@
 import { default as chalk } from 'chalk';
-import { execSync } from 'child_process';
 import prompts from 'prompts';
 import { cache } from '../lib/config/cache';
 import { execStateConfig } from '../lib/config/exec_state_config';
@@ -10,7 +9,7 @@ import {
 import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
 import { checkoutBranch } from '../lib/git/checkout_branch';
-import { getMergeBase } from '../lib/git/merge_base';
+import { isMerged } from '../lib/git/is_merged';
 import { logInfo, logTip } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
@@ -235,32 +234,12 @@ function mergedBaseIfMerged(
   branch: Branch,
   context: TContext
 ): string | undefined {
-  const trunk = getTrunk(context).name;
-  if (branch.getPRInfo()?.state === 'MERGED') {
-    return branch.getPRInfo()?.base ?? trunk;
-  }
-
-  const branchName = branch.name;
-  const mergeBase = getMergeBase(trunk, branchName);
-  const cherryCheckProvesMerged = execSync(
-    `git cherry ${trunk} $(git commit-tree $(git rev-parse "${branchName}^{tree}") -p ${mergeBase} -m _)`
-  )
-    .toString()
-    .trim()
-    .startsWith('-');
-  if (cherryCheckProvesMerged) {
-    return trunk;
-  }
-
-  const diffCheckProvesMerged =
-    execSync(`git diff --no-ext-diff ${branchName} ${trunk} | wc -l`)
-      .toString()
-      .trim() === '0';
-  if (diffCheckProvesMerged) {
-    return trunk;
-  }
-
-  return undefined;
+  const trunkName = getTrunk(context).name;
+  return branch.getPRInfo()?.state === 'MERGED'
+    ? branch.getPRInfo()?.base ?? trunkName
+    : isMerged({ branchName: branch.name, trunkName })
+    ? trunkName
+    : undefined;
 }
 
 function deleteBranch(branch: Branch, context: TContext) {
