@@ -7,9 +7,9 @@ import {
   PreconditionsFailedError,
   ValidationFailedError,
 } from '../../lib/errors';
+import { isEmptyBranch } from '../../lib/git/is_empty_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
-import { isEmptyBranch } from '../../lib/utils/is_empty_branch';
 import { logError, logInfo, logNewline, logWarn } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { validate } from '../validate';

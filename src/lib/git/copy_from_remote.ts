@@ -1,5 +1,5 @@
 import { ExitFailedError } from '../errors';
-import { gpExecSync } from './exec_sync';
+import { gpExecSync } from '../utils/exec_sync';
 
 export function copyFromRemote(branch: string, remote: string): void {
   gpExecSync(

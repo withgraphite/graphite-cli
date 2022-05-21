@@ -1,7 +1,7 @@
 import { TContext } from '../../lib/context';
 import { RebaseConflictError } from '../../lib/errors';
+import { checkoutBranch } from '../../lib/git/checkout_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
-import { checkoutBranch } from '../../lib/utils/checkout_branch';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { logInfo } from '../../lib/utils/splog';
 import { currentBranchOntoAction } from '../onto/current_branch_onto';

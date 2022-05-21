@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { branchExists } from '../../../../src/lib/utils/branch_exists';
+import { branchExists } from '../../../../src/lib/git/branch_exists';
 import { MetadataRef } from '../../../../src/wrapper-classes/metadata_ref';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';

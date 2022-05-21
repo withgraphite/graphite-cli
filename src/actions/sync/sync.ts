@@ -1,12 +1,12 @@
 import { TRepoSyncStackFrame } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context';
+import { branchExists } from '../../lib/git/branch_exists';
+import { checkoutBranch } from '../../lib/git/checkout_branch';
 import {
   currentBranchPrecondition,
   uncommittedTrackedChangesPrecondition,
 } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
-import { branchExists } from '../../lib/utils/branch_exists';
-import { checkoutBranch } from '../../lib/utils/checkout_branch';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
 import { cleanBranches as cleanBranches } from '../clean_branches';

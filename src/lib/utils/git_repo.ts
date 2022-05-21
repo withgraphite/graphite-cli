@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { MetadataRef, TMeta } from '../../wrapper-classes/metadata_ref';
 import { USER_CONFIG_OVERRIDE_ENV } from '../context';
-import { rebaseInProgress } from './rebase_in_progress';
+import { rebaseInProgress } from '../git/rebase_in_progress';
 
 const TEXT_FILE_NAME = 'test.txt';
 export class GitRepo {

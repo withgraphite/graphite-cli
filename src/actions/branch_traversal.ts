@@ -2,8 +2,8 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
+import { checkoutBranch } from '../lib/git/checkout_branch';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { checkoutBranch } from '../lib/utils/checkout_branch';
 import { logInfo } from '../lib/utils/splog';
 import { Branch } from '../wrapper-classes/branch';
 

@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import { interactiveBranchSelection } from '../../actions/interactive_branch_selection';
+import { checkoutBranch } from '../../lib/git/checkout_branch';
 import { profile } from '../../lib/telemetry/profile';
-import { checkoutBranch } from '../../lib/utils/checkout_branch';
 
 const args = {
   branch: {

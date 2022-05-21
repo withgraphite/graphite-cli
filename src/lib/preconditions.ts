@@ -1,13 +1,13 @@
 import { Branch } from '../wrapper-classes/branch';
 import { TContext } from './context';
 import { PreconditionsFailedError } from './errors';
-import { branchExists } from './utils/branch_exists';
-import { detectStagedChanges } from './utils/detect_staged_changes';
-import { gpExecSync } from './utils/exec_sync';
+import { branchExists } from './git/branch_exists';
+import { detectStagedChanges } from './git/detect_staged_changes';
 import {
   trackedUncommittedChanges,
   unstagedChanges,
-} from './utils/git_status_utils';
+} from './git/git_status_utils';
+import { gpExecSync } from './utils/exec_sync';
 import { logTip } from './utils/splog';
 
 function currentBranchPrecondition(context: TContext): Branch {

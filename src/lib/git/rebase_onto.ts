@@ -3,9 +3,9 @@ import { cache } from '../config/cache';
 import { TMergeConflictCallstack } from '../config/merge_conflict_callstack_config';
 import { TContext } from '../context';
 import { ExitFailedError, RebaseConflictError } from '../errors';
-import { gpExecSync } from './exec_sync';
+import { gpExecSync } from '../utils/exec_sync';
+import { logDebug } from '../utils/splog';
 import { rebaseInProgress } from './rebase_in_progress';
-import { logDebug } from './splog';
 
 // TODO migrate mergeBase to use parentRevision of the current branch
 export function rebaseOnto(

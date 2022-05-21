@@ -1,11 +1,11 @@
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
+import { addAll } from '../lib/git/add_all';
+import { checkoutBranch } from '../lib/git/checkout_branch';
+import { commit } from '../lib/git/commit';
+import { detectStagedChanges } from '../lib/git/detect_staged_changes';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { addAll } from '../lib/utils/addAll';
 import { newBranchName } from '../lib/utils/branch_name';
-import { checkoutBranch } from '../lib/utils/checkout_branch';
-import { commit } from '../lib/utils/commit';
-import { detectStagedChanges } from '../lib/utils/detect_staged_changes';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { logInfo } from '../lib/utils/splog';
 import { Branch } from '../wrapper-classes/branch';

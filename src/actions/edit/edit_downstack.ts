@@ -1,8 +1,8 @@
 import { TContext } from '../../lib/context';
 import { ExitFailedError } from '../../lib/errors';
+import { checkoutBranch } from '../../lib/git/checkout_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { assertUnreachable } from '../../lib/utils/assert_unreachable';
-import { checkoutBranch } from '../../lib/utils/checkout_branch';
 import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { performInTmpDir } from '../../lib/utils/perform_in_tmp_dir';

@@ -1,4 +1,4 @@
-import { gpExecSync } from './exec_sync';
+import { gpExecSync } from '../utils/exec_sync';
 
 export function currentBranchName(): string | undefined {
   const head = gpExecSync({
