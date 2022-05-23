@@ -2,8 +2,8 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { printStack } from '../../actions/print_stack';
 import { TContext } from '../../lib/context';
+import { currentBranchName } from '../../lib/git/current_branch_name';
 import { profile } from '../../lib/telemetry/profile';
-import { currentBranchName } from '../../lib/utils/current_branch_name';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
 

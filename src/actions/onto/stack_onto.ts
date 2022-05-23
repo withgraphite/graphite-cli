@@ -6,8 +6,8 @@ import {
 } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context';
 import { PreconditionsFailedError } from '../../lib/errors';
-import { getMergeBase } from '../../lib/utils/merge_base';
-import { rebaseOnto } from '../../lib/utils/rebase_onto';
+import { getMergeBase } from '../../lib/git/merge_base';
+import { rebaseOnto } from '../../lib/git/rebase_onto';
 import { logInfo } from '../../lib/utils/splog';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';

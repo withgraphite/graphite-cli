@@ -18,8 +18,8 @@ import {
   SiblingBranchError,
   ValidationFailedError,
 } from '../errors';
+import { printGraphiteMergeConflictStatus } from '../git/merge_conflict_help';
 import { refreshPRInfoInBackground } from '../requests/fetch_pr_info';
-import { printGraphiteMergeConflictStatus } from '../utils/merge_conflict_help';
 import { parseArgs } from '../utils/parse_args';
 import { logError, logInfo, logNewline, logWarn } from '../utils/splog';
 import { VALIDATION_HELPER_MESSAGE } from '../utils/validation_helper_message';

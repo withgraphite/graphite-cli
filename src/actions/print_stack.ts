@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { TContext } from '../lib/context';
-import { getCommitterDate } from '../lib/utils/committer_date';
+import { getCommitterDate } from '../lib/git/committer_date';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { Commit } from '../wrapper-classes/commit';

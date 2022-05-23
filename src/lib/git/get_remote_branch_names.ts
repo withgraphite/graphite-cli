@@ -1,5 +1,5 @@
 import { TContext } from '../context';
-import { gpExecSync } from './exec_sync';
+import { gpExecSync } from '../utils/exec_sync';
 
 export function getRemoteBranchNames(context: TContext): string[] {
   return gpExecSync({

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { unstagedChanges } from '../../../../src/lib/utils/git_status_utils';
+import { unstagedChanges } from '../../../../src/lib/git/git_status_utils';
 import { Branch } from '../../../../src/wrapper-classes/branch';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';

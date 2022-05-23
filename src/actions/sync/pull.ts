@@ -1,9 +1,9 @@
 import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
+import { checkoutBranch } from '../../lib/git/checkout_branch';
+import { getRemoteBranchNames } from '../../lib/git/get_remote_branch_names';
 import { currentBranchPrecondition } from '../../lib/preconditions';
-import { checkoutBranch } from '../../lib/utils/checkout_branch';
 import { gpExecSync } from '../../lib/utils/exec_sync';
-import { getRemoteBranchNames } from '../../lib/utils/get_remote_branch_names';
 import { logDebug, logInfo, logNewline, logTip } from '../../lib/utils/splog';
 import { getTrunk } from '../../lib/utils/trunk';
 

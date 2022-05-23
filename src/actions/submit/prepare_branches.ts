@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context';
 import { PreconditionsFailedError } from '../../lib/errors';
-import { detectUnsubmittedChanges } from '../../lib/utils/detect_unsubmitted_changes';
+import { detectUnsubmittedChanges } from '../../lib/git/detect_unsubmitted_changes';
 import { logInfo, logNewline } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';

@@ -4,7 +4,7 @@ import path from 'path';
 import { Branch } from '../../wrapper-classes/branch';
 import { TContext } from '../context';
 import { ConfigError, ExitFailedError } from '../errors';
-import { branchExists } from './branch_exists';
+import { branchExists } from '../git/branch_exists';
 
 function findRemoteOriginBranch(context: TContext): Branch | undefined {
   let config;

@@ -7,12 +7,12 @@ import {
   otherBranchesWithSameCommit,
 } from '../lib/git-refs/branch_ref';
 import { getBranchChildrenOrParentsFromGit } from '../lib/git-refs/branch_relations';
-import { branchExists } from '../lib/utils/branch_exists';
-import { getCommitterDate } from '../lib/utils/committer_date';
-import { currentBranchName } from '../lib/utils/current_branch_name';
+import { branchExists } from '../lib/git/branch_exists';
+import { getCommitterDate } from '../lib/git/committer_date';
+import { currentBranchName } from '../lib/git/current_branch_name';
+import { getMergeBase } from '../lib/git/merge_base';
+import { sortedBranchNames } from '../lib/git/sorted_branch_names';
 import { gpExecSync } from '../lib/utils/exec_sync';
-import { getMergeBase } from '../lib/utils/merge_base';
-import { sortedBranchNames } from '../lib/utils/sorted_branch_names';
 import { logDebug } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { MetadataRef, TBranchPRInfo, TMeta } from './metadata_ref';

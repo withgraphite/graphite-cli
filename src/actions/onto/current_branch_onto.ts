@@ -1,10 +1,10 @@
 import { TMergeConflictCallstack } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context';
+import { checkoutBranch } from '../../lib/git/checkout_branch';
 import {
   currentBranchPrecondition,
   uncommittedTrackedChangesPrecondition,
 } from '../../lib/preconditions';
-import { checkoutBranch } from '../../lib/utils/checkout_branch';
 import { stackOnto } from './stack_onto';
 
 export function currentBranchOntoAction(

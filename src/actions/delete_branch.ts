@@ -1,7 +1,7 @@
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
-import { checkoutBranch } from '../lib/utils/checkout_branch';
-import { currentBranchName } from '../lib/utils/current_branch_name';
+import { checkoutBranch } from '../lib/git/checkout_branch';
+import { currentBranchName } from '../lib/git/current_branch_name';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';

@@ -11,14 +11,14 @@ import {
   KilledError,
   RebaseConflictError,
 } from '../lib/errors';
+import { checkoutBranch } from '../lib/git/checkout_branch';
+import { rebaseInProgress } from '../lib/git/rebase_in_progress';
+import { rebaseOnto } from '../lib/git/rebase_onto';
 import {
   currentBranchPrecondition,
   uncommittedTrackedChangesPrecondition,
 } from '../lib/preconditions';
-import { checkoutBranch } from '../lib/utils/checkout_branch';
 import { indentMultilineString } from '../lib/utils/indent_multiline_string';
-import { rebaseInProgress } from '../lib/utils/rebase_in_progress';
-import { rebaseOnto } from '../lib/utils/rebase_onto';
 import { logDebug, logInfo, logWarn } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';

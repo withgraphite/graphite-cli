@@ -1,6 +1,6 @@
 import { Branch } from '../../wrapper-classes/branch';
 import { ExitFailedError } from '../errors';
-import { gpExecSync } from './exec_sync';
+import { gpExecSync } from '../utils/exec_sync';
 
 export function detectUnsubmittedChanges(branch: Branch): boolean {
   return (

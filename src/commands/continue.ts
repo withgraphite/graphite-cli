@@ -11,10 +11,10 @@ import { cleanBranchesContinuation } from '../actions/sync/sync';
 import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context';
 import { PreconditionsFailedError } from '../lib/errors';
+import { addAll } from '../lib/git/add_all';
+import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { profile } from '../lib/telemetry/profile';
-import { addAll } from '../lib/utils/addAll';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
-import { rebaseInProgress } from '../lib/utils/rebase_in_progress';
 import { Branch } from '../wrapper-classes/branch';
 import { deleteMergedBranchesContinuation } from './repo-commands/fix';
 

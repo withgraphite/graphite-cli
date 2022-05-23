@@ -1,10 +1,10 @@
 import { TContext } from '../lib/context';
+import { addAll } from '../lib/git/add_all';
+import { commit } from '../lib/git/commit';
 import {
   currentBranchPrecondition,
   ensureSomeStagedChangesPrecondition,
 } from '../lib/preconditions';
-import { addAll } from '../lib/utils/addAll';
-import { commit } from '../lib/utils/commit';
 import { rebaseUpstack } from './fix';
 
 export async function commitCreateAction(

@@ -1,6 +1,6 @@
-import { gpExecSync } from './exec_sync';
+import { gpExecSync } from '../utils/exec_sync';
+import { logInfo } from '../utils/splog';
 import { rebaseInProgress } from './rebase_in_progress';
-import { logInfo } from './splog';
 
 export function printGraphiteMergeConflictStatus(): void {
   if (!rebaseInProgress()) {
