@@ -1,7 +1,7 @@
-import { execSync } from 'child_process';
 import tmp from 'tmp';
 import yargs from 'yargs';
 import { profile } from '../lib/telemetry/profile';
+import { gpExecSync } from '../lib/utils/exec_sync';
 import { GitRepo } from '../lib/utils/git_repo';
 import { makeId } from '../lib/utils/make_id';
 
@@ -60,17 +60,24 @@ export const handler = async (argv: argsT): Promise<void> => {
 
     repo.checkoutBranch('main');
 
-    execSync(
-      'git remote add origin git@github.com:withgraphite/graphite-demo-repo.git',
-      { cwd: tmpDir.name }
-    );
-    execSync('git push origin main -f', { cwd: tmpDir.name });
+    gpExecSync({
+      command:
+        'git remote add origin git@github.com:withgraphite/graphite-demo-repo.git',
+      options: { cwd: tmpDir.name },
+    });
+    gpExecSync({
+      command: 'git push origin main -f',
+      options: { cwd: tmpDir.name },
+    });
   });
 };
 
 function execCliCommand(command: string, opts: { fromDir: string }) {
-  execSync(`gt ${command}`, {
-    stdio: 'inherit',
-    cwd: opts.fromDir,
+  gpExecSync({
+    command: `gt ${command}`,
+    options: {
+      stdio: 'inherit',
+      cwd: opts.fromDir,
+    },
   });
 }

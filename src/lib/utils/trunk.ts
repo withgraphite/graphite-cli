@@ -1,15 +1,17 @@
-import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
 import { Branch } from '../../wrapper-classes/branch';
 import { TContext } from '../context';
 import { ConfigError, ExitFailedError } from '../errors';
 import { branchExists } from '../git/branch_exists';
+import { gpExecSync } from './exec_sync';
 
 function findRemoteOriginBranch(context: TContext): Branch | undefined {
   let config;
   try {
-    const gitDir = execSync(`git rev-parse --git-dir`).toString().trim();
+    const gitDir = gpExecSync({
+      command: `git rev-parse --git-dir`,
+    });
     config = fs.readFileSync(path.join(gitDir, 'config')).toString();
   } catch {
     throw new Error(`Failed to read .git config when determining trunk branch`);

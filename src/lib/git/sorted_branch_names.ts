@@ -1,11 +1,9 @@
-import { execSync } from 'child_process';
+import { gpExecSync } from '../utils/exec_sync';
 
 export function sortedBranchNames(): string[] {
-  return execSync(
-    `git for-each-ref --format='%(refname:short)' --sort=-committerdate refs/heads/`
-  )
-    .toString()
-    .trim()
+  return gpExecSync({
+    command: `git for-each-ref --format='%(refname:short)' --sort=-committerdate refs/heads/`,
+  })
     .split('\n')
     .filter((branchName) => branchName.length > 0);
 }

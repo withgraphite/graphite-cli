@@ -1,12 +1,9 @@
-import { execSync } from 'child_process';
+import { gpExecSync } from '../utils/exec_sync';
 
 export function isEmptyBranch(branchName: string, parentName: string): boolean {
-  try {
-    execSync(
-      `git diff --no-ext-diff --exit-code ${parentName} ${branchName} -- `
-    );
-  } catch {
-    return false;
-  }
-  return true;
+  return (
+    gpExecSync({
+      command: `git diff --no-ext-diff ${parentName} ${branchName} -- `,
+    }).length === 0
+  );
 }

@@ -1,9 +1,10 @@
-import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
 import { MetadataRef, TMeta } from '../../wrapper-classes/metadata_ref';
 import { USER_CONFIG_OVERRIDE_ENV } from '../context';
+import { ExitFailedError } from '../errors';
 import { rebaseInProgress } from '../git/rebase_in_progress';
+import { gpExecSync } from './exec_sync';
 
 const TEXT_FILE_NAME = 'test.txt';
 export class GitRepo {
@@ -19,46 +20,56 @@ export class GitRepo {
       return;
     }
     if (opts?.repoUrl) {
-      execSync(`git clone ${opts.repoUrl} ${dir}`);
+      gpExecSync({
+        command: `git clone ${opts.repoUrl} ${dir}`,
+      });
     } else {
-      execSync(`git init ${dir} -b main`);
+      gpExecSync({
+        command: `git init ${dir} -b main`,
+      });
     }
   }
 
   execCliCommand(command: string, opts?: { cwd?: string }): void {
-    execSync(
-      [
-        `${USER_CONFIG_OVERRIDE_ENV}=${this.userConfigPath}`,
-        `NODE_ENV=development`,
-        `node ${__dirname}/../../../../dist/src/index.js ${command}`,
-      ].join(' '),
+    gpExecSync(
       {
-        stdio: process.env.DEBUG ? 'inherit' : 'ignore',
-        cwd: opts?.cwd || this.dir,
+        command: [
+          `${USER_CONFIG_OVERRIDE_ENV}=${this.userConfigPath}`,
+          `NODE_ENV=development`,
+          `node ${__dirname}/../../../../dist/src/index.js ${command}`,
+        ].join(' '),
+        options: {
+          stdio: process.env.DEBUG ? 'inherit' : 'ignore',
+          cwd: opts?.cwd || this.dir,
+        },
+      },
+      () => {
+        throw new ExitFailedError('command failed');
       }
     );
   }
 
   execGitCommand(command: string, opts?: { cwd?: string }): void {
-    execSync(`git ${command}`, {
-      stdio: process.env.DEBUG ? 'inherit' : 'ignore',
-      cwd: opts?.cwd || this.dir,
+    gpExecSync({
+      command: `git ${command}`,
+      options: {
+        stdio: process.env.DEBUG ? 'inherit' : 'ignore',
+        cwd: opts?.cwd || this.dir,
+      },
     });
   }
 
   execCliCommandAndGetOutput(command: string): string {
-    return execSync(
-      [
+    return gpExecSync({
+      command: [
         `${USER_CONFIG_OVERRIDE_ENV}=${this.userConfigPath}`,
         `NODE_ENV=development`,
         `node ${__dirname}/../../../../dist/src/index.js ${command}`,
       ].join(' '),
-      {
+      options: {
         cwd: this.dir,
-      }
-    )
-      .toString()
-      .trim();
+      },
+    });
   }
 
   createChange(textValue: string, prefix?: string, unstaged?: boolean): void {
@@ -67,38 +78,44 @@ export class GitRepo {
     }${TEXT_FILE_NAME}`;
     fs.writeFileSync(filePath, textValue);
     if (!unstaged) {
-      execSync(`git -C "${this.dir}" add ${filePath}`);
+      gpExecSync({ command: `git -C "${this.dir}" add ${filePath}` });
     }
   }
 
   createChangeAndCommit(textValue: string, prefix?: string): void {
     this.createChange(textValue, prefix);
-    execSync(`git -C "${this.dir}" add .`);
-    execSync(`git -C "${this.dir}" commit -m "${textValue}"`);
+    gpExecSync({ command: `git -C "${this.dir}" add .` });
+    gpExecSync({ command: `git -C "${this.dir}" commit -m "${textValue}"` });
   }
 
   createChangeAndAmend(textValue: string, prefix?: string): void {
     this.createChange(textValue, prefix);
-    execSync(`git -C "${this.dir}" add .`);
-    execSync(`git -C "${this.dir}" commit --amend --no-edit`);
+    gpExecSync({ command: `git -C "${this.dir}" add .` });
+    gpExecSync({ command: `git -C "${this.dir}" commit --amend --no-edit` });
   }
 
   deleteBranch(name: string): void {
-    execSync(`git -C "${this.dir}" branch -D ${name}`);
+    gpExecSync({ command: `git -C "${this.dir}" branch -D ${name}` });
   }
 
   createPrecommitHook(contents: string): void {
     fs.mkdirpSync(`${this.dir}/.git/hooks`);
     fs.writeFileSync(`${this.dir}/.git/hooks/pre-commit`, contents);
-    execSync(`chmod +x ${this.dir}/.git/hooks/pre-commit`);
+    gpExecSync({ command: `chmod +x ${this.dir}/.git/hooks/pre-commit` });
   }
 
   createAndCheckoutBranch(name: string): void {
-    execSync(`git -C "${this.dir}" checkout -b "${name}"`, { stdio: 'ignore' });
+    gpExecSync({
+      command: `git -C "${this.dir}" checkout -b "${name}"`,
+      options: { stdio: process.env.DEBUG ? 'inherit' : 'ignore' },
+    });
   }
 
   checkoutBranch(name: string): void {
-    execSync(`git -C "${this.dir}" checkout "${name}"`, { stdio: 'ignore' });
+    gpExecSync({
+      command: `git -C "${this.dir}" checkout "${name}"`,
+      options: { stdio: process.env.DEBUG ? 'inherit' : 'ignore' },
+    });
   }
 
   rebaseInProgress(): boolean {
@@ -106,11 +123,14 @@ export class GitRepo {
   }
 
   resolveMergeConflicts(): void {
-    execSync(`git -C "${this.dir}" checkout --theirs .`);
+    gpExecSync({ command: `git -C "${this.dir}" checkout --theirs .` });
   }
 
   markMergeConflictsAsResolved(): void {
-    execSync(`git -C "${this.dir}" add .`, { stdio: 'ignore' });
+    gpExecSync({
+      command: `git -C "${this.dir}" add .`,
+      options: { stdio: process.env.DEBUG ? 'inherit' : 'ignore' },
+    });
   }
 
   finishInteractiveRebase(opts?: { resolveMergeConflicts?: boolean }): void {
@@ -119,43 +139,42 @@ export class GitRepo {
         this.resolveMergeConflicts();
       }
       this.markMergeConflictsAsResolved();
-      execSync(`GIT_EDITOR="touch $1" git -C ${this.dir} rebase --continue`, {
-        stdio: 'ignore',
+      gpExecSync({
+        command: `GIT_EDITOR="touch $1" git -C ${this.dir} rebase --continue`,
+        options: {
+          stdio: process.env.DEBUG ? 'inherit' : 'ignore',
+        },
       });
     }
   }
 
   currentBranchName(): string {
-    return execSync(`git -C "${this.dir}" branch --show-current`)
-      .toString()
-      .trim();
+    return gpExecSync({
+      command: `git -C "${this.dir}" branch --show-current`,
+    });
   }
 
-  getRef(refName: string): string | undefined {
-    try {
-      return execSync(`git -C "${this.dir}" show-ref -s ${refName}`)
-        .toString()
-        .trim();
-    } catch {
-      return undefined;
-    }
+  getRef(refName: string): string {
+    return gpExecSync({
+      command: `git -C "${this.dir}" show-ref -s ${refName}`,
+    });
   }
 
   listCurrentBranchCommitMessages(): string[] {
-    return execSync(`git -C "${this.dir}" log --oneline  --format=%B`)
-      .toString()
-      .trim()
+    return gpExecSync({
+      command: `git -C "${this.dir}" log --oneline  --format=%B`,
+    })
       .split('\n')
       .filter((line) => line.length > 0);
   }
 
   mergeBranch(args: { branch: string; mergeIn: string }): void {
-    execSync(
-      `git -C "${this.dir}" checkout ${args.branch}; git merge ${args.mergeIn}`,
-      {
-        stdio: 'ignore',
-      }
-    );
+    gpExecSync({
+      command: `git -C "${this.dir}" checkout ${args.branch}; git merge ${args.mergeIn}`,
+      options: {
+        stdio: process.env.DEBUG ? 'inherit' : 'ignore',
+      },
+    });
   }
 
   upsertMeta(name: string, partialMeta: Partial<TMeta>): void {

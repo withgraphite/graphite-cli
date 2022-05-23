@@ -1,12 +1,9 @@
-import { execSync } from 'child_process';
+import { gpExecSync } from '../utils/exec_sync';
 
 export function branchExists(branchName: string): boolean {
-  try {
-    execSync(`git show-ref --quiet refs/heads/${branchName}`, {
-      stdio: 'ignore',
-    });
-  } catch {
-    return false;
-  }
-  return true;
+  return (
+    gpExecSync({
+      command: `git show-ref refs/heads/${branchName}`,
+    }).length > 0
+  );
 }

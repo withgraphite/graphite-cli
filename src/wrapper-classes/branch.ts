@@ -1,4 +1,3 @@
-import { execSync } from 'child_process';
 import { cache } from '../lib/config/cache';
 import { TContext } from '../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
@@ -198,7 +197,9 @@ export class Branch {
   }
 
   public getCurrentRef(): string {
-    return execSync(`git rev-parse ${this.name}`).toString().trim();
+    return gpExecSync({
+      command: `git rev-parse ${this.name}`,
+    });
   }
 
   public clearMetadata(): this {
