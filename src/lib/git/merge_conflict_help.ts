@@ -1,11 +1,6 @@
 import { gpExecSync } from '../utils/exec_sync';
-import { rebaseInProgress } from './rebase_in_progress';
 
-export function printGraphiteMergeConflictStatus(): void {
-  if (!rebaseInProgress()) {
-    return;
-  }
-
+export function printStatus(): void {
   gpExecSync({
     command: `git status`,
     options: {
