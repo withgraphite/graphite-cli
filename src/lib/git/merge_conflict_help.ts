@@ -1,5 +1,4 @@
 import { gpExecSync } from '../utils/exec_sync';
-import { logInfo } from '../utils/splog';
 import { rebaseInProgress } from './rebase_in_progress';
 
 export function printGraphiteMergeConflictStatus(): void {
@@ -7,15 +6,10 @@ export function printGraphiteMergeConflictStatus(): void {
     return;
   }
 
-  const statusOutput = gpExecSync({
+  gpExecSync({
     command: `git status`,
-  })
-    .toString()
-    .trim();
-
-  const output = [
-    statusOutput.replace('git rebase --continue', 'gt continue'),
-  ].join('\n');
-
-  logInfo(output);
+    options: {
+      printStdout: (out) => out.replace('git rebase --continue', 'gt continue'),
+    },
+  });
 }

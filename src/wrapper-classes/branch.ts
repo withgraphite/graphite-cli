@@ -245,8 +245,6 @@ export class Branch {
   public lastCommitTime(): number {
     return parseInt(
       gpExecSync({ command: `git log -1 --format=%ct ${this.name} --` })
-        .toString()
-        .trim()
     );
   }
 
@@ -436,17 +434,9 @@ export class Branch {
 
     const shas: Set<string> = new Set();
 
-    const commits = gpExecSync(
-      {
-        command: `git rev-list ${parent}..${this.name} --`,
-      },
-      (_) => {
-        // just soft-fail if we can't find the commits
-        return Buffer.alloc(0);
-      }
-    )
-      .toString()
-      .trim();
+    const commits = gpExecSync({
+      command: `git rev-list ${parent}..${this.name} --`,
+    });
 
     if (commits.length === 0) {
       return [];

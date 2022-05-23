@@ -26,18 +26,9 @@ export class Commit {
   }
 
   private messageImpl(format: 'B' | 'b' | 's'): string {
-    const message = gpExecSync(
-      {
-        command: `git log --format=%${format} -n 1 ${this.sha} --`,
-      },
-      (_) => {
-        // just soft-fail if we can't find the commits
-        return Buffer.alloc(0);
-      }
-    )
-      .toString()
-      .trim();
-    return message;
+    return gpExecSync({
+      command: `git log --format=%${format} -n 1 ${this.sha} --`,
+    });
   }
 
   public messageRaw(): string {
