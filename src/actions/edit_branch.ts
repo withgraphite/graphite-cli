@@ -1,19 +1,14 @@
 import { TContext } from '../lib/context';
-import {
-  ExitFailedError,
-  PreconditionsFailedError,
-  RebaseConflictError,
-} from '../lib/errors';
-import { rebaseInProgress } from '../lib/git/rebase_in_progress';
+import { PreconditionsFailedError } from '../lib/errors';
+import { rebaseInteractive } from '../lib/git/rebase';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { gpExecSync } from '../lib/utils/exec_sync';
 import { rebaseUpstack } from './fix';
 
 export async function editBranchAction(context: TContext): Promise<void> {
   const currentBranch = currentBranchPrecondition(context);
 
-  const baseRev = currentBranch.getParentBranchSha();
-  if (!baseRev) {
+  const base = currentBranch.getParentBranchSha();
+  if (!base) {
     throw new PreconditionsFailedError(
       `Graphite does not have a base revision for this branch; it might have been created with an older version of Graphite.  Please run a 'fix' or 'validate' command in order to backfill this information.`
     );
@@ -27,28 +22,7 @@ export async function editBranchAction(context: TContext): Promise<void> {
     currentBranch.savePrevRef();
   }
 
-  gpExecSync(
-    {
-      command: `git rebase -i ${baseRev}`,
-      options: { stdio: 'inherit' },
-    },
-    (err) => {
-      if (rebaseInProgress()) {
-        throw new RebaseConflictError(
-          `Interactive rebase in progress.  After resolving merge conflicts, run 'gt continue'`,
-          [
-            {
-              op: 'STACK_FIX' as const,
-              sourceBranchName: currentBranch.name,
-            },
-          ],
-          context
-        );
-      } else {
-        throw new ExitFailedError(`Interactive rebase failed.`, err);
-      }
-    }
-  );
+  rebaseInteractive({ base, currentBranchName: currentBranch.name }, context);
 
   await rebaseUpstack(context);
 }
