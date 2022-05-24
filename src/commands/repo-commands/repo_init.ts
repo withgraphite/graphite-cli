@@ -9,13 +9,6 @@ const args = {
     optional: true,
     type: 'string',
   },
-  'ignore-branches': {
-    describe: `A list of branches (or glob patterns) that Graphite should ignore when tracking your stacks (i.e. branches you never intend to merge into trunk).`,
-    demandOption: false,
-    optional: true,
-    type: 'string',
-    array: true,
-  },
 } as const;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -27,6 +20,6 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    await init(context, argv.trunk, argv['ignore-branches']);
+    await init(context, argv.trunk);
   });
 };
