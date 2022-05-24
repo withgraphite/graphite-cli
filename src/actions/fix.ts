@@ -12,8 +12,8 @@ import {
   RebaseConflictError,
 } from '../lib/errors';
 import { checkoutBranch } from '../lib/git/checkout_branch';
+import { rebaseOnto } from '../lib/git/rebase';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
-import { rebaseOnto } from '../lib/git/rebase_onto';
 import {
   currentBranchPrecondition,
   uncommittedTrackedChangesPrecondition,
