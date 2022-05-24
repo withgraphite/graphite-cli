@@ -21,7 +21,7 @@ export function pull(
   const remote = context.repoConfig.getRemote();
   const trunk = getTrunk(context).name;
 
-  if (currentBranchPrecondition(context).name !== trunk) {
+  if (currentBranchPrecondition().name !== trunk) {
     throw new PreconditionsFailedError('Must be on trunk to pull');
   }
 

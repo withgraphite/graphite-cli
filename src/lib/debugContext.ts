@@ -27,14 +27,14 @@ export function captureState(context: TContext): string {
     },
     context
   );
-  const branchToRefMapping = getBranchToRefMapping(context);
+  const branchToRefMapping = getBranchToRefMapping();
 
   const metadata: Record<string, string> = {};
   MetadataRef.allMetadataRefs().forEach((ref) => {
     metadata[ref._branchName] = JSON.stringify(ref.read());
   });
 
-  const currentBranchName = currentBranchPrecondition(context).name;
+  const currentBranchName = currentBranchPrecondition().name;
 
   const state: stateT = {
     refTree,
@@ -48,7 +48,7 @@ export function captureState(context: TContext): string {
   return JSON.stringify(state, null, 2);
 }
 
-export function recreateState(stateJson: string, context: TContext): string {
+export function recreateState(stateJson: string): string {
   const state = JSON.parse(stateJson) as stateT;
   const refMappingsOldToNew: Record<string, string> = {};
 
@@ -62,13 +62,10 @@ export function recreateState(stateJson: string, context: TContext): string {
   recreateCommits({ refTree: state.refTree, refMappingsOldToNew });
 
   logInfo(`Creating ${Object.keys(state.branchToRefMapping).length} branches`);
-  createBranches(
-    {
-      branchToRefMapping: state.branchToRefMapping,
-      refMappingsOldToNew,
-    },
-    context
-  );
+  createBranches({
+    branchToRefMapping: state.branchToRefMapping,
+    refMappingsOldToNew,
+  });
 
   logInfo(`Creating the repo config`);
   fs.writeFileSync(
@@ -104,14 +101,11 @@ function createMetadata(opts: {
   });
 }
 
-function createBranches(
-  opts: {
-    branchToRefMapping: Record<string, string>;
-    refMappingsOldToNew: Record<string, string>;
-  },
-  context: TContext
-): void {
-  const curBranch = currentBranchPrecondition(context);
+function createBranches(opts: {
+  branchToRefMapping: Record<string, string>;
+  refMappingsOldToNew: Record<string, string>;
+}): void {
+  const curBranch = currentBranchPrecondition();
   Object.keys(opts.branchToRefMapping).forEach((branch) => {
     const originalRef =
       opts.refMappingsOldToNew[opts.branchToRefMapping[branch]];

@@ -156,8 +156,8 @@ export class Branch {
     return Branch.calculateMemoizedMetaChildren(context)[this.name] ?? [];
   }
 
-  public ref(context: TContext): string {
-    return getRef(this, context);
+  public ref(): string {
+    return getRef(this);
   }
 
   // TODO: Migrate to parentRevision with validation
@@ -364,7 +364,7 @@ export class Branch {
       // Current branch shares
     ) {
       return [];
-    } else if (this.pointsToSameCommitAs(getTrunk(context), context)) {
+    } else if (this.pointsToSameCommitAs(getTrunk(context))) {
       return [getTrunk(context)];
     }
 
@@ -383,14 +383,14 @@ export class Branch {
     ).sort(this.sortBranchesAlphabetically);
   }
 
-  private pointsToSameCommitAs(branch: Branch, context: TContext): boolean {
-    return !!otherBranchesWithSameCommit(branch, context).find(
+  private pointsToSameCommitAs(branch: Branch): boolean {
+    return !!otherBranchesWithSameCommit(branch).find(
       (b) => b.name === branch.name
     );
   }
 
-  public branchesWithSameCommit(context: TContext): Branch[] {
-    return otherBranchesWithSameCommit(this, context);
+  public branchesWithSameCommit(): Branch[] {
+    return otherBranchesWithSameCommit(this);
   }
 
   public upsertPRInfo(prInfo: TBranchPRInfo): void {

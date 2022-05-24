@@ -31,7 +31,7 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    const branch = currentBranchPrecondition(context);
+    const branch = currentBranchPrecondition();
     if (argv.set) {
       setParent(branch, argv.set, context);
     } else if (argv.reset) {
