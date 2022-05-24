@@ -12,7 +12,7 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    const branch = currentBranchPrecondition(context);
+    const branch = currentBranchPrecondition();
 
     const children = branch.getChildrenFromMeta(context);
     if (children.length === 0) {

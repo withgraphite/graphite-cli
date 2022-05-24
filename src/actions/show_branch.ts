@@ -7,7 +7,7 @@ export async function showBranchAction(
   context: TContext,
   opts: { patch: boolean }
 ): Promise<void> {
-  const currentBranch = currentBranchPrecondition(context);
+  const currentBranch = currentBranchPrecondition();
 
   const baseRev = currentBranch.getParentBranchSha();
   if (!baseRev) {

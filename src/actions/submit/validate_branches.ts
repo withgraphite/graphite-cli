@@ -39,7 +39,7 @@ function getAllBranchesToSubmit(
   context: TContext
 ): Branch[] {
   if (scope === 'BRANCH') {
-    return [currentBranchPrecondition(context)];
+    return [currentBranchPrecondition()];
   }
 
   try {

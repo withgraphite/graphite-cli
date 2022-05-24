@@ -20,7 +20,7 @@ export async function createBranchAction(
   },
   context: TContext
 ): Promise<void> {
-  const parentBranch = currentBranchPrecondition(context);
+  const parentBranch = currentBranchPrecondition();
 
   const branchName = newBranchName(
     opts.branchName,

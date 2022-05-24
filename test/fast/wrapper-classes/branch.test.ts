@@ -31,7 +31,7 @@ for (const scene of allScenes) {
       scene.repo.createAndCheckoutBranch('c');
       expect(
         new Branch('a')
-          .branchesWithSameCommit(scene.context)
+          .branchesWithSameCommit()
           .map((b) => b.name)
           .sort()
           .join(', ')
