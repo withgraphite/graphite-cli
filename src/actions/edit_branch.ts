@@ -5,7 +5,7 @@ import { currentBranchPrecondition } from '../lib/preconditions';
 import { rebaseUpstack } from './fix';
 
 export async function editBranchAction(context: TContext): Promise<void> {
-  const currentBranch = currentBranchPrecondition(context);
+  const currentBranch = currentBranchPrecondition();
 
   const base = currentBranch.getParentBranchSha();
   if (!base) {

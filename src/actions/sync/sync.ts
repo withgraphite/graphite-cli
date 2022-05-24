@@ -27,7 +27,7 @@ export async function syncAction(
   context: TContext
 ): Promise<void> {
   uncommittedTrackedChangesPrecondition();
-  const oldBranchName = currentBranchPrecondition(context).name;
+  const oldBranchName = currentBranchPrecondition().name;
   checkoutBranch(getTrunk(context).name, { quiet: true });
 
   if (opts.pull) {

@@ -38,7 +38,7 @@ function getStacks(context: TContext): {
 }
 
 export async function logShortAction(context: TContext): Promise<void> {
-  const currentBranch = currentBranchPrecondition(context);
+  const currentBranch = currentBranchPrecondition();
   logDebug(`Getting stacks...`);
   const stacks = getStacks(context);
   logDebug(

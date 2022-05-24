@@ -109,7 +109,7 @@ export async function switchBranchAction(
   },
   context: TContext
 ): Promise<void> {
-  const currentBranch = currentBranchPrecondition(context);
+  const currentBranch = currentBranchPrecondition();
   const nextBranch = await getNextBranch(
     direction,
     currentBranch,

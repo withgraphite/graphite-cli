@@ -33,12 +33,11 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     if (argv['recreate-from-file']) {
       const dir = recreateState(
-        fs.readFileSync(argv['recreate-from-file']).toString(),
-        context
+        fs.readFileSync(argv['recreate-from-file']).toString()
       );
       logInfo(`${chalk.green(dir)}`);
     } else if (argv.recreate) {
-      const dir = recreateState(argv.recreate, context);
+      const dir = recreateState(argv.recreate);
       logInfo(`${chalk.green(dir)}`);
     } else {
       logInfo(captureState(context));

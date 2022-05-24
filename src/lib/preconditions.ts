@@ -20,7 +20,7 @@ export function getRepoRootPathPrecondition(): string {
   return repoRootPath;
 }
 
-function currentBranchPrecondition(_context: TContext): Branch {
+function currentBranchPrecondition(): Branch {
   const branch = Branch.currentBranch();
   if (!branch) {
     throw new PreconditionsFailedError(

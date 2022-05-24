@@ -33,12 +33,12 @@ export function getBranchChildrenOrParentsFromGit(
         context
       );
 
-      const headSha = getRef(branch, context);
+      const headSha = getRef(branch);
 
       const childrenOrParents = traverseGitTreeFromCommitUntilBranch(
         headSha,
         gitTree,
-        getBranchList({ useMemoizedResult: useMemoizedResults }, context),
+        getBranchList({ useMemoizedResult: useMemoizedResults }),
         0,
         context
       );
@@ -105,12 +105,9 @@ export function getRevListGitTree(
   return revList;
 }
 
-function getBranchList(
-  opts: {
-    useMemoizedResult?: boolean;
-  },
-  context: TContext
-): Record<string, string[]> {
+function getBranchList(opts: {
+  useMemoizedResult?: boolean;
+}): Record<string, string[]> {
   const memoizedBranchList = cache.getBranchList();
   if (opts.useMemoizedResult && memoizedBranchList) {
     return memoizedBranchList;
@@ -122,8 +119,7 @@ function getBranchList(
       options: { maxBuffer: 1024 * 1024 * 1024 },
     })
       .toString()
-      .trim(),
-    context
+      .trim()
   );
 }
 
@@ -186,10 +182,7 @@ function traverseGitTreeFromCommitUntilBranch(
   };
 }
 
-function branchListFromShowRefOutput(
-  output: string,
-  _context: TContext
-): Record<string, string[]> {
+function branchListFromShowRefOutput(output: string): Record<string, string[]> {
   const newBranchList: Record<string, string[]> = {};
 
   for (const line of output.split('\n')) {

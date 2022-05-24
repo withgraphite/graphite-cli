@@ -12,7 +12,7 @@ export class GitStackBuilder extends AbstractStackBuilder {
   }
 
   protected getChildrenForBranch(branch: Branch, context: TContext): Branch[] {
-    this.checkSiblingBranches(branch, context);
+    this.checkSiblingBranches(branch);
     return branch.getChildrenFromGit(context);
   }
 
@@ -20,7 +20,7 @@ export class GitStackBuilder extends AbstractStackBuilder {
     branch: Branch,
     context: TContext
   ): Branch | undefined {
-    this.checkSiblingBranches(branch, context);
+    this.checkSiblingBranches(branch);
     const parents = branch.getParentsFromGit(context);
     if (parents.length > 1) {
       throw new MultiParentError(branch, parents);
@@ -28,10 +28,10 @@ export class GitStackBuilder extends AbstractStackBuilder {
     return parents[0];
   }
 
-  private checkSiblingBranches(branch: Branch, context: TContext): void {
-    const siblingBranches = branch.branchesWithSameCommit(context);
+  private checkSiblingBranches(branch: Branch): void {
+    const siblingBranches = branch.branchesWithSameCommit();
     if (siblingBranches.length > 0) {
-      throw new SiblingBranchError([branch].concat(siblingBranches), context);
+      throw new SiblingBranchError([branch].concat(siblingBranches));
     }
   }
 }
