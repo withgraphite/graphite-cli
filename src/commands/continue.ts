@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import yargs from 'yargs';
 import { cleanBranches } from '../actions/clean_branches';
 import { applyStackEdits } from '../actions/edit/edit_downstack';
@@ -6,7 +7,7 @@ import {
   stackOntoBaseRebaseContinuation,
   stackOntoFixContinuation,
 } from '../actions/onto/stack_onto';
-import { finishRestack } from '../actions/restack';
+import { restackBranches } from '../actions/restack';
 import { cleanBranchesContinuation } from '../actions/sync/sync';
 import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context';
@@ -38,6 +39,8 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     const pendingRebase = rebaseInProgress();
+    const branchesToRestack =
+      context.mergeConflictCallstackConfig?.data.branchNames;
     const mostRecentCheckpoint =
       context.mergeConflictCallstackConfig?.data.callstack;
 
@@ -52,10 +55,17 @@ export const handler = async (argv: argsT): Promise<void> => {
 
     // TODO change this to early exit if we don't have a rebase in progress
     if (pendingRebase) {
-      if (context.metaCache.continueRebase() === 'REBASE_CONFLICT') {
+      const cont = context.metaCache.continueRebase();
+      if (cont.result === 'REBASE_CONFLICT') {
         throw new RebaseConflictError(`Rebase conflict is not yet resolved.`);
       }
-      finishRestack(context);
+      context.splog.logInfo(
+        `Resolved rebase conflict for ${chalk.green(cont.branchName)}.`
+      );
+    }
+
+    if (branchesToRestack) {
+      restackBranches(branchesToRestack, context);
     }
 
     if (mostRecentCheckpoint) {
@@ -73,6 +83,7 @@ async function resolveCallstack(
     return;
   }
 
+  // TODO the below is being deprecated
   const frame = callstack[0];
   const remaining = callstack.slice(1);
 
