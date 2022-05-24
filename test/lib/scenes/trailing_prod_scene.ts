@@ -27,8 +27,6 @@ export class TrailingProdScene extends AbstractScene {
 
     this.repo.checkoutBranch('main');
     this.repo.createChangeAndCommit('1', '1');
-    this.repo.execCliCommand(
-      'repo init --trunk main --ignore-branches prod x2'
-    );
+    this.repo.execCliCommand('repo init --trunk main');
   }
 }

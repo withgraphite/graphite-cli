@@ -8,11 +8,7 @@ import { getRepoRootPathPrecondition } from '../lib/preconditions';
 import { logError, logInfo, logNewline } from '../lib/utils/splog';
 import { inferTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
-export async function init(
-  context: TContext,
-  trunk?: string,
-  ignoreBranches?: string[]
-): Promise<void> {
+export async function init(context: TContext, trunk?: string): Promise<void> {
   getRepoRootPathPrecondition();
   const allBranches = Branch.allBranches(context);
 
@@ -54,25 +50,6 @@ export async function init(
     context.repoConfig.setTrunk(newTrunkName);
   }
 
-  // Ignore Branches
-  if (ignoreBranches) {
-    ignoreBranches.forEach((branchName) => {
-      if (!branchExists(branchName)) {
-        throw new PreconditionsFailedError(
-          `Cannot set (${branchName}) to be ignore, branch not found in current repo.`
-        );
-      }
-    });
-    context.repoConfig.addIgnoreBranchPatterns(ignoreBranches);
-  } else {
-    let ignoreBranches = await selectIgnoreBranches(allBranches, newTrunkName);
-    logInfo(`Selected following branches to ignore: ${ignoreBranches}`);
-    if (!ignoreBranches) {
-      ignoreBranches = [];
-    }
-    context.repoConfig.addIgnoreBranchPatterns(ignoreBranches);
-  }
-
   logInfo(`Graphite repo config saved at "${context.repoConfig.path}"`);
   logInfo(fs.readFileSync(context.repoConfig.path).toString());
 }
@@ -83,27 +60,6 @@ function logWelcomeMessage(context: TContext): void {
   } else {
     logInfo(`Regenerating Graphite repo config (${context.repoConfig.path})`);
   }
-}
-
-async function selectIgnoreBranches(
-  allBranches: Branch[],
-  trunk: string
-): Promise<string[]> {
-  const branchesWithoutTrunk = allBranches.filter((b) => b.name != trunk);
-  if (branchesWithoutTrunk.length === 0) {
-    return [];
-  }
-  const response = await prompts({
-    type: 'multiselect',
-    name: 'branches',
-    message: `Ignore Branches: select any permanent branches never to be stacked (such as "prod" or "staging"). ${chalk.yellow(
-      'Fine to select none.'
-    )}`,
-    choices: branchesWithoutTrunk.map((b) => {
-      return { title: b.name, value: b.name };
-    }),
-  });
-  return response.branches;
 }
 
 async function selectTrunkBranch(
