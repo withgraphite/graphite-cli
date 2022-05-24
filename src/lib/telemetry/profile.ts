@@ -18,7 +18,7 @@ import {
   SiblingBranchError,
   ValidationFailedError,
 } from '../errors';
-import { printStatus } from '../git/merge_conflict_help';
+import { getUnmergedFiles } from '../git/merge_conflict_help';
 import { refreshPRInfoInBackground } from '../requests/fetch_pr_info';
 import { parseArgs } from '../utils/parse_args';
 import { logError, logInfo, logNewline, logWarn } from '../utils/splog';
@@ -96,17 +96,20 @@ export async function profile(
             case RebaseConflictError:
               logInfo(`Rebase Conflict: ${err.message}`);
               logNewline();
-              printStatus();
-              logNewline();
+              logInfo(chalk.yellow(`Unmerged files:`));
               logInfo(
-                [
-                  `To fix and continue your previous Graphite command:`,
-                  `(1) resolve the listed merge conflicts`,
-                  `(2) mark them as resolved with "git add"`,
-                  `(3) run "gt continue" to continue executing your previous Graphite command`,
-                ]
-                  .map((line) => chalk.yellow(line))
+                getUnmergedFiles()
+                  .map((line) => chalk.red(line))
                   .join('\n')
+              );
+              logNewline();
+              logInfo(`To fix and continue your previous Graphite command:`);
+              logInfo(`(1) resolve the listed merge conflicts`);
+              logInfo(`(2) mark them as resolved with ${chalk.cyan(`gt add`)}`);
+              logInfo(
+                `(3) run ${chalk.cyan(
+                  `gt continue`
+                )} to continue executing your previous Graphite command`
               );
               return;
             case ValidationFailedError:
