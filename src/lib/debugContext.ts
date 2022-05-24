@@ -8,6 +8,7 @@ import { getRevListGitTree } from './git-refs/branch_relations';
 import { checkoutBranch } from './git/checkout_branch';
 import { deleteBranch } from './git/deleteBranch';
 import { currentBranchPrecondition } from './preconditions';
+import { cuteString } from './utils/cute_string';
 import { gpExecSync } from './utils/exec_sync';
 import { logInfo, logWarn } from './utils/splog';
 
@@ -31,7 +32,7 @@ export function captureState(context: TContext): string {
 
   const metadata: Record<string, string> = {};
   MetadataRef.allMetadataRefs().forEach((ref) => {
-    metadata[ref._branchName] = JSON.stringify(ref.read());
+    metadata[ref._branchName] = cuteString(ref.read());
   });
 
   const currentBranchName = currentBranchPrecondition().name;
@@ -39,13 +40,13 @@ export function captureState(context: TContext): string {
   const state: stateT = {
     refTree,
     branchToRefMapping,
-    userConfig: JSON.stringify(context.userConfig.data),
-    repoConfig: JSON.stringify(context.repoConfig.data),
+    userConfig: cuteString(context.userConfig.data),
+    repoConfig: cuteString(context.repoConfig.data),
     metadata,
     currentBranchName,
   };
 
-  return JSON.stringify(state, null, 2);
+  return cuteString(state);
 }
 
 export function recreateState(stateJson: string): string {
@@ -102,7 +103,7 @@ function createMetadata(opts: {
     const metaSha = gpExecSync({
       command: `git hash-object -w --stdin`,
       options: {
-        input: JSON.stringify(meta),
+        input: cuteString(meta),
       },
     });
     fs.writeFileSync(

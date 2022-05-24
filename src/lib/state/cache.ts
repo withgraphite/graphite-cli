@@ -9,6 +9,7 @@ import { getCurrentBranchName } from '../git/current_branch_name';
 import { getBranchRevision } from '../git/get_branch_revision';
 import { getMergeBase } from '../git/merge_base';
 import { branchNamesAndRevisions } from '../git/sorted_branch_names';
+import { cuteString } from '../utils/cute_string';
 import { logDebug } from '../utils/splog';
 
 export type TMetaCache = {
@@ -67,7 +68,7 @@ export function composeMetaCache(trunkName?: string): TMetaCache {
 
   return {
     debug() {
-      logDebug(JSON.stringify(cache, null, 2));
+      logDebug(cuteString(cache));
     },
     get currentBranch() {
       return cache.currentBranch;
