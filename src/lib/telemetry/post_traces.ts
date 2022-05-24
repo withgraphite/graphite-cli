@@ -8,6 +8,7 @@ import { version } from '../../../package.json';
 import { API_SERVER } from '../api';
 import { initContext, TContext } from '../context';
 import { tracer } from '../telemetry/tracer';
+import { cuteString } from '../utils/cute_string';
 import { spawnDetached } from '../utils/spawn';
 import { getUserEmail } from './context';
 
@@ -31,7 +32,7 @@ function saveTracesToTmpFile(): string {
 function saveOldTelemetryToFile(data: oldTelemetryT): string {
   const tmpDir = tmp.dirSync();
   const tracesPath = path.join(tmpDir.name, 'oldTelemetry.json');
-  fs.writeFileSync(tracesPath, JSON.stringify(data));
+  fs.writeFileSync(tracesPath, cuteString(data));
   return tracesPath;
 }
 

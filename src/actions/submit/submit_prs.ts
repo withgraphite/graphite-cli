@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import { API_SERVER } from '../../lib/api';
 import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
+import { cuteString } from '../../lib/utils/cute_string';
 import { logInfo } from '../../lib/utils/splog';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
@@ -92,7 +93,7 @@ export async function requestServerToSubmitPRs(
       throw new ExitFailedError(
         `unexpected server response (${
           response._response.status
-        }).\n\nResponse: ${JSON.stringify(response)}`
+        }).\n\nResponse: ${cuteString(response)}`
       );
     }
   } catch (error) {
