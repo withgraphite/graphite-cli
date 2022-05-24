@@ -21,6 +21,7 @@ export type TMetaCache = {
   trunk: string;
   isTrunk: (branchName: string) => boolean;
   getChildren: (branchName: string) => string[];
+  getRecursiveChildren: (branchName: string) => string[];
   getParent: (branchName: string) => string | undefined;
   getParentPrecondition: (branchName: string) => string;
   checkoutBranch: (branchName: string) => boolean;
@@ -118,6 +119,14 @@ export function composeMetaCache(trunkName?: string): TMetaCache {
     return 'REBASE_DONE';
   };
 
+  const getChildren = (branchName: string) =>
+    cache.branches[branchName].children.filter(getValidMeta);
+
+  const getRecursiveChildren = (branchName: string): string[] =>
+    getChildren(branchName)
+      .map((child) => [child, ...getRecursiveChildren(child)])
+      .reduce((last: string[], current: string[]) => [...last, ...current], []);
+
   return {
     debug() {
       logDebug(cuteString(cache));
@@ -137,8 +146,8 @@ export function composeMetaCache(trunkName?: string): TMetaCache {
     },
     isTrunk: (branchName: string) =>
       cache.branches[branchName]?.validationResult === 'TRUNK',
-    getChildren: (branchName: string) =>
-      cache.branches[branchName].children.filter(getValidMeta),
+    getChildren,
+    getRecursiveChildren,
     getParent: (branchName: string) => {
       const meta = cache.branches[branchName];
       return meta.validationResult === 'BAD_PARENT_NAME'

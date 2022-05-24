@@ -1,39 +1,70 @@
 import chalk from 'chalk';
+import { persistBranchesToRestack } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context';
 import { RebaseConflictError } from '../lib/errors';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 import { logInfo } from '../lib/utils/splog';
 
 export function restackCurrentBranch(context: TContext): void {
-  const branchName = context.metaCache.currentBranchPrecondition;
-  if (context.metaCache.isTrunk(branchName)) {
-    logInfo(`${chalk.cyan(branchName)} does not need to be restacked.`);
-  }
+  restackBranches([context.metaCache.currentBranchPrecondition], context);
+}
 
-  const result = context.metaCache.restackBranch(branchName);
-  switch (result) {
-    case 'REBASE_DONE':
-      return finishRestack(context);
+export function restackCurrentUpstack(context: TContext): void {
+  const currentBranch = context.metaCache.currentBranchPrecondition;
+  restackBranches(
+    [currentBranch, ...context.metaCache.getRecursiveChildren(currentBranch)],
+    context
+  );
+}
 
-    case 'REBASE_CONFLICT':
-      throw new RebaseConflictError(
-        `Hit conflict restacking ${chalk.yellow(branchName)} on ${chalk.cyan(
-          context.metaCache.getParentPrecondition(branchName)
-        )}.`
-      );
+export function restackCurrentUpstackExclusive(context: TContext): void {
+  restackBranches(
+    context.metaCache.getRecursiveChildren(
+      context.metaCache.currentBranchPrecondition
+    ),
+    context
+  );
+}
 
-    case 'REBASE_UNNEEDED':
-      logInfo(
-        `${chalk.cyan(
-          branchName
-        )} does not need to be restacked${` on ${chalk.cyan(
-          context.metaCache.getParentPrecondition(branchName)
-        )}`}.`
-      );
-      break;
+export function restackBranches(
+  branchNames: string[],
+  context: TContext
+): void {
+  while (branchNames.length > 0) {
+    const branchName = branchNames.shift() as string;
 
-    default:
-      assertUnreachable(result);
+    if (context.metaCache.isTrunk(branchName)) {
+      logInfo(`${chalk.cyan(branchName)} does not need to be restacked.`);
+      continue;
+    }
+
+    const result = context.metaCache.restackBranch(branchName);
+    switch (result) {
+      case 'REBASE_DONE':
+        finishRestack(context);
+        continue;
+
+      case 'REBASE_CONFLICT':
+        persistBranchesToRestack(branchNames, context);
+        throw new RebaseConflictError(
+          `Hit conflict restacking ${chalk.yellow(branchName)} on ${chalk.cyan(
+            context.metaCache.getParentPrecondition(branchName)
+          )}.`
+        );
+
+      case 'REBASE_UNNEEDED':
+        logInfo(
+          `${chalk.cyan(
+            branchName
+          )} does not need to be restacked${` on ${chalk.cyan(
+            context.metaCache.getParentPrecondition(branchName)
+          )}`}.`
+        );
+        continue;
+
+      default:
+        assertUnreachable(result);
+    }
   }
 }
 

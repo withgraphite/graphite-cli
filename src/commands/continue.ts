@@ -6,7 +6,7 @@ import {
   stackOntoBaseRebaseContinuation,
   stackOntoFixContinuation,
 } from '../actions/onto/stack_onto';
-import { finishRestack } from '../actions/restack';
+import { finishRestack, restackBranches } from '../actions/restack';
 import { cleanBranchesContinuation } from '../actions/sync/sync';
 import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context';
@@ -39,6 +39,8 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     const pendingRebase = rebaseInProgress();
+    const branchesToRestack =
+      context.mergeConflictCallstackConfig?.data.branchNames;
     const mostRecentCheckpoint =
       context.mergeConflictCallstackConfig?.data.callstack;
 
@@ -59,6 +61,10 @@ export const handler = async (argv: argsT): Promise<void> => {
       finishRestack(context);
     }
 
+    if (branchesToRestack) {
+      restackBranches(branchesToRestack, context);
+    }
+
     if (mostRecentCheckpoint) {
       await resolveCallstack(mostRecentCheckpoint, context);
       context.mergeConflictCallstackConfig?.delete();
@@ -74,6 +80,7 @@ async function resolveCallstack(
     return;
   }
 
+  // TODO the below is being deprecated
   const frame = callstack[0];
   const remaining = callstack.slice(1);
 

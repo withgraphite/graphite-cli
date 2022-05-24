@@ -93,7 +93,10 @@ const GraphiteFrameSchema = t.unionMany([
 ]);
 
 const MergeConflictCallstackSchema = t.shape({
+  // only one of these will actually ever be set (see below)
+  // TODO callstack to be deprecated
   callstack: t.array(GraphiteFrameSchema),
+  branchNames: t.array(t.string),
 });
 
 export type TMergeConflictCallstack = t.TypeOf<
@@ -109,7 +112,7 @@ export const mergeConflictCallstackConfigFactory = composeConfig({
     },
   ],
   initialize: () => {
-    return { callstack: [] };
+    return { callstack: [], branchNames: [] };
   },
   helperFunctions: () => {
     return {} as const;
@@ -127,5 +130,18 @@ export function persistMergeConflictCallstack(
   }
   context.mergeConflictCallstackConfig.update(
     (data) => (data.callstack = callstack)
+  );
+}
+
+export function persistBranchesToRestack(
+  branchNames: string[],
+  context: TContext
+): void {
+  if (!context.mergeConflictCallstackConfig) {
+    context.mergeConflictCallstackConfig =
+      mergeConflictCallstackConfigFactory.load();
+  }
+  context.mergeConflictCallstackConfig.update(
+    (data) => (data.branchNames = branchNames)
   );
 }
