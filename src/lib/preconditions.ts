@@ -20,19 +20,11 @@ export function getRepoRootPathPrecondition(): string {
   return repoRootPath;
 }
 
-function currentBranchPrecondition(context: TContext): Branch {
+function currentBranchPrecondition(_context: TContext): Branch {
   const branch = Branch.currentBranch();
   if (!branch) {
     throw new PreconditionsFailedError(
       `Cannot find current branch. Please ensure you're running this command atop a checked-out branch.`
-    );
-  }
-  if (context.repoConfig.branchIsIgnored(branch.name)) {
-    throw new PreconditionsFailedError(
-      [
-        `Cannot use graphite atop (${branch.name}) which is explicitly ignored in your repo config.`,
-        `If you'd like to edit your ignored branches, consider running "gt repo ignored-branches --help" for options, or manually editing your ".git/.graphite_repo_config" file.`,
-      ].join('\n')
     );
   }
   return branch;

@@ -188,7 +188,7 @@ function traverseGitTreeFromCommitUntilBranch(
 
 function branchListFromShowRefOutput(
   output: string,
-  context: TContext
+  _context: TContext
 ): Record<string, string[]> {
   const newBranchList: Record<string, string[]> = {};
 
@@ -198,13 +198,10 @@ function branchListFromShowRefOutput(
       const branchName = parts[1].slice('refs/heads/'.length);
       const branchRef = parts[0];
 
-      if (!context.repoConfig.branchIsIgnored(branchName)) {
-        logDebug(`branch ${branchName} is not ignored`);
-        if (branchRef in newBranchList) {
-          newBranchList[branchRef].push(branchName);
-        } else {
-          newBranchList[branchRef] = [branchName];
-        }
+      if (branchRef in newBranchList) {
+        newBranchList[branchRef].push(branchName);
+      } else {
+        newBranchList[branchRef] = [branchName];
       }
     }
   }

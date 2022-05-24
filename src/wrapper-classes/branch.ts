@@ -296,9 +296,6 @@ export class Branch {
 
     const filteredBranches = [];
     for (const branchName of branchNames) {
-      if (context.repoConfig.branchIsIgnored(branchName)) {
-        continue;
-      }
       if (filteredBranches.length === maxBranches) {
         break;
       }
