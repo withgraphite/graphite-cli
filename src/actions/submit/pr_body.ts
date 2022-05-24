@@ -1,10 +1,10 @@
-import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import prompts from 'prompts';
 import tmp from 'tmp';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
 import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
+import { gpExecSync } from '../../lib/utils/exec_sync';
 import { getPRTemplate } from '../../lib/utils/pr_templates';
 import { getSingleCommitOnBranch } from '../../lib/utils/single_commit';
 import { Branch } from '../../wrapper-classes/branch';
@@ -58,7 +58,10 @@ async function editPRBody(args: {
 }): Promise<string> {
   const file = tmp.fileSync();
   fs.writeFileSync(file.name, args.initial);
-  execSync(`${args.editor} ${file.name}`, { stdio: 'inherit' });
+  gpExecSync({
+    command: `${args.editor} ${file.name}`,
+    options: { stdio: 'inherit' },
+  });
   const contents = fs.readFileSync(file.name).toString();
   file.removeCallback();
   return contents;

@@ -1,9 +1,7 @@
-import { execSync } from 'child_process';
+import { gpExecSync } from '../utils/exec_sync';
 
-export function getUserEmail(): string | undefined {
-  try {
-    return execSync('git config user.email').toString().trim();
-  } catch (err) {
-    return undefined;
-  }
+export function getUserEmail(): string {
+  return gpExecSync({
+    command: `git config user.email`,
+  });
 }

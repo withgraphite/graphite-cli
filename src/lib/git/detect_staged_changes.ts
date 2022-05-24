@@ -1,10 +1,8 @@
-import { execSync } from 'child_process';
+import { gpExecSync } from '../utils/exec_sync';
 export function detectStagedChanges(): boolean {
-  try {
-    execSync(`git diff --no-ext-diff --cached --exit-code`);
-  } catch {
-    return true;
-  }
-  // Diff succeeds if there are no staged changes.
-  return false;
+  return (
+    gpExecSync({
+      command: `git diff --no-ext-diff --cached`,
+    }).length > 0
+  );
 }

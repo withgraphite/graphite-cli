@@ -1,4 +1,3 @@
-import { execSync } from 'child_process';
 import { gpExecSync } from '../lib/utils/exec_sync';
 
 export class Commit {
@@ -14,15 +13,11 @@ export class Commit {
   }
 
   public parents(): Commit[] {
-    try {
-      return execSync(`git rev-parse ${this.sha}`)
-        .toString()
-        .trim()
-        .split('\n')
-        .map((parentSha) => new Commit(parentSha));
-    } catch (e) {
-      return [];
-    }
+    return gpExecSync({
+      command: `git rev-parse ${this.sha}`,
+    })
+      .split('\n')
+      .map((parentSha) => new Commit(parentSha));
   }
 
   private messageImpl(format: 'B' | 'b' | 's'): string {

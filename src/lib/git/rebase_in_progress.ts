@@ -1,11 +1,11 @@
-import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
+import { gpExecSync } from '../utils/exec_sync';
 export function rebaseInProgress(opts?: { dir: string }): boolean {
   let rebaseDir = path.join(
-    execSync(`git ${opts ? `-C "${opts.dir}"` : ''} rev-parse --git-dir`)
-      .toString()
-      .trim(),
+    gpExecSync({
+      command: `git ${opts ? `-C "${opts.dir}"` : ''} rev-parse --git-dir`,
+    }),
     'rebase-merge'
   );
   if (opts) {

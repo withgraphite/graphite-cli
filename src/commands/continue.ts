@@ -1,4 +1,3 @@
-import { execSync } from 'child_process';
 import yargs from 'yargs';
 import { cleanBranches } from '../actions/clean_branches';
 import { applyStackEdits } from '../actions/edit/edit_downstack';
@@ -15,6 +14,7 @@ import { addAll } from '../lib/git/add_all';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { profile } from '../lib/telemetry/profile';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
+import { gpExecSync } from '../lib/utils/exec_sync';
 import { Branch } from '../wrapper-classes/branch';
 import { deleteMergedBranchesContinuation } from './repo-commands/fix';
 
@@ -67,8 +67,11 @@ export const handler = async (argv: argsT): Promise<void> => {
     const edit = !argv['no-edit'] && argv.edit;
 
     if (pendingRebase) {
-      execSync(`${edit ? '' : 'GIT_EDITOR=true'} git rebase --continue`, {
-        stdio: 'inherit',
+      gpExecSync({
+        command: `${edit ? '' : 'GIT_EDITOR=true'} git rebase --continue`,
+        options: {
+          stdio: 'inherit',
+        },
       });
     }
 

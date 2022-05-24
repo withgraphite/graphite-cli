@@ -1,8 +1,8 @@
-import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
 import { getRepoRootPath } from '../lib/config/repo_root_path';
 import { ExitFailedError } from '../lib/errors';
+import { gpExecSync } from '../lib/utils/exec_sync';
 
 export type TBranchPRState = 'OPEN' | 'CLOSED' | 'MERGED';
 export type TBranchPRReviewDecision =
@@ -54,14 +54,17 @@ export class MetadataRef {
     meta: TMeta,
     opts?: { dir: string }
   ): void {
-    const metaSha = execSync(
-      `git ${opts ? `-C "${opts.dir}"` : ''} hash-object -w --stdin`,
-      {
+    const metaSha = gpExecSync({
+      command: `git ${opts ? `-C "${opts.dir}"` : ''} hash-object -w --stdin`,
+      options: {
         input: JSON.stringify(meta),
-      }
-    ).toString();
-    execSync(`git update-ref refs/branch-metadata/${branchName} ${metaSha}`, {
-      stdio: 'ignore',
+      },
+    });
+    gpExecSync({
+      command: `git update-ref refs/branch-metadata/${branchName} ${metaSha}`,
+      options: {
+        stdio: 'ignore',
+      },
     });
   }
 
@@ -93,21 +96,17 @@ export class MetadataRef {
     ref: string,
     opts?: { dir: string }
   ): TMeta | undefined {
-    try {
-      const metaString = execSync(
-        `git ${opts ? `-C "${opts.dir}"` : ''}cat-file -p ${ref} 2> /dev/null`
-      )
-        .toString()
-        .trim();
-      if (metaString.length == 0) {
-        return undefined;
-      }
-      // TODO: Better account for malformed desc; possibly validate with retype
-      const meta = JSON.parse(metaString);
-      return meta;
-    } catch {
+    const metaString = gpExecSync({
+      command: `git ${
+        opts ? `-C "${opts.dir}"` : ''
+      }cat-file -p ${ref} 2> /dev/null`,
+    });
+    if (metaString.length == 0) {
       return undefined;
     }
+    // TODO: Better account for malformed desc; possibly validate with retype
+    const meta = JSON.parse(metaString);
+    return meta;
   }
 
   public delete(): void {
