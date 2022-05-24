@@ -230,7 +230,7 @@ async function shouldDeleteBranch(
 // see the code in trunk, we fallback to say that it was merged into trunk.
 // This extra check (rather than just saying trunk) is used to catch the
 // case where one feature branch is merged into another on GitHub.
-function mergedBaseIfMerged(
+export function mergedBaseIfMerged(
   branch: Branch,
   context: TContext
 ): string | undefined {

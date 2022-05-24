@@ -3,10 +3,10 @@ import { ExitFailedError } from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
 import { checkoutBranch } from '../lib/git/checkout_branch';
 import { commit } from '../lib/git/commit';
+import { deleteBranch } from '../lib/git/deleteBranch';
 import { detectStagedChanges } from '../lib/git/detect_staged_changes';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { newBranchName } from '../lib/utils/branch_name';
-import { gpExecSync } from '../lib/utils/exec_sync';
 import { logInfo } from '../lib/utils/splog';
 import { Branch } from '../wrapper-classes/branch';
 import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
@@ -54,11 +54,7 @@ export async function createBranchAction(
     rollbackOnError: () => {
       // Commit failed, usually due to precommit hooks. Rollback the branch.
       checkoutBranch(parentBranch.name, { quiet: true });
-      gpExecSync({
-        command: `git branch -d ${branchName}`,
-        options: { stdio: 'ignore' },
-      });
-      throw new ExitFailedError('Failed to commit changes, aborting');
+      deleteBranch(branchName);
     },
   });
 

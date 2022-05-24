@@ -5,6 +5,8 @@ import { MetadataRef } from '../wrapper-classes/metadata_ref';
 import { TContext } from './context';
 import { getBranchToRefMapping } from './git-refs/branch_ref';
 import { getRevListGitTree } from './git-refs/branch_relations';
+import { checkoutBranch } from './git/checkout_branch';
+import { deleteBranch } from './git/deleteBranch';
 import { currentBranchPrecondition } from './preconditions';
 import { gpExecSync } from './utils/exec_sync';
 import { logInfo, logWarn } from './utils/splog';
@@ -77,8 +79,8 @@ export function recreateState(stateJson: string, context: TContext): string {
   logInfo(`Creating the metadata`);
   createMetadata({ metadata: state.metadata, tmpDir });
 
-  gpExecSync({ command: `git checkout "${state.currentBranchName}"` });
-  gpExecSync({ command: `git branch -D "${tmpTrunk}"` });
+  checkoutBranch(state.currentBranchName);
+  deleteBranch(tmpTrunk);
 
   return tmpDir;
 }

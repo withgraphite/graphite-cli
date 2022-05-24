@@ -1,11 +1,14 @@
+import chalk from 'chalk';
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
 import { checkoutBranch } from '../lib/git/checkout_branch';
 import { currentBranchName } from '../lib/git/current_branch_name';
-import { gpExecSync } from '../lib/utils/exec_sync';
+import { deleteBranch } from '../lib/git/deleteBranch';
+import { logInfo } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { MetadataRef } from '../wrapper-classes/metadata_ref';
+import { mergedBaseIfMerged } from './clean_branches';
 
 export function deleteBranchAction(
   args: {
@@ -20,6 +23,16 @@ export function deleteBranchAction(
   }
 
   const current = currentBranchName();
+
+  if (
+    !args.force &&
+    !mergedBaseIfMerged(Branch.branchWithName(args.branchName), context)
+  ) {
+    throw new ExitFailedError(
+      `The branch ${args.branchName} is not fully merged.  Use the \`--force\` option to delete it.`
+    );
+  }
+
   if (current === args.branchName) {
     checkoutBranch(
       Branch.branchWithName(current).getParentFromMeta(context)?.name ?? trunk,
@@ -29,28 +42,8 @@ export function deleteBranchAction(
     );
   }
 
-  gpExecSync(
-    {
-      command: `git branch ${args.force ? '-D' : '-d'} ${args.branchName}`,
-      options: { stdio: 'pipe' },
-    },
-    (err) => {
-      if (current === args.branchName) {
-        checkoutBranch(current, {
-          quiet: true,
-        });
-      }
-      throw new ExitFailedError(
-        [
-          'Failed to delete branch. Aborting...',
-          err.stderr
-            .toString()
-            .trim()
-            .replace('git branch -D', 'gt branch delete -f'),
-        ].join('\n')
-      );
-    }
-  );
+  deleteBranch(args.branchName);
+  logInfo(`Deleted branch ${chalk.red(args.branchName)}`);
 
   // No need for a try-catch here; this already silently does nothing if the
   // metadata does not exist.

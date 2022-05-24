@@ -1,8 +1,8 @@
 #! /usr/bin/env ts-node
 
-import { execSync } from "child_process";
-import { version } from "../../package.json";
-import { build } from "./build";
+import { execSync } from 'child_process';
+import { version } from '../../package.json';
+import { build } from './build';
 
 const VERSION_TAG = `v${version}`;
 const VERSION_BRANCH = `deploy--${VERSION_TAG}`;
@@ -13,7 +13,7 @@ function hasGitChanges(): boolean {
 
 function versionExists(): boolean {
   execSync(`git fetch --tags`);
-  const existingTags = execSync(`git tag`).toString().trim().split("\n");
+  const existingTags = execSync(`git tag`).toString().trim().split('\n');
   return existingTags.includes(VERSION_TAG);
 }
 
