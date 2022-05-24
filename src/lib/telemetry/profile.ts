@@ -18,7 +18,7 @@ import {
   SiblingBranchError,
   ValidationFailedError,
 } from '../errors';
-import { printGraphiteMergeConflictStatus } from '../git/merge_conflict_help';
+import { printStatus } from '../git/merge_conflict_help';
 import { refreshPRInfoInBackground } from '../requests/fetch_pr_info';
 import { parseArgs } from '../utils/parse_args';
 import { logError, logInfo, logNewline, logWarn } from '../utils/splog';
@@ -96,7 +96,7 @@ export async function profile(
               logNewline();
               logError(`Rebase conflict. ${err.message}`);
               logNewline();
-              printGraphiteMergeConflictStatus();
+              printStatus();
               logNewline();
               logInfo(
                 [
