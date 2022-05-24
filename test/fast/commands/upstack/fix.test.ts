@@ -131,15 +131,6 @@ for (const scene of allScenes) {
     });
 
     it('Can regen from trunk branch', () => {
-      // Make sure to ignore prod branch
-      try {
-        scene.repo.execCliCommand(
-          'repo init --trunk main --ignore-branches prod'
-        );
-      } catch {
-        // fails if the scene doesnt have a prod branch, dont worry.
-      }
-
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       scene.repo.createAndCheckoutBranch('b');

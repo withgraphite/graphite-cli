@@ -41,14 +41,6 @@ for (const scene of allScenes) {
       expect(unstagedChanges()).to.be.false;
     });
 
-    it('Cant create a branch off an ignored branch', () => {
-      scene.repo.createAndCheckoutBranch('a');
-      scene.repo.execCliCommand('repo init --trunk main --ignore-branches a');
-      expect(() => scene.repo.execCliCommand(`branch create test -q`)).to.throw(
-        Error
-      );
-    });
-
     it('Create a branch clears any old, stale metadata', async () => {
       scene.repo.createChange('2');
       scene.repo.execCliCommand("branch create a -m 'a'");

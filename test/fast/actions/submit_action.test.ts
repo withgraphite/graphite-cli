@@ -58,7 +58,7 @@ for (const scene of [new BasicScene()]) {
       expect(
         await checkForEmptyBranches(
           [branch],
-          initContext({ globalArguments: { interactive: false as true } })
+          initContext({ globalArguments: { interactive: false } })
         )
       ).to.be.empty;
     });

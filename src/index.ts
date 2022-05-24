@@ -28,7 +28,7 @@ process.on('uncaughtException', (err) => {
 
 passthrough(process.argv);
 preprocessCommand();
-yargs(process.argv.slice(2))
+void yargs(process.argv.slice(2))
   .commandDir('commands')
   .help()
   .usage(
