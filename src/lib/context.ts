@@ -13,14 +13,20 @@ export type TContext = {
   userConfig: ReturnType<typeof userConfigFactory.load>;
   messageConfig: ReturnType<typeof messageConfigFactory.load>;
   mergeConflictCallstackConfig: ReturnType<
-    typeof mergeConflictCallstackConfigFactory.loadIfExists
+    typeof mergeConflictCallstackConfigFactory.load
   >;
   metaCache: TMetaCache;
 };
 
 export function initContext(opts?: { userConfigOverride?: string }): TContext {
   const repoConfig = repoConfigFactory.load();
-  const metaCache = composeMetaCache(repoConfig.data.trunk);
+  const mergeConflictCallstackConfig =
+    mergeConflictCallstackConfigFactory.load();
+  const metaCache = composeMetaCache({
+    trunkName: repoConfig.data.trunk,
+    currentBranchOverride:
+      mergeConflictCallstackConfig?.data.currentBranchOverride,
+  });
   return {
     repoConfig,
     surveyConfig: surveyConfigFactory.load(),
@@ -28,8 +34,7 @@ export function initContext(opts?: { userConfigOverride?: string }): TContext {
       opts?.userConfigOverride ?? process.env[USER_CONFIG_OVERRIDE_ENV]
     ),
     messageConfig: messageConfigFactory.load(),
-    mergeConflictCallstackConfig:
-      mergeConflictCallstackConfigFactory.loadIfExists(),
+    mergeConflictCallstackConfig,
     metaCache,
   };
 }
