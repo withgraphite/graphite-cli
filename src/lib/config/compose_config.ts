@@ -6,6 +6,7 @@ import os from 'os';
 import path from 'path';
 import { ExitFailedError } from '../errors';
 import { getRepoRootPathPrecondition } from '../preconditions';
+import { cuteString } from '../utils/cute_string';
 
 type TDefaultConfigLocation = {
   relativePath: string;
@@ -63,11 +64,11 @@ export function composeConfig<TConfigData, THelperFunctions>(
       mutator(_data);
       const shouldRemoveBecauseEmpty =
         configTemplate.options?.removeIfEmpty &&
-        JSON.stringify(_data) === JSON.stringify({});
+        cuteString(_data) === cuteString({});
       if (shouldRemoveBecauseEmpty) {
         fs.removeSync(curPath);
       } else {
-        fs.writeFileSync(curPath, JSON.stringify(_data, null, 2), {
+        fs.writeFileSync(curPath, cuteString(_data), {
           mode: 0o600,
         });
       }

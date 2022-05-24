@@ -2,6 +2,7 @@ import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import tmp from 'tmp';
 import { initContext, TContext } from '../../../src/lib/context';
+import { cuteString } from '../../../src/lib/utils/cute_string';
 import { GitRepo } from '../../../src/lib/utils/git_repo';
 
 export abstract class AbstractScene {
@@ -28,12 +29,9 @@ export abstract class AbstractScene {
     this.repo = new GitRepo(this.dir);
     fs.writeFileSync(
       `${this.dir}/.git/.graphite_repo_config`,
-      JSON.stringify({ trunk: 'main' }, null, 2)
+      cuteString({ trunk: 'main' })
     );
-    fs.writeFileSync(
-      `${this.dir}/.git/.graphite_user_config`,
-      JSON.stringify({}, null, 2)
-    );
+    fs.writeFileSync(`${this.dir}/.git/.graphite_user_config`, cuteString({}));
     process.chdir(this.dir);
     this.context = initContext({
       userConfigOverride: `${this.dir}/.git/.graphite_user_config`,
