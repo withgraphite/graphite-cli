@@ -26,14 +26,14 @@ export function captureState(context: TContext): string {
     },
     context
   );
-  const branchToRefMapping = getBranchToRefMapping(context);
+  const branchToRefMapping = getBranchToRefMapping();
 
   const metadata: Record<string, string> = {};
   MetadataRef.allMetadataRefs().forEach((ref) => {
     metadata[ref._branchName] = JSON.stringify(ref.read());
   });
 
-  const currentBranchName = currentBranchPrecondition(context).name;
+  const currentBranchName = currentBranchPrecondition().name;
 
   const state: stateT = {
     refTree,
@@ -65,14 +65,18 @@ export function recreateState(stateJson: string, context: TContext): string {
   context.splog.logInfo(
     `Creating ${Object.keys(state.branchToRefMapping).length} branches`
   );
-  createBranches(
-    {
-      branchToRefMapping: state.branchToRefMapping,
-      refMappingsOldToNew,
-    },
-    context
-  );
 
+  const curBranch = currentBranchPrecondition();
+  Object.keys(state.branchToRefMapping).forEach((branch) => {
+    const originalRef = refMappingsOldToNew[state.branchToRefMapping[branch]];
+    if (branch != curBranch.name) {
+      gpExecSync({ command: `git branch -f ${branch} ${originalRef}` });
+    } else {
+      context.splog.logWarn(
+        `Skipping creating ${branch} which matches the name of the current branch`
+      );
+    }
+  });
   context.splog.logInfo(`Creating the repo config`);
   fs.writeFileSync(
     path.join(tmpDir, '/.git/.graphite_repo_config'),
@@ -104,27 +108,6 @@ function createMetadata(opts: {
       `${opts.tmpDir}/.git/refs/branch-metadata/${branchName}`,
       metaSha
     );
-  });
-}
-
-function createBranches(
-  opts: {
-    branchToRefMapping: Record<string, string>;
-    refMappingsOldToNew: Record<string, string>;
-  },
-  context: TContext
-): void {
-  const curBranch = currentBranchPrecondition(context);
-  Object.keys(opts.branchToRefMapping).forEach((branch) => {
-    const originalRef =
-      opts.refMappingsOldToNew[opts.branchToRefMapping[branch]];
-    if (branch != curBranch.name) {
-      gpExecSync({ command: `git branch -f ${branch} ${originalRef}` });
-    } else {
-      context.splog.logWarn(
-        `Skipping creating ${branch} which matches the name of the current branch`
-      );
-    }
   });
 }
 

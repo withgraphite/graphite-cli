@@ -16,7 +16,7 @@ export function currentBranchOntoAction(
 ): void {
   uncommittedTrackedChangesPrecondition();
 
-  const originalBranch = currentBranchPrecondition(context);
+  const originalBranch = currentBranchPrecondition();
 
   stackOnto(
     {

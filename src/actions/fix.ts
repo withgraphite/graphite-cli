@@ -98,7 +98,7 @@ export async function fixAction(
   },
   context: TContext
 ): Promise<void> {
-  const currentBranch = currentBranchPrecondition(context);
+  const currentBranch = currentBranchPrecondition();
   uncommittedTrackedChangesPrecondition();
 
   const { metaStack, gitStack } = getStacksForValidation(

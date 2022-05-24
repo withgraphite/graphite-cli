@@ -24,7 +24,7 @@ export async function editDownstack(
   // We're about to do some complex re-arrangements - ensure state is consistant before beginning.
   validate('DOWNSTACK', context);
 
-  const currentBranch = currentBranchPrecondition(context);
+  const currentBranch = currentBranchPrecondition();
   const stack = new MetaStackBuilder().downstackFromBranch(
     currentBranch,
     context

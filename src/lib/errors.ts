@@ -73,10 +73,10 @@ class KilledError extends ExitError {
 }
 
 class SiblingBranchError extends ExitError {
-  constructor(branches: Branch[], context: TContext) {
+  constructor(branches: Branch[]) {
     super(
       [
-        `Multiple branches pointing to commit ${branches[0].ref(context)}.`,
+        `Multiple branches pointing to commit ${branches[0].ref()}.`,
         `Graphite cannot infer parent-child relationships between identical branches.`,
         `Please add a commit to one, or delete one to continue:`,
         ...branches.map((b) => `-> (${b.name})`),
