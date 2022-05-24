@@ -12,7 +12,7 @@ import { branchNamesAndRevisions } from '../git/sorted_branch_names';
 import { TSplog } from '../utils/splog';
 
 export type TMetaCache = {
-  size: number;
+  debug: () => void;
   currentBranch: string | undefined;
   currentBranchPrecondition: string;
   trunk: string;
@@ -69,8 +69,8 @@ export function composeMetaCache(
   };
 
   return {
-    get size() {
-      return Object.keys(cache).length;
+    debug() {
+      splog.logDebug(JSON.stringify(cache, null, 2));
     },
     get currentBranch() {
       return cache.currentBranch;
@@ -150,7 +150,9 @@ export function loadCache(
       parentBranchName === branchName ||
       !allBranchNames.has(parentBranchName)
     ) {
-      splog.logDebug(`bad parent name: ${branchName}`);
+      splog.logDebug(
+        `bad parent name: ${branchName}\n\t${parentBranchName ?? 'missing'}`
+      );
       branches[branchName] = {
         validationResult: 'BAD_PARENT_NAME',
         branchRevision,
@@ -189,7 +191,9 @@ export function loadCache(
       !parentBranchRevision ||
       getMergeBase(branchName, parentBranchRevision) !== parentBranchRevision
     ) {
-      splog.logDebug(`bad parent rev: ${branchName}`);
+      splog.logDebug(
+        `bad parent rev: ${branchName}\n\t${parentBranchRevision ?? 'missing'}`
+      );
       branches[branchName] = {
         validationResult: 'BAD_PARENT_REVISION',
         parentBranchName,
