@@ -32,7 +32,7 @@ import { fetchUpgradePromptInBackground } from './upgrade_prompt';
 
 // TODO temporary: while implementing cache, only initialize for these
 const MIGRATED_COMMANDS = [
-  'dev migration',
+  'dev cache',
   'branch up',
   'branch down',
   'branch top',
