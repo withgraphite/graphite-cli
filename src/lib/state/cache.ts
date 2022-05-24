@@ -137,7 +137,8 @@ export function composeMetaCache(trunkName?: string): TMetaCache {
     },
     isTrunk: (branchName: string) =>
       cache.branches[branchName]?.validationResult === 'TRUNK',
-    getChildren: (branchName: string) => cache.branches[branchName].children,
+    getChildren: (branchName: string) =>
+      cache.branches[branchName].children.filter(getValidMeta),
     getParent: (branchName: string) => {
       const meta = cache.branches[branchName];
       return meta.validationResult === 'BAD_PARENT_NAME'
