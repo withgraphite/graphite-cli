@@ -70,14 +70,9 @@ function cliAuthPrecondition(context: TContext): string {
 }
 
 function currentGitRepoPrecondition(): string {
-  const repoRootPath = gpExecSync(
-    {
-      command: `git rev-parse --show-toplevel`,
-    },
-    () => {
-      return Buffer.alloc(0);
-    }
-  );
+  const repoRootPath = gpExecSync({
+    command: `git rev-parse --show-toplevel`,
+  });
   if (!repoRootPath || repoRootPath.length === 0) {
     throw new PreconditionsFailedError('No .git repository found.');
   }
