@@ -302,6 +302,7 @@ export function loadCache(
       branchRevision,
       parentBranchName,
       parentBranchRevision,
+      prInfo,
     } = current;
 
     // Check parentBranchName
@@ -370,6 +371,7 @@ export function loadCache(
       parentBranchName,
       parentBranchRevision,
       branchRevision,
+      prInfo,
       children: [],
     };
   }
