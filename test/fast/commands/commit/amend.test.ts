@@ -3,12 +3,12 @@ import { configureTest } from '../../../lib/utils/configure_test';
 import { expectCommits } from '../../../lib/utils/expect_commits';
 
 for (const scene of allScenes) {
-  describe(`(${scene}): commit create`, function () {
+  describe(`(${scene}): commit amend`, function () {
     configureTest(this, scene);
 
     it('Can amend a commit', () => {
       scene.repo.createChange('2');
-      scene.repo.execCliCommand(`commit create -m "2" -q`);
+      scene.repo.execCliCommand(`branch create -m "2" -q`);
       expectCommits(scene.repo, '2, 1');
 
       scene.repo.execCliCommand(`commit amend -m "3" -q`);
@@ -16,8 +16,10 @@ for (const scene of allScenes) {
     });
 
     it('Can amend if there are no staged changes', () => {
+      scene.repo.createChange('2');
+      scene.repo.execCliCommand(`branch create -m "2" -q`);
       scene.repo.execCliCommand(`commit amend -m "a" -q`);
-      expectCommits(scene.repo, 'a');
+      expectCommits(scene.repo, 'a, 1');
     });
 
     it('Automatically fixes upwards', () => {
@@ -62,6 +64,7 @@ for (const scene of allScenes) {
 
     it('Can amend a commit with a multi-word commit message', () => {
       scene.repo.createChange('2');
+      scene.repo.execCliCommand(`branch create -m "2" -q`);
       scene.repo.execCliCommand(`commit amend -m "a b c" -q`);
       expectCommits(scene.repo, 'a b c');
     });
