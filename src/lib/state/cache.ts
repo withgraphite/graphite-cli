@@ -219,8 +219,10 @@ export function loadCache(trunkName: string): Record<string, TCachedMeta> {
   ]);
 
   while (metaToValidate.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const current = metaToValidate.shift()!;
+    const current = metaToValidate.shift() as {
+      branchName: string;
+      branchRevision: string;
+    } & TMeta;
     const {
       branchName,
       branchRevision,
@@ -317,8 +319,7 @@ function readAllMeta(): Array<
     })
     .map((ref) => ({
       branchName: ref._branchName,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      branchRevision: gitBranchNamesAndRevisions.get(ref._branchName)!,
+      branchRevision: gitBranchNamesAndRevisions.get(ref._branchName) as string,
       ...ref.read(),
     }));
 }
