@@ -34,13 +34,11 @@ type TCachedMeta = { children: string[]; branchRevision: string } & (
   | {
       validationResult: 'TRUNK';
       parentBranchName: undefined;
-      fixed: true;
     }
   | {
       validationResult: 'VALID';
       parentBranchName: string;
       parentBranchRevision: string;
-      fixed: boolean;
       prInfo?: TBranchPRInfo;
     }
   | {
@@ -67,6 +65,20 @@ export function composeMetaCache(
   const cache = {
     currentBranch: getCurrentBranchName(),
     branches: loadCache(trunkName, splog),
+  };
+
+  const isBranchFixed = (branchName: string): boolean => {
+    const cachedMeta = cache.branches[branchName];
+    if (cachedMeta?.validationResult === 'TRUNK') {
+      return true;
+    }
+    if (cachedMeta?.validationResult !== 'VALID') {
+      return false;
+    }
+    return (
+      cachedMeta.parentBranchRevision ===
+      cache.branches[cachedMeta.parentBranchName].branchRevision
+    );
   };
 
   const getValidMeta = (
@@ -109,7 +121,6 @@ export function composeMetaCache(
 
     cachedMeta.parentBranchRevision =
       cache.branches[cachedMeta.parentBranchName].branchRevision;
-    cachedMeta.fixed = true;
     cachedMeta.branchRevision = getBranchRevision(cache.currentBranch);
     splog.logDebug(
       `Restacked: ${cache.currentBranch}\n${cuteString(cachedMeta)}`
@@ -172,10 +183,12 @@ export function composeMetaCache(
     },
     restackBranch: (branchName: string) => {
       assertBranchIsValid(branchName);
-      const cachedMeta = cache.branches[branchName] as TValidCachedMeta;
-      if (cachedMeta.fixed) {
+      if (isBranchFixed(branchName)) {
         return 'REBASE_UNNEEDED';
       }
+      const cachedMeta = cache.branches[branchName] as TCachedMeta & {
+        validationResult: 'VALID';
+      };
 
       return handleRestack(
         restack({
@@ -208,7 +221,6 @@ export function loadCache(
     validationResult: 'TRUNK',
     parentBranchName: undefined,
     branchRevision: getBranchRevision(trunkName),
-    fixed: true,
     children: [],
   };
 
@@ -296,7 +308,6 @@ export function loadCache(
       parentBranchName,
       parentBranchRevision,
       branchRevision,
-      fixed: parentBranchRevision === parentCachedMeta.branchRevision,
       children: [],
     };
   }
