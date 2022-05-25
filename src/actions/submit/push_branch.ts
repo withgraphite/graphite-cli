@@ -22,7 +22,7 @@ export function push(branch: Branch, context: TContext): void {
       \n Use 'git pull' to pull external changes and retry.`,
         context
       );
-      throw new ExitFailedError(err.stderr.toString());
+      throw new ExitFailedError(err.stdout.toString());
     }
   );
 }
