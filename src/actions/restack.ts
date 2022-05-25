@@ -51,9 +51,6 @@ export function restackBranches(
         continue;
 
       case 'REBASE_CONFLICT':
-        logDebug(
-          branchNames.reduce((cur, next) => `${cur}\n${next}`, 'PERSISTING:')
-        );
         persistBranchesToRestack(branchNames, context);
         throw new RebaseConflictError(
           `Hit conflict restacking ${chalk.yellow(branchName)} on ${chalk.cyan(

@@ -1,5 +1,6 @@
 import * as t from '@withgraphite/retype';
 import { TContext } from '../context';
+import { logDebug } from '../utils/splog';
 import { StackedEditSchema } from './../../actions/edit/stack_edits';
 import { composeConfig } from './compose_config';
 
@@ -134,6 +135,7 @@ export function persistBranchesToRestack(
   branchNames: string[],
   context: TContext
 ): void {
+  logDebug(branchNames.reduce((cur, next) => `${cur}\n${next}`, 'PERSISTING:'));
   context.mergeConflictCallstackConfig.update((data) => {
     data.branchNames = branchNames;
     data.currentBranchOverride = context.metaCache.currentBranch;

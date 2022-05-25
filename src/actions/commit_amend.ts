@@ -1,11 +1,7 @@
 import { TContext } from '../lib/context';
 import { addAll } from '../lib/git/add_all';
-import { commit } from '../lib/git/commit';
-import {
-  currentBranchPrecondition,
-  ensureSomeStagedChangesPrecondition,
-} from '../lib/preconditions';
-import { fixAction } from './fix';
+import { ensureSomeStagedChangesPrecondition } from '../lib/preconditions';
+import { restackCurrentUpstackExclusive } from './restack';
 
 export function commitAmendAction(
   opts: {
@@ -23,13 +19,10 @@ export function commitAmendAction(
     ensureSomeStagedChangesPrecondition(context);
   }
 
-  // TODO we will kill this once we cut over to relying on parentRevision for fix
-  // If we're checked out on a branch, we're going to perform a stack fix later.
-  // In order to allow the stack fix to cut out the old commit, we need to set
-  // the prev ref here.
-  currentBranchPrecondition().savePrevRef();
-
-  commit({ amend: true, noEdit: opts.noEdit, message: opts.message });
-
-  fixAction({ scope: 'UPSTACK' }, context);
+  context.metaCache.commit({
+    amend: true,
+    noEdit: opts.noEdit,
+    message: opts.message,
+  });
+  restackCurrentUpstackExclusive(context);
 }
