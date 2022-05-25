@@ -4,7 +4,7 @@ import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { PreconditionsFailedError } from '../lib/errors';
 import { branchExists } from '../lib/git/branch_exists';
-import { currentGitRepoPrecondition } from '../lib/preconditions';
+import { getRepoRootPathPrecondition } from '../lib/preconditions';
 import { logError, logInfo, logNewline } from '../lib/utils/splog';
 import { inferTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
@@ -13,7 +13,7 @@ export async function init(
   trunk?: string,
   ignoreBranches?: string[]
 ): Promise<void> {
-  currentGitRepoPrecondition();
+  getRepoRootPathPrecondition();
   const allBranches = Branch.allBranches(context);
 
   logWelcomeMessage(context);
