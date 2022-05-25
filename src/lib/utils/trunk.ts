@@ -1,34 +1,24 @@
-import fs from 'fs-extra';
-import path from 'path';
 import { Branch } from '../../wrapper-classes/branch';
-import { getRepoRootPath } from '../config/repo_root_path';
 import { TContext } from '../context';
 import { ConfigError, ExitFailedError } from '../errors';
 import { branchExists } from '../git/branch_exists';
+import { gpExecSync } from './exec_sync';
 
-function findRemoteOriginBranch(context: TContext): Branch | undefined {
-  const originBranchSections = fs
-    .readFileSync(path.join(getRepoRootPath(), 'config'), {
-      encoding: 'utf-8',
-    })
-    .split('[')
-    .filter(
-      (section) =>
-        section.includes('branch "') &&
-        section.includes(`remote = ${context.repoConfig.getRemote()}`)
-    );
-  if (originBranchSections.length !== 1) {
+function findRemoteBranch(context: TContext): Branch | undefined {
+  // e.g. for most repos: branch.main.remote origin
+  // TODO will move this call to the /git/ lib later on in the engine refactor
+  const branchName = gpExecSync({
+    command: `git config --get-regexp remote$ "^${context.repoConfig.getRemote()}$"`,
+  })
+    // so, we take the first line of the output
+    .split('\n')[0]
+    // and retrieve branchName from `branch.<branchName>.remote`
+    ?.split('.')[1];
+
+  if (!branchName) {
     return undefined;
   }
-  try {
-    const matches = originBranchSections[0].match(/branch "(.+)"\]/);
-    if (matches && matches.length == 1) {
-      return new Branch(matches[0]);
-    }
-  } catch {
-    return undefined;
-  }
-  return undefined;
+  return new Branch(branchName);
 }
 
 function findCommonlyNamedTrunk(context: TContext): Branch | undefined {
@@ -42,7 +32,7 @@ function findCommonlyNamedTrunk(context: TContext): Branch | undefined {
 }
 
 export function inferTrunk(context: TContext): Branch | undefined {
-  return findRemoteOriginBranch(context) || findCommonlyNamedTrunk(context);
+  return findRemoteBranch(context) || findCommonlyNamedTrunk(context);
 }
 export function getTrunk(context: TContext): Branch {
   const configTrunkName = context.repoConfig.data.trunk;
