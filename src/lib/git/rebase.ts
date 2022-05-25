@@ -28,6 +28,17 @@ export function restackContinue(): TRebaseResult {
   return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
 }
 
+export function rebaseInteractive(args: {
+  parentBranchRevision: string;
+  branchName: string;
+}): TRebaseResult {
+  gpExecSync({
+    command: `git rebase -i ${args.parentBranchRevision}`,
+    options: { stdio: 'inherit' },
+  });
+  return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
+}
+
 // TODO deprecate this version
 export function rebaseOnto(
   args: {
@@ -70,35 +81,4 @@ export function rebaseOnto(
   );
   cache.clearAll();
   return true;
-}
-
-export function rebaseInteractive(
-  args: {
-    base: string;
-    currentBranchName: string;
-  },
-  context: TContext
-): void {
-  gpExecSync(
-    {
-      command: `git rebase -i ${args.base}`,
-      options: { stdio: 'inherit' },
-    },
-    (err) => {
-      if (rebaseInProgress()) {
-        throw new RebaseConflictError(
-          `Interactive rebase in progress.  After resolving merge conflicts, run 'gt continue'`,
-          [
-            {
-              op: 'STACK_FIX' as const,
-              sourceBranchName: args.currentBranchName,
-            },
-          ],
-          context
-        );
-      } else {
-        throw new ExitFailedError(`Interactive rebase failed.`, err);
-      }
-    }
-  );
 }
