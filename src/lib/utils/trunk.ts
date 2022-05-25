@@ -1,22 +1,16 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { Branch } from '../../wrapper-classes/branch';
+import { getRepoRootPath } from '../config/repo_root_path';
 import { TContext } from '../context';
 import { ConfigError, ExitFailedError } from '../errors';
 import { branchExists } from '../git/branch_exists';
-import { gpExecSync } from './exec_sync';
 
 function findRemoteOriginBranch(context: TContext): Branch | undefined {
-  let config;
-  try {
-    const gitDir = gpExecSync({
-      command: `git rev-parse --git-dir`,
-    });
-    config = fs.readFileSync(path.join(gitDir, 'config')).toString();
-  } catch {
-    throw new Error(`Failed to read .git config when determining trunk branch`);
-  }
-  const originBranchSections = config
+  const originBranchSections = fs
+    .readFileSync(path.join(getRepoRootPath(), 'config'), {
+      encoding: 'utf-8',
+    })
     .split('[')
     .filter(
       (section) =>
