@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { getBranchRevision } from '../../../src/lib/git/get_branch_revision';
 import { AbstractScene } from './abstract_scene';
 
 export class TrailingProdScene extends AbstractScene {
@@ -20,7 +21,10 @@ export class TrailingProdScene extends AbstractScene {
     this.repo.createChangeAndCommit('x1', 'x1');
     this.repo.createAndCheckoutBranch('x2');
     this.repo.createChangeAndCommit('x2', 'x2');
-    this.repo.execCliCommand(`upstack onto x1`);
+    this.repo.upsertMeta('x2', {
+      parentBranchName: 'x1',
+      parentBranchRevision: getBranchRevision('x1'),
+    });
     this.repo.deleteBranch('x1');
 
     execSync(`git -C "${this.dir}" merge prod`);

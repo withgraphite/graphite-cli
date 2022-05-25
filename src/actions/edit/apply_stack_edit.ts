@@ -3,7 +3,7 @@ import { RebaseConflictError } from '../../lib/errors';
 import { checkoutBranch } from '../../lib/git/checkout_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { gpExecSync } from '../../lib/utils/exec_sync';
-import { currentBranchOntoAction } from '../onto/current_branch_onto';
+import { currentBranchOnto } from '../onto/current_branch_onto';
 import { TStackEdit } from './stack_edits';
 
 export function applyStackEditPick(
@@ -12,19 +12,7 @@ export function applyStackEditPick(
 ): void {
   const onto = currentBranchPrecondition().name;
   checkoutBranch(opts.branchName);
-  currentBranchOntoAction(
-    {
-      onto: onto,
-      mergeConflictCallstack: [
-        {
-          op: 'STACK_EDIT_CONTINUATION',
-          currentBranchName: onto,
-          remainingEdits: opts.remainingEdits,
-        },
-      ],
-    },
-    context
-  );
+  currentBranchOnto(onto, context);
 }
 
 export function applyStackEditExec(

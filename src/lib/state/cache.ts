@@ -23,6 +23,7 @@ export type TMetaCache = {
   isTrunk: (branchName: string) => boolean;
   getChildren: (branchName: string) => string[];
   getRecursiveChildren: (branchName: string) => string[];
+  setParent: (branchName: string, parentBranchName: string) => void;
   getParent: (branchName: string) => string | undefined;
   getParentPrecondition: (branchName: string) => string;
   checkoutBranch: (branchName: string) => boolean;
@@ -142,6 +143,17 @@ export function composeMetaCache({
       .map((child) => [child, ...getRecursiveChildren(child)])
       .reduce((last: string[], current: string[]) => [...last, ...current], []);
 
+  const persistMeta = (branchName: string) => {
+    const meta = cache.branches[branchName];
+    assertCachedMetaIsNotTrunk(meta);
+
+    MetadataRef.updateOrCreate(branchName, {
+      parentBranchName: meta.parentBranchName,
+      parentBranchRevision: meta.parentBranchRevision,
+      prInfo: meta.prInfo,
+    });
+  };
+
   const handleRebase = (branchName: string) => {
     const cachedMeta = cache.branches[branchName];
     assertCachedMetaIsNotTrunk(cachedMeta);
@@ -153,11 +165,7 @@ export function composeMetaCache({
       `Cached meta for rebased branch ${branchName}:\n${cuteString(cachedMeta)}`
     );
 
-    MetadataRef.updateOrCreate(branchName, {
-      parentBranchName: cachedMeta.parentBranchName,
-      parentBranchRevision: cachedMeta.parentBranchRevision,
-      prInfo: cachedMeta.prInfo,
-    });
+    persistMeta(branchName);
     assertBranchIsValid(cache.currentBranch);
     checkoutBranch(cache.currentBranch);
   };
@@ -183,6 +191,21 @@ export function composeMetaCache({
       cache.branches[branchName]?.validationResult === 'TRUNK',
     getChildren,
     getRecursiveChildren,
+    setParent: (branchName: string, parentBranchName: string) => {
+      assertBranchIsValid(branchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsNotTrunk(cachedMeta);
+
+      const oldParentBranchName = cachedMeta.parentBranchName;
+
+      cachedMeta.parentBranchName = parentBranchName;
+      persistMeta(branchName);
+
+      cache.branches[parentBranchName].children.push(branchName);
+      cache.branches[oldParentBranchName].children = cache.branches[
+        oldParentBranchName
+      ].children.filter((child) => child !== branchName);
+    },
     getParent: (branchName: string) => {
       const meta = cache.branches[branchName];
       return meta.validationResult === 'BAD_PARENT_NAME'
