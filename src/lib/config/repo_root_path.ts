@@ -6,14 +6,9 @@ export function getRepoRootPath(): string {
   if (cachedRepoRootPath) {
     return cachedRepoRootPath;
   }
-  const repoRootPath = gpExecSync(
-    {
-      command: `git rev-parse --git-dir`,
-    },
-    () => {
-      return Buffer.alloc(0);
-    }
-  );
+  const repoRootPath = gpExecSync({
+    command: `git rev-parse --git-dir`,
+  });
   if (!repoRootPath || repoRootPath.length === 0) {
     throw new PreconditionsFailedError('No .git repository found.');
   }
