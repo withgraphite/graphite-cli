@@ -113,14 +113,9 @@ function inferRepoGitHubInfo(remote: string): {
   // This assumes the remote to fetch from is the same as the remote to push to.
   // If a user runs into this is not true, they can manually edit the repo config
   // file to overrule what our CLI tries to intelligently infer.
-  const url = gpExecSync(
-    {
-      command: `git config --get remote.${remote}.url`,
-    },
-    (_) => {
-      return Buffer.alloc(0);
-    }
-  );
+  const url = gpExecSync({
+    command: `git config --get remote.${remote}.url`,
+  });
 
   const inferError = new ExitFailedError(
     `Failed to infer the owner and name of this repo from remote ${remote} "${url}". Please run \`gt repo owner --set <owner>\` and \`gt repo name --set <name>\` to manually set the repo owner/name. (e.g. in the repo 'withgraphite/graphite-cli', 'withgraphite' is the repo owner and 'graphite-cli' is the repo name)`
