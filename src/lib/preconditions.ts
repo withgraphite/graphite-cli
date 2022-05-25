@@ -10,6 +10,16 @@ import {
 import { gpExecSync } from './utils/exec_sync';
 import { logTip } from './utils/splog';
 
+export function getRepoRootPathPrecondition(): string {
+  const repoRootPath = gpExecSync({
+    command: `git rev-parse --git-common-dir`,
+  });
+  if (!repoRootPath || repoRootPath.length === 0) {
+    throw new PreconditionsFailedError('No .git repository found.');
+  }
+  return repoRootPath;
+}
+
 function currentBranchPrecondition(context: TContext): Branch {
   const branch = Branch.currentBranch();
   if (!branch) {

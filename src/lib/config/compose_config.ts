@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
 import { ExitFailedError } from '../errors';
-import { getRepoRootPath } from './repo_root_path';
+import { getRepoRootPathPrecondition } from '../preconditions';
 
 type TDefaultConfigLocation = {
   relativePath: string;
@@ -101,7 +101,7 @@ function configAbsolutePaths(
   defaultLocations: TDefaultConfigLocation[],
   defaultPathOverride?: string
 ): string[] {
-  const repoRoot = getRepoRootPath();
+  const repoRoot = getRepoRootPathPrecondition();
   const home = os.homedir();
   return (defaultPathOverride ? [defaultPathOverride] : []).concat(
     defaultLocations.map((l) =>

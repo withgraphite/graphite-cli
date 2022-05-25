@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { getRepoRootPath } from '../lib/config/repo_root_path';
 import { ExitFailedError } from '../lib/errors';
+import { getRepoRootPathPrecondition } from '../lib/preconditions';
 import { gpExecSync } from '../lib/utils/exec_sync';
 
 export type TBranchPRState = 'OPEN' | 'CLOSED' | 'MERGED';
@@ -35,7 +35,7 @@ export class MetadataRef {
   }
 
   private static branchMetadataDirPath(): string {
-    return path.join(getRepoRootPath(), `refs/branch-metadata/`);
+    return path.join(getRepoRootPathPrecondition(), `refs/branch-metadata/`);
   }
 
   private static pathForBranchName(branchName: string): string {
