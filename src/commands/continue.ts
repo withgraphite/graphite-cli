@@ -59,7 +59,10 @@ export const handler = async (argv: argsT): Promise<void> => {
     }
 
     if (branchesToRestack) {
-      restackBranches(branchesToRestack, context);
+      restackBranches(
+        { relative: false, branchNames: branchesToRestack },
+        context
+      );
     }
 
     if (mostRecentCheckpoint) {

@@ -14,6 +14,7 @@ import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
 import { branchNamesAndRevisions } from '../git/sorted_branch_names';
 import { cuteString } from '../utils/cute_string';
 import { TSplog } from '../utils/splog';
+import { TScopeSpec } from './scope_spec';
 
 export type TMetaCache = {
   debug: () => void;
@@ -22,11 +23,10 @@ export type TMetaCache = {
   trunk: string;
   isTrunk: (branchName: string) => boolean;
   getChildren: (branchName: string) => string[];
-  getRecursiveChildren: (branchName: string) => string[];
   setParent: (branchName: string, parentBranchName: string) => void;
   getParent: (branchName: string) => string | undefined;
   getParentPrecondition: (branchName: string) => string;
-  getRecursiveParents: (branchName: string) => string[];
+  getCurrentStack: (scope: TScopeSpec) => string[];
   checkoutBranch: (branchName: string) => boolean;
   commit: (opts: TCommitOpts) => void;
   restackBranch: (
@@ -203,7 +203,6 @@ export function composeMetaCache({
     isTrunk: (branchName: string) =>
       cache.branches[branchName]?.validationResult === 'TRUNK',
     getChildren,
-    getRecursiveChildren,
     setParent: (branchName: string, parentBranchName: string) => {
       assertBranchIsValid(branchName);
       const cachedMeta = cache.branches[branchName];
@@ -232,7 +231,18 @@ export function composeMetaCache({
       }
       return meta.parentBranchName;
     },
-    getRecursiveParents,
+    getCurrentStack: (scope: TScopeSpec) => {
+      assertBranchIsValid(cache.currentBranch);
+      return [
+        ...(scope.recursiveParents
+          ? getRecursiveParents(cache.currentBranch)
+          : []),
+        ...(scope.currentBranch ? [cache.currentBranch] : []),
+        ...(scope.recursiveChildren
+          ? getRecursiveChildren(cache.currentBranch)
+          : []),
+      ];
+    },
     checkoutBranch: (branchName: string): boolean => {
       if (!getValidMeta(branchName)) {
         return false;

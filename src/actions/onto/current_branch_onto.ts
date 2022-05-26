@@ -1,6 +1,7 @@
 import { TContext } from '../../lib/context';
 import { uncommittedTrackedChangesPrecondition } from '../../lib/preconditions';
-import { restackCurrentUpstack } from '../restack';
+import { SCOPE } from '../../lib/state/scope_spec';
+import { restackBranches } from '../restack';
 
 export function currentBranchOnto(
   ontoBranchName: string,
@@ -12,5 +13,5 @@ export function currentBranchOnto(
     context.metaCache.currentBranchPrecondition,
     ontoBranchName
   );
-  restackCurrentUpstack(context);
+  restackBranches({ relative: true, scope: SCOPE.UPSTACK }, context);
 }
