@@ -26,6 +26,7 @@ export type TMetaCache = {
   setParent: (branchName: string, parentBranchName: string) => void;
   getParent: (branchName: string) => string | undefined;
   getParentPrecondition: (branchName: string) => string;
+  getRecursiveParents: (branchName: string) => string[];
   checkoutBranch: (branchName: string) => boolean;
   commit: (opts: TCommitOpts) => void;
   restackBranch: (
@@ -143,6 +144,18 @@ export function composeMetaCache({
       .map((child) => [child, ...getRecursiveChildren(child)])
       .reduce((last: string[], current: string[]) => [...last, ...current], []);
 
+  const getParent = (branchName: string) => {
+    const meta = cache.branches[branchName];
+    return meta.validationResult === 'BAD_PARENT_NAME'
+      ? undefined
+      : meta.parentBranchName;
+  };
+
+  const getRecursiveParents = (branchName: string): string[] => {
+    const parent = getParent(branchName);
+    return parent ? [...getRecursiveParents(parent), parent] : [];
+  };
+
   const persistMeta = (branchName: string) => {
     const meta = cache.branches[branchName];
     assertCachedMetaIsNotTrunk(meta);
@@ -206,12 +219,7 @@ export function composeMetaCache({
         oldParentBranchName
       ].children.filter((child) => child !== branchName);
     },
-    getParent: (branchName: string) => {
-      const meta = cache.branches[branchName];
-      return meta.validationResult === 'BAD_PARENT_NAME'
-        ? undefined
-        : meta.parentBranchName;
-    },
+    getParent,
     getParentPrecondition: (branchName: string) => {
       const meta = cache.branches[branchName];
       if (
@@ -224,6 +232,7 @@ export function composeMetaCache({
       }
       return meta.parentBranchName;
     },
+    getRecursiveParents,
     checkoutBranch: (branchName: string): boolean => {
       if (!getValidMeta(branchName)) {
         return false;
