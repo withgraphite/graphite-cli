@@ -1,5 +1,5 @@
-import AbstractDemo from "./abstract_demo";
-import FullDemo from "./full_demo";
+import { AbstractDemo } from './abstract_demo';
+import { FullDemo } from './full_demo';
 
 const DEMOS: AbstractDemo[] = [new FullDemo()];
 

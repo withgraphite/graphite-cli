@@ -1,14 +1,14 @@
-import cp from "child_process";
-import fs from "fs-extra";
-import path from "path";
-import tmp from "tmp";
+import cp from 'child_process';
+import fs from 'fs-extra';
+import path from 'path';
+import tmp from 'tmp';
 
 const OUTPUT_DIR = `${__dirname}/../../demo`;
 
-export default abstract class AbstractDemo {
+export abstract class AbstractDemo {
   name: string;
   commands: string[];
-  setup: (dir: string) => void;
+  setup: (_dir: string) => void;
 
   constructor(name: string, commands: string[], setup: (dir: string) => void) {
     this.name = name;
@@ -36,14 +36,14 @@ export default abstract class AbstractDemo {
         fs.removeSync(this.outputFilePath());
       }
       const recProcess = cp.spawn(
-        "/usr/local/bin/asciinema",
+        '/usr/local/bin/asciinema',
         [
-          "rec",
+          'rec',
           this.outputFilePath(),
-          "--stdin",
-          "--overwrite",
-          "--command",
-          "$SHELL",
+          '--stdin',
+          '--overwrite',
+          '--command',
+          '$SHELL',
         ],
         {
           detached: true,
@@ -51,7 +51,7 @@ export default abstract class AbstractDemo {
         }
       );
 
-      recProcess.on("close", (code) => {
+      recProcess.on('close', (code) => {
         if (code === 0) {
           resolve();
           return;
@@ -61,22 +61,23 @@ export default abstract class AbstractDemo {
         return;
       });
 
-      recProcess.on("error", (err) => {
-        console.error("Failed to start subprocess.");
+      recProcess.on('error', (err) => {
+        console.error('Failed to start subprocess.');
         console.error(err);
+        // eslint-disable-next-line no-restricted-syntax
         process.exit(1);
       });
 
       if (!recProcess) {
-        throw new Error("Failed to spawn process");
+        throw new Error('Failed to spawn process');
       }
 
       if (!recProcess.stdin) {
-        throw new Error("No stdin for subprocess");
+        throw new Error('No stdin for subprocess');
       }
 
-      recProcess.stdout.on("data", async function (data) {
-        if (data.toString().includes("$") || data.toString().includes("➜")) {
+      recProcess.stdout.on('data', async function (data) {
+        if (data.toString().includes('$') || data.toString().includes('➜')) {
           if (remainingCommands.length > 0) {
             writeCommand(recProcess, remainingCommands.pop()!);
           } else {
@@ -86,8 +87,8 @@ export default abstract class AbstractDemo {
         }
       });
 
-      recProcess.on("", (err) => {
-        console.error("Failed to start subprocess.");
+      recProcess.on('', (err) => {
+        console.error('Failed to start subprocess.');
         reject(err);
         return;
       });
@@ -96,7 +97,7 @@ export default abstract class AbstractDemo {
 
   public async create(): Promise<void> {
     const tmpDir = tmp.dirSync();
-    const demoDir = path.join(tmpDir.name, "demo");
+    const demoDir = path.join(tmpDir.name, 'demo');
     fs.mkdirSync(demoDir);
 
     console.log(`Setting up demo repo`);
@@ -128,9 +129,9 @@ export default abstract class AbstractDemo {
       .readFileSync(this.outputFilePath())
       .toString()
       .trim()
-      .split("\n");
+      .split('\n');
     lines.splice(1, 4);
-    fs.writeFileSync(this.outputFilePath(), lines.join("\n"));
+    fs.writeFileSync(this.outputFilePath(), lines.join('\n'));
   }
 }
 
@@ -139,10 +140,10 @@ function writeCommand(
   command: string
 ) {
   console.log(`Running command: ${command}`);
-  cp.execSync("sleep 3");
+  cp.execSync('sleep 3');
   for (const char of command) {
     process.stdin.write(char);
-    cp.execSync("sleep 0.01");
+    cp.execSync('sleep 0.01');
   }
-  process.stdin.write("\n");
+  process.stdin.write('\n');
 }
