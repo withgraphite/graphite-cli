@@ -2,7 +2,6 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { cleanBranches } from '../actions/clean_branches';
 import { applyStackEdits } from '../actions/edit/edit_downstack';
-import { fixAction, stackFixActionContinuation } from '../actions/fix';
 import { restackBranches } from '../actions/restack';
 import { cleanBranchesContinuation } from '../actions/sync/sync';
 import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_config';
@@ -85,16 +84,6 @@ async function resolveCallstack(
   context.splog.logDebug(`Resolving frame: ${frame.op}`);
 
   switch (frame.op) {
-    case 'STACK_FIX': {
-      fixAction(
-        { scope: 'UPSTACK', mergeConflictCallstack: remaining },
-        context
-      );
-      break;
-    }
-    case 'STACK_FIX_ACTION_CONTINUATION':
-      stackFixActionContinuation(frame);
-      break;
     case 'DELETE_BRANCHES_CONTINUATION':
       await cleanBranches(
         {
