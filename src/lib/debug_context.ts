@@ -5,7 +5,7 @@ import { MetadataRef, TMeta } from '../wrapper-classes/metadata_ref';
 import { TContext } from './context';
 import { getBranchToRefMapping } from './git-refs/branch_ref';
 import { getRevListGitTree } from './git-refs/branch_relations';
-import { checkoutBranch } from './git/checkout_branch';
+import { switchBranch } from './git/checkout_branch';
 import { deleteBranch } from './git/deleteBranch';
 import { currentBranchPrecondition } from './preconditions';
 import { gpExecSync } from './utils/exec_sync';
@@ -86,7 +86,7 @@ export function recreateState(stateJson: string, context: TContext): string {
   context.splog.logInfo(`Creating the metadata`);
   createMetadata({ metadata: state.metadata, tmpDir, refMappingsOldToNew });
 
-  checkoutBranch(state.currentBranchName);
+  switchBranch(state.currentBranchName);
   deleteBranch(tmpTrunk);
 
   return tmpDir;

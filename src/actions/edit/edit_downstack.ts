@@ -1,6 +1,6 @@
 import { TContext } from '../../lib/context';
 import { ExitFailedError } from '../../lib/errors';
-import { checkoutBranch } from '../../lib/git/checkout_branch';
+import { switchBranch } from '../../lib/git/checkout_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { assertUnreachable } from '../../lib/utils/assert_unreachable';
 import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
@@ -40,7 +40,7 @@ export function applyStackEdits(
   stackEdits: TStackEdit[],
   context: TContext
 ): void {
-  checkoutBranch(fromBranchName);
+  switchBranch(fromBranchName);
   stackEdits.forEach((stackEdit, index) => {
     switch (stackEdit.type) {
       case 'pick':

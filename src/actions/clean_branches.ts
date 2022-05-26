@@ -7,7 +7,7 @@ import {
 } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
-import { checkoutBranch } from '../lib/git/checkout_branch';
+import { switchBranch } from '../lib/git/checkout_branch';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { currentBranchOnto } from './current_branch_onto';
@@ -134,7 +134,7 @@ export async function cleanBranches(
       // This means that we may need to rebase it - if the branch's parent is
       // going to be deleted.
       if (parentName !== undefined && parentName in branchesToDelete) {
-        checkoutBranch(branch.name);
+        switchBranch(branch.name);
         context.splog.logInfo(
           `Stacking (${branch.name}) onto (${getTrunk(context).name})...`
         );
@@ -146,7 +146,7 @@ export async function cleanBranches(
       }
     }
 
-    checkoutBranch(getTrunk(context).name);
+    switchBranch(getTrunk(context).name);
 
     // With either of the paths above, we may have unblocked a branch that can
     // be deleted immediately. We recursively check whether we can delete a

@@ -1,7 +1,7 @@
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
 
-export function checkoutBranch(branch: string, opts?: { new?: boolean }): void {
+export function switchBranch(branch: string, opts?: { new?: boolean }): void {
   gpExecSync(
     {
       command: `git switch ${opts?.new ? '-c' : ''}"${branch}"`,
@@ -9,7 +9,7 @@ export function checkoutBranch(branch: string, opts?: { new?: boolean }): void {
     },
     () => {
       throw new ExitFailedError(
-        `Failed to checkout ${opts?.new ? 'new ' : ''}branch (${branch})`
+        `Failed to switch to ${opts?.new ? 'new ' : ''}branch (${branch})`
       );
     }
   );
