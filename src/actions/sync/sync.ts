@@ -1,7 +1,7 @@
 import { TRepoSyncStackFrame } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context';
 import { branchExists } from '../../lib/git/branch_exists';
-import { checkoutBranch } from '../../lib/git/checkout_branch';
+import { switchBranch } from '../../lib/git/checkout_branch';
 import {
   currentBranchPrecondition,
   uncommittedTrackedChangesPrecondition,
@@ -26,7 +26,7 @@ export async function syncAction(
 ): Promise<void> {
   uncommittedTrackedChangesPrecondition();
   const oldBranchName = currentBranchPrecondition().name;
-  checkoutBranch(getTrunk(context).name);
+  switchBranch(getTrunk(context).name);
 
   if (opts.pull) {
     pull(
@@ -79,7 +79,7 @@ export async function cleanBranchesContinuation(
     await resubmitBranchesWithNewBases(frame.force, context);
   }
 
-  checkoutBranch(
+  switchBranch(
     branchExists(frame.oldBranchName)
       ? frame.oldBranchName
       : getTrunk(context).name

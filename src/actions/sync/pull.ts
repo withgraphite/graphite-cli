@@ -1,6 +1,6 @@
 import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
-import { checkoutBranch } from '../../lib/git/checkout_branch';
+import { switchBranch } from '../../lib/git/checkout_branch';
 import { getRemoteBranchNames } from '../../lib/git/get_remote_branch_names';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { gpExecSync } from '../../lib/utils/exec_sync';
@@ -37,7 +37,7 @@ export function pull(
       options: { input },
     },
     (err) => {
-      checkoutBranch(oldBranchName);
+      switchBranch(oldBranchName);
       throw new ExitFailedError(`Failed to fetch from remote ${remote}`, err);
     }
   );
@@ -45,7 +45,7 @@ export function pull(
   gpExecSync(
     { command: `git merge --ff-only "refs/remotes/${remote}/${trunk}"` },
     (err) => {
-      checkoutBranch(oldBranchName);
+      switchBranch(oldBranchName);
       throw new ExitFailedError(`Failed to fast-forward trunk ${trunk}`, err);
     }
   );

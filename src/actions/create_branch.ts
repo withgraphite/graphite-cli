@@ -1,7 +1,7 @@
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
-import { checkoutBranch } from '../lib/git/checkout_branch';
+import { switchBranch } from '../lib/git/checkout_branch';
 import { commit } from '../lib/git/commit';
 import { deleteBranch } from '../lib/git/deleteBranch';
 import { detectStagedChanges } from '../lib/git/detect_staged_changes';
@@ -38,7 +38,7 @@ export async function createBranchAction(
     addAll();
   }
 
-  checkoutBranch(branchName, { new: true });
+  switchBranch(branchName, { new: true });
 
   const isAddingEmptyCommit = !detectStagedChanges();
 
@@ -54,7 +54,7 @@ export async function createBranchAction(
     noVerify: context.noVerify,
     rollbackOnError: () => {
       // Commit failed, usually due to precommit hooks. Rollback the branch.
-      checkoutBranch(parentBranch.name);
+      switchBranch(parentBranch.name);
       deleteBranch(branchName);
     },
   });
@@ -79,10 +79,10 @@ export async function createBranchAction(
       .source.children.map((node) => node.branch)
       .filter((b) => b.name != branchName)
       .forEach((b) => {
-        checkoutBranch(b.name);
+        switchBranch(b.name);
         context.splog.logInfo(`Stacking (${b.name}) onto (${branchName})...`);
         currentBranchOnto(branchName, context);
       });
-    checkoutBranch(branchName);
+    switchBranch(branchName);
   }
 }

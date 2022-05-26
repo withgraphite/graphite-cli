@@ -1,6 +1,6 @@
 import { TContext } from '../../lib/context';
 import { RebaseConflictError } from '../../lib/errors';
-import { checkoutBranch } from '../../lib/git/checkout_branch';
+import { switchBranch } from '../../lib/git/checkout_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { currentBranchOnto } from '../current_branch_onto';
@@ -11,7 +11,7 @@ export function applyStackEditPick(
   context: TContext
 ): void {
   const onto = currentBranchPrecondition().name;
-  checkoutBranch(opts.branchName);
+  switchBranch(opts.branchName);
   currentBranchOnto(onto, context);
 }
 

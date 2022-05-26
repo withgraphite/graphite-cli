@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
-import { checkoutBranch } from '../lib/git/checkout_branch';
+import { switchBranch } from '../lib/git/checkout_branch';
 import { getCurrentBranchName } from '../lib/git/current_branch_name';
 import { deleteBranch } from '../lib/git/deleteBranch';
 import { getTrunk } from '../lib/utils/trunk';
@@ -29,7 +29,7 @@ export function deleteBranchAction(
   }
 
   if (current === args.branchName) {
-    checkoutBranch(
+    switchBranch(
       Branch.branchWithName(current).getParentFromMeta(context)?.name ?? trunk
     );
   }
