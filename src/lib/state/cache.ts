@@ -1,7 +1,10 @@
 import {
-  MetadataRef,
+  allBranchesWithMeta,
+  deleteMetadataRef,
+  readMetadataRef,
   TBranchPRInfo,
   TMeta,
+  writeMetadataRef,
 } from '../../wrapper-classes/metadata_ref';
 import { PreconditionsFailedError } from '../errors';
 import { branchExists } from '../git/branch_exists';
@@ -195,7 +198,7 @@ export function composeMetaCache({
     const meta = cache.branches[branchName];
     assertCachedMetaIsNotTrunk(meta);
 
-    MetadataRef.updateOrCreate(branchName, {
+    writeMetadataRef(branchName, {
       parentBranchName: meta.parentBranchName,
       parentBranchRevision: meta.parentBranchRevision,
       prInfo: meta.prInfo,
@@ -293,7 +296,7 @@ export function composeMetaCache({
       }
 
       deleteBranch(branchName);
-      MetadataRef.delete(branchName);
+      deleteMetadataRef(branchName);
       return movedChildren;
     },
     commit: (opts: TCommitOpts) => {
@@ -475,19 +478,19 @@ function readAllMeta(): Array<
   { branchName: string; branchRevision: string } & TMeta
 > {
   const gitBranchNamesAndRevisions = branchNamesAndRevisions();
-  return MetadataRef.allMetadataRefs()
-    .filter((ref) => {
+  return allBranchesWithMeta()
+    .filter((branchName) => {
       // As we read the refs, cleanup any whose branch is missing
-      if (!gitBranchNamesAndRevisions.has(ref._branchName)) {
-        MetadataRef.delete(ref._branchName);
+      if (!gitBranchNamesAndRevisions.has(branchName)) {
+        deleteMetadataRef(branchName);
         return false;
       }
       return true;
     })
-    .map((ref) => ({
-      branchName: ref._branchName,
+    .map((branchName) => ({
+      branchName,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      branchRevision: gitBranchNamesAndRevisions.get(ref._branchName)!,
-      ...ref.read(),
+      branchRevision: gitBranchNamesAndRevisions.get(branchName)!,
+      ...readMetadataRef(branchName),
     }));
 }

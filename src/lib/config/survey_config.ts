@@ -84,3 +84,5 @@ export const surveyConfigFactory = composeConfig({
     };
   },
 });
+
+export type TSurveyConfig = ReturnType<typeof surveyConfigFactory.load>;

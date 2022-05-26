@@ -28,3 +28,5 @@ export const userConfigFactory = composeConfig({
     return {};
   },
 });
+
+export type TUserConfig = ReturnType<typeof userConfigFactory.load>;

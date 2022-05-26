@@ -1,8 +1,8 @@
 import { mergeConflictCallstackConfigFactory } from './config/merge_conflict_callstack_config';
-import { messageConfigFactory } from './config/message_config';
-import { repoConfigFactory } from './config/repo_config';
-import { surveyConfigFactory } from './config/survey_config';
-import { userConfigFactory } from './config/user_config';
+import { messageConfigFactory, TMessageConfig } from './config/message_config';
+import { repoConfigFactory, TRepoConfig } from './config/repo_config';
+import { surveyConfigFactory, TSurveyConfig } from './config/survey_config';
+import { TUserConfig, userConfigFactory } from './config/user_config';
 import { composeMetaCache, TMetaCache } from './state/cache';
 import { composeSplog, TSplog } from './utils/splog';
 
@@ -12,10 +12,10 @@ export type TContext = {
   splog: TSplog;
   interactive: boolean;
   noVerify: boolean;
-  repoConfig: ReturnType<typeof repoConfigFactory.load>;
-  surveyConfig: ReturnType<typeof surveyConfigFactory.load>;
-  userConfig: ReturnType<typeof userConfigFactory.load>;
-  messageConfig: ReturnType<typeof messageConfigFactory.load>;
+  repoConfig: TRepoConfig;
+  surveyConfig: TSurveyConfig;
+  userConfig: TUserConfig;
+  messageConfig: TMessageConfig;
   mergeConflictCallstackConfig: ReturnType<
     typeof mergeConflictCallstackConfigFactory.load
   >;
