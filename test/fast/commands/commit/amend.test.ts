@@ -50,9 +50,9 @@ for (const scene of allScenes) {
       scene.repo.createChange(`Hello world! ${lorem}`);
       scene.repo.execCliCommand(`commit amend -m "a1" -q`);
 
-      scene.repo.finishInteractiveRebase({
-        resolveMergeConflicts: true,
-      });
+      scene.repo.resolveMergeConflicts();
+      scene.repo.markMergeConflictsAsResolved();
+      scene.repo.execCliCommand(`continue -q`);
 
       scene.repo.checkoutBranch('b');
 
