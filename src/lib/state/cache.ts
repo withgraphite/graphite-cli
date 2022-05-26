@@ -8,6 +8,7 @@ import { branchExists } from '../git/branch_exists';
 import { switchBranch } from '../git/checkout_branch';
 import { commit, TCommitOpts } from '../git/commit';
 import { getCurrentBranchName } from '../git/current_branch_name';
+import { deleteBranch } from '../git/deleteBranch';
 import { getBranchRevision } from '../git/get_branch_revision';
 import { isMerged } from '../git/is_merged';
 import { getMergeBase } from '../git/merge_base';
@@ -29,7 +30,8 @@ export type TMetaCache = {
   getParent: (branchName: string) => string | undefined;
   getParentPrecondition: (branchName: string) => string;
   getCurrentStack: (scope: TScopeSpec) => string[];
-  checkoutBranch: (branchName: string) => boolean;
+  checkoutBranch: (branchName: string | undefined) => boolean;
+  deleteBranch: (branchName: string) => string[];
   commit: (opts: TCommitOpts) => void;
   restackBranch: (
     branchName: string
@@ -147,6 +149,25 @@ export function composeMetaCache({
       .map((child) => [child, ...getRecursiveChildren(child)])
       .reduce((last: string[], current: string[]) => [...last, ...current], []);
 
+  const removeChild = (parentBranchName: string, childBranchName: string) =>
+    (cache.branches[parentBranchName].children = cache.branches[
+      parentBranchName
+    ].children.filter((child) => child !== childBranchName));
+
+  const setParent = (branchName: string, parentBranchName: string) => {
+    assertBranchIsValid(branchName);
+    const cachedMeta = cache.branches[branchName];
+    assertCachedMetaIsNotTrunk(cachedMeta);
+
+    const oldParentBranchName = cachedMeta.parentBranchName;
+
+    cachedMeta.parentBranchName = parentBranchName;
+    persistMeta(branchName);
+
+    cache.branches[parentBranchName].children.push(branchName);
+    removeChild(oldParentBranchName, branchName);
+  };
+
   const getParent = (branchName: string) => {
     const meta = cache.branches[branchName];
     return meta.validationResult === 'BAD_PARENT_NAME'
@@ -157,6 +178,17 @@ export function composeMetaCache({
   const getRecursiveParents = (branchName: string): string[] => {
     const parent = getParent(branchName);
     return parent ? [...getRecursiveParents(parent), parent] : [];
+  };
+
+  const checkoutBranch = (branchName: string | undefined): boolean => {
+    try {
+      assertBranchIsValid(branchName);
+      switchBranch(branchName);
+      cache.currentBranch = branchName;
+      return true;
+    } catch (e) {
+      return false;
+    }
   };
 
   const persistMeta = (branchName: string) => {
@@ -211,21 +243,7 @@ export function composeMetaCache({
       return meta.prInfo;
     },
     getChildren,
-    setParent: (branchName: string, parentBranchName: string) => {
-      assertBranchIsValid(branchName);
-      const cachedMeta = cache.branches[branchName];
-      assertCachedMetaIsNotTrunk(cachedMeta);
-
-      const oldParentBranchName = cachedMeta.parentBranchName;
-
-      cachedMeta.parentBranchName = parentBranchName;
-      persistMeta(branchName);
-
-      cache.branches[parentBranchName].children.push(branchName);
-      cache.branches[oldParentBranchName].children = cache.branches[
-        oldParentBranchName
-      ].children.filter((child) => child !== branchName);
-    },
+    setParent,
     getParent,
     getParentPrecondition: (branchName: string) => {
       const meta = cache.branches[branchName];
@@ -251,13 +269,32 @@ export function composeMetaCache({
           : []),
       ];
     },
-    checkoutBranch: (branchName: string): boolean => {
-      if (!getValidMeta(branchName)) {
-        return false;
+    checkoutBranch,
+    deleteBranch: (branchName: string): string[] => {
+      if (
+        branchName === cache.currentBranch &&
+        !checkoutBranch(getParent(branchName)) &&
+        !checkoutBranch(trunkName)
+      ) {
+        // Give up if we can't check out the parent or trunk.
+        throw new PreconditionsFailedError(`Cannot delete the current branch.`);
       }
-      switchBranch(branchName);
-      cache.currentBranch = branchName;
-      return true;
+
+      const meta = getValidMeta(branchName);
+      const movedChildren: string[] = [];
+      if (meta) {
+        assertCachedMetaIsNotTrunk(meta);
+        meta.children.forEach((childBranchName) => {
+          setParent(childBranchName, meta.parentBranchName);
+          movedChildren.push(childBranchName);
+        });
+        assertBranchIsValid(meta.parentBranchName);
+        removeChild(meta.parentBranchName, branchName);
+      }
+
+      deleteBranch(branchName);
+      MetadataRef.delete(branchName);
+      return movedChildren;
     },
     commit: (opts: TCommitOpts) => {
       assertBranchIsValid(cache.currentBranch);
@@ -442,7 +479,7 @@ function readAllMeta(): Array<
     .filter((ref) => {
       // As we read the refs, cleanup any whose branch is missing
       if (!gitBranchNamesAndRevisions.has(ref._branchName)) {
-        ref.delete();
+        MetadataRef.delete(ref._branchName);
         return false;
       }
       return true;
