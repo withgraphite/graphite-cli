@@ -123,7 +123,10 @@ export class GitRepo {
   }
 
   resolveMergeConflicts(): void {
-    gpExecSync({ command: `git -C "${this.dir}" checkout --theirs .` });
+    gpExecSync({
+      command: `git -C "${this.dir}" checkout --theirs .`,
+      options: { stdio: process.env.DEBUG ? 'inherit' : 'ignore' },
+    });
   }
 
   markMergeConflictsAsResolved(): void {
@@ -131,21 +134,6 @@ export class GitRepo {
       command: `git -C "${this.dir}" add .`,
       options: { stdio: process.env.DEBUG ? 'inherit' : 'ignore' },
     });
-  }
-
-  finishInteractiveRebase(opts?: { resolveMergeConflicts?: boolean }): void {
-    while (this.rebaseInProgress()) {
-      if (opts?.resolveMergeConflicts) {
-        this.resolveMergeConflicts();
-      }
-      this.markMergeConflictsAsResolved();
-      gpExecSync({
-        command: `GIT_EDITOR="touch $1" git -C ${this.dir} rebase --continue`,
-        options: {
-          stdio: process.env.DEBUG ? 'inherit' : 'ignore',
-        },
-      });
-    }
   }
 
   currentBranchName(): string {
