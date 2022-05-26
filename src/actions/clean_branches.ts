@@ -11,8 +11,8 @@ import { checkoutBranch } from '../lib/git/checkout_branch';
 import { isMerged } from '../lib/git/is_merged';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
+import { currentBranchOnto } from './current_branch_onto';
 import { deleteBranchAction } from './delete_branch';
-import { currentBranchOnto } from './onto/current_branch_onto';
 
 /**
  * This method is assumed to be idempotent -- if a merge conflict interrupts

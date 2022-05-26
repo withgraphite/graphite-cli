@@ -1,7 +1,7 @@
-import { TContext } from '../../lib/context';
-import { uncommittedTrackedChangesPrecondition } from '../../lib/preconditions';
-import { SCOPE } from '../../lib/state/scope_spec';
-import { restackBranches } from '../restack';
+import { TContext } from '../lib/context';
+import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
+import { SCOPE } from '../lib/state/scope_spec';
+import { restackBranches } from './restack';
 
 export function currentBranchOnto(
   ontoBranchName: string,
