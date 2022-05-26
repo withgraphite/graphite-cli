@@ -34,7 +34,6 @@ const RepoSyncStackFrameSchema = t.shape({
   oldBranchName: t.string,
 });
 
-export type TStackEditStackFrame = t.TypeOf<typeof StackEditStackFrameSchema>;
 export type TDeleteBranchesStackFrame = t.TypeOf<
   typeof DeleteBranchesStackFrameSchema
 >;
