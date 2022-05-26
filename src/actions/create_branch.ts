@@ -1,16 +1,9 @@
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
-import { switchBranch } from '../lib/git/checkout_branch';
-import { commit } from '../lib/git/commit';
-import { deleteBranch } from '../lib/git/deleteBranch';
 import { detectStagedChanges } from '../lib/git/detect_staged_changes';
-import { getBranchRevision } from '../lib/git/get_branch_revision';
-import { currentBranchPrecondition } from '../lib/preconditions';
 import { newBranchName } from '../lib/utils/branch_name';
-import { Branch } from '../wrapper-classes/branch';
-import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
-import { currentBranchOnto } from './current_branch_onto';
+import { restackBranches } from './restack';
 
 export async function createBranchAction(
   opts: {
@@ -21,8 +14,6 @@ export async function createBranchAction(
   },
   context: TContext
 ): Promise<void> {
-  const parentBranch = currentBranchPrecondition();
-
   const branchName = newBranchName(
     opts.branchName,
     opts.commitMessage,
@@ -38,7 +29,7 @@ export async function createBranchAction(
     addAll();
   }
 
-  switchBranch(branchName, { new: true });
+  context.metaCache.checkoutNewBranch(branchName);
 
   const isAddingEmptyCommit = !detectStagedChanges();
 
@@ -48,41 +39,26 @@ export async function createBranchAction(
    * and check out the new branch and these types of error point to
    * larger failure outside of our control.
    */
-  commit({
+  context.metaCache.commit({
+    noVerify: context.noVerify,
     allowEmpty: isAddingEmptyCommit,
     message: opts.commitMessage,
-    noVerify: context.noVerify,
-    rollbackOnError: () => {
-      // Commit failed, usually due to precommit hooks. Rollback the branch.
-      switchBranch(parentBranch.name);
-      deleteBranch(branchName);
-    },
+    rollbackOnError: () => context.metaCache.deleteBranch(branchName),
   });
 
-  // If the branch previously existed and the stale metadata is still around,
-  // make sure that we wipe that stale metadata.
-  Branch.create(
-    branchName,
-    parentBranch.name,
-    getBranchRevision(parentBranch.name)
-  );
-
-  if (isAddingEmptyCommit) {
-    context.splog.logInfo(
-      'Since no changes were staged, an empty commit was added to track Graphite stack dependencies. If you wish to get rid of the empty commit you can amend, or squash when merging.'
-    );
-  }
-
   if (opts.restack) {
-    new MetaStackBuilder()
-      .upstackInclusiveFromBranchWithoutParents(parentBranch, context)
-      .source.children.map((node) => node.branch)
-      .filter((b) => b.name != branchName)
-      .forEach((b) => {
-        switchBranch(b.name);
-        context.splog.logInfo(`Stacking (${b.name}) onto (${branchName})...`);
-        currentBranchOnto(branchName, context);
+    const branchesToRestack: string[] = [];
+    context.metaCache
+      .getChildren(context.metaCache.getParentPrecondition(branchName))
+      .filter((childBranchName) => childBranchName != branchName)
+      .forEach((childBranchName) => {
+        context.metaCache.setParent(childBranchName, branchName);
+        branchesToRestack.push(childBranchName);
       });
-    switchBranch(branchName);
+
+    restackBranches(
+      { relative: false, branchNames: branchesToRestack },
+      context
+    );
   }
 }
