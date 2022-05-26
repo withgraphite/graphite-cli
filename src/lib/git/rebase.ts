@@ -55,10 +55,6 @@ export function rebaseOnto(
     );
     return false;
   }
-
-  // TODO can kill this once we are fully migrated to parentRevision
-  // Save the old ref from before rebasing so that children can find their bases.
-  args.branch.savePrevRef();
   gpExecSync(
     {
       command: `git rebase --onto ${args.ontoBranchName} ${args.mergeBase} ${args.branch.name}`,
