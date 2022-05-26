@@ -1,7 +1,7 @@
 import { GitRepo } from '../../src/lib/utils/git_repo';
-import AbstractDemo from './abstract_demo';
+import { AbstractDemo } from './abstract_demo';
 
-export default class FullDemo extends AbstractDemo {
+export class FullDemo extends AbstractDemo {
   constructor() {
     super(
       'full',
