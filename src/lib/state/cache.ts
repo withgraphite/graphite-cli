@@ -9,6 +9,7 @@ import { checkoutBranch } from '../git/checkout_branch';
 import { commit, TCommitOpts } from '../git/commit';
 import { getCurrentBranchName } from '../git/current_branch_name';
 import { getBranchRevision } from '../git/get_branch_revision';
+import { isMerged } from '../git/is_merged';
 import { getMergeBase } from '../git/merge_base';
 import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
 import { branchNamesAndRevisions } from '../git/sorted_branch_names';
@@ -22,6 +23,7 @@ export type TMetaCache = {
   currentBranchPrecondition: string;
   trunk: string;
   isTrunk: (branchName: string) => boolean;
+  getPrInfo: (branchName: string) => TBranchPRInfo | undefined;
   getChildren: (branchName: string) => string[];
   setParent: (branchName: string, parentBranchName: string) => void;
   getParent: (branchName: string) => string | undefined;
@@ -39,6 +41,7 @@ export type TMetaCache = {
         branchName: string;
       }
     | { result: 'REBASE_CONFLICT' };
+  isMerged: (branchName: string) => boolean;
 };
 
 type TCachedMeta = { children: string[]; branchRevision: string } & (
@@ -200,8 +203,13 @@ export function composeMetaCache({
       }
       return trunkName;
     },
-    isTrunk: (branchName: string) =>
-      cache.branches[branchName]?.validationResult === 'TRUNK',
+    isTrunk: (branchName: string) => branchName === trunkName,
+    getPrInfo: (branchName: string) => {
+      assertBranchIsValid(branchName);
+      const meta = cache.branches[branchName];
+      assertCachedMetaIsNotTrunk(meta);
+      return meta.prInfo;
+    },
     getChildren,
     setParent: (branchName: string, parentBranchName: string) => {
       assertBranchIsValid(branchName);
@@ -304,6 +312,11 @@ export function composeMetaCache({
       assertBranchIsValid(branchName);
       handleRebase(branchName);
       return { result, branchName };
+    },
+    isMerged: (branchName: string) => {
+      assertBranchIsValid(branchName);
+      assertBranchIsValid(trunkName);
+      return isMerged({ branchName, trunkName });
     },
   };
 }
