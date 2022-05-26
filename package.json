@@ -20,8 +20,9 @@
     "yargs": "^17.0.1"
   },
   "scripts": {
-    "build": "tsc",
     "lint": "eslint src --quiet --ext .ts --cache",
+    "check": "tsc --noEmit",
+    "build": "rm -rf dist/ && yarn lint && tsc",
     "prepublishOnly": "yarn build",
     "cli": "ts-node ./src/index.ts",
     "test": "yarn mocha \"dist/test/**/*.test.js\"  --parallel --jobs 8",
@@ -33,6 +34,10 @@
     "deploy-test": "ts-node ./scripts/deploy/deploy-test.ts",
     "regen-demo": "ts-node ./scripts/demo/index.ts"
   },
+  "pre-commit": [
+    "lint",
+    "check"
+  ],
   "files": [
     "dist"
   ],
@@ -64,6 +69,7 @@
     "eslint-plugin-import": "^2.25.3",
     "husky": "^7.0.1",
     "mocha": "^8.3.2",
+    "pre-commit": "^1.2.2",
     "prettier": "2.3.2",
     "ts-node": "^9.0.0",
     "typescript": "^4.2.4"
