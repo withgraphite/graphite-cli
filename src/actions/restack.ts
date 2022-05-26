@@ -8,6 +8,26 @@ export function restackCurrentBranch(context: TContext): void {
   restackBranches([context.metaCache.currentBranchPrecondition], context);
 }
 
+export function restackCurrentDownstack(context: TContext): void {
+  const currentBranch = context.metaCache.currentBranchPrecondition;
+  restackBranches(
+    [...context.metaCache.getRecursiveParents(currentBranch), currentBranch],
+    context
+  );
+}
+
+export function restackCurrentStack(context: TContext): void {
+  const currentBranch = context.metaCache.currentBranchPrecondition;
+  restackBranches(
+    [
+      ...context.metaCache.getRecursiveParents(currentBranch),
+      currentBranch,
+      ...context.metaCache.getRecursiveChildren(currentBranch),
+    ],
+    context
+  );
+}
+
 export function restackCurrentUpstack(context: TContext): void {
   const currentBranch = context.metaCache.currentBranchPrecondition;
   restackBranches(
