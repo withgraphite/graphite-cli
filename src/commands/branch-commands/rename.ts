@@ -7,7 +7,10 @@ import { profile } from '../../lib/telemetry/profile';
 import { replaceUnsupportedCharacters } from '../../lib/utils/branch_name';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { Branch } from '../../wrapper-classes/branch';
-import { MetadataRef } from '../../wrapper-classes/metadata_ref';
+import {
+  moveMetadataRef,
+  readMetadataRef,
+} from '../../wrapper-classes/metadata_ref';
 
 const args = {
   'new-branch-name': {
@@ -57,12 +60,11 @@ export const handler = async (args: argsT): Promise<void> => {
 
     currentBranch.clearPRInfo();
 
-    const curBranchMetadataRef = new MetadataRef(currentBranch.name);
-    curBranchMetadataRef.rename(newName);
+    moveMetadataRef(currentBranch.name, newName);
 
     // Update any references to the branch.
     allBranches.forEach((branch) => {
-      if (MetadataRef.getMeta(branch.name)?.parentBranchName === oldName) {
+      if (readMetadataRef(branch.name)?.parentBranchName === oldName) {
         branch.setParentBranchName(newName);
       }
     });

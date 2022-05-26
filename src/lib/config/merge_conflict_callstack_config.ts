@@ -75,6 +75,10 @@ export const mergeConflictCallstackConfigFactory = composeConfig({
   options: { removeIfEmpty: true, removeIfInvalid: true },
 });
 
+export type TMergeConflictCallstackConfig = ReturnType<
+  typeof mergeConflictCallstackConfigFactory.load
+>;
+
 export function persistMergeConflictCallstack(
   callstack: TMergeConflictCallstack,
   context: TContext

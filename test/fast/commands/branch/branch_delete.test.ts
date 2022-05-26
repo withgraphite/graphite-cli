@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { MetadataRef } from '../../../../src/wrapper-classes/metadata_ref';
+import { allBranchesWithMeta } from '../../../../src/wrapper-classes/metadata_ref';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
 import { expectBranches } from '../../../lib/utils/expect_branches';
@@ -22,11 +22,8 @@ for (const scene of allScenes) {
 
       expectBranches(scene.repo, 'main');
 
-      expect(
-        MetadataRef.allMetadataRefs().find(
-          (ref) => ref._branchName === branchName
-        )
-      ).to.be.undefined;
+      expect(allBranchesWithMeta().find((b) => b === branchName)).to.be
+        .undefined;
     });
 
     it('Can run branch delete on a branch not created/tracked by Graphite', () => {
@@ -40,11 +37,8 @@ for (const scene of allScenes) {
 
       expectBranches(scene.repo, 'main');
 
-      expect(
-        MetadataRef.allMetadataRefs().find(
-          (ref) => ref._branchName === branchName
-        )
-      ).to.be.undefined;
+      expect(allBranchesWithMeta().find((b) => b === branchName)).to.be
+        .undefined;
     });
   });
 }
