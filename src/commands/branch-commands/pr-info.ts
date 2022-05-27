@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { getBranchTitle } from '../../actions/print_stack';
 import { currentBranchPrecondition } from '../../lib/preconditions';
-import { syncPRInfoForBranchByName } from '../../lib/sync/pr_info';
+import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 import { profile } from '../../lib/telemetry/profile';
 
 const args = {
@@ -29,7 +29,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       return;
     }
 
-    await syncPRInfoForBranchByName([branch.name], context);
+    await syncPRInfoForBranches([branch.name], context);
 
     const prInfo = context.metaCache.getPrInfo(branch.name);
     if (prInfo === undefined) {
