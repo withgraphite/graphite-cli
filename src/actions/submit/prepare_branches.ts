@@ -110,7 +110,7 @@ function getPRAction(
       `Could not find parent for branch ${args.branch.name} to submit PR against. Please checkout ${args.branch.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
     );
   }
-  const prNumber = args.branch.getPRInfo()?.number;
+  const prNumber = context.metaCache.getPrInfo(args.branch.name)?.number;
 
   const status =
     prNumber === undefined
@@ -189,7 +189,7 @@ async function getPRCreationInfo(
     );
   } finally {
     // Save locally in case this command fails
-    args.branch.upsertPRInfo(submitInfo);
+    context.metaCache.upsertPrInfo(args.branch.name, submitInfo);
   }
 
   const reviewers = await getReviewers({

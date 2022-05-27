@@ -30,6 +30,8 @@ export type TMetaCache = {
   allBranchNames: string[];
   isTrunk: (branchName: string) => boolean;
   getPrInfo: (branchName: string) => TBranchPRInfo | undefined;
+  resetPrInfo: (branchName: string) => void;
+  upsertPrInfo: (branchName: string, prInfo: Partial<TBranchPRInfo>) => void;
   getChildren: (branchName: string) => string[];
   setParent: (branchName: string, parentBranchName: string) => void;
   getParent: (branchName: string) => string | undefined;
@@ -254,6 +256,22 @@ export function composeMetaCache({
       const meta = cache.branches[branchName];
       assertCachedMetaIsNotTrunk(meta);
       return meta.prInfo;
+    },
+    resetPrInfo: (branchName: string) => {
+      assertBranchIsValid(branchName);
+      const meta = cache.branches[branchName];
+      assertCachedMetaIsNotTrunk(meta);
+
+      meta.prInfo = {};
+      persistMeta(branchName);
+    },
+    upsertPrInfo: (branchName: string, prInfo: Partial<TBranchPRInfo>) => {
+      assertBranchIsValid(branchName);
+      const meta = cache.branches[branchName];
+      assertCachedMetaIsNotTrunk(meta);
+
+      meta.prInfo = { ...meta.prInfo, ...prInfo };
+      persistMeta(branchName);
     },
     getChildren,
     setParent,
