@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { interactiveBranchSelection } from '../../actions/interactive_branch_selection';
+import { interactiveBranchSelection } from '../../actions/display_branches';
 import { profile } from '../../lib/telemetry/profile';
 
 const args = {
@@ -23,9 +23,12 @@ export const handler = async (args: argsT): Promise<void> => {
   return profile(args, canonical, async (context) => {
     const branchName =
       args.branch ??
-      (await interactiveBranchSelection(context, {
-        message: 'Checkout a branch',
-      }));
+      (await interactiveBranchSelection(
+        {
+          message: 'Checkout a branch',
+        },
+        context
+      ));
     if (!context.metaCache.checkoutBranch(branchName)) {
       context.splog.logError(`${branchName} is not a valid Graphite branch.`);
     } else {

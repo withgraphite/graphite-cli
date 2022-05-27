@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { logShortAction } from '../../actions/log_short';
+import { logShortAction } from '../../actions/display_branches';
 import { profile } from '../../lib/telemetry/profile';
 
 const args = {} as const;
@@ -11,8 +11,5 @@ export const aliases = ['s'];
 export const canonical = 'log short';
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
-export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
-    await logShortAction(context);
-  });
-};
+export const handler = async (argv: argsT): Promise<void> =>
+  profile(argv, canonical, async (context) => logShortAction(context));

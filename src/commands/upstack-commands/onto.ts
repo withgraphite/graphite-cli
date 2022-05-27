@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { currentBranchOnto } from '../../actions/current_branch_onto';
-import { interactiveBranchSelection } from '../../actions/interactive_branch_selection';
+import { interactiveBranchSelection } from '../../actions/display_branches';
 import { profile } from '../../lib/telemetry/profile';
 
 const args = {
@@ -23,12 +23,15 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     currentBranchOnto(
       argv.branch ??
-        (await interactiveBranchSelection(context, {
-          message: `Choose a new base for ${chalk.yellow(
-            context.metaCache.currentBranch
-          )}`,
-          omitCurrentUpstack: true,
-        })),
+        (await interactiveBranchSelection(
+          {
+            message: `Choose a new base for ${chalk.yellow(
+              context.metaCache.currentBranch
+            )}`,
+            omitCurrentBranch: true,
+          },
+          context
+        )),
       context
     );
   });
