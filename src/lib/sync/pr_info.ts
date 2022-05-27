@@ -5,14 +5,13 @@ import { API_SERVER } from '../api';
 import { TContext } from '../context';
 
 export async function syncPRInfoForBranches(
-  branches: Branch[],
+  branchNames: string[],
   context: TContext
 ): Promise<void> {
   return syncHelper(
     {
-      numbers: branches
-        .filter((branch) => !branch.isTrunk(context))
-        .map((branch) => branch.getPRInfo()?.number)
+      numbers: branchNames
+        .map((branch) => context.metaCache.getPrInfo(branch)?.number)
         .filter((value): value is number => value !== undefined),
     },
     context

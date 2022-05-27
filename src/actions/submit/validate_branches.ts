@@ -22,7 +22,10 @@ export async function getValidBranchesToSubmit(
   const branchesToSubmit = getAllBranchesToSubmit(scope, context);
   context.splog.logNewline();
 
-  await syncPRInfoForBranches(branchesToSubmit, context);
+  await syncPRInfoForBranches(
+    branchesToSubmit.map((b) => b.name),
+    context
+  );
 
   return hasAnyMergedBranches(branchesToSubmit, context) ||
     hasAnyClosedBranches(branchesToSubmit, context)

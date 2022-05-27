@@ -27,6 +27,7 @@ export type TMetaCache = {
   currentBranch: string | undefined;
   currentBranchPrecondition: string;
   trunk: string;
+  allBranchNames: string[];
   isTrunk: (branchName: string) => boolean;
   getPrInfo: (branchName: string) => TBranchPRInfo | undefined;
   getChildren: (branchName: string) => string[];
@@ -243,6 +244,9 @@ export function composeMetaCache({
         throw new PreconditionsFailedError(`No trunk found.`);
       }
       return trunkName;
+    },
+    get allBranchNames() {
+      return Object.keys(cache.branches);
     },
     isTrunk: (branchName: string) => branchName === trunkName,
     getPrInfo: (branchName: string) => {

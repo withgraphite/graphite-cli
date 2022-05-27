@@ -44,7 +44,10 @@ export async function syncAction(
     await mergeDownstack(opts.downstackToSync, context);
   }
 
-  await syncPRInfoForBranches(Branch.allBranches(context), context);
+  await syncPRInfoForBranches(
+    Branch.allBranches(context).map((b) => b.name),
+    context
+  );
 
   const deleteMergedBranchesContinuation = {
     op: 'REPO_SYNC_CONTINUATION' as const,
