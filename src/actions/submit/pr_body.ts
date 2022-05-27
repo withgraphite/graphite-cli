@@ -76,7 +76,7 @@ export function inferPRBody(
   }
 
   // Only infer the title from the commit if the branch has just 1 commit.
-  const commits = context.metaCache.getAllCommits(branchName);
+  const commits = context.metaCache.getAllCommits(branchName, 'SHA');
   const singleCommitBody =
     commits.length === 1 ? new Commit(commits[0]).messageBody() : undefined;
 
