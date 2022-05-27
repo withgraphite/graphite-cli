@@ -8,7 +8,6 @@ export function registerSigintHandler(opts: {
   startTime: number;
 }): void {
   process.on('SIGINT', () => {
-    console.log(`Gracefully terminating...`);
     const err = new KilledError();
     // End all current traces abruptly.
     tracer.allSpans.forEach((s) => s.end(err));
