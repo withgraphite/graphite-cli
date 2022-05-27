@@ -7,14 +7,10 @@ import { version } from '../../../package.json';
 import { init } from '../../actions/init';
 import { initContext, TContext } from '../context';
 import {
-  ConfigError,
-  ExitCancelledError,
   ExitFailedError,
   KilledError,
-  MultiParentError,
   PreconditionsFailedError,
   RebaseConflictError,
-  SiblingBranchError,
 } from '../errors';
 import { getUnmergedFiles } from '../git/merge_conflict_help';
 import { TGlobalArguments } from '../global_arguments';
@@ -78,6 +74,8 @@ export async function profile(
           await handler(context);
         } catch (err) {
           switch (err.constructor) {
+            case KilledError:
+              return;
             case ExitFailedError:
               context.splog.logError(err.message);
               throw err;
@@ -108,20 +106,6 @@ export async function profile(
                   `gt continue`
                 )} to continue executing your previous Graphite command`
               );
-              throw err;
-            case ConfigError:
-              context.splog.logError(`Bad Config: ${err.message}`);
-              throw err;
-            case ExitCancelledError:
-              context.splog.logWarn(`Cancelled: ${err.message}`);
-              return;
-            case SiblingBranchError:
-              context.splog.logError(err.message);
-              throw err;
-            case MultiParentError:
-              context.splog.logError(err.message);
-              throw err;
-            case KilledError:
               return;
             default:
               context.splog.logError(err.message);

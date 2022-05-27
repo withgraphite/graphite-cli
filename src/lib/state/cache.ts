@@ -1,11 +1,3 @@
-import {
-  allBranchesWithMeta,
-  deleteMetadataRef,
-  readMetadataRef,
-  TBranchPRInfo,
-  TMeta,
-  writeMetadataRef,
-} from '../../wrapper-classes/metadata_ref';
 import { PreconditionsFailedError } from '../errors';
 import { branchExists } from '../git/branch_exists';
 import { branchMove } from '../git/branch_move';
@@ -22,6 +14,14 @@ import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
 import { branchNamesAndRevisions } from '../git/sorted_branch_names';
 import { cuteString } from '../utils/cute_string';
 import { TSplog } from '../utils/splog';
+import {
+  allBranchesWithMeta,
+  deleteMetadataRef,
+  readMetadataRef,
+  TBranchPRInfo,
+  TMeta,
+  writeMetadataRef,
+} from './metadata_ref';
 import { TScopeSpec } from './scope_spec';
 
 export type TMetaCache = {

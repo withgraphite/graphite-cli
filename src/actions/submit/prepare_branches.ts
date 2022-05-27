@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { TContext } from '../../lib/context';
 import { detectUnsubmittedChanges } from '../../lib/git/detect_unsubmitted_changes';
-import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
+import { TBranchPRInfo } from '../../lib/state/metadata_ref';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';

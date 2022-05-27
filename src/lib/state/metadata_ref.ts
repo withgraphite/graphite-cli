@@ -1,8 +1,8 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { getRepoRootPathPrecondition } from '../lib/preconditions';
-import { cuteString } from '../lib/utils/cute_string';
-import { gpExecSync } from '../lib/utils/exec_sync';
+import { getRepoRootPathPrecondition } from '../preconditions';
+import { cuteString } from '../utils/cute_string';
+import { gpExecSync } from '../utils/exec_sync';
 
 export type TBranchPRState = 'OPEN' | 'CLOSED' | 'MERGED';
 export type TBranchPRReviewDecision =

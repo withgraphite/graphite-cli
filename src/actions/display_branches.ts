@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
-import { ExitCancelledError } from '../lib/errors';
+import { KilledError } from '../lib/errors';
 
 function displayBranchesInternal(
   opts: {
@@ -92,7 +92,7 @@ export async function interactiveBranchSelection(
       },
       {
         onCancel: () => {
-          throw new ExitCancelledError('No branch selected');
+          throw new KilledError();
         },
       }
     )

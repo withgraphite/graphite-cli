@@ -1,6 +1,6 @@
 import { Branch } from '../../wrapper-classes/branch';
 import { TContext } from '../context';
-import { ConfigError, ExitFailedError } from '../errors';
+import { ExitFailedError, PreconditionsFailedError } from '../errors';
 import { branchExists } from '../git/branch_exists';
 import { gpExecSync } from './exec_sync';
 
@@ -37,7 +37,7 @@ export function inferTrunk(context: TContext): Branch | undefined {
 export function getTrunk(context: TContext): Branch {
   const configTrunkName = context.repoConfig.data.trunk;
   if (!configTrunkName) {
-    throw new ConfigError(
+    throw new PreconditionsFailedError(
       `No configured trunk branch. Consider setting the trunk name by running "gt repo init".`
     );
   }
