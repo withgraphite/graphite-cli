@@ -10,7 +10,7 @@ export async function resubmitBranchesWithNewBases(
   const needsResubmission: Branch[] = [];
   Branch.allBranches(context, {
     filter: (b) => {
-      const prState = b.getPRInfo()?.state;
+      const prState = context.metaCache.getPrInfo(b.name)?.state;
       return (
         !b.isTrunk(context) &&
         b.getParentFromMeta(context) !== undefined &&
@@ -20,7 +20,7 @@ export async function resubmitBranchesWithNewBases(
     },
   }).forEach((b) => {
     const currentBase = b.getParentFromMeta(context)?.name;
-    const githubBase = b.getPRInfo()?.base;
+    const githubBase = context.metaCache.getPrInfo(b.name)?.base;
 
     if (githubBase && githubBase !== currentBase) {
       needsResubmission.push(b);

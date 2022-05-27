@@ -7,7 +7,6 @@ import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
 import { cuteString } from '../../lib/utils/cute_string';
 import { Unpacked } from '../../lib/utils/ts_helpers';
-import { Branch } from '../../wrapper-classes/branch';
 import {
   TPRSubmissionInfoWithBranch,
   TSubmittedPRRequest,
@@ -114,7 +113,7 @@ export function handlePRReponse(
     };
   }
 
-  Branch.branchWithName(pr.response.head).upsertPRInfo({
+  context.metaCache.upsertPrInfo(pr.response.head, {
     number: pr.response.prNumber,
     url: pr.response.prURL,
     base: pr.request.base,

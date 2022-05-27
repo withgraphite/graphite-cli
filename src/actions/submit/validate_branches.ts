@@ -49,7 +49,7 @@ function hasAnyMergedBranches(
   context: TContext
 ): boolean {
   const mergedBranches = branchesToSubmit.filter(
-    (b) => b.getPRInfo()?.state === 'MERGED'
+    (b) => context.metaCache.getPrInfo(b.name)?.state === 'MERGED'
   );
   if (mergedBranches.length === 0) {
     return false;
@@ -79,7 +79,7 @@ function hasAnyClosedBranches(
   context: TContext
 ): boolean {
   const closedBranches = branchesToSubmit.filter(
-    (b) => b.getPRInfo()?.state === 'CLOSED'
+    (b) => context.metaCache.getPrInfo(b.name)?.state === 'CLOSED'
   );
   if (closedBranches.length === 0) {
     return false;

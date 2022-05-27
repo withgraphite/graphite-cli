@@ -1,6 +1,5 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
-import { Branch } from '../../wrapper-classes/branch';
 import { API_SERVER } from '../api';
 import { TContext } from '../context';
 
@@ -53,9 +52,8 @@ async function syncHelper(
     // Note that this currently does not play nicely if the user has a branch
     // that is being merged into multiple other branches; we expect this to
     // be a rare case and will develop it lazily.
-    response.prs.forEach((pr) => {
-      const branch = Branch.branchWithName(pr.headRefName);
-      branch.upsertPRInfo({
+    response.prs.forEach((pr) =>
+      context.metaCache.upsertPrInfo(pr.headRefName, {
         number: pr.prNumber,
         base: pr.baseRefName,
         url: pr.url,
@@ -63,13 +61,7 @@ async function syncHelper(
         title: pr.title,
         reviewDecision: pr.reviewDecision ?? undefined,
         isDraft: pr.isDraft,
-      });
-
-      if (branch.name !== pr.headRefName) {
-        context.splog.logError(
-          `PR ${pr.prNumber} is associated with ${pr.headRefName} on GitHub, but branch ${branch.name} locally. Please rename the local branch (\`gt branch rename\`) to match the remote branch associated with the PR. (While ${branch.name} is misaligned with GitHub, you cannot use \`gt submit\` on it.)`
-        );
-      }
-    });
+      })
+    );
   }
 }

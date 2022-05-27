@@ -71,7 +71,7 @@ export function inferPRBody(
   branch: Branch,
   context: TContext
 ): string | undefined {
-  const priorSubmitBody = branch.getPRInfo()?.body;
+  const priorSubmitBody = context.metaCache.getPrInfo(branch.name)?.body;
   if (priorSubmitBody !== undefined) {
     return priorSubmitBody;
   }
