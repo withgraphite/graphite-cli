@@ -49,7 +49,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       }
     );
     if (response._response.status == 200) {
-      console.log(
+      context.splog.logInfo(
         chalk.green(
           `Feedback received loud and clear (in a team Slack channel) :)`
         )

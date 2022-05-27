@@ -10,31 +10,32 @@ export async function getPRTemplate(): Promise<string | undefined> {
     return undefined;
   }
 
-  let templateFilepath: string;
-  if (templateFiles.length === 1) {
-    templateFilepath = templateFiles[0];
-  } else {
-    const response = await prompts(
-      {
-        type: 'select',
-        name: 'templateFilepath',
-        message: `Body Template`,
-        choices: templateFiles.map((file) => {
-          return {
-            title: getRelativePathFromRepo(file),
-            value: file,
-          };
-        }),
-      },
-      {
-        onCancel: () => {
-          throw new KilledError();
-        },
-      }
-    );
-    templateFilepath = response.templateFilepath;
-  }
-  return fs.readFileSync(templateFilepath).toString();
+  return fs
+    .readFileSync(
+      templateFiles.length === 1
+        ? templateFiles[0]
+        : (
+            await prompts(
+              {
+                type: 'select',
+                name: 'templateFilepath',
+                message: `Body Template`,
+                choices: templateFiles.map((file) => {
+                  return {
+                    title: getRelativePathFromRepo(file),
+                    value: file,
+                  };
+                }),
+              },
+              {
+                onCancel: () => {
+                  throw new KilledError();
+                },
+              }
+            )
+          ).templateFilepath
+    )
+    .toString();
 }
 
 function getRelativePathFromRepo(path: string): string {
@@ -67,55 +68,43 @@ function getRelativePathFromRepo(path: string): string {
  */
 export function getPRTemplateFilepaths(): string[] {
   const repoPath = currentGitRepoPrecondition();
-  let filepaths: string[] = [];
-
   const prTemplateLocations = [
     repoPath,
     path.join(repoPath, '.github'),
     path.join(repoPath, 'docs'),
-  ].filter((location) => {
-    return fs.existsSync(location);
-  });
+  ].filter((location) => fs.existsSync(location));
 
-  prTemplateLocations.forEach((location) => {
-    filepaths = filepaths.concat(findSinglePRTemplate(location));
-  });
-  prTemplateLocations.forEach((location) => {
-    filepaths = filepaths.concat(findMultiplePRTemplates(location));
-  });
-
-  return filepaths;
+  return prTemplateLocations
+    .map((location) => findSinglePRTemplate(location))
+    .concat(
+      prTemplateLocations.map((location) => findMultiplePRTemplates(location))
+    )
+    .reduce((acc, curr) => acc.concat(curr), []);
 }
 
 function findSinglePRTemplate(folderPath: string): string[] {
-  const files = fs
+  return fs
     .readdirSync(folderPath, { withFileTypes: true })
-    .filter((entry) => {
-      if (
+    .filter(
+      (entry) =>
         entry.isFile() &&
         entry.name.match(/^pull_request_template\./gi) !== null
-      ) {
-        return true;
-      }
-      return false;
-    });
-  return files.map((file) => path.join(folderPath, file.name));
+    )
+    .map((file) => path.join(folderPath, file.name));
 }
 
 function findMultiplePRTemplates(folderPath: string): string[] {
-  let templates: string[] = [];
-
-  fs.readdirSync(folderPath, { withFileTypes: true }).forEach((entry) => {
-    if (!entry.isDirectory()) {
-      return;
-    }
-    if (entry.name.match(/^pull_request_template$/gi) !== null) {
-      templates = templates.concat(
-        fs
-          .readdirSync(path.join(folderPath, entry.name))
-          .map((filename) => path.join(folderPath, entry.name, filename))
-      );
-    }
-  });
-  return templates;
+  return fs
+    .readdirSync(folderPath, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        entry.name.match(/^pull_request_template$/gi) !== null
+    )
+    .map((entry) =>
+      fs
+        .readdirSync(path.join(folderPath, entry.name))
+        .map((filename) => path.join(folderPath, entry.name, filename))
+    )
+    .reduce((acc, curr) => acc.concat(curr), []);
 }
