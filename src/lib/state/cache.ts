@@ -161,9 +161,10 @@ export function composeMetaCache({
     cache.branches[branchName].children.filter(getValidMeta);
 
   const getRecursiveChildren = (branchName: string): string[] =>
-    getChildren(branchName)
-      .map((child) => [child, ...getRecursiveChildren(child)])
-      .reduce((last: string[], current: string[]) => [...last, ...current], []);
+    getChildren(branchName).flatMap((child) => [
+      child,
+      ...getRecursiveChildren(child),
+    ]);
 
   const removeChild = (parentBranchName: string, childBranchName: string) =>
     (cache.branches[parentBranchName].children = cache.branches[
