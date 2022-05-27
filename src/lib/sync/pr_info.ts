@@ -7,27 +7,6 @@ export async function syncPRInfoForBranches(
   branchNames: string[],
   context: TContext
 ): Promise<void> {
-  return syncHelper(
-    {
-      numbers: branchNames
-        .map((branch) => context.metaCache.getPrInfo(branch)?.number)
-        .filter((value): value is number => value !== undefined),
-    },
-    context
-  );
-}
-
-export async function syncPRInfoForBranchByName(
-  branchNames: string[],
-  context: TContext
-): Promise<void> {
-  return syncHelper({ headRefNames: branchNames }, context);
-}
-
-async function syncHelper(
-  prArgs: { numbers?: number[]; headRefNames?: string[] },
-  context: TContext
-) {
   const authToken = context.userConfig.data.authToken;
   if (authToken === undefined) {
     return;
@@ -43,8 +22,13 @@ async function syncHelper(
       authToken: authToken,
       repoName: repoName,
       repoOwner: repoOwner,
-      prNumbers: prArgs.numbers ?? [],
-      prHeadRefNames: prArgs.headRefNames ?? [],
+      prNumbers: branchNames
+        .map((branch) => context.metaCache.getPrInfo(branch)?.number)
+        .filter((value): value is number => value !== undefined),
+      // For branches that are not already associated with a PR, fetch by branch name.
+      prHeadRefNames: branchNames.filter(
+        (branch) => !context.metaCache.getPrInfo(branch)?.number === undefined
+      ),
     }
   );
 
@@ -52,16 +36,23 @@ async function syncHelper(
     // Note that this currently does not play nicely if the user has a branch
     // that is being merged into multiple other branches; we expect this to
     // be a rare case and will develop it lazily.
-    response.prs.forEach((pr) =>
-      context.metaCache.upsertPrInfo(pr.headRefName, {
-        number: pr.prNumber,
-        base: pr.baseRefName,
-        url: pr.url,
-        state: pr.state,
-        title: pr.title,
-        reviewDecision: pr.reviewDecision ?? undefined,
-        isDraft: pr.isDraft,
-      })
-    );
+    response.prs
+      .filter(
+        (pr) =>
+          // If the PR is not open, don't newly associate it with a branch.
+          pr.state === 'OPEN' ||
+          context.metaCache.getPrInfo(pr.headRefName)?.number !== undefined
+      )
+      .forEach((pr) =>
+        context.metaCache.upsertPrInfo(pr.headRefName, {
+          number: pr.prNumber,
+          base: pr.baseRefName,
+          url: pr.url,
+          state: pr.state,
+          title: pr.title,
+          reviewDecision: pr.reviewDecision ?? undefined,
+          isDraft: pr.isDraft,
+        })
+      );
   }
 }
