@@ -5,7 +5,7 @@ export function detectUnsubmittedChanges(branchName: string): boolean {
   return (
     gpExecSync(
       {
-        command: `git log ${branchName} --not --remotes --simplify-by-decoration --decorate --oneline --`,
+        command: `git --no-pager log ${branchName} --not --remotes --simplify-by-decoration --decorate --oneline --`,
       },
       () => {
         throw new ExitFailedError(
