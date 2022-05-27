@@ -24,7 +24,7 @@ export function restackBranches(
     : branchList.branchNames;
 
   context.splog.logDebug(
-    branchNames.reduce((cur, next) => `${cur}\n${next}`, 'RESTACKING:')
+    branchNames.reduce((acc, curr) => `${acc}\n${curr}`, 'RESTACKING:')
   );
   while (branchNames.length > 0) {
     const branchName = branchNames.shift() as string;

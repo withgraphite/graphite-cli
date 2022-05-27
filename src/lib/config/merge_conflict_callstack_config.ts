@@ -84,7 +84,7 @@ export function persistBranchesToRestack(
   context: TContext
 ): void {
   context.splog.logDebug(
-    branchNames.reduce((cur, next) => `${cur}\n${next}`, 'PERSISTING:')
+    branchNames.reduce((acc, curr) => `${acc}\n${curr}`, 'PERSISTING:')
   );
   context.mergeConflictCallstackConfig.update((data) => {
     data.branchNames = branchNames;
