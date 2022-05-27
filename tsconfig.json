@@ -16,9 +16,9 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "rootDir": ".",
-    "declaration": true
+    "declaration": true,
+    "lib": ["esnext", "dom"]
   },
-  "lib": ["es2015"],
   "editor.codeActionsOnSave": {
     "source.fixAll.tslint": true
   },
