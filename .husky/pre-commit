@@ -1,5 +1,5 @@
 #!/bin/sh
+# shellcheck source=/dev/null
 . "$(dirname "$0")/_/husky.sh"
 
-echo "Linting pre commit..."
-yarn lint && echo "Done!"
+yarn lint && yarn check
