@@ -468,7 +468,7 @@ export function composeMetaCache({
   };
 }
 
-export function loadCache(
+function loadCache(
   trunkName: string | undefined,
   splog: TSplog
 ): Record<string, TCachedMeta> {

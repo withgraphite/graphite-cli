@@ -4,8 +4,8 @@ import { getRepoRootPathPrecondition } from '../preconditions';
 import { cuteString } from '../utils/cute_string';
 import { gpExecSync } from '../utils/exec_sync';
 
-export type TBranchPRState = 'OPEN' | 'CLOSED' | 'MERGED';
-export type TBranchPRReviewDecision =
+type TBranchPRState = 'OPEN' | 'CLOSED' | 'MERGED';
+type TBranchPRReviewDecision =
   | 'APPROVED'
   | 'REVIEW_REQUIRED'
   | 'CHANGES_REQUESTED';

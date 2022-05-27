@@ -5,7 +5,7 @@ import { RebaseConflictError } from '../lib/errors';
 import { TScopeSpec } from '../lib/state/scope_spec';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 
-export type TBranchList =
+type TBranchList =
   | {
       relative: false;
       branchNames: string[];

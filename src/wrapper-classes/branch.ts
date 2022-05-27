@@ -1,11 +1,7 @@
 import { cache } from '../lib/config/cache';
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
-import {
-  getRef,
-  otherBranchesWithSameCommit,
-} from '../lib/git-refs/branch_ref';
-import { getBranchChildrenOrParentsFromGit } from '../lib/git-refs/branch_relations';
+import { getRef } from '../lib/git-refs/branch_ref';
 import { branchExists } from '../lib/git/branch_exists';
 import { getCommitterDate } from '../lib/git/committer_date';
 import { getCurrentBranchName } from '../lib/git/current_branch_name';
@@ -49,30 +45,6 @@ export class Branch {
 
   public toString(): string {
     return this.name;
-  }
-
-  stackByTracingMetaParents(context: TContext, branch?: Branch): string[] {
-    const curBranch = branch || this;
-    const metaParent = curBranch.getParentFromMeta(context);
-    if (metaParent) {
-      return this.stackByTracingMetaParents(context, metaParent).concat([
-        curBranch.name,
-      ]);
-    } else {
-      return [curBranch.name];
-    }
-  }
-
-  stackByTracingGitParents(context: TContext, branch?: Branch): string[] {
-    const curBranch = branch || this;
-    const gitParents = curBranch.getParentsFromGit(context);
-    if (gitParents.length === 1) {
-      return this.stackByTracingGitParents(context, gitParents[0]).concat([
-        curBranch.name,
-      ]);
-    } else {
-      return [curBranch.name];
-    }
   }
 
   getParentFromMeta(context: TContext): Branch | undefined {
@@ -290,99 +262,5 @@ export class Branch {
     }
 
     return filteredBranches;
-  }
-
-  public getChildrenFromGit(context: TContext): Branch[] {
-    context.splog.logDebug(`Git Children (${this.name}): start`);
-    const kids = getBranchChildrenOrParentsFromGit(
-      this,
-      {
-        direction: 'children',
-        useMemoizedResults: this.shouldUseMemoizedResults,
-      },
-      context
-    );
-
-    // In order to tacitly support those that use merge workflows, our logic
-    // marks children it has visited - and short circuits - to avoid
-    // duplication. This means that the ordering of children must be consistent
-    // between git and meta to ensure that our views of their stacks always
-    // align.
-    context.splog.logDebug(`Git Children (${this.name}): end`);
-    return kids.sort(this.sortBranchesAlphabetically);
-  }
-
-  private sortBranchesAlphabetically(a: Branch, b: Branch) {
-    if (a.name === b.name) {
-      return 0;
-    } else if (a.name < b.name) {
-      return -1;
-    } else {
-      return 1;
-    }
-  }
-
-  public getParentsFromGit(context: TContext): Branch[] {
-    if (
-      // Current branch is trunk
-      this.name === getTrunk(context).name
-      // Current branch shares
-    ) {
-      return [];
-    } else if (this.pointsToSameCommitAs(getTrunk(context))) {
-      return [getTrunk(context)];
-    }
-
-    // In order to tacitly support those that use merge workflows, our logic
-    // marks children it has visited - and short circuits - to avoid
-    // duplication. This means that the ordering of children must be consistent
-    // between git and meta to ensure that our views of their stacks always
-    // align.
-    return getBranchChildrenOrParentsFromGit(
-      this,
-      {
-        direction: 'parents',
-        useMemoizedResults: this.shouldUseMemoizedResults,
-      },
-      context
-    ).sort(this.sortBranchesAlphabetically);
-  }
-
-  private pointsToSameCommitAs(branch: Branch): boolean {
-    return !!otherBranchesWithSameCommit(branch).find(
-      (b) => b.name === branch.name
-    );
-  }
-
-  public branchesWithSameCommit(): Branch[] {
-    return otherBranchesWithSameCommit(this);
-  }
-
-  // Due to deprecate in favor of other functions.
-  public getCommitSHAs(context: TContext): string[] {
-    // We rely on meta here as the source of truth to handle the case where
-    // the user has just created a new branch, but hasn't added any commits
-    // - so both branch tips point to the same commit. Graphite knows that
-    // this is a parent-child relationship, but git does not.
-    const parent = this.getParentFromMeta(context);
-    if (parent === undefined) {
-      return [];
-    }
-
-    const shas: Set<string> = new Set();
-
-    const commits = gpExecSync({
-      command: `git rev-list ${parent}..${this.name} --`,
-    });
-
-    if (commits.length === 0) {
-      return [];
-    }
-
-    commits.split(/[\r\n]+/).forEach((sha) => {
-      shas.add(sha);
-    });
-
-    return [...shas];
   }
 }
