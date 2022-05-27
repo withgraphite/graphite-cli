@@ -582,14 +582,14 @@ function loadCache(
   return branches;
 }
 
-function readAllMeta(): Array<
+export function readAllMeta(): Array<
   { branchName: string; branchRevision: string } & TMeta
 > {
   const gitBranchNamesAndRevisions = branchNamesAndRevisions();
   return allBranchesWithMeta()
     .filter((branchName) => {
       // As we read the refs, cleanup any whose branch is missing
-      if (!gitBranchNamesAndRevisions.has(branchName)) {
+      if (!gitBranchNamesAndRevisions[branchName]) {
         deleteMetadataRef(branchName);
         return false;
       }
@@ -598,7 +598,7 @@ function readAllMeta(): Array<
     .map((branchName) => ({
       branchName,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      branchRevision: gitBranchNamesAndRevisions.get(branchName)!,
+      branchRevision: gitBranchNamesAndRevisions[branchName]!,
       ...readMetadataRef(branchName),
     }));
 }
