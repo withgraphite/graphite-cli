@@ -2,7 +2,7 @@ import { execSync, ExecSyncOptions, SpawnSyncReturns } from 'child_process';
 import { tracer } from '../telemetry/tracer';
 import { TSplog } from './splog';
 
-export type GPExecSyncOptions = {
+type GPExecSyncOptions = {
   // Output is always returned (like normal execSync).  This option lets us
   // print it.  A lambda allows us to mutate the displayed output.
   printStdout?: {

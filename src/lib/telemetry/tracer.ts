@@ -39,7 +39,7 @@ function currentNanoSeconds(): number {
   return hrTime[0] * 1000000000 + hrTime[1];
 }
 
-export class Span {
+class Span {
   name: spanNameT;
   parentId?: number;
   resource: string;

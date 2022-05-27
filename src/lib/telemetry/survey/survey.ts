@@ -9,7 +9,7 @@ import { cliAuthPrecondition } from '../../preconditions';
 import { TSurveyResponse } from './../../config/survey_config';
 import { postSurveyResponse } from './post_survey';
 
-export type SurveyT = t.UnwrapSchemaMap<
+type SurveyT = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.cliSurvey.response
 >['survey'];
 

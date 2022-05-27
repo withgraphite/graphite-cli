@@ -49,22 +49,3 @@ export function getRef(branch: Branch): string {
   }
   return ref;
 }
-export function otherBranchesWithSameCommit(branch: Branch): Branch[] {
-  if (!branch.shouldUseMemoizedResults || !cache.getRefToBranches()) {
-    refreshRefsCache();
-  }
-  const ref = branch.ref();
-  const branchNames = cache.getRefToBranches()?.[ref];
-  if (!branchNames) {
-    throw new ExitFailedError(`Failed to find branches for ref ${ref}`);
-  }
-
-  return branchNames
-    .filter((bn) => bn !== branch.name)
-    .map(
-      (bn) =>
-        new Branch(bn, {
-          useMemoizedResults: branch.shouldUseMemoizedResults,
-        })
-    );
-}

@@ -80,9 +80,7 @@ export function getBranchInfo(
     : branchInfoLines;
 }
 
-export function getPRTitleLine(
-  prInfo: TBranchPRInfo | undefined
-): string | undefined {
+function getPRTitleLine(prInfo: TBranchPRInfo | undefined): string | undefined {
   if (!prInfo?.title || !prInfo?.number) {
     return undefined;
   }
