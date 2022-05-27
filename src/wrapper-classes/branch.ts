@@ -11,9 +11,13 @@ import { getCommitterDate } from '../lib/git/committer_date';
 import { getCurrentBranchName } from '../lib/git/current_branch_name';
 import { getBranchRevision } from '../lib/git/get_branch_revision';
 import { sortedBranchNames } from '../lib/git/sorted_branch_names';
+import {
+  readMetadataRef,
+  TMeta,
+  writeMetadataRef,
+} from '../lib/state/metadata_ref';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { getTrunk } from '../lib/utils/trunk';
-import { readMetadataRef, TMeta, writeMetadataRef } from './metadata_ref';
 
 export class Branch {
   name: string;
