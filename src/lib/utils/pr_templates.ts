@@ -75,11 +75,12 @@ export function getPRTemplateFilepaths(): string[] {
   ].filter((location) => fs.existsSync(location));
 
   return prTemplateLocations
-    .map((location) => findSinglePRTemplate(location))
+    .flatMap((location) => findSinglePRTemplate(location))
     .concat(
-      prTemplateLocations.map((location) => findMultiplePRTemplates(location))
-    )
-    .reduce((acc, curr) => acc.concat(curr), []);
+      prTemplateLocations.flatMap((location) =>
+        findMultiplePRTemplates(location)
+      )
+    );
 }
 
 function findSinglePRTemplate(folderPath: string): string[] {
@@ -101,10 +102,9 @@ function findMultiplePRTemplates(folderPath: string): string[] {
         entry.isDirectory() &&
         entry.name.match(/^pull_request_template$/gi) !== null
     )
-    .map((entry) =>
+    .flatMap((entry) =>
       fs
         .readdirSync(path.join(folderPath, entry.name))
         .map((filename) => path.join(folderPath, entry.name, filename))
-    )
-    .reduce((acc, curr) => acc.concat(curr), []);
+    );
 }
