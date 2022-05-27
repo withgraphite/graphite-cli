@@ -1,20 +1,19 @@
 import { TContext } from '../../lib/context';
 import { ExitFailedError } from '../../lib/errors';
 import { gpExecSync } from '../../lib/utils/exec_sync';
-import { Branch } from '../../wrapper-classes/branch';
 
-export function push(branch: Branch, context: TContext): void {
+export function push(branchName: string, context: TContext): void {
   gpExecSync(
     {
       command: [
         `git push ${context.repoConfig.getRemote()}`,
-        `--force-with-lease ${branch.name} 2>&1`,
+        `--force-with-lease ${branchName} 2>&1`,
         ...[context.noVerify ? ['--no-verify'] : []],
       ].join(' '),
     },
     (err) => {
       context.splog.logError(
-        `Failed to push changes for ${branch.name} to remote.`
+        `Failed to push changes for ${branchName} to remote.`
       );
 
       context.splog.logTip(

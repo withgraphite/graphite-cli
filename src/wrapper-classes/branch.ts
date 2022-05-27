@@ -1,6 +1,6 @@
 import { cache } from '../lib/config/cache';
 import { TContext } from '../lib/context';
-import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
+import { ExitFailedError } from '../lib/errors';
 import {
   getRef,
   otherBranchesWithSameCommit,
@@ -352,16 +352,6 @@ export class Branch {
 
   public branchesWithSameCommit(): Branch[] {
     return otherBranchesWithSameCommit(this);
-  }
-
-  public isBaseSameAsRemotePr(context: TContext): boolean {
-    const parent = this.getParentFromMeta(context);
-    if (parent === undefined) {
-      throw new PreconditionsFailedError(
-        `Could not find parent for branch ${this.name} to submit PR against. Please checkout ${this.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
-      );
-    }
-    return parent.name !== context.metaCache.getPrInfo(this.name)?.base;
   }
 
   // Due to deprecate in favor of other functions.
