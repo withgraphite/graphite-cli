@@ -42,7 +42,6 @@
     "dist"
   ],
   "bin": {
-    "gp": "dist/src/index.js",
     "graphite": "dist/src/index.js",
     "gt": "dist/src/index.js"
   },

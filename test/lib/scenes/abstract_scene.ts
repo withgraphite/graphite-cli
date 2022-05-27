@@ -18,6 +18,13 @@ export abstract class AbstractScene {
     this.repo = new GitRepo(this.dir);
     this.context = initContext({
       userConfigOverride: `${this.dir}/.git/.graphite_user_config`,
+      globalArguments: {
+        debug:
+          typeof process.env.DEBUG !== 'undefined' &&
+          process.env.DEBUG.length > 0 &&
+          process.env.DEBUG !== '0' &&
+          process.env.DEBUG !== 'false',
+      },
     });
   }
 

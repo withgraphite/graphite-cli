@@ -2,7 +2,6 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { branchExistsPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry/profile';
-import { getTrunk } from '../../lib/utils/trunk';
 
 const args = {
   set: {
@@ -28,7 +27,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       branchExistsPrecondition(argv.set);
       context.repoConfig.setTrunk(argv.set);
     } else {
-      console.log(`(${chalk.green(getTrunk(context))})`);
+      context.splog.logInfo(chalk.green(context.metaCache.trunk));
     }
   });
 };
