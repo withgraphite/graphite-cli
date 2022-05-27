@@ -1,5 +1,4 @@
 import { Branch } from '../wrapper-classes/branch';
-import { Stack } from '../wrapper-classes/stack';
 import {
   persistMergeConflictCallstack,
   TMergeConflictCallstack,
@@ -46,25 +45,6 @@ class RebaseConflictError extends ExitError {
     if (callstack && context) {
       persistMergeConflictCallstack(callstack, context);
     }
-  }
-}
-
-class ValidationFailedError extends ExitError {
-  branchesToFix: Branch[];
-  currentBranch: Branch;
-  constructor(metaStack: Stack, gitStack: Stack, currentBranch: Branch) {
-    super(
-      [
-        `Graphite stack does not match git-derived stack\n`,
-        '\nGraphite Stack:',
-        metaStack.toString(),
-        '\nGit Stack:',
-        gitStack.toString(),
-      ].join('\n')
-    );
-    this.name = 'ValidationFailed';
-    this.branchesToFix = metaStack.source.children.map((c) => c.branch);
-    this.currentBranch = currentBranch;
   }
 }
 
@@ -122,7 +102,6 @@ export {
   ExitFailedError,
   PreconditionsFailedError,
   RebaseConflictError,
-  ValidationFailedError,
   ConfigError,
   ExitCancelledError,
   SiblingBranchError,
