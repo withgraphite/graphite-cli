@@ -6,7 +6,6 @@ const args = {
   input: {
     describe: `Path to file specifying stack edits. Using this argument skips prompting for stack edits and assumes the user has already formatted a list. Primarly used for unit tests.`,
     demandOption: false,
-    default: false,
     hidden: true,
     type: 'string',
   },
@@ -21,9 +20,6 @@ export const aliases = ['e'];
 
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    await editDownstack(
-      context,
-      argv.input ? { inputPath: argv.input } : undefined
-    );
+    await editDownstack(argv.input, context);
   });
 };
