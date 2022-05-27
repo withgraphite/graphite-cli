@@ -1,20 +1,14 @@
 import chalk from 'chalk';
 import { TContext } from '../../lib/context';
-import { PreconditionsFailedError } from '../../lib/errors';
 import { detectUnsubmittedChanges } from '../../lib/git/detect_unsubmitted_changes';
-import { getBranchRevision } from '../../lib/git/get_branch_revision';
-import { Branch } from '../../wrapper-classes/branch';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
 import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import { getReviewers } from './reviewers';
-import {
-  TPRSubmissionInfoWithBranch,
-  TPRSubmissionInfoWithBranches,
-} from './submit_action';
+import { TSubmittedPRRequest } from './submit_action';
 
-type TPRSubmissionAction = { branch: Branch; parent: Branch } & (
+type TPRSubmissionAction = { branchName: string } & (
   | { update: false }
   | {
       update: true;
@@ -35,7 +29,7 @@ type TPRSubmissionAction = { branch: Branch; parent: Branch } & (
  */
 export async function getPRInfoForBranches(
   args: {
-    branches: Branch[];
+    branchNames: string[];
     editPRFieldsInline: boolean;
     draftToggle: boolean | undefined;
     updateOnly: boolean;
@@ -43,16 +37,16 @@ export async function getPRInfoForBranches(
     reviewers: boolean;
   },
   context: TContext
-): Promise<TPRSubmissionInfoWithBranches> {
+): Promise<TSubmittedPRRequest[]> {
   context.splog.logInfo(
     chalk.blueBright('🥞 Preparing to submit PRs for the following branches...')
   );
 
-  const branchActions = args.branches
-    .map((branch) =>
+  const branchActions = args.branchNames
+    .map((branchName) =>
       getPRAction(
         {
-          branch,
+          branchName,
           updateOnly: args.updateOnly,
           draftToggle: args.draftToggle,
           dryRun: args.dryRun,
@@ -64,29 +58,33 @@ export async function getPRInfoForBranches(
 
   const submissionInfo = [];
   for await (const action of branchActions) {
-    submissionInfo.push(
-      action.update
+    const parentBranchName = context.metaCache.getParentPrecondition(
+      action.branchName
+    );
+    submissionInfo.push({
+      head: action.branchName,
+      headSha: context.metaCache.getRevision(action.branchName),
+      base: parentBranchName,
+      baseSha: context.metaCache.getRevision(parentBranchName),
+      ...(action.update
         ? {
             action: 'update' as const,
             prNumber: action.prNumber,
             draft: args.draftToggle,
-            head: action.branch.name,
-            headSha: getBranchRevision(action.branch.name),
-            base: action.parent.name,
-            baseSha: action.branch.getParentBranchSha(),
-            branch: action.branch,
           }
-        : await getPRCreationInfo(
-            {
-              branch: action.branch,
-              parentBranchName: action.parent.name,
-              editPRFieldsInline: args.editPRFieldsInline,
-              draftToggle: args.draftToggle,
-              reviewers: args.reviewers,
-            },
-            context
-          )
-    );
+        : {
+            action: 'create' as const,
+            ...(await getPRCreationInfo(
+              {
+                branchName: action.branchName,
+                editPRFieldsInline: args.editPRFieldsInline,
+                draftToggle: args.draftToggle,
+                reviewers: args.reviewers,
+              },
+              context
+            )),
+          }),
+    });
   }
   context.splog.logNewline();
   return submissionInfo;
@@ -94,7 +92,7 @@ export async function getPRInfoForBranches(
 
 function getPRAction(
   args: {
-    branch: Branch;
+    branchName: string;
     updateOnly: boolean;
     draftToggle: boolean | undefined;
     dryRun: boolean;
@@ -104,22 +102,20 @@ function getPRAction(
   // The branch here should always have a parent - above, the branches we've
   // gathered should exclude trunk which ensures that every branch we're submitting
   // a PR for has a valid parent.
-  const parent = args.branch.getParentFromMeta(context);
-  if (parent === undefined) {
-    throw new PreconditionsFailedError(
-      `Could not find parent for branch ${args.branch.name} to submit PR against. Please checkout ${args.branch.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
-    );
-  }
-  const prNumber = context.metaCache.getPrInfo(args.branch.name)?.number;
+  const parentBranchName = context.metaCache.getParentPrecondition(
+    args.branchName
+  );
+  const prInfo = context.metaCache.getPrInfo(args.branchName);
+  const prNumber = prInfo?.number;
 
   const status =
     prNumber === undefined
       ? args.updateOnly
         ? 'NOOP'
         : 'CREATE'
-      : args.branch.isBaseSameAsRemotePr(context)
+      : parentBranchName !== prInfo?.base
       ? 'RESTACK'
-      : detectUnsubmittedChanges(args.branch)
+      : detectUnsubmittedChanges(args.branchName)
       ? 'CHANGE'
       : args.draftToggle === undefined
       ? 'NOOP'
@@ -128,7 +124,7 @@ function getPRAction(
       : 'PUBLISH';
 
   context.splog.logInfo(
-    `▸ ${chalk.cyan(args.branch.name)} (${
+    `▸ ${chalk.cyan(args.branchName)} (${
       {
         CREATE: 'Create',
         CHANGE: 'Update - code changes/rebase',
@@ -139,11 +135,11 @@ function getPRAction(
       }[status]
     })`
   );
+
   return args.dryRun || status === 'NOOP'
     ? undefined
     : {
-        branch: args.branch,
-        parent,
+        branchName: args.branchName,
         ...(prNumber === undefined
           ? { update: false }
           : { update: true, prNumber }),
@@ -152,20 +148,24 @@ function getPRAction(
 
 async function getPRCreationInfo(
   args: {
-    branch: Branch;
-    parentBranchName: string;
+    branchName: string;
     editPRFieldsInline: boolean;
     draftToggle: boolean | undefined;
     reviewers: boolean;
   },
   context: TContext
-): Promise<TPRSubmissionInfoWithBranch> {
+): Promise<{
+  title: string;
+  body: string;
+  reviewers: string[];
+  draft: boolean;
+}> {
   if (context.interactive) {
     context.splog.logNewline();
     context.splog.logInfo(
       `Enter info for new pull request for ${chalk.yellow(
-        args.branch.name
-      )} ▸ ${args.parentBranchName}:`
+        args.branchName
+      )} ▸ ${context.metaCache.getParentPrecondition(args.branchName)}:`
     );
   }
 
@@ -174,7 +174,7 @@ async function getPRCreationInfo(
   try {
     submitInfo.title = await getPRTitle(
       {
-        branch: args.branch,
+        branchName: args.branchName,
         editPRFieldsInline: args.editPRFieldsInline,
       },
       context
@@ -182,14 +182,14 @@ async function getPRCreationInfo(
 
     submitInfo.body = await getPRBody(
       {
-        branch: args.branch,
+        branchName: args.branchName,
         editPRFieldsInline: args.editPRFieldsInline,
       },
       context
     );
   } finally {
     // Save locally in case this command fails
-    context.metaCache.upsertPrInfo(args.branch.name, submitInfo);
+    context.metaCache.upsertPrInfo(args.branchName, submitInfo);
   }
 
   const reviewers = await getReviewers({
@@ -202,12 +202,6 @@ async function getPRCreationInfo(
     title: submitInfo.title,
     body: submitInfo.body,
     reviewers,
-    action: 'create',
     draft: createAsDraft,
-    head: args.branch.name,
-    headSha: getBranchRevision(args.branch.name),
-    base: args.parentBranchName,
-    baseSha: args.branch.getParentBranchSha(),
-    branch: args.branch,
   };
 }

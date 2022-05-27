@@ -1,55 +1,41 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
-import { KilledError, PreconditionsFailedError } from '../../lib/errors';
-import { isEmptyBranch } from '../../lib/git/is_empty_branch';
-import { currentBranchPrecondition } from '../../lib/preconditions';
+import { KilledError } from '../../lib/errors';
+import { TScopeSpec } from '../../lib/state/scope_spec';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
-import { Branch } from '../../wrapper-classes/branch';
-import { validate } from '../validate';
-import { TSubmitScope } from './submit_action';
 
 export async function getValidBranchesToSubmit(
-  scope: TSubmitScope,
+  scope: TScopeSpec,
   context: TContext
-): Promise<Branch[]> {
+): Promise<string[]> {
   context.splog.logInfo(
     chalk.blueBright(
       `✏️  Validating that this Graphite stack is ready to submit...`
     )
   );
 
-  const branchesToSubmit = getAllBranchesToSubmit(scope, context);
+  const branchNames = context.metaCache
+    .getCurrentStack(scope)
+    .filter((b) => !context.metaCache.isTrunk(b));
   context.splog.logNewline();
 
-  await syncPRInfoForBranches(
-    branchesToSubmit.map((b) => b.name),
-    context
-  );
+  await syncPRInfoForBranches(branchNames, context);
 
-  return hasAnyMergedBranches(branchesToSubmit, context) ||
-    hasAnyClosedBranches(branchesToSubmit, context)
+  return hasAnyMergedBranches(branchNames, context) ||
+    hasAnyClosedBranches(branchNames, context) ||
+    needsRestacking(branchNames, context) ||
+    (await shouldNotSubmitDueToEmptyBranches(branchNames, context))
     ? []
-    : await checkForEmptyBranches(branchesToSubmit, context);
-}
-
-function getAllBranchesToSubmit(
-  scope: TSubmitScope,
-  context: TContext
-): Branch[] {
-  if (scope === 'BRANCH') {
-    return [currentBranchPrecondition()];
-  }
-
-  return validate(scope, context);
+    : branchNames;
 }
 
 function hasAnyMergedBranches(
-  branchesToSubmit: Branch[],
+  branchNames: string[],
   context: TContext
 ): boolean {
-  const mergedBranches = branchesToSubmit.filter(
-    (b) => context.metaCache.getPrInfo(b.name)?.state === 'MERGED'
+  const mergedBranches = branchNames.filter(
+    (b) => context.metaCache.getPrInfo(b)?.state === 'MERGED'
   );
   if (mergedBranches.length === 0) {
     return false;
@@ -62,9 +48,7 @@ function hasAnyMergedBranches(
       hasMultipleBranches ? 'es have' : ' has'
     } already been merged:`
   );
-  mergedBranches.forEach((b) =>
-    context.splog.logError(`▸ ${chalk.reset(b.name)}`)
-  );
+  mergedBranches.forEach((b) => context.splog.logError(`▸ ${chalk.reset(b)}`));
   context.splog.logError(
     `If this is expected, you can use 'gt repo sync' to delete ${
       hasMultipleBranches ? 'these branches' : 'this branch'
@@ -75,11 +59,11 @@ function hasAnyMergedBranches(
 }
 
 function hasAnyClosedBranches(
-  branchesToSubmit: Branch[],
+  branchNames: string[],
   context: TContext
 ): boolean {
-  const closedBranches = branchesToSubmit.filter(
-    (b) => context.metaCache.getPrInfo(b.name)?.state === 'CLOSED'
+  const closedBranches = branchNames.filter(
+    (b) => context.metaCache.getPrInfo(b)?.state === 'CLOSED'
   );
   if (closedBranches.length === 0) {
     return false;
@@ -92,9 +76,7 @@ function hasAnyClosedBranches(
       hasMultipleBranches ? 'es have' : ' has'
     } been closed:`
   );
-  closedBranches.forEach((b) =>
-    context.splog.logError(`▸ ${chalk.reset(b.name)}`)
-  );
+  closedBranches.forEach((b) => context.splog.logError(`▸ ${chalk.reset(b)}`));
   context.splog.logError(
     `To submit ${
       hasMultipleBranches ? 'these branches' : 'this branch'
@@ -104,15 +86,26 @@ function hasAnyClosedBranches(
   return true;
 }
 
-export async function checkForEmptyBranches(
-  submittableBranches: Branch[],
-  context: TContext
-): Promise<Branch[]> {
-  const emptyBranches = submittableBranches.filter((branch) =>
-    isEmptyBranch(branch.name, getBranchBaseName(branch, context))
+function needsRestacking(branchNames: string[], context: TContext): boolean {
+  if (branchNames.every(context.metaCache.isBranchFixed)) {
+    return false;
+  }
+  context.splog.logWarn(
+    [
+      `You are trying to submit at least one branch that has not been restacked.`,
+      `Run the corresponding restack command and try again.`,
+    ].join('\n')
   );
+  return true;
+}
+
+export async function shouldNotSubmitDueToEmptyBranches(
+  branchNames: string[],
+  context: TContext
+): Promise<boolean> {
+  const emptyBranches = branchNames.filter(context.metaCache.isBranchEmpty);
   if (emptyBranches.length === 0) {
-    return submittableBranches;
+    return false;
   }
 
   const hasMultipleBranches = emptyBranches.length > 1;
@@ -122,17 +115,17 @@ export async function checkForEmptyBranches(
       hasMultipleBranches ? 'es have' : ' has'
     } no changes:`
   );
-  emptyBranches.forEach((b) =>
-    context.splog.logWarn(`▸ ${chalk.reset(b.name)}`)
-  );
+  emptyBranches.forEach((b) => context.splog.logWarn(`▸ ${chalk.reset(b)}`));
+  if (!context.interactive) {
+    context.splog.logWarn(
+      `Aborting non-interactive submit.  This warning can be bypassed in interactive mode.`
+    );
+    return true;
+  }
   context.splog.logWarn(
     `Are you sure you want to submit ${hasMultipleBranches ? 'them' : 'it'}?`
   );
   context.splog.logNewline();
-
-  if (!context.interactive) {
-    return [];
-  }
 
   const response = await prompts(
     {
@@ -144,11 +137,11 @@ export async function checkForEmptyBranches(
           title: `Abort command and keep working on ${
             hasMultipleBranches ? 'these branches' : 'this branch'
           }`,
-          value: 'fix_manually',
+          value: 'abort',
         },
         {
           title: `Continue with empty branch${hasMultipleBranches ? 'es' : ''}`,
-          value: 'continue_empty',
+          value: 'continue',
         },
       ],
     },
@@ -160,17 +153,5 @@ export async function checkForEmptyBranches(
   );
   context.splog.logNewline();
 
-  return response.empty_branches_options === 'continue_empty'
-    ? submittableBranches
-    : [];
-}
-
-function getBranchBaseName(branch: Branch, context: TContext): string {
-  const parent = branch.getParentFromMeta(context);
-  if (parent === undefined) {
-    throw new PreconditionsFailedError(
-      `Could not find parent for branch ${branch.name} to submit PR against. Please checkout ${branch.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
-    );
-  }
-  return parent.name;
+  return response.empty_branches_options === 'abort';
 }

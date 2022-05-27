@@ -6,18 +6,17 @@ import { KilledError } from '../../lib/errors';
 import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { getPRTemplate } from '../../lib/utils/pr_templates';
-import { getSingleCommitOnBranch } from '../../lib/utils/single_commit';
-import { Branch } from '../../wrapper-classes/branch';
+import { Commit } from '../../wrapper-classes/commit';
 
 export async function getPRBody(
   args: {
-    branch: Branch;
+    branchName: string;
     editPRFieldsInline: boolean;
   },
   context: TContext
 ): Promise<string> {
   const body =
-    inferPRBody(args.branch, context) ?? (await getPRTemplate()) ?? '';
+    inferPRBody(args.branchName, context) ?? (await getPRTemplate()) ?? '';
   if (!args.editPRFieldsInline) {
     return body;
   }
@@ -68,21 +67,18 @@ async function editPRBody(args: {
 }
 
 export function inferPRBody(
-  branch: Branch,
+  branchName: string,
   context: TContext
 ): string | undefined {
-  const priorSubmitBody = context.metaCache.getPrInfo(branch.name)?.body;
+  const priorSubmitBody = context.metaCache.getPrInfo(branchName)?.body;
   if (priorSubmitBody !== undefined) {
     return priorSubmitBody;
   }
 
   // Only infer the title from the commit if the branch has just 1 commit.
-  const singleCommitBody = getSingleCommitOnBranch(branch, context)
-    ?.messageBody()
-    .trim();
+  const commits = context.metaCache.getAllCommits(branchName);
+  const singleCommitBody =
+    commits.length === 1 ? new Commit(commits[0]).messageBody() : undefined;
 
-  if (singleCommitBody?.length) {
-    return singleCommitBody;
-  }
-  return undefined;
+  return singleCommitBody?.length ? singleCommitBody : undefined;
 }
