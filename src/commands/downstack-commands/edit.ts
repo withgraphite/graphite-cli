@@ -14,7 +14,8 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = 'edit';
 export const canonical = 'downstack edit';
-export const description = 'Edit the order of the branchs in the stack.';
+export const description =
+  'Edit the order of the branches between trunk and the current branch.  Each child of one of these branches that is not explicitly listed will keep the same parent, but may be restacked.';
 export const builder = args;
 export const aliases = ['e'];
 
