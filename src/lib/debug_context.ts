@@ -1,11 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
-import {
-  allBranchesWithMeta,
-  readMetadataRef,
-  TMeta,
-} from '../wrapper-classes/metadata_ref';
 import { TRepoConfig } from './config/repo_config';
 import { TUserConfig } from './config/user_config';
 import { TContext } from './context';
@@ -14,6 +9,11 @@ import { getRevListGitTree } from './git-refs/branch_relations';
 import { switchBranch } from './git/checkout_branch';
 import { deleteBranch } from './git/deleteBranch';
 import { currentBranchPrecondition } from './preconditions';
+import {
+  allBranchesWithMeta,
+  readMetadataRef,
+  TMeta,
+} from './state/metadata_ref';
 import { cuteString } from './utils/cute_string';
 import { gpExecSync } from './utils/exec_sync';
 

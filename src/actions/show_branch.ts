@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { TContext } from '../lib/context';
 import { getCommitterDate } from '../lib/git/committer_date';
 import { showCommits } from '../lib/git/show_commits';
-import { TBranchPRInfo } from '../wrapper-classes/metadata_ref';
+import { TBranchPRInfo } from '../lib/state/metadata_ref';
 
 export async function showBranchAction(
   branchName: string,

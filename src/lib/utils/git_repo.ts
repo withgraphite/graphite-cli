@@ -1,13 +1,13 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { USER_CONFIG_OVERRIDE_ENV } from '../context';
+import { ExitFailedError } from '../errors';
+import { rebaseInProgress } from '../git/rebase_in_progress';
 import {
   readMetadataRef,
   TMeta,
   writeMetadataRef,
-} from '../../wrapper-classes/metadata_ref';
-import { USER_CONFIG_OVERRIDE_ENV } from '../context';
-import { ExitFailedError } from '../errors';
-import { rebaseInProgress } from '../git/rebase_in_progress';
+} from '../state/metadata_ref';
 import { gpExecSync } from './exec_sync';
 
 const TEXT_FILE_NAME = 'test.txt';
