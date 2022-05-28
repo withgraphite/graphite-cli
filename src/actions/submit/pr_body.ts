@@ -3,10 +3,10 @@ import prompts from 'prompts';
 import tmp from 'tmp';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
+import { getCommitMessage } from '../../lib/git/commit_message';
 import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { getPRTemplate } from '../../lib/utils/pr_templates';
-import { Commit } from '../../wrapper-classes/commit';
 
 export async function getPRBody(
   args: {
@@ -78,7 +78,7 @@ export function inferPRBody(
   // Only infer the title from the commit if the branch has just 1 commit.
   const commits = context.metaCache.getAllCommits(branchName, 'SHA');
   const singleCommitBody =
-    commits.length === 1 ? new Commit(commits[0]).messageBody() : undefined;
+    commits.length === 1 ? getCommitMessage(commits[0], 'BODY') : undefined;
 
   return singleCommitBody?.length ? singleCommitBody : undefined;
 }
