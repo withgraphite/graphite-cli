@@ -34,7 +34,9 @@ export class CloneScene extends AbstractScene {
     );
 
     process.chdir(this.dir);
-    this.context = initContext(`${this.dir}/.git/.graphite_user_config`);
+    this.context = initContext({
+      userConfigOverride: `${this.dir}/.git/.graphite_user_config`,
+    });
   }
 
   public cleanup(): void {

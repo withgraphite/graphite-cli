@@ -5,7 +5,6 @@ import { KilledError } from '../../lib/errors';
 import { copyFromRemote } from '../../lib/git/copy_from_remote';
 import { getMergeBase } from '../../lib/git/merge_base';
 import { syncPRInfoForBranchByName } from '../../lib/sync/pr_info';
-import { logInfo, logNewline, logWarn } from '../../lib/utils/splog';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
 
@@ -15,10 +14,10 @@ export async function mergeDownstack(
 ): Promise<void> {
   const overwrittenBranches = calculateOverwrittenBranches(downstack, context);
   if (overwrittenBranches.length) {
-    logWarn(
+    context.splog.logWarn(
       `'downstack sync' is still in development and does not yet support merging local changes.`
     );
-    logWarn(
+    context.splog.logWarn(
       `The following branches' histories will be overwritten if you continue:\n${overwrittenBranches.join(
         '\n'
       )}`
@@ -43,7 +42,7 @@ export async function mergeDownstack(
     ) {
       return;
     }
-    logNewline();
+    context.splog.logNewline();
   }
 
   let parent = getTrunk(context).name;
@@ -52,7 +51,7 @@ export async function mergeDownstack(
     // using merge-base here handles the first branch gracefully (can be off trunk)
     // while still ensuring the rest of the branches have correct data
     Branch.create(branchName, parent, getMergeBase(branchName, parent));
-    logInfo(
+    context.splog.logInfo(
       `${chalk.green(branchName)} synced from ${context.repoConfig.getRemote()}`
     );
 

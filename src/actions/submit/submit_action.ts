@@ -2,12 +2,10 @@ import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import * as t from '@withgraphite/retype';
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
 import { cliAuthPrecondition } from '../../lib/preconditions';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
-import { logInfo, logNewline } from '../../lib/utils/splog';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
 import { TScope } from '../scope';
@@ -43,27 +41,27 @@ export async function submitAction(
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition(context);
   if (args.dryRun) {
-    logInfo(
+    context.splog.logInfo(
       chalk.yellow(
         `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
       )
     );
-    logNewline();
+    context.splog.logNewline();
     args.editPRFieldsInline = false;
   }
 
-  if (!execStateConfig.interactive()) {
+  if (!context.interactive) {
     args.editPRFieldsInline = false;
     args.reviewers = false;
 
-    logInfo(
+    context.splog.logInfo(
       `Running in non-interactive mode. Inline prompts to fill PR fields will be skipped${
         args.draftToggle === undefined
           ? ' and new PRs will be created in draft mode'
           : ''
       }.`
     );
-    logNewline();
+    context.splog.logNewline();
   }
 
   // args.branchesToSubmit is for the sync flow. Skips validation.
@@ -87,11 +85,11 @@ export async function submitAction(
     context
   );
 
-  if (await shouldAbort(args.dryRun, args.confirm)) {
+  if (await shouldAbort(args, context)) {
     return;
   }
 
-  logInfo(
+  context.splog.logInfo(
     chalk.blueBright('📂 Pushing to remote and creating/updating PRs...')
   );
 
@@ -110,17 +108,17 @@ export async function submitAction(
 }
 
 async function shouldAbort(
-  dryRun: boolean,
-  confirm: boolean
+  args: { dryRun: boolean; confirm: boolean },
+  context: TContext
 ): Promise<boolean> {
-  if (dryRun) {
-    logInfo(chalk.blueBright('✅ Dry run complete.'));
+  if (args.dryRun) {
+    context.splog.logInfo(chalk.blueBright('✅ Dry run complete.'));
     return true;
   }
 
   if (
-    execStateConfig.interactive() &&
-    confirm &&
+    context.interactive &&
+    args.confirm &&
     !(
       await prompts(
         {
@@ -137,7 +135,7 @@ async function shouldAbort(
       )
     ).value
   ) {
-    logInfo(chalk.blueBright('🛑 Aborted submit.'));
+    context.splog.logInfo(chalk.blueBright('🛑 Aborted submit.'));
     return true;
   }
 

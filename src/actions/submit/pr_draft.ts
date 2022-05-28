@@ -1,9 +1,9 @@
 import prompts from 'prompts';
-import { execStateConfig } from '../../lib/config/exec_state_config';
+import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
 
-export async function getPRDraftStatus(): Promise<boolean> {
-  if (!execStateConfig.interactive()) {
+export async function getPRDraftStatus(context: TContext): Promise<boolean> {
+  if (!context.interactive) {
     return true;
   }
   const response = await prompts(

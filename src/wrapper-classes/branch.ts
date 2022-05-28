@@ -12,7 +12,6 @@ import { currentBranchName } from '../lib/git/current_branch_name';
 import { getMergeBase } from '../lib/git/merge_base';
 import { sortedBranchNames } from '../lib/git/sorted_branch_names';
 import { gpExecSync } from '../lib/utils/exec_sync';
-import { logDebug } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { MetadataRef, TBranchPRInfo, TMeta } from './metadata_ref';
 
@@ -106,17 +105,19 @@ export class Branch {
   private static calculateMemoizedMetaChildren(
     context: TContext
   ): Record<string, Branch[]> {
-    logDebug(`Meta Children: initialize memoization | finding all branches...`);
+    context.splog.logDebug(
+      `Meta Children: initialize memoization | finding all branches...`
+    );
     const metaChildren: Record<string, Branch[]> = {};
     const allBranches = Branch.allBranches(context, {
       useMemoizedResults: true,
     });
 
-    logDebug(
+    context.splog.logDebug(
       `Meta Children: intiialize memoization | sifting through branches...`
     );
     allBranches.forEach((branch, i) => {
-      logDebug(
+      context.splog.logDebug(
         `               Branch ${i}/${allBranches.length} (${branch.name})`
       );
       const parentBranchName = branch.getParentBranchName();
@@ -129,30 +130,30 @@ export class Branch {
         metaChildren[parentBranchName] = [branch];
       }
     });
-    logDebug(`Meta Children: initialize memoization | done`);
+    context.splog.logDebug(`Meta Children: initialize memoization | done`);
 
     cache.setMetaChildren(metaChildren);
     return metaChildren;
   }
 
   public getChildrenFromMeta(context: TContext): Branch[] {
-    logDebug(`Meta Children (${this.name}): start`);
+    context.splog.logDebug(`Meta Children (${this.name}): start`);
 
     if (!this.shouldUseMemoizedResults) {
       const children = Branch.allBranches(context).filter(
         (b) => MetadataRef.getMeta(b.name)?.parentBranchName === this.name
       );
-      logDebug(`Meta Children (${this.name}): end`);
+      context.splog.logDebug(`Meta Children (${this.name}): end`);
       return children;
     }
 
     const memoizedMetaChildren = cache.getMetaChildren();
     if (memoizedMetaChildren) {
-      logDebug(`Meta Children (${this.name}): end (memoized)`);
+      context.splog.logDebug(`Meta Children (${this.name}): end (memoized)`);
       return memoizedMetaChildren[this.name] ?? [];
     }
 
-    logDebug(`Meta Children (${this.name}): end (recalculated)`);
+    context.splog.logDebug(`Meta Children (${this.name}): end (recalculated)`);
     return Branch.calculateMemoizedMetaChildren(context)[this.name] ?? [];
   }
 
@@ -331,7 +332,7 @@ export class Branch {
   }
 
   public getChildrenFromGit(context: TContext): Branch[] {
-    logDebug(`Git Children (${this.name}): start`);
+    context.splog.logDebug(`Git Children (${this.name}): start`);
     const kids = getBranchChildrenOrParentsFromGit(
       this,
       {
@@ -346,7 +347,7 @@ export class Branch {
     // duplication. This means that the ordering of children must be consistent
     // between git and meta to ensure that our views of their stacks always
     // align.
-    logDebug(`Git Children (${this.name}): end`);
+    context.splog.logDebug(`Git Children (${this.name}): end`);
     return kids.sort(this.sortBranchesAlphabetically);
   }
 

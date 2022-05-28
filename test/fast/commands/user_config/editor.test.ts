@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { DEFAULT_GRAPHITE_EDITOR } from '../../../../src/commands/user-commands/editor';
-import { logInfo } from '../../../../src/lib/utils/splog';
 import { BasicScene } from '../../../lib/scenes/basic_scene';
 import { configureTest } from '../../../lib/utils/configure_test';
 
@@ -16,7 +15,6 @@ for (const scene of [new BasicScene()]) {
     let editorPref: string | undefined;
     before(function () {
       editorPref = scene.context.userConfig.data.editor;
-      logInfo(`Existing user pref: ${editorPref}`);
     });
 
     it('Sanity check - can check editor', () => {
@@ -52,7 +50,6 @@ for (const scene of [new BasicScene()]) {
     after(function () {
       if (editorPref !== undefined) {
         scene.context.userConfig.update((data) => (data.editor = editorPref));
-        logInfo(`Reset user pref: ${editorPref}`);
       }
     });
   });

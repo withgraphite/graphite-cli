@@ -1,7 +1,6 @@
 import { default as chalk } from 'chalk';
 import prompts from 'prompts';
 import { cache } from '../lib/config/cache';
-import { execStateConfig } from '../lib/config/exec_state_config';
 import {
   TDeleteBranchesStackFrame,
   TMergeConflictCallstack,
@@ -10,7 +9,6 @@ import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
 import { checkoutBranch } from '../lib/git/checkout_branch';
 import { isMerged } from '../lib/git/is_merged';
-import { logInfo, logTip } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { deleteBranchAction } from './delete_branch';
@@ -30,13 +28,12 @@ export async function cleanBranches(
   },
   context: TContext
 ): Promise<void> {
-  logInfo(
+  context.splog.logInfo(
     `Checking if any branches have been merged/closed and can be deleted...`
   );
   if (opts.showSyncTip) {
-    logTip(
-      `Disable this behavior at any point in the future with --no-delete`,
-      context
+    context.splog.logTip(
+      `Disable this behavior at any point in the future with --no-delete`
     );
   }
 
@@ -105,7 +102,7 @@ export async function cleanBranches(
       opts.frame.showDeleteProgress &&
       branch.name in trunkChildrenProgressMarkers
     ) {
-      logInfo(
+      context.splog.logInfo(
         `${
           trunkChildrenProgressMarkers[branch.name]
         } done searching for merged/closed branches to delete...`
@@ -139,7 +136,7 @@ export async function cleanBranches(
       // going to be deleted.
       if (parentName !== undefined && parentName in branchesToDelete) {
         checkoutBranch(branch.name, { quiet: true });
-        logInfo(
+        context.splog.logInfo(
           `Stacking (${branch.name}) onto (${getTrunk(context).name})...`
         );
         currentBranchOntoAction(
@@ -200,7 +197,7 @@ async function shouldDeleteBranch(
 
   if (args.force) {
     return true;
-  } else if (!execStateConfig.interactive()) {
+  } else if (!context.interactive) {
     return false;
   }
 
@@ -243,7 +240,7 @@ export function mergedBaseIfMerged(
 }
 
 function deleteBranch(branch: Branch, context: TContext) {
-  logInfo(`Deleting (${chalk.red(branch.name)})`);
+  context.splog.logInfo(`Deleting (${chalk.red(branch.name)})`);
   deleteBranchAction(
     {
       branchName: branch.name,

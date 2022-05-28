@@ -1,10 +1,8 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { execStateConfig } from '../lib/config/exec_state_config';
 import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
-import { logInfo, logNewline, logTip } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 
@@ -12,12 +10,13 @@ export async function fixDanglingBranches(
   context: TContext,
   opts: { force: boolean; showSyncTip?: boolean }
 ): Promise<void> {
-  logInfo(`Ensuring tracked branches in Graphite are all well-formed...`);
+  context.splog.logInfo(
+    `Ensuring tracked branches in Graphite are all well-formed...`
+  );
 
   if (opts.showSyncTip) {
-    logTip(
-      `Disable this behavior at any point in the future with --no-show-dangling`,
-      context
+    context.splog.logInfo(
+      `Disable this behavior at any point in the future with --no-show-dangling`
     );
   }
 
@@ -27,22 +26,21 @@ export async function fixDanglingBranches(
   });
 
   if (danglingBranches.length === 0) {
-    logInfo(`All branches well-formed.`);
-    logNewline();
+    context.splog.logInfo(`All branches well-formed.`);
+    context.splog.logNewline();
     return;
   }
 
-  logNewline();
+  context.splog.logNewline();
   console.log(
     chalk.yellow(
       `Found branches without a known parent to Graphite. This may cause issues detecting stacks; we recommend you select one of the proposed remediations or use \`gt upstack onto\` to restack the branch onto the appropriate parent.`
     )
   );
-  logTip(
-    `To ensure Graphite always has a known parent for your branch, create your branch through Graphite with \`gt branch create <branch_name>\`.`,
-    context
+  context.splog.logTip(
+    `To ensure Graphite always has a known parent for your branch, create your branch through Graphite with \`gt branch create <branch_name>\`.`
   );
-  logNewline();
+  context.splog.logNewline();
 
   const trunk = getTrunk(context).name;
   for (const branch of danglingBranches) {
@@ -51,10 +49,10 @@ export async function fixDanglingBranches(
 
     if (opts.force) {
       fixStrategy = 'parent_trunk';
-      logInfo(`Setting parent of ${branch.name} to ${trunk}.`);
-    } else if (!execStateConfig.interactive()) {
+      context.splog.logInfo(`Setting parent of ${branch.name} to ${trunk}.`);
+    } else if (!context.interactive) {
       fixStrategy = 'no_fix';
-      logInfo(
+      context.splog.logInfo(
         `Skipping fix in non-interactive mode. Use '--force' to set parent to ${trunk}).`
       );
     }
@@ -115,5 +113,5 @@ export async function fixDanglingBranches(
     }
   }
 
-  logNewline();
+  context.splog.logNewline();
 }

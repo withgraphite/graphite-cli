@@ -4,7 +4,6 @@ import { DEFAULT_GRAPHITE_EDITOR } from '../../commands/user-commands/editor';
 import { TContext } from '../context';
 import { KilledError } from '../errors';
 import { gpExecSync } from './exec_sync';
-import { logInfo, logTip } from './splog';
 
 /*
 If the editor is not set, we attempt to infer it from environment variables $GIT_EDITOR or $EDITOR.
@@ -36,14 +35,13 @@ async function setDefaultEditorOrPrompt(context: TContext): Promise<void> {
     let editorPref: string;
     if (systemEditor.length) {
       editorPref = systemEditor;
-      logTip(
+      context.splog.logTip(
         `Graphite will now use ${editorPref} as the default editor setting.
       We infer it from your environment variables ($GIT_EDITOR || $EDITOR).
-      If you wish to change it, use \`gt user editor\` to change this in the future`,
-        context
+      If you wish to change it, use \`gt user editor\` to change this in the future`
       );
     } else {
-      logInfo(
+      context.splog.logInfo(
         chalk.yellow(
           `We did not detect an editor preference in your settings. Do you wish to set it? (Graphite will use ${DEFAULT_GRAPHITE_EDITOR} as default.)`
         )
@@ -94,6 +92,8 @@ async function setDefaultEditorOrPrompt(context: TContext): Promise<void> {
     }
 
     context.userConfig.update((data) => (data.editor = editorPref));
-    logInfo(chalk.yellow(`Graphite editor preference set to ${editorPref}.`));
+    context.splog.logInfo(
+      chalk.yellow(`Graphite editor preference set to ${editorPref}.`)
+    );
   }
 }

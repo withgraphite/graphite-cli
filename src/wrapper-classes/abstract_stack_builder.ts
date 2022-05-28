@@ -1,6 +1,5 @@
 import { TScope } from '../actions/scope';
 import { TContext } from '../lib/context';
-import { logDebug } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from './branch';
 import { Stack } from './stack';
@@ -115,7 +114,9 @@ export abstract class AbstractStackBuilder {
 
       visitedBranches.push(curNode.branch.name);
 
-      logDebug(`Looking up children for ${curNode.branch.name}...`);
+      context.splog.logDebug(
+        `Looking up children for ${curNode.branch.name}...`
+      );
       const unvisitedChildren = this.getChildrenForBranch(
         curNode.branch,
         context
@@ -137,17 +138,19 @@ export abstract class AbstractStackBuilder {
   }
 
   private allStackBaseNames(context: TContext): Branch[] {
-    logDebug(`Getting all branches...`);
+    context.splog.logDebug(`Getting all branches...`);
     const allBranches = Branch.allBranches(context, {
       useMemoizedResults: this.useMemoizedResults,
     });
-    logDebug(`Got ${allBranches.length} branches`);
-    logDebug(`Getting all stack base names...`);
+    context.splog.logDebug(`Got ${allBranches.length} branches`);
+    context.splog.logDebug(`Getting all stack base names...`);
     const allStackBaseNames = allBranches.map(
       (b) => this.getStackBaseBranch(b, { excludingTrunk: false }, context).name
     );
     const uniqueStackBaseNames = [...new Set(allStackBaseNames)];
-    logDebug(`Got ${uniqueStackBaseNames.length} stack base names...`);
+    context.splog.logDebug(
+      `Got ${uniqueStackBaseNames.length} stack base names...`
+    );
     return uniqueStackBaseNames.map(
       (bn) => new Branch(bn, { useMemoizedResults: this.useMemoizedResults })
     );
@@ -172,14 +175,14 @@ export abstract class AbstractStackBuilder {
   public fullStackFromBranch = (b: Branch, context: TContext): Stack => {
     const branch = this.memoizeBranchIfNeeded(b);
 
-    logDebug(`Finding base branch of stack with ${branch.name}`);
+    context.splog.logDebug(`Finding base branch of stack with ${branch.name}`);
     const base = this.getStackBaseBranch(
       branch,
       { excludingTrunk: true },
       context
     );
 
-    logDebug(
+    context.splog.logDebug(
       `Finding rest of stack from base branch of stack with ${branch.name}`
     );
     const stack = this.upstackInclusiveFromBranchWithoutParents(base, context);
@@ -209,10 +212,10 @@ export abstract class AbstractStackBuilder {
     opts: { excludingTrunk: boolean },
     context: TContext
   ): Branch {
-    logDebug(`Getting base branch for ${branch.name}...`);
+    context.splog.logDebug(`Getting base branch for ${branch.name}...`);
     const parent = this.getBranchParent(branch, context);
     if (!parent || (opts?.excludingTrunk && parent.isTrunk(context))) {
-      logDebug(`Base branch is ${branch.name}`);
+      context.splog.logDebug(`Base branch is ${branch.name}`);
       return branch;
     }
     return this.getStackBaseBranch(parent, opts, context);

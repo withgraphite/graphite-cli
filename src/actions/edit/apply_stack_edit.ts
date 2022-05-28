@@ -3,7 +3,6 @@ import { RebaseConflictError } from '../../lib/errors';
 import { checkoutBranch } from '../../lib/git/checkout_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { gpExecSync } from '../../lib/utils/exec_sync';
-import { logInfo } from '../../lib/utils/splog';
 import { currentBranchOntoAction } from '../onto/current_branch_onto';
 import { TStackEdit } from './stack_edits';
 
@@ -33,7 +32,7 @@ export function applyStackEditExec(
   context: TContext
 ): void {
   const currentBranchName = currentBranchPrecondition(context).name;
-  logInfo(`Executing: ${opts.command}`);
+  context.splog.logInfo(`Executing: ${opts.command}`);
   gpExecSync(
     {
       command: opts.command,

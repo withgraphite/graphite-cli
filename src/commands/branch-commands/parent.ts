@@ -6,7 +6,6 @@ import {
   currentBranchPrecondition,
 } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry/profile';
-import { logInfo } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 
 const args = {
@@ -41,7 +40,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       if (parent) {
         console.log(parent.name);
       } else {
-        logInfo(
+        context.splog.logInfo(
           `Current branch (${branch}) has no parent branch set in Graphite. Consider running \`gt stack fix\`, or \`gt upstack onto <parent>\` to set a parent branch in Graphite.`
         );
       }
@@ -53,7 +52,7 @@ function setParent(branch: Branch, parent: string, context: TContext): void {
   branchExistsPrecondition(parent);
   const oldParent = branch.getParentFromMeta(context);
   branch.setParentBranchName(parent);
-  logInfo(
+  context.splog.logInfo(
     `Updated (${branch}) parent from (${oldParent}) to (${chalk.green(parent)})`
   );
   return;

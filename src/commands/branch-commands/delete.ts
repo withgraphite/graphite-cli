@@ -1,7 +1,6 @@
 import yargs from 'yargs';
 import { deleteBranchAction } from '../../actions/delete_branch';
 import { profile } from '../../lib/telemetry/profile';
-import { logTip } from '../../lib/utils/splog';
 
 const args = {
   name: {
@@ -30,7 +29,7 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     if (!args.force) {
-      logTip(`You can force branch deletion with -f`, context);
+      context.splog.logTip(`You can force branch deletion with -f`);
     }
 
     deleteBranchAction({ branchName: argv.name, force: argv.force }, context);

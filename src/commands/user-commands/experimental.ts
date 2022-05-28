@@ -1,6 +1,5 @@
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry/profile';
-import { logInfo } from '../../lib/utils/splog';
 
 const args = {
   enable: {
@@ -27,14 +26,14 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     if (argv.enable) {
       context.userConfig.update((data) => (data.experimental = true));
-      logInfo(`experimental features enabled`);
+      context.splog.logInfo(`experimental features enabled`);
     } else if (argv.disable) {
       context.userConfig.update((data) => (data.experimental = false));
-      logInfo(`experimental features disabled`);
+      context.splog.logInfo(`experimental features disabled`);
     } else {
       context.userConfig.data.experimental
-        ? logInfo(`experimental features enabled`)
-        : logInfo(`experimental features disabled`);
+        ? context.splog.logInfo(`experimental features enabled`)
+        : context.splog.logInfo(`experimental features disabled`);
     }
   });
 };

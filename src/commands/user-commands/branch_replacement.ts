@@ -1,7 +1,6 @@
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry/profile';
 import { getBranchReplacement } from '../../lib/utils/branch_name';
-import { logInfo } from '../../lib/utils/splog';
 
 const args = {
   ['set-underscore']: {
@@ -36,16 +35,18 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     if (argv['set-underscore']) {
       context.userConfig.update((data) => (data.branchReplacement = '_'));
-      logInfo(`Set underscore (_) as the replacement character`);
+      context.splog.logInfo(`Set underscore (_) as the replacement character`);
     } else if (argv['set-dash']) {
       context.userConfig.update((data) => (data.branchReplacement = '-'));
-      logInfo(`Set dash (-) as the replacement character`);
+      context.splog.logInfo(`Set dash (-) as the replacement character`);
     } else if (argv['set-empty']) {
       context.userConfig.update((data) => (data.branchReplacement = ''));
-      logInfo(`Invalid characters will be removed without being replaced`);
+      context.splog.logInfo(
+        `Invalid characters will be removed without being replaced`
+      );
     } else {
       const replacement = getBranchReplacement(context);
-      logInfo(
+      context.splog.logInfo(
         `Invalid characters will be ${
           replacement === ''
             ? 'removed without being replaced'

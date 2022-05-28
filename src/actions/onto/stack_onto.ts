@@ -8,7 +8,6 @@ import { TContext } from '../../lib/context';
 import { PreconditionsFailedError } from '../../lib/errors';
 import { getMergeBase } from '../../lib/git/merge_base';
 import { rebaseOnto } from '../../lib/git/rebase';
-import { logInfo } from '../../lib/utils/splog';
 import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
 import { restackBranch } from '../fix';
@@ -76,7 +75,7 @@ export function stackOntoBaseRebaseContinuation(
 
   cache.clearAll();
   // set current branch's parent only if the rebase succeeds.
-  logInfo(`Setting parent of ${currentBranch.name} to ${onto}.`);
+  context.splog.logInfo(`Setting parent of ${currentBranch.name} to ${onto}.`);
   currentBranch.setParentBranch(new Branch(onto));
 
   // Now perform a fix starting from the onto branch:
@@ -97,11 +96,14 @@ export function stackOntoBaseRebaseContinuation(
     context
   );
 
-  stackOntoFixContinuation(stackOntoContinuationFrame);
+  stackOntoFixContinuation(stackOntoContinuationFrame, context);
 }
 
-export function stackOntoFixContinuation(frame: TStackOntoFixStackFrame): void {
-  logInfo(
+export function stackOntoFixContinuation(
+  frame: TStackOntoFixStackFrame,
+  context: TContext
+): void {
+  context.splog.logInfo(
     `Successfully moved (${frame.currentBranchName}) onto (${frame.onto})`
   );
 }

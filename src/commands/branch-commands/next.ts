@@ -3,7 +3,6 @@ import {
   switchBranchAction,
   TraversalDirection,
 } from '../../actions/branch_traversal';
-import { execStateConfig } from '../../lib/config/exec_state_config';
 import { profile } from '../../lib/telemetry/profile';
 
 const args = {
@@ -30,7 +29,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       TraversalDirection.Up,
       {
         numSteps: argv.steps,
-        interactive: execStateConfig.interactive(),
+        interactive: context.interactive,
       },
       context
     );

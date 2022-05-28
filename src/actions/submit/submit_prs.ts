@@ -5,7 +5,6 @@ import chalk from 'chalk';
 import { API_SERVER } from '../../lib/api';
 import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
-import { logInfo } from '../../lib/utils/splog';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 import { Branch } from '../../wrapper-classes/branch';
 import {
@@ -40,7 +39,8 @@ export async function submitPullRequest(
         [args.submissionInfoWithBranch],
         context
       )
-    )[0]
+    )[0],
+    context
   );
   if (errorMessage) {
     throw new ExitFailedError(errorMessage);
@@ -103,7 +103,10 @@ export async function requestServerToSubmitPRs(
   }
 }
 
-export function handlePRReponse(pr: TSubmittedPR): { errorMessage?: string } {
+export function handlePRReponse(
+  pr: TSubmittedPR,
+  context: TContext
+): { errorMessage?: string } {
   if (pr.response.status === 'error') {
     return {
       errorMessage: `Error in submitting ${pr.response.head}: ${pr.response.error}`,
@@ -124,7 +127,7 @@ export function handlePRReponse(pr: TSubmittedPR): { errorMessage?: string } {
       : {}),
     ...(pr.request.draft !== undefined ? { draft: pr.request.draft } : {}),
   });
-  logInfo(
+  context.splog.logInfo(
     `${chalk.green(pr.response.head)}: ${pr.response.prURL} (${{
       updated: chalk.yellow,
       created: chalk.green,

@@ -1,7 +1,6 @@
 import yargs from 'yargs';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry/profile';
-import { logInfo } from '../../lib/utils/splog';
 
 const args = {} as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -17,7 +16,7 @@ export const handler = async (argv: argsT): Promise<void> => {
 
     const children = branch.getChildrenFromMeta(context);
     if (children.length === 0) {
-      logInfo(
+      context.splog.logInfo(
         `(${branch}) has no child branches (branches stacked on top of it).`
       );
     } else {

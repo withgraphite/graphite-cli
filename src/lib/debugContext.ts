@@ -9,7 +9,6 @@ import { checkoutBranch } from './git/checkout_branch';
 import { deleteBranch } from './git/deleteBranch';
 import { currentBranchPrecondition } from './preconditions';
 import { gpExecSync } from './utils/exec_sync';
-import { logInfo, logWarn } from './utils/splog';
 
 type stateT = {
   refTree: Record<string, string[]>;
@@ -58,10 +57,14 @@ export function recreateState(stateJson: string, context: TContext): string {
   });
   process.chdir(tmpDir);
 
-  logInfo(`Creating ${Object.keys(state.refTree).length} commits`);
+  context.splog.logInfo(
+    `Creating ${Object.keys(state.refTree).length} commits`
+  );
   recreateCommits({ refTree: state.refTree, refMappingsOldToNew });
 
-  logInfo(`Creating ${Object.keys(state.branchToRefMapping).length} branches`);
+  context.splog.logInfo(
+    `Creating ${Object.keys(state.branchToRefMapping).length} branches`
+  );
   createBranches(
     {
       branchToRefMapping: state.branchToRefMapping,
@@ -70,13 +73,13 @@ export function recreateState(stateJson: string, context: TContext): string {
     context
   );
 
-  logInfo(`Creating the repo config`);
+  context.splog.logInfo(`Creating the repo config`);
   fs.writeFileSync(
     path.join(tmpDir, '/.git/.graphite_repo_config'),
     state.repoConfig
   );
 
-  logInfo(`Creating the metadata`);
+  context.splog.logInfo(`Creating the metadata`);
   createMetadata({ metadata: state.metadata, tmpDir });
 
   checkoutBranch(state.currentBranchName);
@@ -118,7 +121,7 @@ function createBranches(
     if (branch != curBranch.name) {
       gpExecSync({ command: `git branch -f ${branch} ${originalRef}` });
     } else {
-      logWarn(
+      context.splog.logWarn(
         `Skipping creating ${branch} which matches the name of the current branch`
       );
     }
@@ -183,7 +186,7 @@ function recreateCommits(opts: {
 
 function createTmpGitDir(opts?: { trunkName?: string }): string {
   const tmpDir = tmp.dirSync().name;
-  logInfo(`Creating tmp repo`);
+  console.log(`Creating tmp repo`);
   gpExecSync({
     command: `git -C ${tmpDir} init -b "${opts?.trunkName ?? 'main'}"`,
   });

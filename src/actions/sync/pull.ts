@@ -4,7 +4,6 @@ import { checkoutBranch } from '../../lib/git/checkout_branch';
 import { getRemoteBranchNames } from '../../lib/git/get_remote_branch_names';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { gpExecSync } from '../../lib/utils/exec_sync';
-import { logDebug, logInfo, logNewline, logTip } from '../../lib/utils/splog';
 import { getTrunk } from '../../lib/utils/trunk';
 
 export function pull(
@@ -12,10 +11,9 @@ export function pull(
   context: TContext
 ): void {
   const { oldBranchName, branchesToFetch } = args;
-  logInfo(`Pulling in new changes...`);
-  logTip(
-    `Disable this behavior at any point in the future with --no-pull`,
-    context
+  context.splog.logInfo(`Pulling in new changes...`);
+  context.splog.logTip(
+    `Disable this behavior at any point in the future with --no-pull`
   );
 
   const remote = context.repoConfig.getRemote();
@@ -31,7 +29,7 @@ export function pull(
     .filter((name) => branchesToFetch.includes(name))
     .join('\n');
 
-  logDebug(`Fetching branches:\n${input}`);
+  context.splog.logDebug(`Fetching branches:\n${input}`);
 
   gpExecSync(
     {
@@ -52,5 +50,5 @@ export function pull(
     }
   );
 
-  logNewline();
+  context.splog.logNewline();
 }

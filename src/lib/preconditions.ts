@@ -8,7 +8,6 @@ import {
   unstagedChanges,
 } from './git/git_status_utils';
 import { gpExecSync } from './utils/exec_sync';
-import { logTip } from './utils/splog';
 
 export function getRepoRootPathPrecondition(): string {
   const repoRootPath = gpExecSync({
@@ -60,9 +59,8 @@ function ensureSomeStagedChangesPrecondition(context: TContext): void {
   }
 
   if (unstagedChanges()) {
-    logTip(
-      'There are unstaged changes. Use -a option to stage all unstaged changes.',
-      context
+    context.splog.logTip(
+      'There are unstaged changes. Use -a option to stage all unstaged changes.'
     );
   }
 

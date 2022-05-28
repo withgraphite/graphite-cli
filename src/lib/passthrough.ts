@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 import cp from 'child_process';
-import { logError, logInfo } from './utils/splog';
 
 const GIT_COMMAND_ALLOWLIST = [
   'add',
@@ -53,7 +52,7 @@ export function passthrough(args: string[]): void {
     return;
   }
 
-  logInfo(
+  console.log(
     chalk.grey(
       [
         `Command: "${chalk.yellow(
@@ -64,13 +63,7 @@ export function passthrough(args: string[]): void {
     )
   );
 
-  try {
-    cp.spawnSync('git', args.slice(2), { stdio: 'inherit' });
-  } catch (err) {
-    logError(err);
-    // eslint-disable-next-line no-restricted-syntax
-    process.exit(1);
-  }
+  const git = cp.spawnSync('git', args.slice(2), { stdio: 'inherit' });
   // eslint-disable-next-line no-restricted-syntax
-  process.exit(0);
+  process.exit(git.status ?? 0);
 }

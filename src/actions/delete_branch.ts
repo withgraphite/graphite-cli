@@ -4,7 +4,6 @@ import { ExitFailedError } from '../lib/errors';
 import { checkoutBranch } from '../lib/git/checkout_branch';
 import { currentBranchName } from '../lib/git/current_branch_name';
 import { deleteBranch } from '../lib/git/deleteBranch';
-import { logInfo } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { MetadataRef } from '../wrapper-classes/metadata_ref';
@@ -43,7 +42,7 @@ export function deleteBranchAction(
   }
 
   deleteBranch(args.branchName);
-  logInfo(`Deleted branch ${chalk.red(args.branchName)}`);
+  context.splog.logInfo(`Deleted branch ${chalk.red(args.branchName)}`);
 
   // No need for a try-catch here; this already silently does nothing if the
   // metadata does not exist.

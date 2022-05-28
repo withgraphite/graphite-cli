@@ -4,7 +4,6 @@ import { TContext } from '../lib/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
 import { checkoutBranch } from '../lib/git/checkout_branch';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { logInfo } from '../lib/utils/splog';
 import { Branch } from '../wrapper-classes/branch';
 
 export enum TraversalDirection {
@@ -51,7 +50,7 @@ function getDownstackBranch(
     indent++;
   }
   while (prevBranch && !prevBranch.isTrunk(context)) {
-    logInfo(`${'  '.repeat(indent)}↳(${branch})`);
+    context.splog.logInfo(`${'  '.repeat(indent)}↳(${branch})`);
     branch = prevBranch;
     prevBranch = branch.getParentFromMeta(context);
     indent++;
@@ -59,7 +58,7 @@ function getDownstackBranch(
       break;
     }
   }
-  logInfo(`${'  '.repeat(indent)}↳(${chalk.cyan(branch)})`);
+  context.splog.logInfo(`${'  '.repeat(indent)}↳(${chalk.cyan(branch)})`);
   return branch?.name;
 }
 
@@ -76,7 +75,7 @@ async function getUpstackBranch(
 
   while (branch && candidates.length) {
     if (candidates.length === 1) {
-      logInfo(`${'  '.repeat(indent)}↳(${branch})`);
+      context.splog.logInfo(`${'  '.repeat(indent)}↳(${branch})`);
       branch = candidates[0];
     } else {
       if (interactive) {
@@ -97,7 +96,7 @@ async function getUpstackBranch(
     candidates = branch.getChildrenFromMeta(context);
   }
 
-  logInfo(`${'  '.repeat(indent)}↳(${chalk.cyan(branch)})`);
+  context.splog.logInfo(`${'  '.repeat(indent)}↳(${chalk.cyan(branch)})`);
   return branch?.name;
 }
 
@@ -119,7 +118,7 @@ export async function switchBranchAction(
   if (nextBranch && nextBranch != currentBranch.name) {
     checkoutBranch(nextBranch);
   } else {
-    logInfo(
+    context.splog.logInfo(
       `Already at the ${
         direction === TraversalDirection.Down ||
         direction === TraversalDirection.Bottom

@@ -9,7 +9,6 @@ import { checkoutBranch } from '../../lib/git/checkout_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry/profile';
 import { gpExecSync } from '../../lib/utils/exec_sync';
-import { logInfo } from '../../lib/utils/splog';
 import { getTrunk } from '../../lib/utils/trunk';
 import { GitStackBuilder } from '../../wrapper-classes/git_stack_builder';
 
@@ -55,12 +54,12 @@ function testStack(
   const originalBranch = currentBranchPrecondition(context);
   validateStack(context);
 
-  logInfo(chalk.grey(`Getting stack...`));
+  context.splog.logInfo(chalk.grey(`Getting stack...`));
   const stack = new GitStackBuilder().fullStackFromBranch(
     originalBranch,
     context
   );
-  logInfo(chalk.grey(stack.toString() + '\n'));
+  context.splog.logInfo(chalk.grey(stack.toString() + '\n'));
 
   // Get branches to test.
   const branches = stack.branches().filter((b) => {
@@ -80,29 +79,35 @@ function testStack(
   const tmpDir = tmp.dirSync();
   const outputPath = `${tmpDir.name}/output.txt`;
   fs.writeFileSync(outputPath, '');
-  logInfo(chalk.grey(`Writing results to ${outputPath}\n`));
+  context.splog.logInfo(chalk.grey(`Writing results to ${outputPath}\n`));
 
   // Kick off the testing.
-  logState(state, false);
+  logState(state, false, context);
   branches.forEach((branch) => {
-    testBranch({ command, branchName: branch.name, outputPath, state });
+    testBranch(
+      { command, branchName: branch.name, outputPath, state },
+      context
+    );
   });
 
   // Finish off.
   checkoutBranch(originalBranch.name, { quiet: true });
 }
 
-function testBranch(opts: {
-  state: StateT;
-  branchName: string;
-  command: string;
-  outputPath: string;
-}) {
+function testBranch(
+  opts: {
+    state: StateT;
+    branchName: string;
+    command: string;
+    outputPath: string;
+  },
+  context: TContext
+) {
   checkoutBranch(opts.branchName, { quiet: true });
 
   // Mark the branch as running.
   opts.state[opts.branchName].status = '[running]';
-  logState(opts.state, true);
+  logState(opts.state, true, context);
 
   // Execute the command.
   const startTime = Date.now();
@@ -121,10 +126,10 @@ function testBranch(opts: {
 
   // Write output to the output file.
 
-  logState(opts.state, true);
+  logState(opts.state, true, context);
 }
 
-function logState(state: StateT, refresh: boolean) {
+function logState(state: StateT, refresh: boolean, context: TContext) {
   if (refresh) {
     process.stdout.moveCursor(0, -Object.keys(state).length);
   }
@@ -144,7 +149,7 @@ function logState(state: StateT, refresh: boolean) {
     process.stdout.clearLine(0);
     // Example:
     // - [success]: tr--Track_CLI_and_Graphite_user_assoicat (00:00:22)
-    logInfo(
+    context.splog.logInfo(
       `- ${color(state[branchName].status)}: ${branchName}${
         duration ? ` (${durationString})` : ''
       }`

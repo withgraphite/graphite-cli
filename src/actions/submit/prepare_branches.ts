@@ -1,9 +1,7 @@
 import chalk from 'chalk';
-import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context';
 import { PreconditionsFailedError } from '../../lib/errors';
 import { detectUnsubmittedChanges } from '../../lib/git/detect_unsubmitted_changes';
-import { logInfo, logNewline } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { TBranchPRInfo } from '../../wrapper-classes/metadata_ref';
 import { getPRBody } from './pr_body';
@@ -45,7 +43,7 @@ export async function getPRInfoForBranches(
   },
   context: TContext
 ): Promise<TPRSubmissionInfoWithBranches> {
-  logInfo(
+  context.splog.logInfo(
     chalk.blueBright('🥞 Preparing to submit PRs for the following branches...')
   );
 
@@ -89,7 +87,7 @@ export async function getPRInfoForBranches(
           )
     );
   }
-  logNewline();
+  context.splog.logNewline();
   return submissionInfo;
 }
 
@@ -128,7 +126,7 @@ function getPRAction(
       ? 'DRAFT'
       : 'PUBLISH';
 
-  logInfo(
+  context.splog.logInfo(
     `▸ ${chalk.cyan(args.branch.name)} (${
       {
         CREATE: 'Create',
@@ -161,9 +159,9 @@ async function getPRCreationInfo(
   },
   context: TContext
 ): Promise<TPRSubmissionInfoWithBranch> {
-  if (execStateConfig.interactive()) {
-    logNewline();
-    logInfo(
+  if (context.interactive) {
+    context.splog.logNewline();
+    context.splog.logInfo(
       `Enter info for new pull request for ${chalk.yellow(
         args.branch.name
       )} ▸ ${args.parentBranchName}:`
@@ -197,7 +195,7 @@ async function getPRCreationInfo(
     fetchReviewers: args.reviewers,
   });
 
-  const createAsDraft = args.draftToggle ?? (await getPRDraftStatus());
+  const createAsDraft = args.draftToggle ?? (await getPRDraftStatus(context));
 
   return {
     title: submitInfo.title,

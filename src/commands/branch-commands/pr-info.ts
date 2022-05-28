@@ -4,7 +4,6 @@ import { getBranchTitle } from '../../actions/print_stack';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { syncPRInfoForBranchByName } from '../../lib/sync/pr_info';
 import { profile } from '../../lib/telemetry/profile';
-import { logError } from '../../lib/utils/splog';
 
 const args = {
   reset: {
@@ -17,12 +16,12 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const aliases = [];
 export const command = 'pr-info';
-export const canoncial = 'branch pr-info';
+export const canonical = 'branch pr-info';
 export const description =
   'Fetch GitHub PR information for the current branch.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canoncial, async (context) => {
+  return profile(argv, canonical, async (context) => {
     const branch = currentBranchPrecondition(context);
 
     if (argv.reset) {
@@ -34,7 +33,7 @@ export const handler = async (argv: argsT): Promise<void> => {
 
     const prInfo = branch.getPRInfo();
     if (prInfo === undefined) {
-      logError(
+      context.splog.logError(
         `Could not find associated PR. Please double-check that a PR exists on GitHub in repo ${chalk.bold(
           context.repoConfig.getRepoName()
         )} for the branch ${chalk.bold(branch.name)}.`

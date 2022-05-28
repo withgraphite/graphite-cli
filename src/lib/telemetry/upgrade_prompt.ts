@@ -4,7 +4,6 @@ import { version } from '../../../package.json';
 import { API_SERVER } from '../api';
 import { TContext } from '../context';
 import { spawnDetached } from '../utils/spawn';
-import { logMessageFromGraphite } from '../utils/splog';
 import {
   messageConfigFactory,
   TMessageConfig,
@@ -18,7 +17,7 @@ function printAndClearOldMessage(context: TContext): void {
   // double-check before showing the message if the CLI is still an old version
   // (i.e. the user hasn't updated the CLI in the meantime)."
   if (oldMessage && version == oldMessage.cliVersion) {
-    logMessageFromGraphite(oldMessage.contents);
+    context.splog.logMessageFromGraphite(oldMessage.contents);
     context.messageConfig.update((data) => (data.message = undefined));
   }
 }

@@ -110,7 +110,7 @@ function cleanDanglingMetadata(): void {
   const allMetadataRefs = MetadataRef.allMetadataRefs();
   allMetadataRefs.forEach((ref) => {
     if (!branchExists(ref._branchName)) {
-      logDebug(`Deleting metadata for ${ref._branchName}`);
+      context.splog.logDebug(`Deleting metadata for ${ref._branchName}`);
       ref.delete();
     }
   });
