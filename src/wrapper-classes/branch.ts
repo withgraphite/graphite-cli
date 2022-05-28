@@ -52,7 +52,7 @@ export class Branch {
       return undefined;
     }
 
-    let parentName = readMetadataRef(this.name)?.parentBranchName;
+    let parentName = readMetadataRef(this.name).parentBranchName;
 
     if (!parentName) {
       return undefined;
@@ -60,7 +60,7 @@ export class Branch {
 
     // Cycle until we find a parent that has a real branch, or just is undefined.
     while (parentName && !branchExists(parentName)) {
-      parentName = readMetadataRef(parentName)?.parentBranchName;
+      parentName = readMetadataRef(parentName).parentBranchName;
     }
     if (parentName) {
       this.setParentBranchName(parentName);
@@ -117,7 +117,7 @@ export class Branch {
 
     if (!this.shouldUseMemoizedResults) {
       const children = Branch.allBranches(context).filter(
-        (b) => readMetadataRef(b.name)?.parentBranchName === this.name
+        (b) => readMetadataRef(b.name).parentBranchName === this.name
       );
       context.splog.logDebug(`Meta Children (${this.name}): end`);
       return children;

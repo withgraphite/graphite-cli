@@ -170,7 +170,7 @@ export class GitRepo {
   }
 
   upsertMeta(name: string, partialMeta: Partial<TMeta>): void {
-    const meta = readMetadataRef(name, { dir: this.dir }) ?? {};
+    const meta = readMetadataRef(name, { dir: this.dir });
     writeMetadataRef(name, { ...meta, ...partialMeta }, { dir: this.dir });
   }
 }
