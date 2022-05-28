@@ -1,3 +1,3 @@
 #!/bin/bash
 
-brew install withgraphite/tap/graphite
+npm i -g @withgraphite/graphite-cli
