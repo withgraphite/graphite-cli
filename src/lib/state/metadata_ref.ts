@@ -48,18 +48,19 @@ export function writeMetadataRef(
 export function readMetadataRef(
   branchName: string,
   opts?: { dir: string }
-): TMeta | undefined {
-  const metaString = gpExecSync({
-    command: `git ${
-      opts ? `-C "${opts.dir}" ` : ''
-    }cat-file -p refs/branch-metadata/${branchName} 2> /dev/null`,
-  });
-  if (metaString.length == 0) {
-    return undefined;
-  }
+): TMeta {
   // TODO: Better account for malformed desc; possibly validate with retype
-  const meta = JSON.parse(metaString);
-  return meta;
+  try {
+    return JSON.parse(
+      gpExecSync({
+        command: `git ${
+          opts ? `-C "${opts.dir}" ` : ''
+        }cat-file -p refs/branch-metadata/${branchName} 2> /dev/null`,
+      })
+    );
+  } catch {
+    return {};
+  }
 }
 
 export function deleteMetadataRef(branchName: string): void {
