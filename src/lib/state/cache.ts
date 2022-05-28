@@ -582,7 +582,7 @@ function loadCache(
   return branches;
 }
 
-export function readAllMeta(): Array<
+function readAllMeta(): Array<
   { branchName: string; branchRevision: string } & TMeta
 > {
   const gitBranchNamesAndRevisions = branchNamesAndRevisions();
