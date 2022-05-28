@@ -4,138 +4,147 @@ import tmp from 'tmp';
 import { TRepoConfig } from './config/repo_config';
 import { TUserConfig } from './config/user_config';
 import { TContext } from './context';
-import { getBranchToRefMapping } from './git-refs/branch_ref';
-import { getRevListGitTree } from './git-refs/branch_relations';
 import { switchBranch } from './git/checkout_branch';
+import { getCommitTree } from './git/commit_tree';
+import { getCurrentBranchName } from './git/current_branch_name';
 import { deleteBranch } from './git/deleteBranch';
-import { currentBranchPrecondition } from './preconditions';
+import { getBranchRevision } from './git/get_branch_revision';
+import { branchNamesAndRevisions } from './git/sorted_branch_names';
 import {
   allBranchesWithMeta,
   readMetadataRef,
   TMeta,
+  writeMetadataRef,
 } from './state/metadata_ref';
 import { cuteString } from './utils/cute_string';
 import { gpExecSync } from './utils/exec_sync';
+import { TSplog } from './utils/splog';
 
 type TState = {
-  refTree: Record<string, string[]>;
-  branchToRefMapping: Record<string, string>;
+  commitTree: Record<string, string[]>;
   userConfig: TUserConfig['data'];
   repoConfig: TRepoConfig['data'];
-  metadata: Record<string, string>;
-  currentBranchName: string;
+  branches: Record<string, string>;
+  metadata: [string, TMeta][];
+  currentBranchName: string | undefined;
 };
+
 export function captureState(context: TContext): string {
-  const refTree = getRevListGitTree(
-    {
-      useMemoizedResults: false,
-      direction: 'parents',
-    },
-    context
-  );
-  const branchToRefMapping = getBranchToRefMapping();
-
-  const metadata: Record<string, string> = {};
-  allBranchesWithMeta().forEach((branchName) => {
-    metadata[branchName] = cuteString(readMetadataRef(branchName));
-  });
-
-  const currentBranchName = currentBranchPrecondition().name;
-
+  const branches = branchNamesAndRevisions();
   const state: TState = {
-    refTree,
-    branchToRefMapping,
+    commitTree: getCommitTree(Object.keys(branches)),
     userConfig: context.userConfig.data,
     repoConfig: context.repoConfig.data,
-    metadata,
-    currentBranchName,
+    branches,
+    metadata: allBranchesWithMeta().map((branchName) => [
+      branchName,
+      readMetadataRef(branchName),
+    ]),
+    currentBranchName: getCurrentBranchName(),
   };
 
   return cuteString(state);
 }
 
-export function recreateState(stateJson: string, context: TContext): string {
+export function recreateState(stateJson: string, splog: TSplog): string {
   const state = JSON.parse(stateJson) as TState;
   const refMappingsOldToNew: Record<string, string> = {};
 
+  splog.logInfo(`Creating repo`);
   const tmpTrunk = `initial-debug-context-head-${Date.now()}`;
-  const tmpDir = createTmpGitDir({
-    trunkName: tmpTrunk,
+  const tmpDir = tmp.dirSync().name;
+  gpExecSync({
+    command: [
+      `git -C ${tmpDir} init -b "${tmpTrunk}"`,
+      `cd ${tmpDir}`,
+      `echo "first" > first.txt`,
+      `git add first.txt`,
+      `git commit -m "first"`,
+    ].join(' && '),
   });
   process.chdir(tmpDir);
 
-  context.splog.logInfo(
-    `Creating ${Object.keys(state.refTree).length} commits`
-  );
-  recreateCommits({ refTree: state.refTree, refMappingsOldToNew });
+  splog.logInfo(`Creating ${Object.keys(state.commitTree).length} commits`);
+  recreateCommits({ commitTree: state.commitTree, refMappingsOldToNew }, splog);
 
-  context.splog.logInfo(
-    `Creating ${Object.keys(state.branchToRefMapping).length} branches`
+  splog.logInfo(`Creating ${Object.keys(state.branches).length} branches`);
+  createBranches(
+    {
+      branches: state.branches,
+      refMappingsOldToNew,
+    },
+    splog
   );
 
-  const curBranch = currentBranchPrecondition();
-  Object.keys(state.branchToRefMapping).forEach((branch) => {
-    const originalRef = refMappingsOldToNew[state.branchToRefMapping[branch]];
-    if (branch != curBranch.name) {
-      gpExecSync({ command: `git branch -f ${branch} ${originalRef}` });
-    } else {
-      context.splog.logWarn(
-        `Skipping creating ${branch} which matches the name of the current branch`
-      );
-    }
-  });
-  context.splog.logInfo(`Creating the repo config`);
+  splog.logInfo(`Creating the repo config`);
   fs.writeFileSync(
     path.join(tmpDir, '/.git/.graphite_repo_config'),
     cuteString(state.repoConfig)
   );
 
-  context.splog.logInfo(`Creating the metadata`);
-  createMetadata({ metadata: state.metadata, tmpDir, refMappingsOldToNew });
+  splog.logInfo(`Creating the metadata`);
+  state.metadata.forEach((pair) => {
+    const [branchName, meta] = pair;
+    // Replace parentBranchRevision with the commit hash in the recreated repo
+    if (
+      meta.parentBranchRevision &&
+      refMappingsOldToNew[meta.parentBranchRevision]
+    ) {
+      meta.parentBranchRevision =
+        refMappingsOldToNew[meta.parentBranchRevision];
+    }
+    writeMetadataRef(branchName, meta);
+  });
 
-  switchBranch(state.currentBranchName);
-  deleteBranch(tmpTrunk);
+  if (state.currentBranchName) {
+    switchBranch(state.currentBranchName);
+    deleteBranch(tmpTrunk);
+  } else {
+    splog.logWarn(`No currentBranchName found, retaining temporary trunk.`);
+    switchBranch(tmpTrunk);
+  }
 
   return tmpDir;
 }
 
-function createMetadata(opts: {
-  metadata: Record<string, string>;
-  refMappingsOldToNew: Record<string, string>;
-  tmpDir: string;
-}) {
-  fs.mkdirSync(`${opts.tmpDir}/.git/refs/branch-metadata`);
-  Object.keys(opts.metadata).forEach((branchName) => {
-    // Replace parentBranchRevision with the commit hash in the recreated repo
-    const meta: TMeta = JSON.parse(opts.metadata[branchName]);
-    if (
-      meta.parentBranchRevision &&
-      opts.refMappingsOldToNew[meta.parentBranchRevision]
-    ) {
-      meta.parentBranchRevision =
-        opts.refMappingsOldToNew[meta.parentBranchRevision];
+function createBranches(
+  opts: {
+    branches: Record<string, string>;
+    refMappingsOldToNew: Record<string, string>;
+  },
+  splog: TSplog
+): void {
+  Object.keys(opts.branches).forEach((branch) => {
+    const originalRef = opts.refMappingsOldToNew[opts.branches[branch]];
+    if (branch != gpExecSync({ command: `git branch --show-current` })) {
+      gpExecSync({ command: `git branch -f ${branch} ${originalRef}` });
+    } else {
+      splog.logWarn(
+        `Skipping creating ${branch} which matches the name of the current branch`
+      );
     }
-    const metaSha = gpExecSync({
-      command: `git hash-object -w --stdin`,
-      options: {
-        input: cuteString(meta),
-      },
-    });
-    fs.writeFileSync(
-      `${opts.tmpDir}/.git/refs/branch-metadata/${branchName}`,
-      metaSha
-    );
   });
 }
 
-function recreateCommits(opts: {
-  refTree: Record<string, string[]>;
-  refMappingsOldToNew: Record<string, string>;
-}): void {
-  const treeObjectId = getTreeObjectId();
-  const commitsToCreate: string[] = commitRefsWithNoParents(opts.refTree);
-  const firstCommitRef = gpExecSync({ command: `git rev-parse HEAD` });
-  const totalOldCommits = Object.keys(opts.refTree).length;
+function recreateCommits(
+  opts: {
+    commitTree: Record<string, string[]>;
+    refMappingsOldToNew: Record<string, string>;
+  },
+  splog: TSplog
+): void {
+  const commitsToCreate = [
+    ...new Set(Object.values(opts.commitTree).flat()),
+  ].filter(
+    (ref) =>
+      opts.commitTree[ref] === undefined || opts.commitTree[ref].length === 0
+  );
+
+  const firstCommitRef = getBranchRevision('HEAD');
+  const treeSha = gpExecSync({
+    command: `git cat-file -p HEAD | grep tree | awk '{print $2}'`,
+  });
+  const totalOldCommits = Object.keys(opts.commitTree).length;
 
   while (commitsToCreate.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -146,7 +155,7 @@ function recreateCommits(opts: {
     }
 
     // Re-queue the commit if we're still missing one of its parents.
-    const originalParents = opts.refTree[originalCommitRef] || [];
+    const originalParents = opts.commitTree[originalCommitRef] || [];
     const missingParent = originalParents.find(
       (p) => opts.refMappingsOldToNew[p] === undefined
     );
@@ -156,7 +165,7 @@ function recreateCommits(opts: {
     }
 
     const newCommitRef = gpExecSync({
-      command: `git commit-tree ${treeObjectId} -m "${originalCommitRef}" ${
+      command: `git commit-tree ${treeSha} -m "${originalCommitRef}" ${
         originalParents.length === 0
           ? `-p ${firstCommitRef}`
           : originalParents
@@ -171,43 +180,18 @@ function recreateCommits(opts: {
 
     const totalNewCommits = Object.keys(opts.refMappingsOldToNew).length;
     if (totalNewCommits % 100 === 0) {
-      console.log(`Progress: ${totalNewCommits} / ${totalOldCommits} created`);
+      splog.logInfo(
+        `Progress: ${totalNewCommits} / ${totalOldCommits} created`
+      );
     }
 
     // Find all commits with this as parent, and enque them for creation.
-    Object.keys(opts.refTree).forEach((potentialChildRef) => {
-      const parents = opts.refTree[potentialChildRef];
-      if (parents.includes(originalCommitRef)) {
-        commitsToCreate.push(potentialChildRef);
-      }
-    });
+    Object.keys(opts.commitTree)
+      .filter((potentialChildRef) =>
+        opts.commitTree[potentialChildRef].includes(originalCommitRef)
+      )
+      .forEach((child) => {
+        commitsToCreate.push(child);
+      });
   }
-}
-
-function createTmpGitDir(opts?: { trunkName?: string }): string {
-  const tmpDir = tmp.dirSync().name;
-  console.log(`Creating tmp repo`);
-  gpExecSync({
-    command: `git -C ${tmpDir} init -b "${opts?.trunkName ?? 'main'}"`,
-  });
-  gpExecSync({
-    command: `cd ${tmpDir} && echo "first" > first.txt && git add first.txt && git commit -m "first"`,
-  });
-  return tmpDir;
-}
-
-function commitRefsWithNoParents(refTree: Record<string, string[]>): string[] {
-  // Create commits for each ref
-  const allRefs: string[] = [
-    ...new Set(Object.keys(refTree).concat.apply([], Object.values(refTree))),
-  ];
-  return allRefs.filter(
-    (ref) => refTree[ref] === undefined || refTree[ref].length === 0
-  );
-}
-
-function getTreeObjectId(): string {
-  return gpExecSync({
-    command: `git cat-file -p HEAD | grep tree | awk '{print $2}'`,
-  });
 }
