@@ -32,10 +32,10 @@ void yargs(process.argv.slice(2))
   .commandDir('commands')
   .help()
   .usage(
-    [
-      'Graphite is a command line tool that makes working with stacked changes fast & intuitive.',
-    ].join('\n')
+    'Graphite is a command line tool that makes working with stacked changes fast & intuitive.'
   )
+  .options(globalArgumentsOptions)
+  .global(Object.keys(globalArgumentsOptions))
   .strict()
   .options(globalArgumentsOptions)
   .global(Object.keys(globalArgumentsOptions))
