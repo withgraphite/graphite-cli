@@ -1,7 +1,7 @@
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
-import { Commit } from '../../wrapper-classes/commit';
+import { getCommitMessage } from '../../lib/git/commit_message';
 
 export async function getPRTitle(
   args: {
@@ -40,7 +40,7 @@ export function inferPRTitle(branchName: string, context: TContext): string {
   // Only infer the title from the commit if the branch has just 1 commit.
   const commits = context.metaCache.getAllCommits(branchName, 'SHA');
   const singleCommitSubject =
-    commits.length === 1 ? new Commit(commits[0]).messageSubject() : undefined;
+    commits.length === 1 ? getCommitMessage(commits[0], 'SUBJECT') : undefined;
 
   return singleCommitSubject?.length
     ? singleCommitSubject
