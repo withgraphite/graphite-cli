@@ -1,7 +1,6 @@
 import { cache } from '../lib/config/cache';
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
-import { getRef } from '../lib/git-refs/branch_ref';
 import { branchExists } from '../lib/git/branch_exists';
 import { getCommitterDate } from '../lib/git/committer_date';
 import { getCurrentBranchName } from '../lib/git/current_branch_name';
@@ -131,10 +130,6 @@ export class Branch {
 
     context.splog.logDebug(`Meta Children (${this.name}): end (recalculated)`);
     return Branch.calculateMemoizedMetaChildren(context)[this.name] ?? [];
-  }
-
-  public ref(): string {
-    return getRef(this);
   }
 
   private getMeta(): TMeta | undefined {
