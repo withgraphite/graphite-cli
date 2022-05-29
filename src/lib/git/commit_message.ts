@@ -1,6 +1,6 @@
 import { gpExecSync } from '../utils/exec_sync';
 
-export const GIT_LOG_FORMAT = {
+const GIT_LOG_FORMAT = {
   BODY: '%b' as const,
   SUBJECT: '%s' as const,
 };
