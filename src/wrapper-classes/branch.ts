@@ -1,8 +1,6 @@
-import { cache } from '../lib/config/cache';
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
 import { branchExists } from '../lib/git/branch_exists';
-import { getCommitterDate } from '../lib/git/committer_date';
 import { getCurrentBranchName } from '../lib/git/current_branch_name';
 import { getBranchRevision } from '../lib/git/get_branch_revision';
 import { sortedBranchNames } from '../lib/git/sorted_branch_names';
@@ -11,12 +9,10 @@ import {
   TMeta,
   writeMetadataRef,
 } from '../lib/state/metadata_ref';
-import { gpExecSync } from '../lib/utils/exec_sync';
 import { getTrunk } from '../lib/utils/trunk';
 
 export class Branch {
   name: string;
-  shouldUseMemoizedResults: boolean;
 
   static create(
     branchName: string,
@@ -27,19 +23,8 @@ export class Branch {
     branch.writeMeta({ parentBranchName, parentBranchRevision });
   }
 
-  constructor(name: string, opts?: { useMemoizedResults: boolean }) {
+  constructor(name: string) {
     this.name = name;
-    this.shouldUseMemoizedResults = opts?.useMemoizedResults || false;
-  }
-
-  /**
-   * Uses memoized results for some of the branch calculations. Only turn this
-   * on if the git tree should not change at all during the current invoked
-   * command.
-   */
-  public useMemoizedResults(): Branch {
-    this.shouldUseMemoizedResults = true;
-    return this;
   }
 
   public toString(): string {
@@ -77,59 +62,14 @@ export class Branch {
     return new Branch(parentName);
   }
 
-  private static calculateMemoizedMetaChildren(
-    context: TContext
-  ): Record<string, Branch[]> {
-    context.splog.logDebug(
-      `Meta Children: initialize memoization | finding all branches...`
-    );
-    const metaChildren: Record<string, Branch[]> = {};
-    const allBranches = Branch.allBranches(context, {
-      useMemoizedResults: true,
-    });
-
-    context.splog.logDebug(
-      `Meta Children: intiialize memoization | sifting through branches...`
-    );
-    allBranches.forEach((branch, i) => {
-      context.splog.logDebug(
-        `               Branch ${i}/${allBranches.length} (${branch.name})`
-      );
-      const parentBranchName = branch.getParentBranchName();
-      if (parentBranchName === undefined) {
-        return;
-      }
-      if (parentBranchName in metaChildren) {
-        metaChildren[parentBranchName].push(branch);
-      } else {
-        metaChildren[parentBranchName] = [branch];
-      }
-    });
-    context.splog.logDebug(`Meta Children: initialize memoization | done`);
-
-    cache.setMetaChildren(metaChildren);
-    return metaChildren;
-  }
-
   public getChildrenFromMeta(context: TContext): Branch[] {
     context.splog.logDebug(`Meta Children (${this.name}): start`);
 
-    if (!this.shouldUseMemoizedResults) {
-      const children = Branch.allBranches(context).filter(
-        (b) => readMetadataRef(b.name).parentBranchName === this.name
-      );
-      context.splog.logDebug(`Meta Children (${this.name}): end`);
-      return children;
-    }
-
-    const memoizedMetaChildren = cache.getMetaChildren();
-    if (memoizedMetaChildren) {
-      context.splog.logDebug(`Meta Children (${this.name}): end (memoized)`);
-      return memoizedMetaChildren[this.name] ?? [];
-    }
-
-    context.splog.logDebug(`Meta Children (${this.name}): end (recalculated)`);
-    return Branch.calculateMemoizedMetaChildren(context)[this.name] ?? [];
+    const children = Branch.allBranches(context).filter(
+      (b) => readMetadataRef(b.name).parentBranchName === this.name
+    );
+    context.splog.logDebug(`Meta Children (${this.name}): end`);
+    return children;
   }
 
   private getMeta(): TMeta | undefined {
@@ -152,11 +92,6 @@ export class Branch {
     this.writeMeta(meta);
   }
 
-  public getParentBranchSha(): string | undefined {
-    const meta: TMeta = this.getMeta() || {};
-    return meta.parentBranchRevision;
-  }
-
   public getParentBranchName(): string | undefined {
     const meta: TMeta = this.getMeta() || {};
     return meta.parentBranchName;
@@ -173,12 +108,6 @@ export class Branch {
     meta.parentBranchName = parentBranchName;
     meta.parentBranchRevision = getBranchRevision(parentBranchName);
     this.writeMeta(meta);
-  }
-
-  public lastCommitTime(): number {
-    return parseInt(
-      gpExecSync({ command: `git log -1 --format=%ct ${this.name} --` })
-    );
   }
 
   public isTrunk(context: TContext): boolean {
@@ -204,52 +133,14 @@ export class Branch {
   static allBranches(
     context: TContext,
     opts?: {
-      useMemoizedResults?: boolean;
-      maxDaysBehindTrunk?: number;
-      maxBranches?: number;
       filter?: (branch: Branch) => boolean;
     }
   ): Branch[] {
     const branchNames = sortedBranchNames();
 
-    const maxDaysBehindTrunk = opts?.maxDaysBehindTrunk;
-    let minUnixTimestamp = undefined;
-    if (maxDaysBehindTrunk) {
-      const trunkUnixTimestamp = parseInt(
-        getCommitterDate({
-          revision: getTrunk(context).name,
-          timeFormat: 'UNIX_TIMESTAMP',
-        })
-      );
-      const secondsInDay = 24 * 60 * 60;
-      minUnixTimestamp = trunkUnixTimestamp - maxDaysBehindTrunk * secondsInDay;
-    }
-    const maxBranches = opts?.maxBranches;
-
     const filteredBranches = [];
     for (const branchName of branchNames) {
-      if (filteredBranches.length === maxBranches) {
-        break;
-      }
-
-      // If the current branch is older than the minimum time, we can
-      // short-circuit the rest of the search as well - we gathered the
-      // branches in descending chronological order.
-      if (minUnixTimestamp !== undefined) {
-        const committed = parseInt(
-          getCommitterDate({
-            revision: branchName,
-            timeFormat: 'UNIX_TIMESTAMP',
-          })
-        );
-        if (committed < minUnixTimestamp) {
-          break;
-        }
-      }
-
-      const branch = new Branch(branchName, {
-        useMemoizedResults: opts?.useMemoizedResults ?? false,
-      });
+      const branch = new Branch(branchName);
 
       if (!opts?.filter || opts.filter(branch)) {
         filteredBranches.push(branch);
