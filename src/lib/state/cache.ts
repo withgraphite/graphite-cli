@@ -1,7 +1,6 @@
 import { PreconditionsFailedError } from '../errors';
 import { branchExists } from '../git/branch_exists';
 import { branchMove } from '../git/branch_move';
-import { switchBranch } from '../git/checkout_branch';
 import { commit, TCommitOpts } from '../git/commit';
 import { getCommitRange, TCommitFormat } from '../git/commit_range';
 import { getCurrentBranchName } from '../git/current_branch_name';
@@ -12,6 +11,7 @@ import { isMerged } from '../git/is_merged';
 import { getMergeBase } from '../git/merge_base';
 import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
 import { branchNamesAndRevisions } from '../git/sorted_branch_names';
+import { switchBranch } from '../git/switch_branch';
 import { cuteString } from '../utils/cute_string';
 import { TSplog } from '../utils/splog';
 import {
@@ -43,7 +43,7 @@ export type TMetaCache = {
   getParentPrecondition: (branchName: string) => string;
   getCurrentStack: (scope: TScopeSpec) => string[];
   checkoutNewBranch: (branchName: string) => void;
-  checkoutBranch: (branchName: string | undefined) => boolean;
+  checkoutBranch: (branchName: string) => void;
   renameCurrentBranch: (branchName: string) => void;
   deleteBranch: (branchName: string) => string[];
   commit: (opts: TCommitOpts) => void;
@@ -200,15 +200,13 @@ export function composeMetaCache({
     return parent ? [...getRecursiveParents(parent), parent] : [];
   };
 
-  const checkoutBranch = (branchName: string | undefined): boolean => {
-    try {
-      assertBranchIsValid(branchName);
-      switchBranch(branchName);
-      cache.currentBranch = branchName;
-      return true;
-    } catch (e) {
-      return false;
+  const checkoutBranch = (branchName: string) => {
+    if (cache.currentBranch === branchName) {
+      return;
     }
+    assertBranchIsValid(branchName);
+    switchBranch(branchName);
+    cache.currentBranch = branchName;
   };
 
   const persistMeta = (branchName: string) => {
@@ -375,13 +373,10 @@ export function composeMetaCache({
       cache.currentBranch = branchName;
     },
     deleteBranch: (branchName: string): string[] => {
-      if (
-        branchName === cache.currentBranch &&
-        !checkoutBranch(getParent(branchName)) &&
-        !checkoutBranch(trunkName)
-      ) {
-        // Give up if we can't check out the parent or trunk.
-        throw new PreconditionsFailedError(`Cannot delete the current branch.`);
+      if (branchName === cache.currentBranch) {
+        const parentBranchName = getParent(branchName);
+        assertBranchIsValid(parentBranchName);
+        checkoutBranch(parentBranchName);
       }
 
       const meta = getValidMeta(branchName);

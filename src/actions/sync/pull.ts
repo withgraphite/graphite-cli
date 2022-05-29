@@ -1,7 +1,7 @@
 import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
-import { switchBranch } from '../../lib/git/checkout_branch';
 import { getRemoteBranchNames } from '../../lib/git/get_remote_branch_names';
+import { switchBranch } from '../../lib/git/switch_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { getTrunk } from '../../lib/utils/trunk';

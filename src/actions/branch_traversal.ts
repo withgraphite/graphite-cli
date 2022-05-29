@@ -3,14 +3,70 @@ import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
 
-export enum TraversalDirection {
-  Top = 'TOP',
-  Bottom = 'BOTTOM',
-  Up = 'UP',
-  Down = 'DOWN',
+function traverseDownward(
+  currentBranchName: string,
+  context: TContext,
+  stepsRemaining: number | 'bottom' = 'bottom',
+  indent = 0
+): string {
+  context.splog.logInfo(
+    `${'  '.repeat(indent)}↳ ${chalk.blue(currentBranchName)}`
+  );
+  if (stepsRemaining === 0 || context.metaCache.isTrunk(currentBranchName)) {
+    return currentBranchName;
+  }
+  const parentBranchName =
+    context.metaCache.getParentPrecondition(currentBranchName);
+  if (
+    stepsRemaining === 'bottom' &&
+    context.metaCache.isTrunk(parentBranchName)
+  ) {
+    return currentBranchName;
+  }
+  return traverseDownward(
+    parentBranchName,
+    context,
+    stepsRemaining === 'bottom' ? 'bottom' : stepsRemaining - 1,
+    indent + 1
+  );
 }
 
-async function getStackBranch(candidates: string[]): Promise<string> {
+async function traverseUpward(
+  currentBranchName: string,
+  context: TContext,
+  stepsRemaining: number | 'top' = 'top',
+  indent = 0
+): Promise<string> {
+  context.splog.logInfo(
+    `${'  '.repeat(indent)}↳ ${chalk.blue(currentBranchName)}`
+  );
+  if (stepsRemaining === 0) {
+    return currentBranchName;
+  }
+  const children = context.metaCache.getChildren(currentBranchName);
+  if (children.length === 0) {
+    return currentBranchName;
+  }
+  const childBranchName =
+    children.length === 1
+      ? children[0]
+      : await handleMultipleChildren(children, context);
+  return await traverseUpward(
+    childBranchName,
+    context,
+    stepsRemaining === 'top' ? 'top' : stepsRemaining - 1,
+    indent + 1
+  );
+}
+
+async function handleMultipleChildren(children: string[], context: TContext) {
+  if (!context.interactive) {
+    throw new ExitFailedError(
+      `Cannot get upstack branch in non-interactive mode; multiple choices available:\n${children.join(
+        '\n'
+      )}`
+    );
+  }
   return (
     await prompts(
       {
@@ -18,7 +74,7 @@ async function getStackBranch(candidates: string[]): Promise<string> {
         name: 'value',
         message:
           'Multiple branches found at the same level. Select a branch to guide the navigation',
-        choices: candidates.map((b) => {
+        choices: children.map((b) => {
           return { title: b, value: b };
         }),
       },
@@ -31,141 +87,61 @@ async function getStackBranch(candidates: string[]): Promise<string> {
   ).value;
 }
 
-function getDownstackBranch(
-  currentBranch: string,
-  direction: TraversalDirection.Down | TraversalDirection.Bottom,
-  context: TContext,
-  numSteps?: number
-): string | undefined {
-  let branch = currentBranch;
-  let prevBranch = context.metaCache.getParent(branch);
-  let indent = 0;
-
-  // Bottom goes to the bottom of the stack but down can go up to trunk
-  if (
-    direction === TraversalDirection.Down &&
-    prevBranch &&
-    context.metaCache.isTrunk(prevBranch)
-  ) {
-    branch = prevBranch;
-    indent++;
-  }
-  while (prevBranch && !context.metaCache.isTrunk(prevBranch)) {
-    context.splog.logInfo(`${'  '.repeat(indent)}↳(${branch})`);
-    branch = prevBranch;
-    prevBranch = context.metaCache.getParent(branch);
-    indent++;
-    if (direction === TraversalDirection.Down && indent === numSteps) {
-      break;
+type TBranchNavigation =
+  | {
+      direction: 'UP' | 'DOWN';
+      numSteps: number;
     }
-  }
-  context.splog.logInfo(`${'  '.repeat(indent)}↳(${chalk.cyan(branch)})`);
-  return branch;
-}
-
-async function getUpstackBranch(
-  currentBranch: string,
-  interactive: boolean,
-  direction: TraversalDirection.Up | TraversalDirection.Top,
-  context: TContext,
-  numSteps?: number
-): Promise<string | undefined> {
-  let branch = currentBranch;
-  let candidates = context.metaCache.getChildren(branch);
-  let indent = 0;
-
-  while (branch && candidates && candidates.length) {
-    if (candidates.length === 1) {
-      context.splog.logInfo(`${'  '.repeat(indent)}↳(${branch})`);
-      branch = candidates[0];
-    } else {
-      if (interactive) {
-        branch = await getStackBranch(candidates);
-      } else {
-        throw new ExitFailedError(
-          `Cannot get upstack branch, multiple choices available: [${candidates.join(
-            ', '
-          )}]`
-        );
-      }
-    }
-    indent++;
-    if (direction === TraversalDirection.Up && indent === numSteps) {
-      break;
-    }
-    candidates = context.metaCache.getChildren(branch);
-  }
-
-  context.splog.logInfo(`${'  '.repeat(indent)}↳(${chalk.cyan(branch)})`);
-  return branch;
-}
-
+  | { direction: 'TOP' | 'BOTTOM' };
 export async function switchBranchAction(
-  direction: TraversalDirection,
-  opts: {
-    numSteps?: number;
-    interactive: boolean;
-  },
+  branchNavigation: TBranchNavigation,
   context: TContext
 ): Promise<void> {
-  const currentBranch = context.metaCache.currentBranchPrecondition;
-  const nextBranch = await getNextBranch(
-    direction,
-    currentBranch,
-    context,
-    opts
+  const currentBranchName = context.metaCache.currentBranchPrecondition;
+  const newBranchName = await traverseBranches(
+    branchNavigation,
+    currentBranchName,
+    context
   );
-  if (nextBranch && nextBranch != currentBranch) {
-    context.metaCache.checkoutBranch(nextBranch);
-  } else {
-    context.splog.logInfo(
-      `Already at the ${
-        direction === TraversalDirection.Down ||
-        direction === TraversalDirection.Bottom
-          ? 'bottom most'
-          : 'top most'
-      } branch in the stack.`
-    );
+  if (newBranchName !== currentBranchName) {
+    context.metaCache.checkoutBranch(newBranchName);
+    context.splog.logInfo(`Checked out ${chalk.cyan(newBranchName)}.`);
+    return;
   }
+  context.splog.logInfo(
+    `Already at the ${
+      branchNavigation.direction === 'DOWN' ||
+      branchNavigation.direction === 'BOTTOM'
+        ? 'bottom most'
+        : 'top most'
+    } branch in the stack.`
+  );
 }
 
-async function getNextBranch(
-  direction: TraversalDirection,
-  currentBranch: string,
-  context: TContext,
-  opts: { numSteps?: number | undefined; interactive: boolean }
-) {
-  switch (direction) {
-    case TraversalDirection.Bottom: {
-      return getDownstackBranch(
-        currentBranch,
-        TraversalDirection.Bottom,
-        context
-      );
+async function traverseBranches(
+  branchNavigation: TBranchNavigation,
+  fromBranchName: string,
+  context: TContext
+): Promise<string> {
+  switch (branchNavigation.direction) {
+    case 'BOTTOM': {
+      return traverseDownward(fromBranchName, context);
     }
-    case TraversalDirection.Down: {
-      return getDownstackBranch(
-        currentBranch,
-        TraversalDirection.Down,
+    case 'DOWN': {
+      return traverseDownward(
+        fromBranchName,
         context,
-        opts.numSteps
+        branchNavigation.numSteps
       );
     }
-    case TraversalDirection.Top: {
-      return await getUpstackBranch(
-        currentBranch,
-        opts.interactive,
-        TraversalDirection.Top,
-        context
-      );
+    case 'TOP': {
+      return await traverseUpward(fromBranchName, context);
     }
-    case TraversalDirection.Up: {
-      return await getUpstackBranch(
-        currentBranch,
-        opts.interactive,
-        TraversalDirection.Up,
+    case 'UP': {
+      return await traverseUpward(
+        fromBranchName,
         context,
-        opts.numSteps
+        branchNavigation.numSteps
       );
     }
   }
