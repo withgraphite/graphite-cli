@@ -1,7 +1,7 @@
 import { TRepoSyncStackFrame } from '../../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../../lib/context';
 import { branchExists } from '../../lib/git/branch_exists';
-import { switchBranch } from '../../lib/git/checkout_branch';
+import { switchBranch } from '../../lib/git/switch_branch';
 import {
   currentBranchPrecondition,
   uncommittedTrackedChangesPrecondition,
