@@ -1,4 +1,7 @@
-import { mergeConflictCallstackConfigFactory } from './config/merge_conflict_callstack_config';
+import {
+  mergeConflictCallstackConfigFactory,
+  TMergeConflictCallstackConfig,
+} from './config/merge_conflict_callstack_config';
 import { messageConfigFactory, TMessageConfig } from './config/message_config';
 import { repoConfigFactory, TRepoConfig } from './config/repo_config';
 import { surveyConfigFactory, TSurveyConfig } from './config/survey_config';
@@ -16,9 +19,7 @@ export type TContext = {
   surveyConfig: TSurveyConfig;
   userConfig: TUserConfig;
   messageConfig: TMessageConfig;
-  mergeConflictCallstackConfig: ReturnType<
-    typeof mergeConflictCallstackConfigFactory.load
-  >;
+  mergeConflictCallstackConfig: TMergeConflictCallstackConfig;
   metaCache: TMetaCache;
 };
 
