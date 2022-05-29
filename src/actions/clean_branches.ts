@@ -7,7 +7,7 @@ import {
 } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
-import { switchBranch } from '../lib/git/checkout_branch';
+import { switchBranch } from '../lib/git/switch_branch';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { currentBranchOnto } from './current_branch_onto';

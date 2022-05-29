@@ -1,5 +1,5 @@
-import chalk from 'chalk';
 import yargs from 'yargs';
+import { checkoutBranch } from '../../actions/checkout_branch';
 import { interactiveBranchSelection } from '../../actions/display_branches';
 import { profile } from '../../lib/telemetry/profile';
 
@@ -19,20 +19,16 @@ export const description = 'Checkout a branch in a stack';
 export const aliases = ['co'];
 export const builder = args;
 
-export const handler = async (args: argsT): Promise<void> => {
-  return profile(args, canonical, async (context) => {
-    const branchName =
+export const handler = async (args: argsT): Promise<void> =>
+  profile(args, canonical, async (context) =>
+    checkoutBranch(
       args.branch ??
-      (await interactiveBranchSelection(
-        {
-          message: 'Checkout a branch',
-        },
-        context
-      ));
-    if (!context.metaCache.checkoutBranch(branchName)) {
-      context.splog.logError(`${branchName} is not a valid Graphite branch.`);
-    } else {
-      context.splog.logInfo(`Checked out ${chalk.cyan(branchName)}`);
-    }
-  });
-};
+        (await interactiveBranchSelection(
+          {
+            message: 'Checkout a branch',
+          },
+          context
+        )),
+      context
+    )
+  );
