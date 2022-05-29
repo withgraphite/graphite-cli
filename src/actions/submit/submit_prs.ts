@@ -49,7 +49,7 @@ const UNAUTHORIZED_RESPONSE_CODE = 401;
 
 // This endpoint is plural for legacy reasons.
 // Leaving the function plural in case we want to revert.
-export async function requestServerToSubmitPRs(
+async function requestServerToSubmitPRs(
   cliAuthToken: string,
   submissionInfo: TPRSubmissionInfo,
   context: TContext
@@ -100,7 +100,7 @@ export async function requestServerToSubmitPRs(
   }
 }
 
-export function handlePRReponse(
+function handlePRReponse(
   pr: TSubmittedPR,
   context: TContext
 ): { errorMessage?: string } {
