@@ -16,7 +16,8 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = 'sync [branch]';
 export const canonical = 'downstack sync';
-export const description = 'Sync a branch and its downstack from remote.';
+export const description =
+  'Sync a branch and its recursive parents from remote.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
@@ -39,7 +40,6 @@ export const handler = async (argv: argsT): Promise<void> => {
         pull: true,
         delete: false,
         showDeleteProgress: false,
-        resubmit: false,
         force: false,
         downstackToSync,
       },
