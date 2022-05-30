@@ -2,7 +2,6 @@ import { TContext } from '../../lib/context';
 import { uncommittedTrackedChangesPrecondition } from '../../lib/preconditions';
 import { SCOPE } from '../../lib/state/scope_spec';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
-import { Branch } from '../../wrapper-classes/branch';
 import { cleanBranches as cleanBranches } from '../clean_branches';
 import { restackBranches } from '../restack';
 import { mergeDownstack } from './merge_downstack';
@@ -26,9 +25,9 @@ export async function syncAction(
     pull(
       {
         oldBranchName,
-        branchesToFetch: Branch.allBranches(context)
-          .map((b) => b.name)
-          .concat(opts.downstackToSync ?? []),
+        branchesToFetch: context.metaCache.allBranchNames.concat(
+          opts.downstackToSync ?? []
+        ),
       },
       context
     );
