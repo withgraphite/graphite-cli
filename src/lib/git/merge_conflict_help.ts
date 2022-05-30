@@ -1,7 +1,7 @@
-import { gpExecSync } from '../utils/exec_sync';
+import { gpExecSyncAndSplitLines } from '../utils/exec_sync';
 
 export function getUnmergedFiles(): string[] {
-  return gpExecSync({
+  return gpExecSyncAndSplitLines({
     command: `git diff --name-only --diff-filter=U`,
-  }).split('\n');
+  });
 }

@@ -11,6 +11,15 @@ type GPExecSyncOptions = {
   };
 } & Omit<ExecSyncOptions, 'encoding'>;
 
+export function gpExecSyncAndSplitLines(command: {
+  command: string;
+  options?: ExecSyncOptions & GPExecSyncOptions;
+}): string[] {
+  return gpExecSync(command)
+    .split('\n')
+    .filter((l) => l.length > 0);
+}
+
 export function gpExecSync(
   command: {
     command: string;

@@ -1,10 +1,8 @@
 import { TContext } from '../context';
-import { gpExecSync } from '../utils/exec_sync';
+import { gpExecSyncAndSplitLines } from '../utils/exec_sync';
 
 export function getRemoteBranchNames(context: TContext): string[] {
-  return gpExecSync({
+  return gpExecSyncAndSplitLines({
     command: `git ls-remote -h ${context.repoConfig.getRemote()}`,
-  })
-    .split('\n')
-    .map((line) => line.split('refs/heads/')[1]);
+  }).map((line) => line.split('refs/heads/')[1]);
 }
