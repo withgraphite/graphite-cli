@@ -8,7 +8,7 @@ import {
   TMeta,
   writeMetadataRef,
 } from '../state/metadata_ref';
-import { gpExecSync } from './exec_sync';
+import { gpExecSync, gpExecSyncAndSplitLines } from './exec_sync';
 
 const TEXT_FILE_NAME = 'test.txt';
 export class GitRepo {
@@ -153,11 +153,9 @@ export class GitRepo {
   }
 
   listCurrentBranchCommitMessages(): string[] {
-    return gpExecSync({
+    return gpExecSyncAndSplitLines({
       command: `git -C "${this.dir}" log --oneline  --format=%B`,
-    })
-      .split('\n')
-      .filter((line) => line.length > 0);
+    });
   }
 
   mergeBranch(args: { branch: string; mergeIn: string }): void {
