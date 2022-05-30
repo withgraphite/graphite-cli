@@ -52,7 +52,6 @@ export const handler = async (argv: argsT): Promise<void> => {
       {
         pull: argv.pull,
         force: argv.force,
-        resubmit: argv.resubmit,
         delete: argv.delete,
         showDeleteProgress: argv['show-delete-progress'],
       },
