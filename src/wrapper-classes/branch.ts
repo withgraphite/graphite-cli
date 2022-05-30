@@ -1,7 +1,7 @@
 import { TContext } from '../lib/context';
+import { TMeta, writeMetadataRef } from '../lib/engine/metadata_ref';
 import { getCurrentBranchName } from '../lib/git/current_branch_name';
 import { sortedBranchNames } from '../lib/git/sorted_branch_names';
-import { TMeta, writeMetadataRef } from '../lib/state/metadata_ref';
 
 export class Branch {
   name: string;

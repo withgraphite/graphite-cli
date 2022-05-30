@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
+import { TScopeSpec } from '../../lib/engine/scope_spec';
 import { KilledError } from '../../lib/errors';
-import { TScopeSpec } from '../../lib/state/scope_spec';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
 
 export async function getValidBranchesToSubmit(

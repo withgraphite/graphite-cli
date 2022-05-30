@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import { persistBranchesToRestack } from '../lib/config/continue_config';
 import { TContext } from '../lib/context';
+import { TScopeSpec } from '../lib/engine/scope_spec';
 import { RebaseConflictError } from '../lib/errors';
-import { TScopeSpec } from '../lib/state/scope_spec';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 
 type TBranchList =

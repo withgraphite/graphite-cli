@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { testStack } from '../../actions/test';
-import { SCOPE } from '../../lib/state/scope_spec';
+import { SCOPE } from '../../lib/engine/scope_spec';
 import { profile } from '../../lib/telemetry/profile';
 
 const args = {
