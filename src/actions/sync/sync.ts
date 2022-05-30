@@ -38,10 +38,7 @@ export async function syncAction(
     await mergeDownstack(opts.downstackToSync, context);
   }
 
-  await syncPRInfoForBranches(
-    Branch.allBranches(context).map((b) => b.name),
-    context
-  );
+  await syncPRInfoForBranches(context.metaCache.allBranchNames, context);
 
   if (opts.delete) {
     const branchesWithNewParents = await cleanBranches(
