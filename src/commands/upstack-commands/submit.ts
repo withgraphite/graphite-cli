@@ -1,5 +1,5 @@
 import { submitAction } from '../../actions/submit/submit_action';
-import { SCOPE } from '../../lib/state/scope_spec';
+import { SCOPE } from '../../lib/engine/scope_spec';
 import { profile } from '../../lib/telemetry/profile';
 import { argsT } from '../shared-commands/submit';
 
