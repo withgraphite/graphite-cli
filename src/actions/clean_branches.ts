@@ -1,7 +1,6 @@
 import { default as chalk } from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
-import { SCOPE } from '../lib/engine/scope_spec';
 import { KilledError } from '../lib/errors';
 import { deleteBranchAction, isSafeToDelete } from './delete_branch';
 
