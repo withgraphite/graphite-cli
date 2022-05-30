@@ -1,6 +1,7 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import t from '@withgraphite/retype';
 import { request } from '@withgraphite/retyped-routes';
+import { TRepoParams } from './common_params';
 import { API_SERVER } from './server';
 
 type TBranchNameWithPrNumber = {
@@ -10,11 +11,7 @@ type TBranchNameWithPrNumber = {
 
 export async function getPrInfoForBranches(
   branchNamesWithExistingPrInfo: TBranchNameWithPrNumber[],
-  params: {
-    authToken: string;
-    repoName: string;
-    repoOwner: string;
-  }
+  params: TRepoParams
 ): Promise<
   t.UnwrapSchemaMap<typeof graphiteCLIRoutes.pullRequestInfo.response>['prs']
 > {

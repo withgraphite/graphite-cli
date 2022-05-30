@@ -1,7 +1,8 @@
 import yargs from 'yargs';
-import { getDownstackDependencies } from '../../actions/sync/get_downstack_dependencies';
 import { syncAction } from '../../actions/sync/sync';
+import { getDownstackDependencies } from '../../lib/api/get_downstack_dependencies';
 import { ExitFailedError } from '../../lib/errors';
+import { cliAuthPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry/profile';
 
 const args = {
@@ -26,9 +27,15 @@ export const handler = async (argv: argsT): Promise<void> => {
       throw new ExitFailedError('Remote branch picker not yet implemented');
     }
 
+    const authToken = cliAuthPrecondition(context);
+
     const downstackToSync = await getDownstackDependencies(
-      argv.branch,
-      context
+      { branchName: argv.branch, trunkName: context.metaCache.trunk },
+      {
+        authToken,
+        repoName: context.repoConfig.getRepoName(),
+        repoOwner: context.repoConfig.getRepoOwner(),
+      }
     );
 
     context.splog.logDebug(
