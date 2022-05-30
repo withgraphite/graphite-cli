@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { persistBranchesToRestack } from '../lib/config/merge_conflict_callstack_config';
+import { persistBranchesToRestack } from '../lib/config/continue_config';
 import { TContext } from '../lib/context';
 import { RebaseConflictError } from '../lib/errors';
 import { SCOPE } from '../lib/state/scope_spec';

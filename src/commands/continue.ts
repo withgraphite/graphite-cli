@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { restackBranches } from '../actions/restack';
+import { clearContinueConfig } from '../lib/config/continue_config';
 import { PreconditionsFailedError, RebaseConflictError } from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
@@ -24,9 +25,10 @@ export const aliases = [];
 export const description =
   'Continues the most-recent Graphite command halted by a merge conflict.';
 export const builder = args;
-export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+export const handler = async (argv: argsT): Promise<void> =>
+  profile(argv, canonical, async (context) => {
     if (!rebaseInProgress()) {
+      clearContinueConfig(context);
       throw new PreconditionsFailedError(`No Graphite command to continue.`);
     }
 
@@ -43,8 +45,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       `Resolved rebase conflict for ${chalk.green(cont.branchName)}.`
     );
 
-    const branchesToRestack =
-      context.mergeConflictCallstackConfig?.data.branchNames;
+    const branchesToRestack = context.continueConfig.data?.branchesToRestack;
 
     if (branchesToRestack) {
       restackBranches(
@@ -52,5 +53,5 @@ export const handler = async (argv: argsT): Promise<void> => {
         context
       );
     }
+    clearContinueConfig(context);
   });
-};

@@ -1,7 +1,7 @@
 import {
-  mergeConflictCallstackConfigFactory,
-  TMergeConflictCallstackConfig,
-} from './config/merge_conflict_callstack_config';
+  continueConfigFactory,
+  TContinueConfig,
+} from './config/continue_config';
 import { messageConfigFactory, TMessageConfig } from './config/message_config';
 import { repoConfigFactory, TRepoConfig } from './config/repo_config';
 import { surveyConfigFactory, TSurveyConfig } from './config/survey_config';
@@ -19,7 +19,7 @@ export type TContext = {
   surveyConfig: TSurveyConfig;
   userConfig: TUserConfig;
   messageConfig: TMessageConfig;
-  mergeConflictCallstackConfig: TMergeConflictCallstackConfig;
+  continueConfig: TContinueConfig;
   metaCache: TMetaCache;
 };
 
@@ -41,12 +41,10 @@ export function initContext(opts?: {
     outputDebugLogs: opts?.globalArguments?.debug,
     tips: userConfig.data.tips,
   });
-  const mergeConflictCallstackConfig =
-    mergeConflictCallstackConfigFactory.load();
+  const continueConfig = continueConfigFactory.load();
   const metaCache = composeMetaCache({
     trunkName: repoConfig.data.trunk,
-    currentBranchOverride:
-      mergeConflictCallstackConfig?.data.currentBranchOverride,
+    currentBranchOverride: continueConfig?.data.currentBranchOverride,
     splog,
   });
   return {
@@ -57,7 +55,7 @@ export function initContext(opts?: {
     surveyConfig: surveyConfigFactory.load(),
     userConfig,
     messageConfig: messageConfigFactory.load(),
-    mergeConflictCallstackConfig,
+    continueConfig,
     metaCache,
   };
 }

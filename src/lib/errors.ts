@@ -1,9 +1,3 @@
-import {
-  persistMergeConflictCallstack,
-  TMergeConflictCallstack,
-} from './config/merge_conflict_callstack_config';
-import { TContext } from './context';
-
 class ExitError extends Error {}
 
 export class ExitFailedError extends ExitError {
@@ -26,18 +20,9 @@ export class ExitFailedError extends ExitError {
 }
 
 export class RebaseConflictError extends ExitError {
-  constructor(
-    message: string,
-    callstack?: TMergeConflictCallstack,
-    context?: TContext
-  ) {
+  constructor(message: string) {
     super(message);
     this.name = 'RebaseConflict';
-
-    // TODO kill this after migrating to restack
-    if (callstack && context) {
-      persistMergeConflictCallstack(callstack, context);
-    }
   }
 }
 
