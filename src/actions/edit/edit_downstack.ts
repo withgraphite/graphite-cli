@@ -35,7 +35,10 @@ function reorderBranches(
 }
 
 async function promptForEdit(context: TContext): Promise<string[]> {
-  const branchNames = context.metaCache.getCurrentStack(SCOPE.DOWNSTACK);
+  const branchNames = context.metaCache.getRelativeStack(
+    context.metaCache.currentBranchPrecondition,
+    SCOPE.DOWNSTACK
+  );
   const defaultEditor = await getDefaultEditorOrPrompt(context);
   return performInTmpDir((tmpDir) => {
     const editFilePath = createStackEditFile({ branchNames, tmpDir });

@@ -20,7 +20,10 @@ export function restackBranches(
   context: TContext
 ): void {
   const branchNames = branchList.relative
-    ? context.metaCache.getCurrentStack(branchList.scope)
+    ? context.metaCache.getRelativeStack(
+        context.metaCache.currentBranchPrecondition,
+        branchList.scope
+      )
     : branchList.branchNames;
 
   context.splog.logDebug(

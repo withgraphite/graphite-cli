@@ -16,7 +16,7 @@ export async function getValidBranchesToSubmit(
   );
 
   const branchNames = context.metaCache
-    .getCurrentStack(scope)
+    .getRelativeStack(context.metaCache.currentBranchPrecondition, scope)
     .filter((b) => !context.metaCache.isTrunk(b));
   context.splog.logNewline();
 
