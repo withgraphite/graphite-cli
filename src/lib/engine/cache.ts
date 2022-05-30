@@ -35,7 +35,6 @@ export type TMetaCache = {
   getBaseRevision: (branchName: string) => string;
   getAllCommits: (branchName: string, format: TCommitFormat) => string[];
   getPrInfo: (branchName: string) => TBranchPRInfo | undefined;
-  resetPrInfo: (branchName: string) => void;
   upsertPrInfo: (branchName: string, prInfo: Partial<TBranchPRInfo>) => void;
   getChildren: (branchName: string) => string[];
   setParent: (branchName: string, parentBranchName: string) => void;
@@ -62,33 +61,37 @@ export type TMetaCache = {
   isBranchEmpty: (branchName: string) => boolean;
 };
 
-type TCachedMeta = { children: string[]; branchRevision: string } & (
-  | {
-      validationResult: 'TRUNK';
-      parentBranchName: undefined;
-    }
-  | {
-      validationResult: 'VALID';
-      parentBranchName: string;
-      parentBranchRevision: string;
+type TCachedMeta = {
+  children: string[];
+  branchRevision: string;
+} & (
+  | { validationResult: 'TRUNK' }
+  | ((
+      | {
+          validationResult: 'VALID';
+          parentBranchName: string;
+          parentBranchRevision: string;
+        }
+      | {
+          validationResult: 'INVALID_PARENT';
+          parentBranchName: string;
+          parentBranchRevision?: string;
+        }
+      | {
+          validationResult: 'BAD_PARENT_REVISION';
+          parentBranchName: string;
+        }
+      | {
+          validationResult: 'BAD_PARENT_NAME';
+        }
+    ) & {
       prInfo?: TBranchPRInfo;
-    }
-  | {
-      validationResult: 'INVALID_PARENT';
-      parentBranchName: string;
-      parentBranchRevision?: string;
-    }
-  | {
-      validationResult: 'BAD_PARENT_REVISION';
-      parentBranchName: string;
-    }
-  | {
-      validationResult: 'BAD_PARENT_NAME';
-    }
+    })
 );
 
 type TValidCachedMeta = TCachedMeta & { validationResult: 'TRUNK' | 'VALID' };
-type TValidNonTrunkCachedMeta = TCachedMeta & { validationResult: 'VALID' };
+type TNonTrunkCachedMeta = Exclude<TCachedMeta, { validationResult: 'TRUNK' }>;
+type TValidCachedMetaExceptTrunk = TValidCachedMeta & TNonTrunkCachedMeta;
 
 // eslint-disable-next-line max-lines-per-function
 export function composeMetaCache({
@@ -137,19 +140,42 @@ export function composeMetaCache({
       : undefined;
   };
 
-  function assertBranchIsValid(
+  function assertBranchIsInCache(
     branchName: string | undefined
   ): asserts branchName is string {
-    if (!getValidMeta(branchName)) {
+    if (!branchName || !cache.branches[branchName]) {
       throw new PreconditionsFailedError(
-        `${branchName} is not a valid Graphite branch.`
+        `${branchName} is unknown to Graphite.`
+      );
+    }
+  }
+
+  function assertCachedMetaIsValidAndNotTrunk(
+    meta: TCachedMeta
+  ): asserts meta is TValidCachedMetaExceptTrunk {
+    if (meta.validationResult !== 'VALID') {
+      throw new PreconditionsFailedError(
+        `Cannot perform this operation on this branch (invalid or trunk).`
+      );
+    }
+  }
+
+  function assertCachedMetaIsValidOrTrunk(
+    meta: TCachedMeta
+  ): asserts meta is TValidCachedMeta {
+    if (
+      meta.validationResult !== 'VALID' &&
+      meta.validationResult !== 'TRUNK'
+    ) {
+      throw new PreconditionsFailedError(
+        `Cannot perform this operation on the trunk branch (invalid).`
       );
     }
   }
 
   function assertCachedMetaIsNotTrunk(
     meta: TCachedMeta
-  ): asserts meta is TValidNonTrunkCachedMeta {
+  ): asserts meta is TNonTrunkCachedMeta {
     if (meta.validationResult === 'TRUNK') {
       throw new PreconditionsFailedError(
         `Cannot perform this operation on the trunk branch.`
@@ -159,7 +185,6 @@ export function composeMetaCache({
 
   const getChildren = (branchName: string) =>
     cache.branches[branchName].children.filter(getValidMeta);
-
   const getRecursiveChildren = (branchName: string): string[] =>
     getChildren(branchName).flatMap((child) => [
       child,
@@ -170,11 +195,9 @@ export function composeMetaCache({
     (cache.branches[parentBranchName].children = cache.branches[
       parentBranchName
     ].children.filter((child) => child !== childBranchName));
-
   const setParent = (branchName: string, parentBranchName: string) => {
-    assertBranchIsValid(branchName);
     const cachedMeta = cache.branches[branchName];
-    assertCachedMetaIsNotTrunk(cachedMeta);
+    assertCachedMetaIsValidAndNotTrunk(cachedMeta);
 
     const oldParentBranchName = cachedMeta.parentBranchName;
     if (oldParentBranchName === parentBranchName) {
@@ -190,7 +213,8 @@ export function composeMetaCache({
 
   const getParent = (branchName: string) => {
     const meta = cache.branches[branchName];
-    return meta.validationResult === 'BAD_PARENT_NAME'
+    return meta.validationResult === 'BAD_PARENT_NAME' ||
+      meta.validationResult === 'TRUNK'
       ? undefined
       : meta.parentBranchName;
   };
@@ -204,14 +228,15 @@ export function composeMetaCache({
     if (cache.currentBranch === branchName) {
       return;
     }
-    assertBranchIsValid(branchName);
+    assertBranchIsInCache(branchName);
     switchBranch(branchName);
     cache.currentBranch = branchName;
   };
 
   const persistMeta = (branchName: string) => {
+    assertBranchIsInCache(branchName);
     const meta = cache.branches[branchName];
-    assertCachedMetaIsNotTrunk(meta);
+    assertCachedMetaIsValidAndNotTrunk(meta);
 
     writeMetadataRef(branchName, {
       parentBranchName: meta.parentBranchName,
@@ -222,7 +247,7 @@ export function composeMetaCache({
 
   const handleRebase = (branchName: string) => {
     const cachedMeta = cache.branches[branchName];
-    assertCachedMetaIsNotTrunk(cachedMeta);
+    assertCachedMetaIsValidAndNotTrunk(cachedMeta);
 
     cachedMeta.parentBranchRevision =
       cache.branches[cachedMeta.parentBranchName].branchRevision;
@@ -232,8 +257,9 @@ export function composeMetaCache({
     );
 
     persistMeta(branchName);
-    assertBranchIsValid(cache.currentBranch);
-    switchBranch(cache.currentBranch);
+    if (cache.currentBranch && cache.currentBranch in cache.branches) {
+      switchBranch(cache.currentBranch);
+    }
   };
 
   return {
@@ -244,7 +270,8 @@ export function composeMetaCache({
       return cache.currentBranch;
     },
     get currentBranchPrecondition(): string {
-      assertBranchIsValid(cache.currentBranch);
+      assertBranchIsInCache(cache.currentBranch);
+      assertCachedMetaIsValidOrTrunk(cache.branches[cache.currentBranch]);
       return cache.currentBranch;
     },
     get trunk() {
@@ -258,20 +285,20 @@ export function composeMetaCache({
     },
     isTrunk: (branchName: string) => branchName === trunkName,
     getRevision: (branchName: string) => {
-      assertBranchIsValid(branchName);
+      assertBranchIsInCache(branchName);
       const meta = cache.branches[branchName];
       return meta.branchRevision;
     },
     getBaseRevision: (branchName: string) => {
-      assertBranchIsValid(branchName);
+      assertBranchIsInCache(branchName);
       const meta = cache.branches[branchName];
-      assertCachedMetaIsNotTrunk(meta);
+      assertCachedMetaIsValidAndNotTrunk(meta);
       return meta.parentBranchRevision;
     },
     getAllCommits: (branchName: string, format: TCommitFormat) => {
-      assertBranchIsValid(branchName);
+      assertBranchIsInCache(branchName);
       const meta = cache.branches[branchName];
-      assertCachedMetaIsNotTrunk(meta);
+      assertCachedMetaIsValidAndNotTrunk(meta);
 
       return getCommitRange(
         meta.parentBranchRevision,
@@ -280,24 +307,15 @@ export function composeMetaCache({
       );
     },
     getPrInfo: (branchName: string) => {
-      assertBranchIsValid(branchName);
+      assertBranchIsInCache(branchName);
       const meta = cache.branches[branchName];
       assertCachedMetaIsNotTrunk(meta);
       return meta.prInfo;
     },
-    resetPrInfo: (branchName: string) => {
-      assertBranchIsValid(branchName);
-      const meta = cache.branches[branchName];
-      assertCachedMetaIsNotTrunk(meta);
-
-      meta.prInfo = {};
-      persistMeta(branchName);
-    },
     upsertPrInfo: (branchName: string, prInfo: Partial<TBranchPRInfo>) => {
-      assertBranchIsValid(branchName);
+      assertBranchIsInCache(branchName);
       const meta = cache.branches[branchName];
       assertCachedMetaIsNotTrunk(meta);
-
       meta.prInfo = { ...meta.prInfo, ...prInfo };
       persistMeta(branchName);
     },
@@ -305,19 +323,15 @@ export function composeMetaCache({
     setParent,
     getParent,
     getParentPrecondition: (branchName: string) => {
+      assertBranchIsInCache(branchName);
       const meta = cache.branches[branchName];
-      if (
-        meta.validationResult === 'BAD_PARENT_NAME' ||
-        !meta.parentBranchName
-      ) {
-        throw new PreconditionsFailedError(
-          `${branchName} does not have a parent.`
-        );
-      }
+      assertCachedMetaIsValidAndNotTrunk(meta);
       return meta.parentBranchName;
     },
     getRelativeStack: (branchName: string, scope: TScopeSpec) => {
-      assertBranchIsValid(branchName);
+      assertBranchIsInCache(branchName);
+      const meta = cache.branches[branchName];
+      assertCachedMetaIsValidOrTrunk(meta);
       return [
         ...(scope.recursiveParents ? getRecursiveParents(branchName) : []),
         ...(scope.currentBranch ? [branchName] : []),
@@ -326,8 +340,9 @@ export function composeMetaCache({
     },
     checkoutNewBranch: (branchName: string) => {
       const parentBranchName = cache.currentBranch;
-      assertBranchIsValid(parentBranchName);
+      assertBranchIsInCache(parentBranchName);
       const parentCachedMeta = cache.branches[parentBranchName];
+      assertCachedMetaIsValidOrTrunk(parentCachedMeta);
       switchBranch(branchName, { new: true });
 
       cache.branches[branchName] = {
@@ -343,13 +358,12 @@ export function composeMetaCache({
     },
     checkoutBranch,
     renameCurrentBranch: (branchName: string) => {
-      assertBranchIsValid(cache.currentBranch);
+      assertBranchIsInCache(cache.currentBranch);
       const cachedMeta = cache.branches[cache.currentBranch];
-      assertCachedMetaIsNotTrunk(cachedMeta);
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
 
       branchMove(branchName);
       cachedMeta.prInfo = {};
-
       cache.branches[branchName] = cachedMeta;
       persistMeta(branchName);
 
@@ -357,7 +371,6 @@ export function composeMetaCache({
         setParent(childBranchName, branchName)
       );
 
-      assertBranchIsValid(cachedMeta.parentBranchName);
       const parentCachedMeta = cache.branches[cachedMeta.parentBranchName];
       parentCachedMeta.children = parentCachedMeta.children.map(
         (childBranchName) =>
@@ -369,41 +382,39 @@ export function composeMetaCache({
       cache.currentBranch = branchName;
     },
     deleteBranch: (branchName: string): string[] => {
+      assertBranchIsInCache(branchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+
       if (branchName === cache.currentBranch) {
-        const parentBranchName = getParent(branchName);
-        assertBranchIsValid(parentBranchName);
-        checkoutBranch(parentBranchName);
+        checkoutBranch(cachedMeta.parentBranchName);
       }
 
-      const meta = getValidMeta(branchName);
       const movedChildren: string[] = [];
-      if (meta) {
-        assertCachedMetaIsNotTrunk(meta);
-        meta.children.forEach((childBranchName) => {
-          setParent(childBranchName, meta.parentBranchName);
-          movedChildren.push(childBranchName);
-        });
-        assertBranchIsValid(meta.parentBranchName);
-        removeChild(meta.parentBranchName, branchName);
-      }
+      cachedMeta.children.forEach((childBranchName) => {
+        setParent(childBranchName, cachedMeta.parentBranchName);
+        movedChildren.push(childBranchName);
+      });
+      removeChild(cachedMeta.parentBranchName, branchName);
 
       deleteBranch(branchName);
       deleteMetadataRef(branchName);
       return movedChildren;
     },
     commit: (opts: TCommitOpts) => {
-      assertBranchIsValid(cache.currentBranch);
+      assertBranchIsInCache(cache.currentBranch);
       const cachedMeta = cache.branches[cache.currentBranch];
-      assertCachedMetaIsNotTrunk(cachedMeta);
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
       commit(opts);
       cachedMeta.branchRevision = getBranchRevision(cache.currentBranch);
     },
     restackBranch: (branchName: string) => {
-      assertBranchIsValid(branchName);
+      assertBranchIsInCache(branchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsValidOrTrunk(cachedMeta);
       if (isBranchFixed(branchName)) {
         return 'REBASE_UNNEEDED';
       }
-      const cachedMeta = cache.branches[branchName];
       assertCachedMetaIsNotTrunk(cachedMeta);
 
       if (
@@ -419,9 +430,9 @@ export function composeMetaCache({
       return 'REBASE_DONE';
     },
     rebaseInteractive: (branchName: string) => {
-      assertBranchIsValid(branchName);
+      assertBranchIsInCache(branchName);
       const cachedMeta = cache.branches[branchName];
-      assertCachedMetaIsNotTrunk(cachedMeta);
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
 
       if (
         rebaseInteractive({
@@ -441,25 +452,28 @@ export function composeMetaCache({
         return { result };
       }
       const branchName = getCurrentBranchName();
-      assertBranchIsValid(branchName);
+      assertBranchIsInCache(branchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
       handleRebase(branchName);
       return { result, branchName };
     },
     isMergedIntoTrunk: (branchName: string) => {
-      assertBranchIsValid(branchName);
-      assertBranchIsValid(trunkName);
+      assertBranchIsInCache(branchName);
+      assertBranchIsInCache(trunkName);
       return isMerged({ branchName, trunkName });
     },
     isBranchFixed,
     isBranchEmpty: (branchName: string) => {
-      assertBranchIsValid(branchName);
+      assertBranchIsInCache(branchName);
       const cachedMeta = cache.branches[branchName];
-      assertCachedMetaIsNotTrunk(cachedMeta);
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
       return isEmptyBranch(branchName, cachedMeta.parentBranchRevision);
     },
   };
 }
 
+// eslint-disable-next-line max-lines-per-function
 function loadCache(
   trunkName: string | undefined,
   splog: TSplog
@@ -475,7 +489,6 @@ function loadCache(
 
   branches[trunkName] = {
     validationResult: 'TRUNK',
-    parentBranchName: undefined,
     branchRevision: getBranchRevision(trunkName),
     children: [],
   };
@@ -512,6 +525,7 @@ function loadCache(
       branches[branchName] = {
         validationResult: 'BAD_PARENT_NAME',
         branchRevision,
+        prInfo,
         children: [],
       };
       continue;
@@ -537,6 +551,7 @@ function loadCache(
         parentBranchName,
         parentBranchRevision,
         branchRevision,
+        prInfo,
         children: [],
       };
       continue;
@@ -547,16 +562,42 @@ function loadCache(
       !parentBranchRevision ||
       getMergeBase(branchName, parentBranchRevision) !== parentBranchRevision
     ) {
-      splog.logDebug(
-        `bad parent rev: ${branchName}\n\t${parentBranchRevision ?? 'missing'}`
-      );
-      branches[branchName] = {
-        validationResult: 'BAD_PARENT_REVISION',
-        parentBranchName,
-        branchRevision,
-        children: [],
-      };
-      continue;
+      if (
+        getMergeBase(branchName, parentCachedMeta.branchRevision) !==
+        parentCachedMeta.branchRevision
+      ) {
+        splog.logDebug(
+          `bad parent rev: ${branchName}\n\t${
+            parentBranchRevision ?? 'missing'
+          }`
+        );
+        branches[branchName] = {
+          validationResult: 'BAD_PARENT_REVISION',
+          parentBranchName,
+          branchRevision,
+          prInfo,
+          children: [],
+        };
+        continue;
+      } else {
+        writeMetadataRef(branchName, {
+          parentBranchName,
+          parentBranchRevision: parentCachedMeta.branchRevision,
+          prInfo,
+        });
+        splog.logDebug(
+          `validated and fixed parent rev: ${branchName}\n\t${parentCachedMeta.branchRevision}`
+        );
+        branches[branchName] = {
+          validationResult: 'VALID',
+          parentBranchName,
+          parentBranchRevision: parentCachedMeta.branchRevision,
+          branchRevision,
+          prInfo,
+          children: [],
+        };
+        continue;
+      }
     }
 
     // This branch and its recursive parents are valid
