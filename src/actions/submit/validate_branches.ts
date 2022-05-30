@@ -3,7 +3,7 @@ import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { TScopeSpec } from '../../lib/engine/scope_spec';
 import { KilledError } from '../../lib/errors';
-import { syncPrInfo } from '../../lib/sync/pr_info';
+import { syncPrInfo } from '../sync_pr_info';
 
 export async function getValidBranchesToSubmit(
   scope: TScopeSpec,

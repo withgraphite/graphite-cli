@@ -1,7 +1,7 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import { version } from '../../../package.json';
-import { API_SERVER } from '../api';
+import { API_SERVER } from '../api/server';
 import { TContext } from '../context';
 import { spawnDetached } from '../utils/spawn';
 import {

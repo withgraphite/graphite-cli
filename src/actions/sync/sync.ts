@@ -1,11 +1,12 @@
 import { TContext } from '../../lib/context';
 import { SCOPE } from '../../lib/engine/scope_spec';
 import { uncommittedTrackedChangesPrecondition } from '../../lib/preconditions';
-import { syncPrInfo } from '../../lib/sync/pr_info';
 import { cleanBranches as cleanBranches } from '../clean_branches';
 import { restackBranches } from '../restack';
+import { syncPrInfo } from '../sync_pr_info';
 import { mergeDownstack } from './merge_downstack';
 import { pull } from './pull';
+
 export async function syncAction(
   opts: {
     pull: boolean;
