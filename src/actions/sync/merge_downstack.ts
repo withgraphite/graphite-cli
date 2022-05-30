@@ -5,7 +5,7 @@ import { KilledError } from '../../lib/errors';
 import { copyFromRemote } from '../../lib/git/copy_from_remote';
 import { getBranchRevision } from '../../lib/git/get_branch_revision';
 import { getMergeBase } from '../../lib/git/merge_base';
-import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
+import { syncPrInfo } from '../../lib/sync/pr_info';
 import { Branch } from '../../wrapper-classes/branch';
 
 export async function mergeDownstack(
@@ -58,7 +58,7 @@ export async function mergeDownstack(
     parent = branchName;
   }
 
-  await syncPRInfoForBranches(downstack, context);
+  await syncPrInfo(downstack, context);
 }
 
 function calculateOverwrittenBranches(

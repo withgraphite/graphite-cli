@@ -4,7 +4,7 @@ import { API_SERVER } from '../api';
 import { TContext } from '../context';
 import { TBranchPRInfo } from '../engine/metadata_ref';
 
-export async function syncPRInfoForBranches(
+export async function syncPrInfo(
   branchNames: string[],
   context: TContext
 ): Promise<void> {
@@ -13,21 +13,54 @@ export async function syncPRInfoForBranches(
     return;
   }
 
+  const branchNamesWithExistingPrInfo = branchNames.map((branchName) => ({
+    branchName,
+    prInfo: context.metaCache.getPrInfo(branchName),
+  }));
+
+  (
+    await getPrInfoForBranches(branchNamesWithExistingPrInfo, {
+      authToken,
+      repoName: context.repoConfig.getRepoName(),
+      repoOwner: context.repoConfig.getRepoOwner(),
+    })
+  ).forEach(
+    (branch) =>
+      branch.prInfo &&
+      context.metaCache.upsertPrInfo(branch.branchName, branch.prInfo)
+  );
+}
+
+type TBranchNameWithPrInfo = {
+  branchName: string;
+  prInfo: TBranchPRInfo | undefined;
+};
+
+export async function getPrInfoForBranches(
+  branchNamesWithExistingPrInfo: TBranchNameWithPrInfo[],
+  params: {
+    authToken: string;
+    repoName: string;
+    repoOwner: string;
+  }
+): Promise<TBranchNameWithPrInfo[]> {
+  // We sync branches without existing PR info by name.  For branches
+  // that are already associated with a PR, we only sync if both the
+  // the associated PR (keyed by number) if the name matches the headRef.
+
   const branchesWithoutPrInfo = new Set<string>();
   const existingPrInfo = new Map<
     number,
     TBranchPRInfo & { branchName: string }
   >();
 
-  branchNames.forEach((branchName) => {
-    const prInfo = context.metaCache.getPrInfo(branchName);
-
-    if (prInfo?.number === undefined) {
-      branchesWithoutPrInfo.add(branchName);
+  branchNamesWithExistingPrInfo.forEach((branch) => {
+    if (branch.prInfo?.number === undefined) {
+      branchesWithoutPrInfo.add(branch.branchName);
     } else {
-      existingPrInfo.set(prInfo.number, {
-        ...prInfo,
-        branchName: branchName,
+      existingPrInfo.set(branch.prInfo.number, {
+        ...branch.prInfo,
+        branchName: branch.branchName,
       });
     }
   });
@@ -36,9 +69,7 @@ export async function syncPRInfoForBranches(
     API_SERVER,
     graphiteCLIRoutes.pullRequestInfo,
     {
-      authToken: authToken,
-      repoName: context.repoConfig.getRepoName(),
-      repoOwner: context.repoConfig.getRepoOwner(),
+      ...params,
       prNumbers: [...existingPrInfo.keys()],
       // For branches that are not already associated with a PR, fetch by branch name.
       prHeadRefNames: [...branchesWithoutPrInfo],
@@ -46,10 +77,10 @@ export async function syncPRInfoForBranches(
   );
 
   if (response._response.status !== 200) {
-    return;
+    return [];
   }
 
-  response.prs
+  return response.prs
     .filter((pr) => {
       const existingInfoForPr = existingPrInfo.get(pr.prNumber);
 
@@ -63,15 +94,17 @@ export async function syncPRInfoForBranches(
 
       return shouldAssociatePrWithBranch || shouldUpdateExistingBranch;
     })
-    .forEach((pr) =>
-      context.metaCache.upsertPrInfo(pr.headRefName, {
+    .map((pr) => ({
+      branchName: pr.headRefName,
+      prInfo: {
         number: pr.prNumber,
+        title: pr.title,
+        body: pr.body,
+        state: pr.state,
+        reviewDecision: pr.reviewDecision ?? undefined,
         base: pr.baseRefName,
         url: pr.url,
-        state: pr.state,
-        title: pr.title,
-        reviewDecision: pr.reviewDecision ?? undefined,
         isDraft: pr.isDraft,
-      })
-    );
+      },
+    }));
 }

@@ -3,7 +3,7 @@ import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { TScopeSpec } from '../../lib/engine/scope_spec';
 import { KilledError } from '../../lib/errors';
-import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
+import { syncPrInfo } from '../../lib/sync/pr_info';
 
 export async function getValidBranchesToSubmit(
   scope: TScopeSpec,
@@ -20,7 +20,7 @@ export async function getValidBranchesToSubmit(
     .filter((b) => !context.metaCache.isTrunk(b));
   context.splog.logNewline();
 
-  await syncPRInfoForBranches(branchNames, context);
+  await syncPrInfo(branchNames, context);
 
   return hasAnyMergedBranches(branchNames, context) ||
     hasAnyClosedBranches(branchNames, context) ||

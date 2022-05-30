@@ -1,5 +1,5 @@
 import { initContext, TContext } from '../context';
-import { syncPRInfoForBranches } from '../sync/pr_info';
+import { syncPrInfo } from '../sync/pr_info';
 import { spawnDetached } from '../utils/spawn';
 
 export function refreshPRInfoInBackground(context: TContext): void {
@@ -23,7 +23,7 @@ export function refreshPRInfoInBackground(context: TContext): void {
 
 async function refreshPRInfo(context: TContext): Promise<void> {
   try {
-    await syncPRInfoForBranches(context.metaCache.allBranchNames, context);
+    await syncPrInfo(context.metaCache.allBranchNames, context);
   } catch (err) {
     return;
   }
