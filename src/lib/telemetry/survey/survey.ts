@@ -3,7 +3,7 @@ import { default as t } from '@withgraphite/retype';
 import { request } from '@withgraphite/retyped-routes';
 import prompts from 'prompts';
 import { assertUnreachable } from '../../../lib/utils/assert_unreachable';
-import { API_SERVER } from '../../api';
+import { API_SERVER } from '../../api/server';
 import { TContext } from '../../context';
 import { cliAuthPrecondition } from '../../preconditions';
 import { TSurveyResponse } from './../../config/survey_config';

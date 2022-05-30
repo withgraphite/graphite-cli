@@ -1,5 +1,5 @@
+import { syncPrInfo } from '../../actions/sync_pr_info';
 import { initContext, TContext } from '../context';
-import { syncPrInfo } from '../sync/pr_info';
 import { spawnDetached } from '../utils/spawn';
 
 export function refreshPRInfoInBackground(context: TContext): void {

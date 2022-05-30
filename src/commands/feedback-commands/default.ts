@@ -2,7 +2,7 @@ import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { API_SERVER } from '../../lib/api';
+import { API_SERVER } from '../../lib/api/server';
 import { captureState } from '../../lib/debug_context';
 import { ExitFailedError } from '../../lib/errors';
 import { getUserEmail } from '../../lib/telemetry/context';

@@ -1,6 +1,6 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
-import { API_SERVER } from '../../lib/api';
+import { API_SERVER } from '../../lib/api/server';
 import { TContext } from '../../lib/context';
 import { ExitFailedError } from '../../lib/errors';
 import { getTrunk } from '../../lib/utils/trunk';
