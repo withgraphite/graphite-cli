@@ -309,8 +309,7 @@ export function composeMetaCache({
     getPrInfo: (branchName: string) => {
       assertBranchIsInCache(branchName);
       const meta = cache.branches[branchName];
-      assertCachedMetaIsNotTrunk(meta);
-      return meta.prInfo;
+      return meta.validationResult === 'TRUNK' ? undefined : meta.prInfo;
     },
     upsertPrInfo: (branchName: string, prInfo: Partial<TBranchPRInfo>) => {
       assertBranchIsInCache(branchName);
@@ -494,12 +493,8 @@ function loadCache(
   };
 
   splog.logDebug('Reading branches and metadata...');
-  const metaToValidate = readAllMeta(splog);
-
-  const allBranchNames = new Set([
-    trunkName,
-    ...metaToValidate.map((meta) => meta.branchName),
-  ]);
+  const metaToValidate = readAllBranchesAndMeta(splog);
+  const allBranchNames = new Set(metaToValidate.map((meta) => meta.branchName));
 
   splog.logDebug('Validating branches...');
   while (metaToValidate.length > 0) {
@@ -512,6 +507,10 @@ function loadCache(
       parentBranchRevision,
       prInfo,
     } = current;
+
+    if (branchName === trunkName) {
+      continue;
+    }
 
     // Check parentBranchName
     if (
@@ -615,26 +614,25 @@ function loadCache(
   return branches;
 }
 
-function readAllMeta(
-  splog: TSplog
-): Array<{ branchName: string; branchRevision: string } & TMeta> {
+type TMetaToValidate = { branchName: string; branchRevision: string } & TMeta;
+function readAllBranchesAndMeta(splog: TSplog): TMetaToValidate[] {
   const gitBranchNamesAndRevisions = branchNamesAndRevisions();
-  const branchesWithMeta = allBranchesWithMeta();
-  return branchesWithMeta
-    .filter((branchName) => {
-      // As we read the refs, cleanup any whose branch is missing
-      if (!gitBranchNamesAndRevisions[branchName]) {
-        splog.logDebug(`Deleting metadata for missing branch: ${branchName}`);
-        deleteMetadataRef(branchName);
-        return false;
+
+  const branchesWithMeta = new Set(
+    allBranchesWithMeta().filter((branchName) => {
+      if (gitBranchNamesAndRevisions[branchName]) {
+        return true;
       }
-      splog.logDebug(`Reading metadata for branch: ${branchName}`);
-      return true;
+      // Clean up refs whose branch is missing
+      splog.logDebug(`Deleting metadata for missing branch: ${branchName}`);
+      deleteMetadataRef(branchName);
+      return false;
     })
-    .map((branchName) => ({
-      branchName,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      branchRevision: gitBranchNamesAndRevisions[branchName]!,
-      ...readMetadataRef(branchName),
-    }));
+  );
+
+  return Object.keys(gitBranchNamesAndRevisions).map((branchName) => ({
+    branchName,
+    branchRevision: gitBranchNamesAndRevisions[branchName],
+    ...(branchesWithMeta.has(branchName) ? readMetadataRef(branchName) : {}),
+  }));
 }
