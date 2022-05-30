@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
 import { version } from '../../../package.json';
-import { API_SERVER } from '../api';
+import { API_SERVER } from '../api/server';
 import { initContext, TContext } from '../context';
 import { tracer } from '../telemetry/tracer';
 import { cuteString } from '../utils/cute_string';

@@ -1,7 +1,7 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { expect } from 'chai';
 import nock from 'nock';
-import { API_SERVER } from '../../../../src/lib/api';
+import { API_SERVER } from '../../../../src/lib/api/server';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
 import { expectBranches } from '../../../lib/utils/expect_branches';

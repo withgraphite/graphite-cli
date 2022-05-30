@@ -1,7 +1,7 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import * as t from '@withgraphite/retype';
 import { request } from '@withgraphite/retyped-routes';
-import { API_SERVER } from '../api';
+import { API_SERVER } from '../api/server';
 import { TContext } from '../context';
 import { cliAuthPrecondition } from '../preconditions';
 import { composeConfig } from './compose_config';

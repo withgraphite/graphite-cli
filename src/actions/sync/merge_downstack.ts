@@ -5,8 +5,8 @@ import { KilledError } from '../../lib/errors';
 import { copyFromRemote } from '../../lib/git/copy_from_remote';
 import { getBranchRevision } from '../../lib/git/get_branch_revision';
 import { getMergeBase } from '../../lib/git/merge_base';
-import { syncPrInfo } from '../../lib/sync/pr_info';
 import { Branch } from '../../wrapper-classes/branch';
+import { syncPrInfo } from '../sync_pr_info';
 
 export async function mergeDownstack(
   downstack: string[],
