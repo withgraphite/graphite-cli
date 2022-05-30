@@ -489,14 +489,15 @@ function loadCache(
     children: [],
   };
 
-  splog.logDebug('Reading metadata...');
-  const metaToValidate = readAllMeta();
+  splog.logDebug('Reading branches and metadata...');
+  const metaToValidate = readAllMeta(splog);
 
   const allBranchNames = new Set([
     trunkName,
     ...metaToValidate.map((meta) => meta.branchName),
   ]);
 
+  splog.logDebug('Validating branches...');
   while (metaToValidate.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const current = metaToValidate.shift()!;
@@ -582,17 +583,20 @@ function loadCache(
   return branches;
 }
 
-function readAllMeta(): Array<
-  { branchName: string; branchRevision: string } & TMeta
-> {
+function readAllMeta(
+  splog: TSplog
+): Array<{ branchName: string; branchRevision: string } & TMeta> {
   const gitBranchNamesAndRevisions = branchNamesAndRevisions();
-  return allBranchesWithMeta()
+  const branchesWithMeta = allBranchesWithMeta();
+  return branchesWithMeta
     .filter((branchName) => {
       // As we read the refs, cleanup any whose branch is missing
       if (!gitBranchNamesAndRevisions[branchName]) {
+        splog.logDebug(`Deleting metadata for missing branch: ${branchName}`);
         deleteMetadataRef(branchName);
         return false;
       }
+      splog.logDebug(`Reading metadata for branch: ${branchName}`);
       return true;
     })
     .map((branchName) => ({
