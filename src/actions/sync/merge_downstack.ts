@@ -6,7 +6,6 @@ import { copyFromRemote } from '../../lib/git/copy_from_remote';
 import { getBranchRevision } from '../../lib/git/get_branch_revision';
 import { getMergeBase } from '../../lib/git/merge_base';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
-import { getTrunk } from '../../lib/utils/trunk';
 import { Branch } from '../../wrapper-classes/branch';
 
 export async function mergeDownstack(
@@ -46,7 +45,7 @@ export async function mergeDownstack(
     context.splog.logNewline();
   }
 
-  let parent = getTrunk(context).name;
+  let parent = context.metaCache.trunk;
   for (const branchName of downstack) {
     copyFromRemote(branchName, context.repoConfig.getRemote());
     // using merge-base here handles the first branch gracefully (can be off trunk)

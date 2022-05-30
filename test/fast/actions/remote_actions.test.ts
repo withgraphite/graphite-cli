@@ -40,13 +40,7 @@ for (const scene of [new CloneScene()]) {
       scene.originRepo.createChange('1');
       scene.originRepo.execCliCommand(`branch create 1 -am "1"`);
 
-      pull(
-        {
-          oldBranchName: scene.repo.currentBranchName(),
-          branchesToFetch: ['main', '1'],
-        },
-        scene.context
-      );
+      pull(['main', '1'], scene.context);
 
       expect(scene.repo.getRef('refs/heads/main')).to.equal(
         scene.originRepo.getRef('refs/heads/main')

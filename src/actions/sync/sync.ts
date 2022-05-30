@@ -12,25 +12,18 @@ export async function syncAction(
     force: boolean;
     delete: boolean;
     showDeleteProgress: boolean;
-    resubmit: boolean;
     downstackToSync?: string[];
   },
   context: TContext
 ): Promise<void> {
   uncommittedTrackedChangesPrecondition();
-  const oldBranchName = context.metaCache.currentBranchPrecondition;
-  context.metaCache.checkoutBranch(context.metaCache.trunk);
-
   if (opts.pull) {
-    pull(
-      {
-        oldBranchName,
-        branchesToFetch: context.metaCache.allBranchNames.concat(
-          opts.downstackToSync ?? []
-        ),
-      },
-      context
+    context.splog.logInfo(`Pulling in new changes...`);
+    context.splog.logTip(
+      `Disable this behavior at any point in the future with --no-pull`
     );
+    pull([context.metaCache.trunk].concat(opts.downstackToSync ?? []), context);
+    context.splog.logNewline();
   }
 
   if (opts.downstackToSync) {
