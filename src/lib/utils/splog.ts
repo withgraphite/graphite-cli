@@ -19,7 +19,7 @@ export function composeSplog(opts: {
     logNewline: opts.quiet ? () => void 0 : () => console.log('\n'),
     logInfo: opts.quiet ? () => void 0 : (s: string) => console.log(s),
     logDebug: opts.outputDebugLogs
-      ? (s: string) => console.log(`DEBUG: ${s}`)
+      ? (s: string) => console.log(chalk.gray(`DEBUG: ${s}`))
       : () => void 0,
     logError: (s: string) => console.log(chalk.redBright(`ERROR: ${s}`)),
     logWarn: (s: string) => console.log(chalk.yellow(`WARNING: ${s}`)),
