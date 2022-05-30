@@ -41,7 +41,7 @@ export type TMetaCache = {
   setParent: (branchName: string, parentBranchName: string) => void;
   getParent: (branchName: string) => string | undefined;
   getParentPrecondition: (branchName: string) => string;
-  getCurrentStack: (scope: TScopeSpec) => string[];
+  getRelativeStack: (branchName: string, scope: TScopeSpec) => string[];
   checkoutNewBranch: (branchName: string) => void;
   checkoutBranch: (branchName: string) => void;
   renameCurrentBranch: (branchName: string) => void;
@@ -57,7 +57,7 @@ export type TMetaCache = {
         branchName: string;
       }
     | { result: 'REBASE_CONFLICT' };
-  isMerged: (branchName: string) => boolean;
+  isMergedIntoTrunk: (branchName: string) => boolean;
   isBranchFixed: (branchName: string) => boolean;
   isBranchEmpty: (branchName: string) => boolean;
 };
@@ -316,16 +316,12 @@ export function composeMetaCache({
       }
       return meta.parentBranchName;
     },
-    getCurrentStack: (scope: TScopeSpec) => {
-      assertBranchIsValid(cache.currentBranch);
+    getRelativeStack: (branchName: string, scope: TScopeSpec) => {
+      assertBranchIsValid(branchName);
       return [
-        ...(scope.recursiveParents
-          ? getRecursiveParents(cache.currentBranch)
-          : []),
-        ...(scope.currentBranch ? [cache.currentBranch] : []),
-        ...(scope.recursiveChildren
-          ? getRecursiveChildren(cache.currentBranch)
-          : []),
+        ...(scope.recursiveParents ? getRecursiveParents(branchName) : []),
+        ...(scope.currentBranch ? [branchName] : []),
+        ...(scope.recursiveChildren ? getRecursiveChildren(branchName) : []),
       ];
     },
     checkoutNewBranch: (branchName: string) => {
@@ -449,7 +445,7 @@ export function composeMetaCache({
       handleRebase(branchName);
       return { result, branchName };
     },
-    isMerged: (branchName: string) => {
+    isMergedIntoTrunk: (branchName: string) => {
       assertBranchIsValid(branchName);
       assertBranchIsValid(trunkName);
       return isMerged({ branchName, trunkName });

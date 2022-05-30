@@ -11,7 +11,10 @@ export function editBranchAction(context: TContext): void {
     context.metaCache.rebaseInteractive(currentBranchName) === 'REBASE_CONFLICT'
   ) {
     persistBranchesToRestack(
-      context.metaCache.getCurrentStack(SCOPE.UPSTACK_EXCLUSIVE),
+      context.metaCache.getRelativeStack(
+        currentBranchName,
+        SCOPE.UPSTACK_EXCLUSIVE
+      ),
       context
     );
     throw new RebaseConflictError(

@@ -17,7 +17,7 @@ export function testStack(
   const currentBranch = context.metaCache.currentBranchPrecondition;
   // Get branches to test.
   const branches = context.metaCache
-    .getCurrentStack(SCOPE.STACK)
+    .getRelativeStack(currentBranch, SCOPE.STACK)
     .filter(
       (branch) => opts.includeTrunk || !context.metaCache.isTrunk(branch)
     );
