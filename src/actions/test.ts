@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import tmp from 'tmp';
 import { TContext } from '../lib/context';
-import { SCOPE, TScopeSpec } from '../lib/state/scope_spec';
+import { SCOPE, TScopeSpec } from '../lib/engine/scope_spec';
 import { gpExecSync } from '../lib/utils/exec_sync';
 
 type TTestStatus = '[pending]' | '[success]' | '[fail]' | '[running]';

@@ -1,6 +1,6 @@
 import { TContext } from '../lib/context';
+import { SCOPE } from '../lib/engine/scope_spec';
 import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
-import { SCOPE } from '../lib/state/scope_spec';
 import { restackBranches } from './restack';
 
 export function currentBranchOnto(

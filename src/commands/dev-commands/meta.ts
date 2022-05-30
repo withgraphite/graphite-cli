@@ -2,11 +2,11 @@ import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
 import yargs from 'yargs';
-import { ExitFailedError } from '../../lib/errors';
 import {
   readMetadataRef,
   writeMetadataRef,
-} from '../../lib/state/metadata_ref';
+} from '../../lib/engine/metadata_ref';
+import { ExitFailedError } from '../../lib/errors';
 import { profile } from '../../lib/telemetry/profile';
 import { cuteString } from '../../lib/utils/cute_string';
 import { gpExecSync } from '../../lib/utils/exec_sync';

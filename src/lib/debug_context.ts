@@ -4,18 +4,18 @@ import tmp from 'tmp';
 import { TRepoConfig } from './config/repo_config';
 import { TUserConfig } from './config/user_config';
 import { TContext } from './context';
+import {
+  allBranchesWithMeta,
+  readMetadataRef,
+  TMeta,
+  writeMetadataRef,
+} from './engine/metadata_ref';
 import { getCommitTree } from './git/commit_tree';
 import { getCurrentBranchName } from './git/current_branch_name';
 import { deleteBranch } from './git/deleteBranch';
 import { getBranchRevision } from './git/get_branch_revision';
 import { branchNamesAndRevisions } from './git/sorted_branch_names';
 import { switchBranch } from './git/switch_branch';
-import {
-  allBranchesWithMeta,
-  readMetadataRef,
-  TMeta,
-  writeMetadataRef,
-} from './state/metadata_ref';
 import { cuteString } from './utils/cute_string';
 import { gpExecSync } from './utils/exec_sync';
 import { TSplog } from './utils/splog';

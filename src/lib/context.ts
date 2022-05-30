@@ -6,7 +6,7 @@ import { messageConfigFactory, TMessageConfig } from './config/message_config';
 import { repoConfigFactory, TRepoConfig } from './config/repo_config';
 import { surveyConfigFactory, TSurveyConfig } from './config/survey_config';
 import { TUserConfig, userConfigFactory } from './config/user_config';
-import { composeMetaCache, TMetaCache } from './state/cache';
+import { composeMetaCache, TMetaCache } from './engine/cache';
 import { composeSplog, TSplog } from './utils/splog';
 
 export const USER_CONFIG_OVERRIDE_ENV = 'GRAPHITE_USER_CONFIG_PATH' as const;
