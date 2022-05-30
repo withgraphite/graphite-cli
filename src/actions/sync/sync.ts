@@ -1,7 +1,7 @@
 import { TContext } from '../../lib/context';
+import { SCOPE } from '../../lib/engine/scope_spec';
 import { uncommittedTrackedChangesPrecondition } from '../../lib/preconditions';
-import { SCOPE } from '../../lib/state/scope_spec';
-import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
+import { syncPrInfo } from '../../lib/sync/pr_info';
 import { cleanBranches as cleanBranches } from '../clean_branches';
 import { restackBranches } from '../restack';
 import { mergeDownstack } from './merge_downstack';
@@ -30,7 +30,7 @@ export async function syncAction(
     await mergeDownstack(opts.downstackToSync, context);
   }
 
-  await syncPRInfoForBranches(context.metaCache.allBranchNames, context);
+  await syncPrInfo(context.metaCache.allBranchNames, context);
 
   if (opts.delete) {
     const branchesWithNewParents = await cleanBranches(
