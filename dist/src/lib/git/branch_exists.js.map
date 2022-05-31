@@ -1,0 +1,1 @@
+{"version":3,"file":"branch_exists.js","sourceRoot":"","sources":["../../../../src/lib/git/branch_exists.ts"],"names":[],"mappings":";;;AAAA,kDAAgD;AAEhD,SAAgB,YAAY,CAAC,UAAkB;IAC7C,OAAO,CACL,sBAAU,CAAC;QACT,OAAO,EAAE,2BAA2B,UAAU,EAAE;KACjD,CAAC,CAAC,MAAM,GAAG,CAAC,CACd,CAAC;AACJ,CAAC;AAND,oCAMC"}

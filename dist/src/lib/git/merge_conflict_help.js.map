@@ -1,0 +1,1 @@
+{"version":3,"file":"merge_conflict_help.js","sourceRoot":"","sources":["../../../../src/lib/git/merge_conflict_help.ts"],"names":[],"mappings":";;;AAAA,kDAAgD;AAEhD,SAAgB,WAAW;IACzB,sBAAU,CAAC;QACT,OAAO,EAAE,YAAY;QACrB,OAAO,EAAE;YACP,WAAW,EAAE,CAAC,GAAG,EAAE,EAAE,CAAC,GAAG,CAAC,OAAO,CAAC,uBAAuB,EAAE,aAAa,CAAC;SAC1E;KACF,CAAC,CAAC;AACL,CAAC;AAPD,kCAOC"}

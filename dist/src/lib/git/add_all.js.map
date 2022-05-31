@@ -1,0 +1,1 @@
+{"version":3,"file":"add_all.js","sourceRoot":"","sources":["../../../../src/lib/git/add_all.ts"],"names":[],"mappings":";;;AAAA,sCAA4C;AAC5C,kDAAgD;AAEhD,SAAgB,MAAM;IACpB,sBAAU,CACR;QACE,OAAO,EAAE,eAAe;KACzB,EACD,CAAC,GAAG,EAAE,EAAE;QACN,MAAM,IAAI,wBAAe,CAAC,oCAAoC,EAAE,GAAG,CAAC,CAAC;IACvE,CAAC,CACF,CAAC;AACJ,CAAC;AATD,wBASC"}

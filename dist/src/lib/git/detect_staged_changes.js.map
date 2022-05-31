@@ -1,0 +1,1 @@
+{"version":3,"file":"detect_staged_changes.js","sourceRoot":"","sources":["../../../../src/lib/git/detect_staged_changes.ts"],"names":[],"mappings":";;;AAAA,kDAAgD;AAChD,SAAgB,mBAAmB;IACjC,OAAO,CACL,sBAAU,CAAC;QACT,OAAO,EAAE,iCAAiC;KAC3C,CAAC,CAAC,MAAM,GAAG,CAAC,CACd,CAAC;AACJ,CAAC;AAND,kDAMC"}
