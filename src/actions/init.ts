@@ -30,13 +30,14 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
     );
   }
 
-  // Trunk
   const newTrunkName =
     allBranchNames.find((b) => b === trunk) ??
     (await selectTrunkBranch(allBranchNames, context));
-  context.repoConfig.setTrunk(newTrunkName);
-  context.splog.logInfo(`Trunk set to (${chalk.green(newTrunkName)})`);
 
+  context.repoConfig.setTrunk(newTrunkName);
+  context.metaCache.handleNewTrunk(newTrunkName);
+
+  context.splog.logInfo(`Trunk set to (${chalk.green(newTrunkName)})`);
   context.splog.logInfo(
     `Graphite repo config saved at "${context.repoConfig.path}"`
   );

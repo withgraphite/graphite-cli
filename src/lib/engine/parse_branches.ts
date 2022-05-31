@@ -11,20 +11,21 @@ import {
 } from './metadata_ref';
 
 // eslint-disable-next-line max-lines-per-function
-export function loadBranches(
+export function parseBranchesAndMeta(
   trunkName: string | undefined,
   splog: TSplog
 ): Record<string, TCachedMeta> {
   splog.logDebug('Reading branches and metadata...');
-  const branchesToLoad = readAllBranchesAndMeta(splog);
-  const allBranchNames = new Set(branchesToLoad.map((meta) => meta.branchName));
-
-  const loadedBranches: Record<string, TCachedMeta> = {};
+  const branchesToParse = getAllBranchesAndMeta(splog);
+  const allBranchNames = new Set(
+    branchesToParse.map((meta) => meta.branchName)
+  );
+  const parsedBranches: Record<string, TCachedMeta> = {};
 
   splog.logDebug('Validating branches...');
-  while (branchesToLoad.length > 0) {
+  while (branchesToParse.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const current = branchesToLoad.shift()!;
+    const current = branchesToParse.shift()!;
     const {
       branchName,
       branchRevision,
@@ -35,7 +36,7 @@ export function loadBranches(
 
     if (branchName === trunkName) {
       splog.logDebug(`trunk: ${branchName}`);
-      loadedBranches[branchName] = {
+      parsedBranches[branchName] = {
         validationResult: 'TRUNK',
         branchRevision: branchRevision,
         children: [],
@@ -52,7 +53,7 @@ export function loadBranches(
       splog.logDebug(
         `bad parent name: ${branchName}\n\t${parentBranchName ?? 'missing'}`
       );
-      loadedBranches[branchName] = {
+      parsedBranches[branchName] = {
         validationResult: 'BAD_PARENT_NAME',
         branchRevision,
         prInfo,
@@ -62,9 +63,9 @@ export function loadBranches(
     }
 
     // If parent hasn't been checked yet, we'll come back to this branch
-    const parentCachedMeta = loadedBranches[parentBranchName];
+    const parentCachedMeta = parsedBranches[parentBranchName];
     if (typeof parentCachedMeta === 'undefined') {
-      branchesToLoad.push(current);
+      branchesToParse.push(current);
       continue;
     }
 
@@ -76,7 +77,7 @@ export function loadBranches(
       parentCachedMeta.validationResult !== 'TRUNK'
     ) {
       splog.logDebug(`invalid parent: ${branchName}`);
-      loadedBranches[branchName] = {
+      parsedBranches[branchName] = {
         validationResult: 'INVALID_PARENT',
         parentBranchName,
         parentBranchRevision,
@@ -101,7 +102,7 @@ export function loadBranches(
             parentBranchRevision ?? 'missing'
           }`
         );
-        loadedBranches[branchName] = {
+        parsedBranches[branchName] = {
           validationResult: 'BAD_PARENT_REVISION',
           parentBranchName,
           branchRevision,
@@ -118,7 +119,7 @@ export function loadBranches(
         splog.logDebug(
           `validated and fixed parent rev: ${branchName}\n\t${parentCachedMeta.branchRevision}`
         );
-        loadedBranches[branchName] = {
+        parsedBranches[branchName] = {
           validationResult: 'VALID',
           parentBranchName,
           parentBranchRevision: parentCachedMeta.branchRevision,
@@ -132,7 +133,7 @@ export function loadBranches(
 
     // This branch and its recursive parents are valid
     splog.logDebug(`validated: ${branchName}`);
-    loadedBranches[branchName] = {
+    parsedBranches[branchName] = {
       validationResult: 'VALID',
       parentBranchName,
       parentBranchRevision,
@@ -142,11 +143,11 @@ export function loadBranches(
     };
   }
 
-  return loadedBranches;
+  return parsedBranches;
 }
 
-type TMetaToValidate = { branchName: string; branchRevision: string } & TMeta;
-function readAllBranchesAndMeta(splog: TSplog): TMetaToValidate[] {
+type TBranchToParse = { branchName: string; branchRevision: string } & TMeta;
+function getAllBranchesAndMeta(splog: TSplog): TBranchToParse[] {
   const gitBranchNamesAndRevisions = branchNamesAndRevisions();
 
   const branchesWithMeta = new Set(
