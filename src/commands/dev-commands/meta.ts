@@ -22,11 +22,6 @@ const args = {
     default: false,
     alias: 'e',
   },
-  ['text-editor']: {
-    type: 'string',
-    default: 'vi',
-    alias: 't',
-  },
 } as const;
 
 export const command = 'meta <branch>';
@@ -47,7 +42,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     fs.writeFileSync(tmpfilePath, metaString);
     gpExecSync(
       {
-        command: `${argv['text-editor']} "${tmpfilePath}"`,
+        command: `${context.userConfig.getEditor()} "${tmpfilePath}"`,
         options: { stdio: 'inherit' },
       },
       (err) => {

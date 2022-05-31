@@ -4,7 +4,6 @@ import tmp from 'tmp';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
 import { getCommitMessage } from '../../lib/git/commit_message';
-import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { getPRTemplate } from '../../lib/utils/pr_templates';
 
@@ -21,14 +20,14 @@ export async function getPRBody(
     return body;
   }
 
-  const defaultEditor = await getDefaultEditorOrPrompt(context);
+  const editor = context.userConfig.getEditor();
   const response = await prompts(
     {
       type: 'select',
       name: 'body',
       message: 'Body',
       choices: [
-        { title: `Edit Body (using ${defaultEditor})`, value: 'edit' },
+        { title: `Edit Body (using ${editor})`, value: 'edit' },
         {
           title: `Skip${body ? ` (just paste template)` : ''}`,
           value: 'skip',
@@ -47,7 +46,7 @@ export async function getPRBody(
 
   return await editPRBody({
     initial: body,
-    editor: defaultEditor,
+    editor,
   });
 }
 
