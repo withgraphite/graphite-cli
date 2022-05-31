@@ -1,9 +1,8 @@
 import chalk from 'chalk';
-import { persistBranchesToRestack } from '../lib/config/continue_config';
 import { TContext } from '../lib/context';
 import { SCOPE } from '../lib/engine/scope_spec';
 import { RebaseConflictError } from '../lib/errors';
-import { restackBranches } from './restack';
+import { persistBranchesToRestack, restackBranches } from './restack';
 
 export function editBranchAction(context: TContext): void {
   const currentBranchName = context.metaCache.currentBranchPrecondition;
