@@ -7,11 +7,12 @@ import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
 import { cuteString } from '../../lib/utils/cute_string';
 import { Unpacked } from '../../lib/utils/ts_helpers';
-import { TSubmittedPRRequest } from './submit_action';
 
-type TPRSubmissionInfo = t.UnwrapSchemaMap<
+export type TPRSubmissionInfo = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.submitPullRequests.params
 >['prs'];
+
+type TSubmittedPRRequest = Unpacked<TPRSubmissionInfo>;
 
 type TSubmittedPRResponse = Unpacked<
   t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.response>['prs']
