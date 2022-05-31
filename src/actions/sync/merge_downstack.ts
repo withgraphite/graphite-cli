@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
+import { writeMetadataRef } from '../../lib/engine/metadata_ref';
 import { KilledError } from '../../lib/errors';
 import { copyFromRemote } from '../../lib/git/copy_from_remote';
 import { getBranchRevision } from '../../lib/git/get_branch_revision';
@@ -47,10 +48,15 @@ export async function mergeDownstack(
 
   let parent = context.metaCache.trunk;
   for (const branchName of downstack) {
+    // TODO - fully move this logic to cache
     copyFromRemote(branchName, context.repoConfig.getRemote());
     // using merge-base here handles the first branch gracefully (can be off trunk)
     // while still ensuring the rest of the branches have correct data
-    Branch.create(branchName, parent, getMergeBase(branchName, parent));
+    writeMetadataRef(branchName, {
+      parentBranchName: parent,
+      parentBranchRevision: getMergeBase(branchName, parent),
+    });
+
     context.splog.logInfo(
       `${chalk.green(branchName)} synced from ${context.repoConfig.getRemote()}`
     );
