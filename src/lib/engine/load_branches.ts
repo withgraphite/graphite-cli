@@ -1,5 +1,3 @@
-import { branchExists } from '../git/branch_exists';
-import { getBranchRevision } from '../git/get_branch_revision';
 import { getMergeBase } from '../git/merge_base';
 import { branchNamesAndRevisions } from '../git/sorted_branch_names';
 import { TSplog } from '../utils/splog';
@@ -13,33 +11,20 @@ import {
 } from './metadata_ref';
 
 // eslint-disable-next-line max-lines-per-function
-export function loadCache(
+export function loadBranches(
   trunkName: string | undefined,
   splog: TSplog
 ): Record<string, TCachedMeta> {
-  const branches: Record<string, TCachedMeta> = {};
-  if (!trunkName) {
-    return branches;
-  }
-
-  if (!branchExists(trunkName)) {
-    return branches;
-  }
-
-  branches[trunkName] = {
-    validationResult: 'TRUNK',
-    branchRevision: getBranchRevision(trunkName),
-    children: [],
-  };
-
   splog.logDebug('Reading branches and metadata...');
-  const metaToValidate = readAllBranchesAndMeta(splog);
-  const allBranchNames = new Set(metaToValidate.map((meta) => meta.branchName));
+  const branchesToLoad = readAllBranchesAndMeta(splog);
+  const allBranchNames = new Set(branchesToLoad.map((meta) => meta.branchName));
+
+  const loadedBranches: Record<string, TCachedMeta> = {};
 
   splog.logDebug('Validating branches...');
-  while (metaToValidate.length > 0) {
+  while (branchesToLoad.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const current = metaToValidate.shift()!;
+    const current = branchesToLoad.shift()!;
     const {
       branchName,
       branchRevision,
@@ -49,6 +34,12 @@ export function loadCache(
     } = current;
 
     if (branchName === trunkName) {
+      splog.logDebug(`trunk: ${branchName}`);
+      loadedBranches[branchName] = {
+        validationResult: 'TRUNK',
+        branchRevision: branchRevision,
+        children: [],
+      };
       continue;
     }
 
@@ -61,7 +52,7 @@ export function loadCache(
       splog.logDebug(
         `bad parent name: ${branchName}\n\t${parentBranchName ?? 'missing'}`
       );
-      branches[branchName] = {
+      loadedBranches[branchName] = {
         validationResult: 'BAD_PARENT_NAME',
         branchRevision,
         prInfo,
@@ -71,9 +62,9 @@ export function loadCache(
     }
 
     // If parent hasn't been checked yet, we'll come back to this branch
-    const parentCachedMeta = branches[parentBranchName];
+    const parentCachedMeta = loadedBranches[parentBranchName];
     if (typeof parentCachedMeta === 'undefined') {
-      metaToValidate.push(current);
+      branchesToLoad.push(current);
       continue;
     }
 
@@ -85,7 +76,7 @@ export function loadCache(
       parentCachedMeta.validationResult !== 'TRUNK'
     ) {
       splog.logDebug(`invalid parent: ${branchName}`);
-      branches[branchName] = {
+      loadedBranches[branchName] = {
         validationResult: 'INVALID_PARENT',
         parentBranchName,
         parentBranchRevision,
@@ -110,7 +101,7 @@ export function loadCache(
             parentBranchRevision ?? 'missing'
           }`
         );
-        branches[branchName] = {
+        loadedBranches[branchName] = {
           validationResult: 'BAD_PARENT_REVISION',
           parentBranchName,
           branchRevision,
@@ -127,7 +118,7 @@ export function loadCache(
         splog.logDebug(
           `validated and fixed parent rev: ${branchName}\n\t${parentCachedMeta.branchRevision}`
         );
-        branches[branchName] = {
+        loadedBranches[branchName] = {
           validationResult: 'VALID',
           parentBranchName,
           parentBranchRevision: parentCachedMeta.branchRevision,
@@ -141,7 +132,7 @@ export function loadCache(
 
     // This branch and its recursive parents are valid
     splog.logDebug(`validated: ${branchName}`);
-    branches[branchName] = {
+    loadedBranches[branchName] = {
       validationResult: 'VALID',
       parentBranchName,
       parentBranchRevision,
@@ -151,7 +142,7 @@ export function loadCache(
     };
   }
 
-  return branches;
+  return loadedBranches;
 }
 
 type TMetaToValidate = { branchName: string; branchRevision: string } & TMeta;
