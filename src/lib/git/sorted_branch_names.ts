@@ -10,7 +10,7 @@ export function branchNamesAndRevisions(): Record<string, string> {
   const branches: Record<string, string> = {};
 
   gpExecSyncAndSplitLines({
-    command: `git for-each-ref --format='%(refname:short):%(objectname)' refs/heads/`,
+    command: `git for-each-ref --format='%(refname:short):%(objectname)' --sort=-committerdate refs/heads/`,
   })
     .map((line) => line.split(':'))
     .filter(
