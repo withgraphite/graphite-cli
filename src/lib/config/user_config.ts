@@ -1,4 +1,5 @@
 import * as t from '@withgraphite/retype';
+import { getGitEditor } from '../git/git_editor';
 import { composeConfig } from './compose_config';
 
 const schema = t.shape({
@@ -24,8 +25,19 @@ export const userConfigFactory = composeConfig({
   initialize: () => {
     return {};
   },
-  helperFunctions: () => {
-    return {};
+  helperFunctions: (data) => {
+    return {
+      getEditor: () => {
+        // If we don't have an editor set, do what git would do
+        return (
+          data.editor ??
+          getGitEditor() ??
+          process.env.GIT_EDITOR ??
+          process.env.EDITOR ??
+          'vi'
+        );
+      },
+    };
   },
 });
 
