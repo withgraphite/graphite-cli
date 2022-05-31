@@ -46,6 +46,7 @@ export function initContext(opts?: {
     currentBranchOverride: continueConfig?.data.currentBranchOverride,
     splog,
     noVerify: !(opts?.globalArguments?.verify ?? true),
+    remote: repoConfig.getRemote(),
   });
   return {
     splog,
