@@ -1,8 +1,9 @@
 import chalk from 'chalk';
-import { persistBranchesToRestack } from '../lib/config/continue_config';
 import { TContext } from '../lib/context';
 import { TScopeSpec } from '../lib/engine/scope_spec';
-import { RebaseConflictError } from '../lib/errors';
+import { PreconditionsFailedError, RebaseConflictError } from '../lib/errors';
+import { addAll } from '../lib/git/add_all';
+import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 
 type TBranchList =
@@ -75,4 +76,57 @@ export function restackBranches(
         assertUnreachable(result);
     }
   }
+}
+
+export function continueRestack(
+  opts: { addAll: boolean },
+  context: TContext
+): void {
+  if (!rebaseInProgress()) {
+    clearContinueConfig(context);
+    throw new PreconditionsFailedError(`No Graphite command to continue.`);
+  }
+
+  if (opts.addAll) {
+    addAll();
+  }
+
+  const cont = context.metaCache.continueRebase();
+  if (cont.result === 'REBASE_CONFLICT') {
+    throw new RebaseConflictError(`Rebase conflict is not yet resolved.`);
+  }
+
+  context.splog.logInfo(
+    `Resolved rebase conflict for ${chalk.green(cont.branchName)}.`
+  );
+
+  const branchesToRestack = context.continueConfig.data?.branchesToRestack;
+
+  if (branchesToRestack) {
+    restackBranches(
+      { relative: false, branchNames: branchesToRestack },
+      context
+    );
+  }
+  clearContinueConfig(context);
+}
+
+export function persistBranchesToRestack(
+  branchNames: string[],
+  context: TContext
+): void {
+  context.splog.logDebug(
+    branchNames.reduce((acc, curr) => `${acc}\n${curr}`, 'PERSISTING:')
+  );
+  context.continueConfig.update((data) => {
+    data.branchesToRestack = branchNames;
+    data.currentBranchOverride = context.metaCache.currentBranch;
+  });
+}
+
+function clearContinueConfig(context: TContext): void {
+  context.continueConfig.update((data) => {
+    data.branchesToRestack = [];
+    data.currentBranchOverride = undefined;
+  });
 }

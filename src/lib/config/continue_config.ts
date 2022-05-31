@@ -1,5 +1,4 @@
 import * as t from '@withgraphite/retype';
-import { TContext } from '../context';
 import { composeConfig } from './compose_config';
 
 /**
@@ -35,23 +34,3 @@ export const continueConfigFactory = composeConfig({
 });
 
 export type TContinueConfig = ReturnType<typeof continueConfigFactory.load>;
-
-export function persistBranchesToRestack(
-  branchNames: string[],
-  context: TContext
-): void {
-  context.splog.logDebug(
-    branchNames.reduce((acc, curr) => `${acc}\n${curr}`, 'PERSISTING:')
-  );
-  context.continueConfig.update((data) => {
-    data.branchesToRestack = branchNames;
-    data.currentBranchOverride = context.metaCache.currentBranch;
-  });
-}
-
-export function clearContinueConfig(context: TContext): void {
-  context.continueConfig.update((data) => {
-    data.branchesToRestack = [];
-    data.currentBranchOverride = undefined;
-  });
-}
