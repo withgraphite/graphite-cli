@@ -2,7 +2,6 @@ import chalk from 'chalk';
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
 import { currentBranchPrecondition } from '../lib/preconditions';
-import { logDebug, logTip } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { GitStackBuilder } from '../wrapper-classes/git_stack_builder';
@@ -39,9 +38,9 @@ function getStacks(context: TContext): {
 
 export async function logShortAction(context: TContext): Promise<void> {
   const currentBranch = currentBranchPrecondition(context);
-  logDebug(`Getting stacks...`);
+  context.splog.logDebug(`Getting stacks...`);
   const stacks = getStacks(context);
-  logDebug(
+  context.splog.logDebug(
     `Got stacks (${stacks.fallenStacks.length} fallen; ${stacks.untrackedStacks.length} untracked)...`
   );
 
@@ -137,7 +136,7 @@ function printStackNode(
 }
 
 function logRebaseTip(context: TContext): void {
-  logTip(
+  context.splog.logTip(
     [
       `Some branch merge-bases have fallen behind their parent branch's latest commit. Consider:`,
       `> gt branch checkout ${getTrunk(
@@ -145,20 +144,18 @@ function logRebaseTip(context: TContext): void {
       )} && gt stack fix --rebase # fix all stacks`,
       `> gt branch checkout <branch> && gt stack fix --rebase # fix a specific stack`,
       `> gt branch checkout <branch> && gt upstack onto <parent> # fix a stack and update the parent`,
-    ].join('\n'),
-    context
+    ].join('\n')
   );
 }
 
 function logRegenTip(context: TContext): void {
-  logTip(
+  context.splog.logTip(
     [
       'Graphite does not know the parent of untracked branches. Consider:',
       `> gt branch checkout <branch> && gt upstack onto <parent> # fix a stack and update the parent`,
       `> gt branch checkout <branch> && gt stack fix --regen # generate stack based on current commit tree`,
       `> gt repo ignored-branches --add <branch> # set branch to be ignored by Graphite`,
       `> gt branch delete -f <branch> # delete branch from git`,
-    ].join('\n'),
-    context
+    ].join('\n')
   );
 }

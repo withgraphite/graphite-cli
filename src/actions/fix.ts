@@ -19,7 +19,6 @@ import {
   uncommittedTrackedChangesPrecondition,
 } from '../lib/preconditions';
 import { indentMultilineString } from '../lib/utils/indent_multiline_string';
-import { logDebug, logInfo, logWarn } from '../lib/utils/splog';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { GitStackBuilder } from '../wrapper-classes/git_stack_builder';
@@ -42,7 +41,7 @@ export async function rebaseUpstack(context: TContext): Promise<void> {
       context
     );
   } catch {
-    logWarn(
+    context.splog.logWarn(
       'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt upstack fix --rebase`'
     );
   }
@@ -110,7 +109,7 @@ export async function fixAction(
 
   // Consider noop
   if (metaStack.equals(gitStack)) {
-    logInfo(`No fix needed`);
+    context.splog.logInfo(`No fix needed`);
     // Stacks are valid, we can update parentRevision
     // TODO: Remove after migrating validation to parentRevision
     backfillParentShasOnValidatedStack(metaStack, context);
@@ -231,13 +230,15 @@ function restackUpstack(
   );
 
   if (rebased) {
-    logInfo(`Fixed (${chalk.green(branch.name)}) on (${parentBranch.name})`);
+    context.splog.logInfo(
+      `Fixed (${chalk.green(branch.name)}) on (${parentBranch.name})`
+    );
   }
 
   // Stacks are now valid, we can update parentRevision
   // TODO: Remove after migrating validation to parentRevision
   if (branch.getParentBranchSha() !== parentBranch.getCurrentRef()) {
-    logDebug(`Updating parent revision`);
+    context.splog.logDebug(`Updating parent revision`);
     branch.setParentBranch(parentBranch);
   }
 
@@ -271,9 +272,11 @@ function regen(branch: Branch, context: TContext, scope: TFixScope): void {
 
 function regenAllStacks(context: TContext): void {
   const allGitStacks = new GitStackBuilder().allStacks(context);
-  logInfo(`Computing regenerating ${allGitStacks.length} stacks...`);
+  context.splog.logInfo(
+    `Computing regenerating ${allGitStacks.length} stacks...`
+  );
   allGitStacks.forEach((stack) => {
-    logInfo(`\nRegenerating:\n${stack.toString()}`);
+    context.splog.logInfo(`\nRegenerating:\n${stack.toString()}`);
     recursiveRegen(stack.source, context);
   });
 }
@@ -288,17 +291,17 @@ function recursiveRegen(node: StackNode, context: TContext): void {
     const oldParent = branch.getParentFromMeta(context);
     const newParent = node.parent?.branch || getTrunk(context);
     if (oldParent && oldParent.name === newParent.name) {
-      logInfo(
+      context.splog.logInfo(
         `-> No change for (${branch.name}) with branch parent (${oldParent.name})`
       );
       // Stacks are valid, we can update parentRevision
       // TODO: Remove after migrating validation to parentRevision
       if (branch.getParentBranchSha() !== newParent.getCurrentRef()) {
-        logDebug(`Updating parent revision`);
+        context.splog.logDebug(`Updating parent revision`);
         branch.setParentBranch(newParent);
       }
     } else {
-      logInfo(
+      context.splog.logInfo(
         `-> Updating (${branch.name}) branch parent from (${
           oldParent?.name
         }) to (${chalk.green(newParent.name)})`

@@ -5,7 +5,6 @@ import { TContext } from '../lib/context';
 import { PreconditionsFailedError } from '../lib/errors';
 import { branchExists } from '../lib/git/branch_exists';
 import { getRepoRootPathPrecondition } from '../lib/preconditions';
-import { logError, logInfo, logNewline } from '../lib/utils/splog';
 import { inferTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 export async function init(
@@ -17,7 +16,7 @@ export async function init(
   const allBranches = Branch.allBranches(context);
 
   logWelcomeMessage(context);
-  logNewline();
+  context.splog.logNewline();
 
   /**
    * When a branch new repo is created, it technically has 0 branches as a
@@ -28,10 +27,10 @@ export async function init(
    * https://newbedev.com/git-branch-not-returning-any-results
    */
   if (allBranches.length === 0) {
-    logError(
+    context.splog.logError(
       `Ouch! We can't setup Graphite in a repo without any branches -- this is likely because you're initializing Graphite in a blank repo. Please create your first commit and then re-run your Graphite command.`
     );
-    logNewline();
+    context.splog.logNewline();
     throw new PreconditionsFailedError(
       `No branches found in current repo; cannot initialize Graphite.`
     );
@@ -43,7 +42,7 @@ export async function init(
     if (branchExists(trunk)) {
       newTrunkName = trunk;
       context.repoConfig.setTrunk(newTrunkName);
-      logInfo(`Trunk set to (${newTrunkName})`);
+      context.splog.logInfo(`Trunk set to (${newTrunkName})`);
     } else {
       throw new PreconditionsFailedError(
         `Cannot set (${trunk}) as trunk, branch not found in current repo.`
@@ -66,22 +65,28 @@ export async function init(
     context.repoConfig.addIgnoreBranchPatterns(ignoreBranches);
   } else {
     let ignoreBranches = await selectIgnoreBranches(allBranches, newTrunkName);
-    logInfo(`Selected following branches to ignore: ${ignoreBranches}`);
+    context.splog.logInfo(
+      `Selected following branches to ignore: ${ignoreBranches}`
+    );
     if (!ignoreBranches) {
       ignoreBranches = [];
     }
     context.repoConfig.addIgnoreBranchPatterns(ignoreBranches);
   }
 
-  logInfo(`Graphite repo config saved at "${context.repoConfig.path}"`);
-  logInfo(fs.readFileSync(context.repoConfig.path).toString());
+  context.splog.logInfo(
+    `Graphite repo config saved at "${context.repoConfig.path}"`
+  );
+  context.splog.logInfo(fs.readFileSync(context.repoConfig.path).toString());
 }
 
 function logWelcomeMessage(context: TContext): void {
   if (!context.repoConfig.graphiteInitialized()) {
-    logInfo('Welcome to Graphite!');
+    context.splog.logInfo('Welcome to Graphite!');
   } else {
-    logInfo(`Regenerating Graphite repo config (${context.repoConfig.path})`);
+    context.splog.logInfo(
+      `Regenerating Graphite repo config (${context.repoConfig.path})`
+    );
   }
 }
 

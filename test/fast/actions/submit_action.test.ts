@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 import { inferPRBody } from '../../../src/actions/submit/pr_body';
 import { inferPRTitle } from '../../../src/actions/submit/pr_title';
 import { checkForEmptyBranches } from '../../../src/actions/submit/validate_branches';
-import { execStateConfig } from '../../../src/lib/config/exec_state_config';
+import { initContext } from '../../../src/lib/context';
 import { Branch } from '../../../src/wrapper-classes/branch';
 import { BasicScene } from '../../lib/scenes/basic_scene';
 import { configureTest } from '../../lib/utils/configure_test';
@@ -53,19 +53,27 @@ for (const scene of [new BasicScene()]) {
     });
 
     it('aborts if the branch is empty', async () => {
-      execStateConfig._data.interactive = false;
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       const branch = Branch.branchWithName('a');
-      expect(await checkForEmptyBranches([branch], scene.context)).to.be.empty;
+      expect(
+        await checkForEmptyBranches(
+          [branch],
+          initContext({ globalArguments: { interactive: false as true } })
+        )
+      ).to.be.empty;
     });
 
     it('does not abort if the branch is not empty', async () => {
-      execStateConfig._data.interactive = false;
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       const branch = Branch.branchWithName('a');
       expect(
-        (await checkForEmptyBranches([branch], scene.context))[0].name
+        (
+          await checkForEmptyBranches(
+            [branch],
+            initContext({ globalArguments: { interactive: false } })
+          )
+        )[0].name
       ).to.equals('a');
     });
   });

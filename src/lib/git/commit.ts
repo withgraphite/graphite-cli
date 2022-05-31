@@ -1,4 +1,3 @@
-import { execStateConfig } from '../config/exec_state_config';
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
 
@@ -17,6 +16,7 @@ export function commit(opts: {
   allowEmpty?: boolean;
   message?: string;
   noEdit?: boolean;
+  noVerify: boolean;
   rollbackOnError?: () => void;
 }): void {
   // We must escape all backticks in the string
@@ -34,7 +34,7 @@ export function commit(opts: {
           ? `-t ${stringToTmpFileInput(EMPTY_COMMIT_MESSAGE_INFO)}`
           : '',
         opts.noEdit ? `--no-edit` : '',
-        execStateConfig.noVerify() ? '-n' : '',
+        opts.noVerify ? '-n' : '',
       ].join(' '),
       options: {
         stdio: 'inherit',

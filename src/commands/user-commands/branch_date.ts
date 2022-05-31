@@ -1,7 +1,6 @@
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry/profile';
 import { getBranchDateEnabled } from '../../lib/utils/branch_name';
-import { logInfo } from '../../lib/utils/splog';
 
 const args = {
   enable: {
@@ -29,12 +28,12 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     if (argv.enable) {
       context.userConfig.update((data) => (data.branchDate = true));
-      logInfo(`Enabled date`);
+      context.splog.logInfo(`Enabled date`);
     } else if (argv.disable) {
       context.userConfig.update((data) => (data.branchDate = false));
-      logInfo(`Disabled date`);
+      context.splog.logInfo(`Disabled date`);
     } else {
-      logInfo(
+      context.splog.logInfo(
         `Branch date is ${
           getBranchDateEnabled(context) ? 'enabled' : 'disabled'
         }`

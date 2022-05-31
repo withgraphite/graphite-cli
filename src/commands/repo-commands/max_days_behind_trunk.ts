@@ -1,6 +1,5 @@
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry/profile';
-import { logInfo } from '../../lib/utils/splog';
 
 const args = {
   set: {
@@ -26,7 +25,9 @@ export const handler = async (argv: argsT): Promise<void> => {
         (data) => (data.maxDaysShownBehindTrunk = argv.set)
       );
     } else {
-      logInfo(context.repoConfig.getMaxDaysShownBehindTrunk().toString());
+      context.splog.logInfo(
+        context.repoConfig.getMaxDaysShownBehindTrunk().toString()
+      );
     }
   });
 };

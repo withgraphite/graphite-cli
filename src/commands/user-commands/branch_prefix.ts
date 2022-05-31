@@ -2,7 +2,6 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry/profile';
 import { setBranchPrefix } from '../../lib/utils/branch_name';
-import { logInfo } from '../../lib/utils/splog';
 
 const args = {
   set: {
@@ -31,16 +30,16 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     if (argv.reset) {
-      logInfo(`Reset branch-prefix`);
+      context.splog.logInfo(`Reset branch-prefix`);
       setBranchPrefix('', context);
     } else if (argv.set) {
-      logInfo(
+      context.splog.logInfo(
         `Set branch-prefix to "${chalk.green(
           setBranchPrefix(argv.set, context)
         )}"`
       );
     } else {
-      logInfo(
+      context.splog.logInfo(
         context.userConfig.data.branchPrefix ||
           'branch-prefix is not set. Try running `gt user branch-prefix --set <prefix>` to update the value.'
       );

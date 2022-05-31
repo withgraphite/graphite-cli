@@ -2,7 +2,6 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry/profile';
 import { gpExecSync } from '../../lib/utils/exec_sync';
-import { logInfo, logWarn } from '../../lib/utils/splog';
 
 const args = {
   add: {
@@ -32,33 +31,37 @@ export const handler = async (argv: argsT): Promise<void> => {
     if (argv.add) {
       const foundBranches = findMatches(argv.add);
       if (foundBranches.length) {
-        logInfo(
+        context.splog.logInfo(
           chalk.gray(`The following branches were found matching your pattern:`)
         );
         foundBranches.split('\n').forEach((branch) => {
-          logInfo(chalk.gray(branch.trim()));
+          context.splog.logInfo(chalk.gray(branch.trim()));
         });
       } else {
-        logWarn(
+        context.splog.logWarn(
           `No branches were found matching the provided pattern. Please make sure it is correct.`
         );
       }
       context.repoConfig.addIgnoreBranchPatterns([argv.add]);
-      logInfo(`Added (${argv.add}) to be ignored`);
+      context.splog.logInfo(`Added (${argv.add}) to be ignored`);
     } else if (argv.remove) {
       if (context.repoConfig.getIgnoreBranches().includes(argv.remove)) {
         context.repoConfig.removeIgnoreBranches(argv.remove);
-        logInfo(`Removed pattern (${argv.remove}) from ignore list`);
+        context.splog.logInfo(
+          `Removed pattern (${argv.remove}) from ignore list`
+        );
       } else {
-        logInfo(`No pattern matching (${argv.remove}) found.`);
+        context.splog.logInfo(`No pattern matching (${argv.remove}) found.`);
       }
     } else {
       const ignoredBranches = context.repoConfig.getIgnoreBranches();
       if (ignoredBranches.length) {
-        logInfo(`The following patterns are being ignored by Graphite:`);
-        logInfo(ignoredBranches.join('\n'));
+        context.splog.logInfo(
+          `The following patterns are being ignored by Graphite:`
+        );
+        context.splog.logInfo(ignoredBranches.join('\n'));
       } else {
-        logInfo('No ignored branches');
+        context.splog.logInfo('No ignored branches');
       }
     }
   });

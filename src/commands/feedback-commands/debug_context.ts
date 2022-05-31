@@ -3,7 +3,6 @@ import fs from 'fs-extra';
 import yargs from 'yargs';
 import { captureState, recreateState } from '../../lib/debugContext';
 import { profile } from '../../lib/telemetry/profile';
-import { logInfo } from '../../lib/utils/splog';
 
 const args = {
   recreate: {
@@ -36,12 +35,12 @@ export const handler = async (argv: argsT): Promise<void> => {
         fs.readFileSync(argv['recreate-from-file']).toString(),
         context
       );
-      logInfo(`${chalk.green(dir)}`);
+      context.splog.logInfo(`${chalk.green(dir)}`);
     } else if (argv.recreate) {
       const dir = recreateState(argv.recreate, context);
-      logInfo(`${chalk.green(dir)}`);
+      context.splog.logInfo(`${chalk.green(dir)}`);
     } else {
-      logInfo(captureState(context));
+      context.splog.logInfo(captureState(context));
     }
   });
 };

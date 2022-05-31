@@ -1,7 +1,6 @@
 import yargs from 'yargs';
-import { execStateConfig } from './config/exec_state_config';
 
-const globalArgumentsOptions = {
+export const globalArgumentsOptions = {
   interactive: {
     alias: 'i',
     default: true,
@@ -13,16 +12,6 @@ const globalArgumentsOptions = {
   debug: { default: false, type: 'boolean', demandOption: false },
 } as const;
 
-type argsT = yargs.Arguments<
+export type TGlobalArguments = yargs.Arguments<
   yargs.InferredOptionTypes<typeof globalArgumentsOptions>
 >;
-
-function processGlobalArgumentsMiddleware(argv: argsT): void {
-  execStateConfig
-    .setQuiet(argv.quiet)
-    .setNoVerify(!argv.verify)
-    .setInteractive(argv.interactive)
-    .setOutputDebugLogs(argv.debug);
-}
-
-export { globalArgumentsOptions, processGlobalArgumentsMiddleware };

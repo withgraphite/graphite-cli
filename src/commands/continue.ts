@@ -98,7 +98,7 @@ async function resolveCallstack(
       stackOntoBaseRebaseContinuation(frame, remaining, context);
       break;
     case 'STACK_ONTO_FIX_CONTINUATION':
-      stackOntoFixContinuation(frame);
+      stackOntoFixContinuation(frame, context);
       break;
     case 'STACK_FIX': {
       const branch = Branch.branchWithName(frame.sourceBranchName);
@@ -124,7 +124,7 @@ async function resolveCallstack(
       );
       break;
     case 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION':
-      deleteMergedBranchesContinuation();
+      deleteMergedBranchesContinuation(context);
       break;
     case 'REPO_SYNC_CONTINUATION':
       await cleanBranchesContinuation(frame, context);

@@ -1,6 +1,5 @@
 import { submitAction } from '../../actions/submit/submit_action';
 import { profile } from '../../lib/telemetry/profile';
-import { logTip } from '../../lib/utils/splog';
 import type { argsT } from '../shared-commands/submit';
 
 export { aliases, args, builder, command } from '../shared-commands/submit';
@@ -22,15 +21,14 @@ export const handler = async (argv: argsT): Promise<void> => {
       },
       context
     );
-    logTip(
+    context.splog.logTip(
       [
         `You submitted a pull request for a specific branch.`,
         `In common cases, we recommend you use:`,
         `* 'gt stack submit'`,
         `* 'gt downstack submit'`,
         `because these will ensure any downstack changes will be synced to existing PRs.`,
-      ].join('\n'),
-      context
+      ].join('\n')
     );
   });
 };

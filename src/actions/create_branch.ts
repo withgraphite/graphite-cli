@@ -7,7 +7,6 @@ import { deleteBranch } from '../lib/git/deleteBranch';
 import { detectStagedChanges } from '../lib/git/detect_staged_changes';
 import { currentBranchPrecondition } from '../lib/preconditions';
 import { newBranchName } from '../lib/utils/branch_name';
-import { logInfo } from '../lib/utils/splog';
 import { Branch } from '../wrapper-classes/branch';
 import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
 import { currentBranchOntoAction } from './onto/current_branch_onto';
@@ -51,6 +50,7 @@ export async function createBranchAction(
   commit({
     allowEmpty: isAddingEmptyCommit,
     message: opts.commitMessage,
+    noVerify: context.noVerify,
     rollbackOnError: () => {
       // Commit failed, usually due to precommit hooks. Rollback the branch.
       checkoutBranch(parentBranch.name, { quiet: true });
@@ -63,7 +63,7 @@ export async function createBranchAction(
   Branch.create(branchName, parentBranch.name, parentBranch.getCurrentRef());
 
   if (isAddingEmptyCommit) {
-    logInfo(
+    context.splog.logInfo(
       'Since no changes were staged, an empty commit was added to track Graphite stack dependencies. If you wish to get rid of the empty commit you can amend, or squash when merging.'
     );
   }
@@ -75,7 +75,7 @@ export async function createBranchAction(
       .filter((b) => b.name != branchName)
       .forEach((b) => {
         checkoutBranch(b.name, { quiet: true });
-        logInfo(`Stacking (${b.name}) onto (${branchName})...`);
+        context.splog.logInfo(`Stacking (${b.name}) onto (${branchName})...`);
         currentBranchOntoAction(
           {
             onto: branchName,

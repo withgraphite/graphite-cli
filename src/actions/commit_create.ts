@@ -26,7 +26,7 @@ export async function commitCreateAction(
   // the prev ref here.
   currentBranchPrecondition(context).savePrevRef();
 
-  commit({ message: opts.message });
+  commit({ message: opts.message, noVerify: context.noVerify });
 
   await rebaseUpstack(context);
 }

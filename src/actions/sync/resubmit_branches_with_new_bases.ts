@@ -1,6 +1,5 @@
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
-import { logInfo, logNewline, logTip } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { submitAction } from '../submit/submit_action';
 
@@ -32,17 +31,16 @@ export async function resubmitBranchesWithNewBases(
     return;
   }
 
-  logNewline();
-  logInfo(
+  context.splog.logNewline();
+  context.splog.logInfo(
     [
       `The following branches appear to have been rebased (or cherry-picked) in your local repo but changes have not yet propagated to PR (remote):`,
       ...needsResubmission.map((b) => `- ${b.name}`),
     ].join('\n')
   );
 
-  logTip(
-    `Disable this check at any point in the future with --no-resubmit`,
-    context
+  context.splog.logTip(
+    `Disable this check at any point in the future with --no-resubmit`
   );
 
   // Prompt for resubmission.
@@ -57,7 +55,7 @@ export async function resubmitBranchesWithNewBases(
     resubmit = response.value;
   }
   if (resubmit) {
-    logInfo(`Updating PR to propagate local rebase changes...`);
+    context.splog.logInfo(`Updating PR to propagate local rebase changes...`);
     await submitAction(
       {
         scope: 'FULLSTACK',

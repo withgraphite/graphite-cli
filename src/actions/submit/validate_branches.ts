@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { execStateConfig } from '../../lib/config/exec_state_config';
 import { TContext } from '../../lib/context';
 import {
   KilledError,
@@ -10,7 +9,6 @@ import {
 import { isEmptyBranch } from '../../lib/git/is_empty_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { syncPRInfoForBranches } from '../../lib/sync/pr_info';
-import { logError, logInfo, logNewline, logWarn } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { validate } from '../validate';
 import { TSubmitScope } from './submit_action';
@@ -19,19 +17,19 @@ export async function getValidBranchesToSubmit(
   scope: TSubmitScope,
   context: TContext
 ): Promise<Branch[]> {
-  logInfo(
+  context.splog.logInfo(
     chalk.blueBright(
       `✏️  Validating that this Graphite stack is ready to submit...`
     )
   );
 
   const branchesToSubmit = getAllBranchesToSubmit(scope, context);
-  logNewline();
+  context.splog.logNewline();
 
   await syncPRInfoForBranches(branchesToSubmit, context);
 
-  return hasAnyMergedBranches(branchesToSubmit) ||
-    hasAnyClosedBranches(branchesToSubmit)
+  return hasAnyMergedBranches(branchesToSubmit, context) ||
+    hasAnyClosedBranches(branchesToSubmit, context)
     ? []
     : await checkForEmptyBranches(branchesToSubmit, context);
 }
@@ -51,7 +49,10 @@ function getAllBranchesToSubmit(
   }
 }
 
-function hasAnyMergedBranches(branchesToSubmit: Branch[]): boolean {
+function hasAnyMergedBranches(
+  branchesToSubmit: Branch[],
+  context: TContext
+): boolean {
   const mergedBranches = branchesToSubmit.filter(
     (b) => b.getPRInfo()?.state === 'MERGED'
   );
@@ -61,13 +62,15 @@ function hasAnyMergedBranches(branchesToSubmit: Branch[]): boolean {
 
   const hasMultipleBranches = mergedBranches.length > 1;
 
-  logError(
+  context.splog.logError(
     `PR${hasMultipleBranches ? 's' : ''} for the following branch${
       hasMultipleBranches ? 'es have' : ' has'
     } already been merged:`
   );
-  mergedBranches.forEach((b) => logError(`▸ ${chalk.reset(b.name)}`));
-  logError(
+  mergedBranches.forEach((b) =>
+    context.splog.logError(`▸ ${chalk.reset(b.name)}`)
+  );
+  context.splog.logError(
     `If this is expected, you can use 'gt repo sync' to delete ${
       hasMultipleBranches ? 'these branches' : 'this branch'
     } locally and restack dependencies.`
@@ -76,7 +79,10 @@ function hasAnyMergedBranches(branchesToSubmit: Branch[]): boolean {
   return true;
 }
 
-function hasAnyClosedBranches(branchesToSubmit: Branch[]): boolean {
+function hasAnyClosedBranches(
+  branchesToSubmit: Branch[],
+  context: TContext
+): boolean {
   const closedBranches = branchesToSubmit.filter(
     (b) => b.getPRInfo()?.state === 'CLOSED'
   );
@@ -86,13 +92,15 @@ function hasAnyClosedBranches(branchesToSubmit: Branch[]): boolean {
 
   const hasMultipleBranches = closedBranches.length > 1;
 
-  logError(
+  context.splog.logError(
     `PR${hasMultipleBranches ? 's' : ''} for the following branch${
       hasMultipleBranches ? 'es have' : ' has'
     } been closed:`
   );
-  closedBranches.forEach((b) => logError(`▸ ${chalk.reset(b.name)}`));
-  logError(
+  closedBranches.forEach((b) =>
+    context.splog.logError(`▸ ${chalk.reset(b.name)}`)
+  );
+  context.splog.logError(
     `To submit ${
       hasMultipleBranches ? 'these branches' : 'this branch'
     }, please reopen the PR remotely.`
@@ -114,18 +122,20 @@ export async function checkForEmptyBranches(
 
   const hasMultipleBranches = emptyBranches.length > 1;
 
-  logWarn(
+  context.splog.logWarn(
     `The following branch${
       hasMultipleBranches ? 'es have' : ' has'
     } no changes:`
   );
-  emptyBranches.forEach((b) => logWarn(`▸ ${chalk.reset(b.name)}`));
-  logWarn(
+  emptyBranches.forEach((b) =>
+    context.splog.logWarn(`▸ ${chalk.reset(b.name)}`)
+  );
+  context.splog.logWarn(
     `Are you sure you want to submit ${hasMultipleBranches ? 'them' : 'it'}?`
   );
-  logNewline();
+  context.splog.logNewline();
 
-  if (!execStateConfig.interactive()) {
+  if (!context.interactive) {
     return [];
   }
 
@@ -153,7 +163,7 @@ export async function checkForEmptyBranches(
       },
     }
   );
-  logNewline();
+  context.splog.logNewline();
 
   return response.empty_branches_options === 'continue_empty'
     ? submittableBranches

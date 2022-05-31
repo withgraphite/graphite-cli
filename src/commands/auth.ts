@@ -1,6 +1,6 @@
+import chalk from 'chalk';
 import yargs from 'yargs';
 import { profile } from '../lib/telemetry/profile';
-import { logInfo, logSuccess } from '../lib/utils/splog';
 
 const args = {
   token: {
@@ -22,9 +22,13 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     if (argv.token) {
       context.userConfig.update((data) => (data.authToken = argv.token));
-      logSuccess(`🔐 Saved auth token to "${context.userConfig.path}"`);
+      context.splog.logInfo(
+        chalk.green(`🔐 Saved auth token to "${context.userConfig.path}"`)
+      );
       return;
     }
-    logInfo(context.userConfig.data.authToken ?? 'No auth token set.');
+    context.splog.logInfo(
+      context.userConfig.data.authToken ?? 'No auth token set.'
+    );
   });
 };

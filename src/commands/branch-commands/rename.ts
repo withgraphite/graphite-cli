@@ -6,7 +6,6 @@ import { currentBranchPrecondition } from '../../lib/preconditions';
 import { profile } from '../../lib/telemetry/profile';
 import { replaceUnsupportedCharacters } from '../../lib/utils/branch_name';
 import { gpExecSync } from '../../lib/utils/exec_sync';
-import { logInfo } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { MetadataRef } from '../../wrapper-classes/metadata_ref';
 
@@ -68,6 +67,8 @@ export const handler = async (args: argsT): Promise<void> => {
       }
     });
 
-    logInfo(`Successfully renamed (${oldName}) to (${chalk.green(newName)})`);
+    context.splog.logInfo(
+      `Successfully renamed (${oldName}) to (${chalk.green(newName)})`
+    );
   });
 };

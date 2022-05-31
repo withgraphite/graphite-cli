@@ -1,7 +1,6 @@
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry/profile';
 import { setDefaultEditor } from '../../lib/utils/default_editor';
-import { logInfo } from '../../lib/utils/splog';
 
 const args = {
   set: {
@@ -28,19 +27,19 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     if (argv.set) {
       context.userConfig.update((data) => (data.editor = argv.set));
-      logInfo(`Editor preference set to: ${argv.set}`);
+      context.splog.logInfo(`Editor preference set to: ${argv.set}`);
     } else if (argv.unset) {
       context.userConfig.update(
         (data) => (data.editor = DEFAULT_GRAPHITE_EDITOR)
       );
-      logInfo(
+      context.splog.logInfo(
         `Editor preference erased. Defaulting to Graphite default: ${DEFAULT_GRAPHITE_EDITOR}`
       );
     } else {
       if (!context.userConfig.data.editor) {
         setDefaultEditor(context);
       }
-      logInfo(
+      context.splog.logInfo(
         `Current editor preference is set to : ${context.userConfig.data.editor}`
       );
     }

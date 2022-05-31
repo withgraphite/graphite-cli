@@ -29,7 +29,12 @@ export async function commitAmendAction(
   // the prev ref here.
   currentBranchPrecondition(context).savePrevRef();
 
-  commit({ amend: true, noEdit: opts.noEdit, message: opts.message });
+  commit({
+    amend: true,
+    noEdit: opts.noEdit,
+    message: opts.message,
+    noVerify: context.noVerify,
+  });
 
   await rebaseUpstack(context);
 }

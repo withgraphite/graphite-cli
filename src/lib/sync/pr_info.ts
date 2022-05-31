@@ -1,6 +1,5 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
-import { logError } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 import { API_SERVER } from '../api';
 import { TContext } from '../context';
@@ -68,7 +67,7 @@ async function syncHelper(
       });
 
       if (branch.name !== pr.headRefName) {
-        logError(
+        context.splog.logError(
           `PR ${pr.prNumber} is associated with ${pr.headRefName} on GitHub, but branch ${branch.name} locally. Please rename the local branch (\`gt branch rename\`) to match the remote branch associated with the PR. (While ${branch.name} is misaligned with GitHub, you cannot use \`gt submit\` on it.)`
         );
       }

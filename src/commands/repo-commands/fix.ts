@@ -4,7 +4,6 @@ import { cleanBranches } from '../../actions/clean_branches';
 import { fixDanglingBranches } from '../../actions/fix_dangling_branches';
 import { TContext } from '../../lib/context';
 import { profile } from '../../lib/telemetry/profile';
-import { logInfo, logNewline, logTip } from '../../lib/utils/splog';
 import { Branch } from '../../wrapper-classes/branch';
 
 const args = {
@@ -52,7 +51,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       context
     );
 
-    deleteMergedBranchesContinuation();
+    deleteMergedBranchesContinuation(context);
   });
 };
 
@@ -64,17 +63,16 @@ function branchCountSanityCheck(context: TContext): void {
         `Found ${branchCount} total branches in the local repo which may be causing performance issues with Graphite. We recommend culling as many unneeded branches as possible to optimize Graphite performance.`
       )
     );
-    logTip(
-      `To further reduce Graphite's search space, you can also tune the maximum days and/or stacks Graphite tracks behind trunk using \`gt repo max-days-behind-trunk --set\` or \`gt repo max-stacks-behind-trunk --set\`.`,
-      context
+    context.splog.logTip(
+      `To further reduce Graphite's search space, you can also tune the maximum days and/or stacks Graphite tracks behind trunk using \`gt repo max-days-behind-trunk --set\` or \`gt repo max-stacks-behind-trunk --set\`.`
     );
-    logNewline();
+    context.splog.logNewline();
   }
 }
 
-export function deleteMergedBranchesContinuation(): void {
-  logNewline();
-  logInfo(
+export function deleteMergedBranchesContinuation(context: TContext): void {
+  context.splog.logNewline();
+  context.splog.logInfo(
     `Still seeing issues with Graphite? Send us feedback via \`gt feedback '<your_issue'> --with-debug-context\` and we'll dig in!`
   );
 }

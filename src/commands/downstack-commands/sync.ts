@@ -3,7 +3,6 @@ import { getDownstackDependencies } from '../../actions/sync/get_downstack_depen
 import { syncAction } from '../../actions/sync/sync';
 import { ExitFailedError } from '../../lib/errors';
 import { profile } from '../../lib/telemetry/profile';
-import { logDebug } from '../../lib/utils/splog';
 
 const args = {
   branch: {
@@ -31,7 +30,9 @@ export const handler = async (argv: argsT): Promise<void> => {
       context
     );
 
-    logDebug(`Downstack branch list:\n${downstackToSync.join('\n')}\n`);
+    context.splog.logDebug(
+      `Downstack branch list:\n${downstackToSync.join('\n')}\n`
+    );
 
     await syncAction(
       {

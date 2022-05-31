@@ -4,7 +4,6 @@ import { cache } from '../config/cache';
 import { TContext } from '../context';
 import { tracer } from '../telemetry/tracer';
 import { gpExecSync } from '../utils/exec_sync';
-import { logDebug } from '../utils/splog';
 import { getRef } from './branch_ref';
 
 export function getBranchChildrenOrParentsFromGit(
@@ -15,7 +14,9 @@ export function getBranchChildrenOrParentsFromGit(
   },
   context: TContext
 ): Branch[] {
-  logDebug(`Getting ${opts.direction} of ${branch.name} from git...`);
+  context.splog.logDebug(
+    `Getting ${opts.direction} of ${branch.name} from git...`
+  );
   const direction = opts.direction;
   const useMemoizedResults = opts.useMemoizedResults ?? false;
   return tracer.spanSync(
@@ -44,7 +45,7 @@ export function getBranchChildrenOrParentsFromGit(
       );
 
       if (childrenOrParents.shortCircuitedDueToMaxDepth) {
-        logDebug(
+        context.splog.logDebug(
           `${chalk.magenta(
             `Potential missing branch ${direction.toLocaleLowerCase()}:`
           )} Short-circuited search for branch ${chalk.bold(
@@ -199,7 +200,7 @@ function branchListFromShowRefOutput(
       const branchRef = parts[0];
 
       if (!context.repoConfig.branchIsIgnored(branchName)) {
-        logDebug(`branch ${branchName} is not ignored`);
+        context.splog.logDebug(`branch ${branchName} is not ignored`);
         if (branchRef in newBranchList) {
           newBranchList[branchRef].push(branchName);
         } else {

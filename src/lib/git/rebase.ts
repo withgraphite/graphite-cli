@@ -4,7 +4,6 @@ import { TMergeConflictCallstack } from '../config/merge_conflict_callstack_conf
 import { TContext } from '../context';
 import { ExitFailedError, RebaseConflictError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
-import { logDebug } from '../utils/splog';
 import { rebaseInProgress } from './rebase_in_progress';
 
 // TODO migrate mergeBase to use parentRevision of the current branch
@@ -18,7 +17,7 @@ export function rebaseOnto(
   context: TContext
 ): boolean {
   if (args.mergeBase === args.onto.getCurrentRef()) {
-    logDebug(
+    context.splog.logDebug(
       `No rebase needed for (${args.branch.name}) onto (${args.onto.name}).`
     );
     return false;

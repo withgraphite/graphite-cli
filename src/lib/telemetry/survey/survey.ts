@@ -6,7 +6,6 @@ import { assertUnreachable } from '../../../lib/utils/assert_unreachable';
 import { API_SERVER } from '../../api';
 import { TContext } from '../../context';
 import { cliAuthPrecondition } from '../../preconditions';
-import { logMessageFromGraphite, logNewline } from '../../utils/splog';
 import { TSurveyResponse } from './../../config/survey_config';
 import { postSurveyResponse } from './post_survey';
 
@@ -58,18 +57,21 @@ export async function showSurvey(
       return;
     }
 
-    logNewline();
+    context.splog.logNewline();
     if (survey?.introMessage !== undefined) {
-      logMessageFromGraphite(survey.introMessage);
+      context.splog.logMessageFromGraphite(survey.introMessage);
     }
 
-    logNewline();
-    await askSurveyQuestions({
-      questions: survey.questions,
-      responses: responses,
-    });
+    context.splog.logNewline();
+    await askSurveyQuestions(
+      {
+        questions: survey.questions,
+        responses: responses,
+      },
+      context
+    );
 
-    logNewline();
+    context.splog.logNewline();
     await logAnswers(
       {
         responses: responses,
@@ -81,7 +83,7 @@ export async function showSurvey(
     switch (err.constructor) {
       case ExitedSurveyError:
         responses.exitedEarly = true;
-        logNewline();
+        context.splog.logNewline();
         await logAnswers(
           {
             responses: responses,
@@ -101,20 +103,23 @@ export async function showSurvey(
  * capture and potential responses before the user decided to exit the survey
  * early.
  */
-async function askSurveyQuestions(args: {
-  questions: (
-    | {
-        type: 'TEXT';
-        question: string;
-      }
-    | {
-        type: 'OPTIONS';
-        question: string;
-        options: string[];
-      }
-  )[];
-  responses: TSurveyResponse;
-}): Promise<void> {
+async function askSurveyQuestions(
+  args: {
+    questions: (
+      | {
+          type: 'TEXT';
+          question: string;
+        }
+      | {
+          type: 'OPTIONS';
+          question: string;
+          options: string[];
+        }
+    )[];
+    responses: TSurveyResponse;
+  },
+  context: TContext
+): Promise<void> {
   for (const [index, question] of args.questions.entries()) {
     const onCancel = {
       onCancel: () => {
@@ -161,7 +166,7 @@ async function askSurveyQuestions(args: {
 
     // Add newline after each response to create visual separation to next
     // question.
-    logNewline();
+    context.splog.logNewline();
 
     args.responses.responses.push({
       question: question.question,
@@ -182,7 +187,7 @@ async function logAnswers(
   await postSurveyResponse(context);
 
   if (args.completionMessage !== undefined) {
-    logMessageFromGraphite(args.completionMessage);
+    context.splog.logMessageFromGraphite(args.completionMessage);
   }
   return;
 }

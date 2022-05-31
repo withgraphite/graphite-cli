@@ -1,6 +1,5 @@
 import yargs from 'yargs';
 import { profile } from '../../lib/telemetry/profile';
-import { logInfo } from '../../lib/utils/splog';
 
 const args = {
   set: {
@@ -24,7 +23,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     if (argv.set) {
       context.repoConfig.setRemote(argv.set);
     } else {
-      logInfo(context.repoConfig.getRemote());
+      context.splog.logInfo(context.repoConfig.getRemote());
     }
   });
 };
