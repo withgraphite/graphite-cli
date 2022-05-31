@@ -6,7 +6,6 @@ import { KilledError } from '../../lib/errors';
 import { copyFromRemote } from '../../lib/git/copy_from_remote';
 import { getBranchRevision } from '../../lib/git/get_branch_revision';
 import { getMergeBase } from '../../lib/git/merge_base';
-import { Branch } from '../../wrapper-classes/branch';
 import { syncPrInfo } from '../sync_pr_info';
 
 export async function mergeDownstack(
@@ -72,8 +71,9 @@ function calculateOverwrittenBranches(
   context: TContext
 ): string[] {
   return downstack.filter((branchName) => {
-    const branch = Branch.allBranches(context).find(
-      (b) => b.name === branchName
+    // TODO - fully move this logic to cache
+    const branch = context.metaCache.allBranchNames.find(
+      (b) => b === branchName
     );
     if (!branch) {
       return false;
