@@ -11,12 +11,12 @@ import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
 import { switchBranch } from '../git/switch_branch';
 import { cuteString } from '../utils/cute_string';
 import { TSplog } from '../utils/splog';
-import { loadCache as buildCache } from './build_cache';
 import {
   assertCachedMetaIsNotTrunk,
   assertCachedMetaIsValidAndNotTrunk,
   assertCachedMetaIsValidOrTrunk,
 } from './cached_meta';
+import { loadBranches } from './load_branches';
 import {
   deleteMetadataRef,
   TBranchPRInfo,
@@ -73,7 +73,7 @@ export function composeMetaCache({
 }): TMetaCache {
   const cache = {
     currentBranch: currentBranchOverride ?? getCurrentBranchName(),
-    branches: buildCache(trunkName, splog),
+    branches: loadBranches(trunkName, splog),
   };
 
   const assertBranch: (
