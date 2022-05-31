@@ -17,7 +17,6 @@ export function commitCreateAction(
 
   ensureSomeStagedChangesPrecondition(context);
   context.metaCache.commit({
-    noVerify: context.noVerify,
     message: opts.message,
   });
   restackBranches({ relative: true, scope: SCOPE.UPSTACK_EXCLUSIVE }, context);

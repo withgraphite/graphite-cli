@@ -14,7 +14,6 @@ export const USER_CONFIG_OVERRIDE_ENV = 'GRAPHITE_USER_CONFIG_PATH' as const;
 export type TContext = {
   splog: TSplog;
   interactive: boolean;
-  noVerify: boolean;
   repoConfig: TRepoConfig;
   surveyConfig: TSurveyConfig;
   userConfig: TUserConfig;
@@ -46,11 +45,11 @@ export function initContext(opts?: {
     trunkName: repoConfig.data.trunk,
     currentBranchOverride: continueConfig?.data.currentBranchOverride,
     splog,
+    noVerify: !(opts?.globalArguments?.verify ?? true),
   });
   return {
     splog,
     interactive: opts?.globalArguments?.interactive ?? true,
-    noVerify: !(opts?.globalArguments?.verify ?? true),
     repoConfig,
     surveyConfig: surveyConfigFactory.load(),
     userConfig,

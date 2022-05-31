@@ -16,10 +16,9 @@ export type TCommitOpts = {
   allowEmpty?: boolean;
   message?: string;
   noEdit?: boolean;
-  noVerify: boolean;
   rollbackOnError?: () => void;
 };
-export function commit(opts: TCommitOpts): void {
+export function commit(opts: TCommitOpts & { noVerify: boolean }): void {
   // We must escape all backticks in the string
   const message = opts.message?.replace(/`/g, '\\`');
 

@@ -40,7 +40,6 @@ export async function createBranchAction(
    * larger failure outside of our control.
    */
   context.metaCache.commit({
-    noVerify: context.noVerify,
     allowEmpty: isAddingEmptyCommit,
     message: opts.commitMessage,
     rollbackOnError: () => context.metaCache.deleteBranch(branchName),
