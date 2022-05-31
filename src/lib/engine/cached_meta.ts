@@ -1,3 +1,4 @@
+import { PreconditionsFailedError } from '../errors';
 import { TBranchPRInfo } from './metadata_ref';
 
 export type TCachedMeta = {
@@ -28,12 +29,41 @@ export type TCachedMeta = {
     })
 );
 
-export type TValidCachedMeta = TCachedMeta & {
-  validationResult: 'TRUNK' | 'VALID';
-};
-export type TNonTrunkCachedMeta = Exclude<
+type TValidCachedMeta = Extract<
   TCachedMeta,
-  { validationResult: 'TRUNK' }
+  { validationResult: 'TRUNK' | 'VALID' }
 >;
-export type TValidCachedMetaExceptTrunk = TValidCachedMeta &
-  TNonTrunkCachedMeta;
+export function assertCachedMetaIsValidOrTrunk(
+  meta: TCachedMeta
+): asserts meta is TValidCachedMeta {
+  if (meta.validationResult !== 'VALID' && meta.validationResult !== 'TRUNK') {
+    throw new PreconditionsFailedError(
+      `Cannot perform this operation on an invalid branch.`
+    );
+  }
+}
+
+type TNonTrunkCachedMeta = Exclude<TCachedMeta, { validationResult: 'TRUNK' }>;
+export function assertCachedMetaIsNotTrunk(
+  meta: TCachedMeta
+): asserts meta is TNonTrunkCachedMeta {
+  if (meta.validationResult === 'TRUNK') {
+    throw new PreconditionsFailedError(
+      `Cannot perform this operation on the trunk branch.`
+    );
+  }
+}
+
+type TValidCachedMetaExceptTrunk = Extract<
+  TValidCachedMeta,
+  TNonTrunkCachedMeta
+>;
+export function assertCachedMetaIsValidAndNotTrunk(
+  meta: TCachedMeta
+): asserts meta is TValidCachedMetaExceptTrunk {
+  if (meta.validationResult !== 'VALID') {
+    throw new PreconditionsFailedError(
+      `Cannot perform this operation on this branch (invalid or trunk).`
+    );
+  }
+}
