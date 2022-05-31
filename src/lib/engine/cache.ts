@@ -7,6 +7,7 @@ import { deleteBranch } from '../git/deleteBranch';
 import { getBranchRevision } from '../git/get_branch_revision';
 import { isEmptyBranch } from '../git/is_empty_branch';
 import { isMerged } from '../git/is_merged';
+import { pushBranch } from '../git/push_branch';
 import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
 import { switchBranch } from '../git/switch_branch';
 import { cuteString } from '../utils/cute_string';
@@ -60,6 +61,7 @@ export type TMetaCache = {
   isMergedIntoTrunk: (branchName: string) => boolean;
   isBranchFixed: (branchName: string) => boolean;
   isBranchEmpty: (branchName: string) => boolean;
+  pushBranch: (branchName: string) => void;
 };
 
 // eslint-disable-next-line max-lines-per-function
@@ -68,11 +70,13 @@ export function composeMetaCache({
   currentBranchOverride,
   splog,
   noVerify,
+  remote,
 }: {
   trunkName?: string;
   currentBranchOverride?: string;
   splog: TSplog;
   noVerify: boolean;
+  remote: string;
 }): TMetaCache {
   const cache = {
     currentBranch: currentBranchOverride ?? getCurrentBranchName(),
@@ -395,6 +399,12 @@ export function composeMetaCache({
       const cachedMeta = cache.branches[branchName];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
       return isEmptyBranch(branchName, cachedMeta.parentBranchRevision);
+    },
+    pushBranch: (branchName: string) => {
+      assertBranch(branchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+      pushBranch({ remote, branchName, noVerify });
     },
   };
 }
