@@ -16,7 +16,6 @@ export async function submitAction(
     draftToggle: boolean | undefined;
     dryRun: boolean;
     updateOnly: boolean;
-    branchNames?: string[];
     reviewers: boolean;
     confirm: boolean;
   },
@@ -48,9 +47,7 @@ export async function submitAction(
     context.splog.logNewline();
   }
 
-  // args.branchesToSubmit is for the sync flow. Skips validation.
-  const branchNames =
-    args.branchNames ?? (await getValidBranchesToSubmit(args.scope, context));
+  const branchNames = await getValidBranchesToSubmit(args.scope, context);
 
   if (!branchNames.length) {
     return;
