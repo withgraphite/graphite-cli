@@ -2,11 +2,10 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { TScopeSpec } from '../../lib/engine/scope_spec';
-import { KilledError } from '../../lib/errors';
+import { ExitFailedError, KilledError } from '../../lib/errors';
 import { cliAuthPrecondition } from '../../lib/preconditions';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
 import { getPRInfoForBranches } from './prepare_branches';
-import { push } from './push_branch';
 import { submitPullRequest } from './submit_prs';
 import { getValidBranchesToSubmit } from './validate_branches';
 
@@ -78,7 +77,23 @@ export async function submitAction(
   );
 
   for (const submissionInfo of submissionInfos) {
-    push(submissionInfo.head, context);
+    try {
+      context.metaCache.pushBranch(submissionInfo.head);
+    } catch (err) {
+      context.splog.logError(
+        `Failed to push changes for ${submissionInfo.head} to remote.`
+      );
+
+      context.splog.logTip(
+        [
+          `There may be external commits on remote that were not overwritten with the attempted push.`,
+          `Use 'git pull' to pull external changes and retry.`,
+        ].join('\n')
+      );
+
+      throw new ExitFailedError(err.stdout.toString());
+    }
+
     await submitPullRequest(
       { submissionInfo: [submissionInfo], cliAuthToken },
       context
