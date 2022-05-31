@@ -12,10 +12,11 @@
     ],
     "@typescript-eslint/no-floating-promises": "error",
     "max-lines-per-function": ["error", { "max": 120 }],
+    "max-params": ["error", { "max": 3 }],
     "@typescript-eslint/explicit-module-boundary-types": "error",
-    "import/no-default-export": 2,
-    "import/unambiguous": 2,
-    "import/first": 2,
+    "import/no-default-export": "error",
+    "import/unambiguous": "error",
+    "import/first": "error",
     "no-restricted-syntax": [
       "error",
       {

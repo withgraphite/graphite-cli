@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-interface */
-/* eslint-disable @typescript-eslint/ban-types */
 import * as t from '@withgraphite/retype';
 import fs from 'fs-extra';
 import os from 'os';
@@ -53,22 +51,22 @@ export function composeConfig<TConfigData, THelperFunctions>(
     return configPaths.find((p) => fs.existsSync(p)) || configPaths[0];
   };
   const loadHandler = (defaultPathOverride?: string) => {
-    const curPath = determinePath(defaultPathOverride);
-    const _data: TConfigData = readOrInitConfig(
-      curPath,
-      configTemplate.schema,
-      configTemplate.initialize,
-      { removeIfInvalid: configTemplate.options?.removeIfEmpty || false }
-    ) as TConfigData;
+    const configPath = determinePath(defaultPathOverride);
+    const _data: TConfigData = readOrInitConfig({
+      configPath,
+      schema: configTemplate.schema,
+      initialize: configTemplate.initialize,
+      removeIfInvalid: configTemplate.options?.removeIfEmpty || false,
+    }) as TConfigData;
     const update = (mutator: TConfigMutator<TConfigData>) => {
       mutator(_data);
       const shouldRemoveBecauseEmpty =
         configTemplate.options?.removeIfEmpty &&
         cuteString(_data) === cuteString({});
       if (shouldRemoveBecauseEmpty) {
-        fs.removeSync(curPath);
+        fs.removeSync(configPath);
       } else {
-        fs.writeFileSync(curPath, cuteString(_data), {
+        fs.writeFileSync(configPath, cuteString(_data), {
           mode: 0o600,
         });
       }
@@ -76,7 +74,7 @@ export function composeConfig<TConfigData, THelperFunctions>(
     return {
       data: _data,
       update,
-      path: curPath,
+      path: configPath,
       delete: (defaultPathOverride?: string) => {
         const curPath = determinePath(defaultPathOverride);
         if (fs.existsSync(curPath)) {
@@ -111,14 +109,17 @@ function configAbsolutePaths(
   );
 }
 
-function readOrInitConfig<TConfigData>(
-  configPath: string,
-  schema: t.Schema<TConfigData>,
-  initialize: () => TConfigData,
-  opts?: {
-    removeIfInvalid?: boolean;
-  }
-): TConfigData {
+function readOrInitConfig<TConfigData>({
+  configPath,
+  schema,
+  initialize,
+  removeIfInvalid,
+}: {
+  configPath: string;
+  schema: t.Schema<TConfigData>;
+  initialize: () => TConfigData;
+  removeIfInvalid: boolean;
+}): TConfigData {
   const hasExistingConfig = configPath && fs.existsSync(configPath);
   try {
     const parsedConfig = hasExistingConfig
@@ -130,7 +131,7 @@ function readOrInitConfig<TConfigData>(
     }
     return parsedConfig;
   } catch {
-    if (opts?.removeIfInvalid === true) {
+    if (removeIfInvalid) {
       fs.removeSync(configPath);
       return initialize();
     } else {

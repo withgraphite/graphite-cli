@@ -3,6 +3,7 @@ import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
 
+// eslint-disable-next-line max-params
 function traverseDownward(
   currentBranchName: string,
   context: TContext,
@@ -31,6 +32,7 @@ function traverseDownward(
   );
 }
 
+// eslint-disable-next-line max-params
 async function traverseUpward(
   currentBranchName: string,
   context: TContext,
