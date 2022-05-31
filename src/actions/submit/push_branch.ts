@@ -8,7 +8,8 @@ export function push(branchName: string, context: TContext): void {
       command: [
         `git push ${context.repoConfig.getRemote()}`,
         `--force-with-lease ${branchName} 2>&1`,
-        ...[context.noVerify ? ['--no-verify'] : []],
+        // TODO addressing this in next PR
+        // ...[context.noVerify ? ['--no-verify'] : []],
       ].join(' '),
     },
     (err) => {

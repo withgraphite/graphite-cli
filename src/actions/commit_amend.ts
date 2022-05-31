@@ -21,7 +21,6 @@ export function commitAmendAction(
   }
 
   context.metaCache.commit({
-    noVerify: context.noVerify,
     amend: true,
     noEdit: opts.noEdit,
     message: opts.message,

@@ -16,12 +16,12 @@ import {
   assertCachedMetaIsValidAndNotTrunk,
   assertCachedMetaIsValidOrTrunk,
 } from './cached_meta';
-import { parseBranchesAndMeta } from './parse_branches';
 import {
   deleteMetadataRef,
   TBranchPRInfo,
   writeMetadataRef,
 } from './metadata_ref';
+import { parseBranchesAndMeta } from './parse_branches';
 import { TScopeSpec } from './scope_spec';
 
 export type TMetaCache = {
@@ -67,10 +67,12 @@ export function composeMetaCache({
   trunkName,
   currentBranchOverride,
   splog,
+  noVerify,
 }: {
   trunkName?: string;
   currentBranchOverride?: string;
   splog: TSplog;
+  noVerify: boolean;
 }): TMetaCache {
   const cache = {
     currentBranch: currentBranchOverride ?? getCurrentBranchName(),
@@ -329,7 +331,7 @@ export function composeMetaCache({
       assertBranch(cache.currentBranch);
       const cachedMeta = cache.branches[cache.currentBranch];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
-      commit(opts);
+      commit({ ...opts, noVerify });
       cachedMeta.branchRevision = getBranchRevision(cache.currentBranch);
     },
     restackBranch: (branchName: string) => {
