@@ -12,7 +12,7 @@ export async function getReviewers(args: {
       type: 'list',
       name: 'reviewers',
       message: 'Reviewers (comma-separated GitHub usernames)',
-      seperator: ',',
+      separator: ',',
     },
     {
       onCancel: () => {
