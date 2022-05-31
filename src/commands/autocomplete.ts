@@ -1,19 +1,15 @@
 import yargs, { Arguments } from 'yargs';
-import { initContext } from '../lib/context';
-import { Branch } from '../wrapper-classes/branch';
+import { branchNamesAndRevisions } from '../lib/git/sorted_branch_names';
 
 yargs.completion('completion', (current, argv) => {
-  const context = initContext();
   const branchArg = getBranchArg(current, argv);
   if (branchArg === null) {
     return;
   }
 
-  return Branch.allBranches(context, {
-    filter: (b) => b.name.startsWith(branchArg),
-  })
-    .map((b) => b.name)
-    .sort();
+  // we don't want to load a full context here, so we'll just use the git call directly
+  // once we persist the meta cache to disk, we can consider using a context here
+  return Object.keys(branchNamesAndRevisions());
 });
 
 /**
