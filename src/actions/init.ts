@@ -1,15 +1,13 @@
 import chalk from 'chalk';
-import fs from 'fs-extra';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { PreconditionsFailedError } from '../lib/errors';
-import { branchExists } from '../lib/git/branch_exists';
+import { findRemoteBranch } from '../lib/git/find_remote_branch';
 import { getRepoRootPathPrecondition } from '../lib/preconditions';
-import { inferTrunk } from '../lib/utils/trunk';
-import { Branch } from '../wrapper-classes/branch';
+
 export async function init(context: TContext, trunk?: string): Promise<void> {
   getRepoRootPathPrecondition();
-  const allBranches = Branch.allBranches(context);
+  const allBranchNames = context.metaCache.allBranchNames;
 
   logWelcomeMessage(context);
   context.splog.logNewline();
@@ -22,7 +20,7 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
    *
    * https://newbedev.com/git-branch-not-returning-any-results
    */
-  if (allBranches.length === 0) {
+  if (allBranchNames.length === 0) {
     context.splog.logError(
       `Ouch! We can't setup Graphite in a repo without any branches -- this is likely because you're initializing Graphite in a blank repo. Please create your first commit and then re-run your Graphite command.`
     );
@@ -33,26 +31,15 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
   }
 
   // Trunk
-  let newTrunkName: string;
-  if (trunk) {
-    if (branchExists(trunk)) {
-      newTrunkName = trunk;
-      context.repoConfig.setTrunk(newTrunkName);
-      context.splog.logInfo(`Trunk set to (${newTrunkName})`);
-    } else {
-      throw new PreconditionsFailedError(
-        `Cannot set (${trunk}) as trunk, branch not found in current repo.`
-      );
-    }
-  } else {
-    newTrunkName = await selectTrunkBranch(allBranches, context);
-    context.repoConfig.setTrunk(newTrunkName);
-  }
+  const newTrunkName =
+    allBranchNames.find((b) => b === trunk) ??
+    (await selectTrunkBranch(allBranchNames, context));
+  context.repoConfig.setTrunk(newTrunkName);
+  context.splog.logInfo(`Trunk set to (${chalk.green(newTrunkName)})`);
 
   context.splog.logInfo(
     `Graphite repo config saved at "${context.repoConfig.path}"`
   );
-  context.splog.logInfo(fs.readFileSync(context.repoConfig.path).toString());
 }
 
 function logWelcomeMessage(context: TContext): void {
@@ -66,20 +53,34 @@ function logWelcomeMessage(context: TContext): void {
 }
 
 async function selectTrunkBranch(
-  allBranches: Branch[],
+  allBranchNames: string[],
   context: TContext
 ): Promise<string> {
-  const trunk = inferTrunk(context);
-  const response = await prompts({
-    type: 'autocomplete',
-    name: 'branch',
-    message: `Select a trunk branch, which you open pull requests against${
-      trunk ? ` [inferred trunk (${chalk.green(trunk.name)})]` : ''
-    }`,
-    choices: allBranches.map((b) => {
-      return { title: b.name, value: b.name };
-    }),
-    ...(trunk ? { initial: trunk.name } : {}),
-  });
-  return response.branch;
+  const inferredTrunk =
+    findRemoteBranch(context.repoConfig.getRemote()) ||
+    findCommonlyNamedTrunk(context);
+
+  return (
+    await prompts({
+      type: 'autocomplete',
+      name: 'branch',
+      message: `Select a trunk branch, which you open pull requests against${
+        inferredTrunk ? ` [inferred trunk (${chalk.green(inferredTrunk)})]` : ''
+      }`,
+      choices: allBranchNames.map((b) => {
+        return { title: b, value: b };
+      }),
+      ...(inferredTrunk ? { initial: inferredTrunk } : {}),
+    })
+  ).branch;
+}
+
+function findCommonlyNamedTrunk(context: TContext): string | undefined {
+  const potentialTrunks = context.metaCache.allBranchNames.filter((b) =>
+    ['main', 'master', 'development', 'develop'].includes(b)
+  );
+  if (potentialTrunks.length === 1) {
+    return potentialTrunks[0];
+  }
+  return undefined;
 }
