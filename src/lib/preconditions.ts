@@ -1,4 +1,3 @@
-import { Branch } from '../wrapper-classes/branch';
 import { TContext } from './context';
 import { PreconditionsFailedError } from './errors';
 import { branchExists } from './git/branch_exists';
@@ -17,16 +16,6 @@ export function getRepoRootPathPrecondition(): string {
     throw new PreconditionsFailedError('No .git repository found.');
   }
   return repoRootPath;
-}
-
-function currentBranchPrecondition(): Branch {
-  const branch = Branch.currentBranch();
-  if (!branch) {
-    throw new PreconditionsFailedError(
-      `Cannot find current branch. Please ensure you're running this command atop a checked-out branch.`
-    );
-  }
-  return branch;
 }
 
 function branchExistsPrecondition(branchName: string): void {
@@ -80,7 +69,6 @@ function currentGitRepoPrecondition(): string {
 }
 
 export {
-  currentBranchPrecondition,
   branchExistsPrecondition,
   uncommittedTrackedChangesPrecondition,
   currentGitRepoPrecondition,

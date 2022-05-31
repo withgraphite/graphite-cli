@@ -1,7 +1,5 @@
 import { Branch } from '../../wrapper-classes/branch';
 import { TContext } from '../context';
-import { ExitFailedError, PreconditionsFailedError } from '../errors';
-import { branchExists } from '../git/branch_exists';
 import { gpExecSync } from './exec_sync';
 
 function findRemoteBranch(context: TContext): Branch | undefined {
@@ -33,19 +31,4 @@ function findCommonlyNamedTrunk(context: TContext): Branch | undefined {
 
 export function inferTrunk(context: TContext): Branch | undefined {
   return findRemoteBranch(context) || findCommonlyNamedTrunk(context);
-}
-export function getTrunk(context: TContext): Branch {
-  const configTrunkName = context.repoConfig.data.trunk;
-  if (!configTrunkName) {
-    throw new PreconditionsFailedError(
-      `No configured trunk branch. Consider setting the trunk name by running "gt repo init".`
-    );
-  }
-
-  if (!branchExists(configTrunkName)) {
-    throw new ExitFailedError(
-      `Configured trunk branch (${configTrunkName}) not found in the current repo. Consider updating the trunk name by running "gt repo init".`
-    );
-  }
-  return new Branch(configTrunkName);
 }
