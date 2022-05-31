@@ -1,5 +1,3 @@
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
-import * as t from '@withgraphite/retype';
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
@@ -7,15 +5,11 @@ import { TScopeSpec } from '../../lib/engine/scope_spec';
 import { KilledError } from '../../lib/errors';
 import { cliAuthPrecondition } from '../../lib/preconditions';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
-import { Unpacked } from '../../lib/utils/ts_helpers';
 import { getPRInfoForBranches } from './prepare_branches';
 import { push } from './push_branch';
 import { submitPullRequest } from './submit_prs';
 import { getValidBranchesToSubmit } from './validate_branches';
 
-export type TSubmittedPRRequest = Unpacked<
-  t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.params>['prs']
->;
 export async function submitAction(
   args: {
     scope: TScopeSpec;

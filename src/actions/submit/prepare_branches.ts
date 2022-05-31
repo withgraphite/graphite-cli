@@ -6,7 +6,7 @@ import { getPRBody } from './pr_body';
 import { getPRDraftStatus } from './pr_draft';
 import { getPRTitle } from './pr_title';
 import { getReviewers } from './reviewers';
-import { TSubmittedPRRequest } from './submit_action';
+import { TPRSubmissionInfo } from './submit_prs';
 
 type TPRSubmissionAction = { branchName: string } & (
   | { update: false }
@@ -37,7 +37,7 @@ export async function getPRInfoForBranches(
     reviewers: boolean;
   },
   context: TContext
-): Promise<TSubmittedPRRequest[]> {
+): Promise<TPRSubmissionInfo> {
   context.splog.logInfo(
     chalk.blueBright('🥞 Preparing to submit PRs for the following branches...')
   );
