@@ -25,6 +25,7 @@ npm install --global yarn
 
 Build the CLI
 ```
+nvm use
 yarn install
 yarn build
 ```
