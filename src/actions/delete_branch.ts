@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import { TContext } from '../lib/context';
+import { SCOPE } from '../lib/engine/scope_spec';
 import { ExitFailedError } from '../lib/errors';
 import { restackBranches } from './restack';
 
@@ -27,12 +28,14 @@ export function deleteBranchAction(
     );
   }
 
-  const movedChildren = context.metaCache.deleteBranch(args.branchName);
+  const branchesToRestack = context.metaCache.getRelativeStack(
+    args.branchName,
+    SCOPE.UPSTACK_EXCLUSIVE
+  );
+  context.metaCache.deleteBranch(args.branchName);
   context.splog.logInfo(`Deleted branch ${chalk.red(args.branchName)}`);
 
-  if (movedChildren.length > 0) {
-    restackBranches({ relative: false, branchNames: movedChildren }, context);
-  }
+  restackBranches({ relative: false, branchNames: branchesToRestack }, context);
 }
 
 // Where did we merge this? If it was merged on GitHub, we see where it was
