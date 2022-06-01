@@ -7,6 +7,8 @@ import { deleteBranch } from '../git/deleteBranch';
 import { getBranchRevision } from '../git/get_branch_revision';
 import { isEmptyBranch } from '../git/is_empty_branch';
 import { isMerged } from '../git/is_merged';
+import { pruneRemote } from '../git/prune_remote';
+import { pullBranch } from '../git/pull_branch';
 import { pushBranch } from '../git/push_branch';
 import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
 import { switchBranch } from '../git/switch_branch';
@@ -62,6 +64,7 @@ export type TMetaCache = {
   isBranchFixed: (branchName: string) => boolean;
   isBranchEmpty: (branchName: string) => boolean;
   pushBranch: (branchName: string) => void;
+  pullTrunk: () => 'PULL_DONE' | 'PULL_UNNEEDED';
 };
 
 // eslint-disable-next-line max-lines-per-function
@@ -81,6 +84,13 @@ export function composeMetaCache({
   const cache = {
     currentBranch: currentBranchOverride ?? getCurrentBranchName(),
     branches: parseBranchesAndMeta(trunkName, splog),
+  };
+
+  const assertTrunk = () => {
+    if (!trunkName) {
+      throw new PreconditionsFailedError(`No trunk found.`);
+    }
+    return trunkName;
   };
 
   const assertBranch: (
@@ -206,10 +216,7 @@ export function composeMetaCache({
       return cache.currentBranch;
     },
     get trunk() {
-      if (!trunkName) {
-        throw new PreconditionsFailedError(`No trunk found.`);
-      }
-      return trunkName;
+      return assertTrunk();
     },
     get allBranchNames() {
       return Object.keys(cache.branches);
@@ -405,6 +412,22 @@ export function composeMetaCache({
       const cachedMeta = cache.branches[branchName];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
       pushBranch({ remote, branchName, noVerify });
+    },
+    pullTrunk: () => {
+      pruneRemote(remote);
+      assertBranch(cache.currentBranch);
+      const trunkName = assertTrunk();
+      const oldTrunkRevision = cache.branches[trunkName].branchRevision;
+      try {
+        switchBranch(trunkName);
+        pullBranch(remote, trunkName);
+        cache.branches[trunkName].branchRevision = getBranchRevision(trunkName);
+        return oldTrunkRevision == cache.branches[trunkName].branchRevision
+          ? 'PULL_UNNEEDED'
+          : 'PULL_DONE';
+      } finally {
+        switchBranch(cache.currentBranch);
+      }
     },
   };
 }
