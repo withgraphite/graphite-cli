@@ -7,6 +7,7 @@ import { deleteBranch } from '../git/deleteBranch';
 import { getBranchRevision } from '../git/get_branch_revision';
 import { isEmptyBranch } from '../git/is_empty_branch';
 import { isMerged } from '../git/is_merged';
+import { getMergeBase } from '../git/merge_base';
 import { pruneRemote } from '../git/prune_remote';
 import { pullBranch } from '../git/pull_branch';
 import { pushBranch } from '../git/push_branch';
@@ -29,27 +30,43 @@ import { TScopeSpec } from './scope_spec';
 
 export type TMetaCache = {
   debug: () => void;
+
   handleNewTrunk: (newTrunkName: string) => void;
+  trunk: string;
+  isTrunk: (branchName: string) => boolean;
+
+  branchExists: (branchName: string | undefined) => boolean;
+  allBranchNames: string[];
+  isBranchTracked: (branchName: string) => boolean;
+  trackBranch: (
+    branchName: string,
+    parentBranchName: string
+  ) => 'TRACKED' | 'NEEDS_REBASE';
+
   currentBranch: string | undefined;
   currentBranchPrecondition: string;
-  trunk: string;
-  allBranchNames: string[];
-  isTrunk: (branchName: string) => boolean;
+
   getRevision: (branchName: string) => string;
   getBaseRevision: (branchName: string) => string;
   getAllCommits: (branchName: string, format: TCommitFormat) => string[];
+
   getPrInfo: (branchName: string) => TBranchPRInfo | undefined;
   upsertPrInfo: (branchName: string, prInfo: Partial<TBranchPRInfo>) => void;
+
   getChildren: (branchName: string) => string[];
+
   setParent: (branchName: string, parentBranchName: string) => void;
   getParent: (branchName: string) => string | undefined;
   getParentPrecondition: (branchName: string) => string;
+
   getRelativeStack: (branchName: string, scope: TScopeSpec) => string[];
+
   checkoutNewBranch: (branchName: string) => void;
   checkoutBranch: (branchName: string) => void;
   renameCurrentBranch: (branchName: string) => void;
   deleteBranch: (branchName: string) => string[];
   commit: (opts: TCommitOpts) => void;
+
   restackBranch: (
     branchName: string
   ) => 'REBASE_CONFLICT' | 'REBASE_DONE' | 'REBASE_UNNEEDED';
@@ -60,9 +77,11 @@ export type TMetaCache = {
         branchName: string;
       }
     | { result: 'REBASE_CONFLICT' };
+
   isMergedIntoTrunk: (branchName: string) => boolean;
   isBranchFixed: (branchName: string) => boolean;
   isBranchEmpty: (branchName: string) => boolean;
+
   pushBranch: (branchName: string) => void;
   pullTrunk: () => 'PULL_DONE' | 'PULL_UNNEEDED';
 };
@@ -93,10 +112,13 @@ export function composeMetaCache({
     return trunkName;
   };
 
+  const branchExists = (branchName: string | undefined) =>
+    branchName !== undefined && cache.branches[branchName] !== undefined;
+
   const assertBranch: (
     branchName: string | undefined
   ) => asserts branchName is string = (branchName) => {
-    if (!branchName || !cache.branches[branchName]) {
+    if (!branchExists(branchName)) {
       throw new PreconditionsFailedError(
         `${branchName} is unknown to Graphite.`
       );
@@ -207,6 +229,42 @@ export function composeMetaCache({
     handleNewTrunk(newTrunkName: string) {
       cache.branches = parseBranchesAndMeta(newTrunkName, splog);
     },
+    get trunk() {
+      return assertTrunk();
+    },
+    isTrunk: (branchName: string) => branchName === trunkName,
+    branchExists,
+    get allBranchNames() {
+      return Object.keys(cache.branches);
+    },
+    isBranchTracked: (branchName: string) => {
+      assertBranch(branchName);
+      return cache.branches[branchName].validationResult === 'VALID';
+    },
+    trackBranch: (branchName: string, parentBranchName: string) => {
+      assertBranch(branchName);
+      assertBranch(parentBranchName);
+
+      const parentMeta = cache.branches[parentBranchName];
+      assertCachedMetaIsValidOrTrunk(parentMeta);
+
+      const parentBranchRevision = parentMeta.branchRevision;
+      if (
+        getMergeBase(branchName, parentBranchRevision) !== parentBranchRevision
+      ) {
+        return 'NEEDS_REBASE';
+      }
+
+      cache.branches[branchName] = {
+        ...cache.branches[branchName],
+        validationResult: 'VALID',
+        parentBranchName,
+        parentBranchRevision,
+      };
+      persistMeta(branchName);
+      cache.branches[parentBranchName].children.push(branchName);
+      return 'TRACKED';
+    },
     get currentBranch() {
       return cache.currentBranch;
     },
@@ -215,13 +273,6 @@ export function composeMetaCache({
       assertCachedMetaIsValidOrTrunk(cache.branches[cache.currentBranch]);
       return cache.currentBranch;
     },
-    get trunk() {
-      return assertTrunk();
-    },
-    get allBranchNames() {
-      return Object.keys(cache.branches);
-    },
-    isTrunk: (branchName: string) => branchName === trunkName,
     getRevision: (branchName: string) => {
       assertBranch(branchName);
       const meta = cache.branches[branchName];
