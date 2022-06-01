@@ -10,12 +10,21 @@ export async function editDownstack(
   inputPath: string | undefined,
   context: TContext
 ): Promise<void> {
+  // First, reorder the parent pointers of the branches
   const branchNames = inputPath
     ? parseEditFile(inputPath) // allow users to pass a pre-written file, mostly for unit tests.
     : await promptForEdit(context);
   reorderBranches(context.metaCache.trunk, branchNames, context);
+
+  // Restack starting from the bottom of the new stack upwards
+  const branchesToRestack = context.metaCache.getRelativeStack(
+    branchNames[0],
+    SCOPE.UPSTACK
+  );
+
+  // We to check out the top of the new stack BEFORE we restack in case of conflicts.
   context.metaCache.checkoutBranch(branchNames.reverse()[0]);
-  restackBranches({ relative: true, scope: SCOPE.STACK }, context);
+  restackBranches({ relative: false, branchNames: branchesToRestack }, context);
 }
 
 function reorderBranches(
