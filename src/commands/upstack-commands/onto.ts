@@ -16,7 +16,7 @@ const args = {
 export const command = 'onto [branch]';
 export const canonical = 'upstack onto';
 export const description =
-  'Rebase all upstack branches onto the latest commit (tip) of the target branch.';
+  'Rebase all upstack branches (inclusive) onto the tip (latest commit) of the target branch.';
 export const builder = args;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
@@ -26,7 +26,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         (await interactiveBranchSelection(
           {
             message: `Choose a new base for ${chalk.yellow(
-              context.metaCache.currentBranch
+              context.metaCache.currentBranchPrecondition
             )}`,
             omitCurrentBranch: true,
           },
