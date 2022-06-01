@@ -1,11 +1,16 @@
 import chalk from 'chalk';
+import { getDownstackDependencies } from '../../lib/api/get_downstack_dependencies';
 import { TContext } from '../../lib/context';
 import { SCOPE } from '../../lib/engine/scope_spec';
 import { ExitFailedError } from '../../lib/errors';
-import { uncommittedTrackedChangesPrecondition } from '../../lib/preconditions';
+import {
+  cliAuthPrecondition,
+  uncommittedTrackedChangesPrecondition,
+} from '../../lib/preconditions';
 import { cleanBranches } from '../clean_branches';
 import { restackBranches } from '../restack';
 import { syncPrInfo } from '../sync_pr_info';
+import { getBranchesFromRemote } from './get_remote_branches';
 
 export async function syncAction(
   opts: {
@@ -13,7 +18,7 @@ export async function syncAction(
     force: boolean;
     delete: boolean;
     showDeleteProgress: boolean;
-    downstackToSync?: string[];
+    tipOfDownstack?: string;
   },
   context: TContext
 ): Promise<void> {
@@ -42,12 +47,24 @@ export async function syncAction(
     }
   }
 
-  // TODO upstack PR will address this
-  // if (opts.downstackToSync) {
-  //     pull(opts.downstackToSync ?? []), context);
+  if (opts.tipOfDownstack) {
+    const authToken = cliAuthPrecondition(context);
+    const downstackToSync = await getDownstackDependencies(
+      { branchName: opts.tipOfDownstack, trunkName: context.metaCache.trunk },
+      {
+        authToken,
+        repoName: context.repoConfig.getRepoName(),
+        repoOwner: context.repoConfig.getRepoOwner(),
+      }
+    );
 
-  //   await mergeDownstack(opts.downstackToSync, context);
-  // }
+    await getBranchesFromRemote(
+      downstackToSync,
+      context.metaCache.trunk,
+      context
+    );
+    restackBranches({ relative: false, branchNames: downstackToSync }, context);
+  }
 
   await syncPrInfo(context.metaCache.allBranchNames, context);
 

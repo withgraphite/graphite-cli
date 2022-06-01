@@ -4,6 +4,12 @@ import { commit, TCommitOpts } from '../git/commit';
 import { getCommitRange, TCommitFormat } from '../git/commit_range';
 import { getCurrentBranchName } from '../git/current_branch_name';
 import { deleteBranch } from '../git/deleteBranch';
+import {
+  fetchBranch,
+  readFetchBase,
+  readFetchHead,
+  writeFetchBase,
+} from '../git/fetch_branch';
 import { getBranchRevision } from '../git/get_branch_revision';
 import { isEmptyBranch } from '../git/is_empty_branch';
 import { isMerged } from '../git/is_merged';
@@ -12,7 +18,9 @@ import { pruneRemote } from '../git/prune_remote';
 import { pullBranch } from '../git/pull_branch';
 import { pushBranch } from '../git/push_branch';
 import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
+import { setRemoteTracking } from '../git/set_remote_tracking';
 import { switchBranch } from '../git/switch_branch';
+import { writeBranch } from '../git/write_branch';
 import { cuteString } from '../utils/cute_string';
 import { TSplog } from '../utils/splog';
 import {
@@ -84,6 +92,15 @@ export type TMetaCache = {
 
   pushBranch: (branchName: string) => void;
   pullTrunk: () => 'PULL_DONE' | 'PULL_UNNEEDED';
+
+  fetchBranch: (
+    branchName: string,
+    parentBranchName: string
+  ) => 'DOES_NOT_EXIST' | 'EXISTS_DIFFERENT_PARENTS' | 'EXISTS_SAME_PARENT';
+  overwriteBranchFromFetched: (
+    branchName: string,
+    parentBranchName: string
+  ) => void;
 };
 
 // eslint-disable-next-line max-lines-per-function
@@ -220,6 +237,25 @@ export function composeMetaCache({
     if (cache.currentBranch && cache.currentBranch in cache.branches) {
       switchBranch(cache.currentBranch);
     }
+  };
+
+  const overwriteBranchFromFetched = (
+    branchName: string,
+    parentBranchName: string
+  ) => {
+    const { head, base } = { head: readFetchHead(), base: readFetchBase() };
+    writeBranch(branchName, head);
+    setRemoteTracking({ remote, branchName, sha: head });
+
+    cache.branches[branchName] = {
+      validationResult: 'VALID',
+      parentBranchName,
+      parentBranchRevision: base,
+      branchRevision: head,
+      children: [],
+    };
+    persistMeta(branchName);
+    cache.branches[parentBranchName].children.push(branchName);
   };
 
   return {
@@ -485,5 +521,36 @@ export function composeMetaCache({
         switchBranch(cache.currentBranch);
       }
     },
+    fetchBranch: (branchName: string, parentBranchName: string) => {
+      assertBranch(parentBranchName);
+      const parentMeta = cache.branches[parentBranchName];
+      assertCachedMetaIsValidOrTrunk(parentMeta);
+      if (parentMeta.validationResult === 'TRUNK') {
+        // If this is a trunk-child, its base is its merge base with trunk.
+        fetchBranch(remote, branchName);
+        writeFetchBase(
+          getMergeBase(readFetchHead(), parentMeta.branchRevision)
+        );
+      } else {
+        // Otherwise, its base is the head of the previous fetch
+        writeFetchBase(readFetchHead());
+        fetchBranch(remote, branchName);
+      }
+
+      if (!branchExists(branchName)) {
+        return 'DOES_NOT_EXIST';
+      }
+
+      const existingMeta = cache.branches[branchName];
+      if (
+        existingMeta.validationResult !== 'VALID' ||
+        existingMeta.parentBranchName !== parentBranchName
+      ) {
+        return 'EXISTS_DIFFERENT_PARENTS';
+      }
+
+      return 'EXISTS_SAME_PARENT';
+    },
+    overwriteBranchFromFetched,
   };
 }
