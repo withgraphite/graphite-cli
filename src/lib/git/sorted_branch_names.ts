@@ -1,11 +1,5 @@
 import { gpExecSyncAndSplitLines } from '../utils/exec_sync';
 
-export function sortedBranchNames(): string[] {
-  return gpExecSyncAndSplitLines({
-    command: `git for-each-ref --format='%(refname:short)' --sort=-committerdate refs/heads/`,
-  });
-}
-
 export function branchNamesAndRevisions(): Record<string, string> {
   const branches: Record<string, string> = {};
 
