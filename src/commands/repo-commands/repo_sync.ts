@@ -16,13 +16,6 @@ const args = {
     default: false,
     type: 'boolean',
   },
-  resubmit: {
-    describe: `Re-submit branches whose merge bases have changed locally and now differ from their PRs.`,
-    demandOption: false,
-    default: true,
-    type: 'boolean',
-    alias: 'r',
-  },
   force: {
     describe: `Don't prompt you to confirm when a branch will be deleted or re-submitted.`,
     demandOption: false,
@@ -31,7 +24,7 @@ const args = {
     alias: 'f',
   },
   pull: {
-    describe: `Pull the trunk branch from remote before searching for stale branches.`,
+    describe: `Pull the trunk branch from remote.`,
     demandOption: false,
     default: true,
     type: 'boolean',

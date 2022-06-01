@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { pull } from '../../../src/actions/sync/pull';
+import { syncAction } from '../../../src/actions/sync/sync';
 import { pushBranch } from '../../../src/lib/git/push_branch';
 import { CloneScene } from '../../lib/scenes/clone_scene';
 import { configureTest } from '../../lib/utils/configure_test';
@@ -37,19 +37,19 @@ for (const scene of [new CloneScene()]) {
       ).to.throw();
     });
 
-    it('can fetch a branch from remote', async () => {
+    it('can pull trunk from remote', async () => {
       scene.originRepo.createChangeAndCommit('a');
-      scene.originRepo.createChange('1');
-      scene.originRepo.execCliCommand(`branch create 1 -am "1"`);
 
-      pull(['main', '1'], scene.context);
+      await syncAction(
+        { pull: true, force: false, delete: false, showDeleteProgress: false },
+        scene.context
+      );
 
       expect(scene.repo.getRef('refs/heads/main')).to.equal(
         scene.originRepo.getRef('refs/heads/main')
       );
-      expect(scene.repo.getRef('refs/remotes/origin/1')).to.equal(
-        scene.originRepo.getRef('refs/heads/1')
-      );
     });
+
+    // TODO test downstack sync actions
   });
 }
