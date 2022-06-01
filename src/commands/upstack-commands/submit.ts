@@ -22,5 +22,14 @@ export const handler = async (argv: argsT): Promise<void> => {
       },
       context
     );
+    context.splog.logTip(
+      [
+        `You submitted pull requests with upstack scope.`,
+        `In common cases, we recommend you use:`,
+        `* gt stack submit`,
+        `* gt downstack submit`,
+        `because these will ensure any downstack changes will be synced to existing PRs.`,
+      ].join('\n')
+    );
   });
 };

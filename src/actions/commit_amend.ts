@@ -25,5 +25,12 @@ export function commitAmendAction(
     noEdit: opts.noEdit,
     message: opts.message,
   });
+
+  if (!opts.noEdit) {
+    context.splog.logTip(
+      'In the future, you can skip editing the commit message with the --no-edit flag.'
+    );
+  }
+
   restackBranches({ relative: true, scope: SCOPE.UPSTACK_EXCLUSIVE }, context);
 }
