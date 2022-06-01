@@ -72,7 +72,7 @@ export type TMetaCache = {
   checkoutNewBranch: (branchName: string) => void;
   checkoutBranch: (branchName: string) => void;
   renameCurrentBranch: (branchName: string) => void;
-  deleteBranch: (branchName: string) => string[];
+  deleteBranch: (branchName: string) => void;
   commit: (opts: TCommitOpts) => void;
 
   restackBranch: (
@@ -410,7 +410,7 @@ export function composeMetaCache({
       deleteMetadataRef(cache.currentBranch);
       cache.currentBranch = branchName;
     },
-    deleteBranch: (branchName: string): string[] => {
+    deleteBranch: (branchName: string) => {
       assertBranch(branchName);
       const cachedMeta = cache.branches[branchName];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
@@ -419,16 +419,13 @@ export function composeMetaCache({
         checkoutBranch(cachedMeta.parentBranchName);
       }
 
-      const movedChildren: string[] = [];
-      cachedMeta.children.forEach((childBranchName) => {
-        setParent(childBranchName, cachedMeta.parentBranchName);
-        movedChildren.push(childBranchName);
-      });
+      cachedMeta.children.forEach((childBranchName) =>
+        setParent(childBranchName, cachedMeta.parentBranchName)
+      );
       removeChild(cachedMeta.parentBranchName, branchName);
 
       deleteBranch(branchName);
       deleteMetadataRef(branchName);
-      return movedChildren;
     },
     commit: (opts: TCommitOpts) => {
       assertBranch(cache.currentBranch);
