@@ -1,4 +1,5 @@
 import { TContext } from '../lib/context';
+import { SCOPE } from '../lib/engine/scope_spec';
 import { ExitFailedError } from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
 import { detectStagedChanges } from '../lib/git/detect_staged_changes';
@@ -46,18 +47,21 @@ export async function createBranchAction(
   });
 
   if (opts.restack) {
-    const branchesToRestack: string[] = [];
-    context.metaCache
-      .getChildren(context.metaCache.getParentPrecondition(branchName))
-      .filter((childBranchName) => childBranchName != branchName)
-      .forEach((childBranchName) => {
-        context.metaCache.setParent(childBranchName, branchName);
-        branchesToRestack.push(childBranchName);
-      });
-
-    restackBranches(
-      { relative: false, branchNames: branchesToRestack },
-      context
-    );
+    restackSiblings(branchName, context);
   }
+}
+
+function restackSiblings(branchName: string, context: TContext) {
+  // If we're restacking siblings onto this branch, we need to restack
+  // all of their recursive children as well. Get all the upstacks!
+  const branchesToRestack = context.metaCache
+    .getChildren(context.metaCache.getParentPrecondition(branchName))
+    .filter((childBranchName) => childBranchName !== branchName)
+    .flatMap((childBranchName) => {
+      // Here we actually set the parent of each sibling to the new branch
+      context.metaCache.setParent(childBranchName, branchName);
+      return context.metaCache.getRelativeStack(childBranchName, SCOPE.UPSTACK);
+    });
+
+  restackBranches({ relative: false, branchNames: branchesToRestack }, context);
 }
