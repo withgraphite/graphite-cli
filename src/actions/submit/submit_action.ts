@@ -83,8 +83,8 @@ export async function submitAction(
 
       context.splog.logTip(
         [
-          `There may be external commits on remote that were not overwritten with the attempted push.`,
-          `Use 'git pull' to pull external changes and retry.`,
+          `This push may have failed due to external changes to the remote branch.`,
+          `If you are collaborating on this stack, try the downstack sync command to pull in changes.`,
         ].join('\n')
       );
 

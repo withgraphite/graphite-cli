@@ -15,9 +15,13 @@ export function deleteBranchAction(
   }
 
   if (!args.force && !isSafeToDelete(args.branchName, context).result) {
+    context.splog.logTip(
+      `By default, this command only allows deletion of merged or closed branches.`
+    );
+
     throw new ExitFailedError(
       [
-        `The branch ${args.branchName} is not fully merged.  Use the \`--force\` option to delete it.`,
+        `The branch ${args.branchName} is not safe to delete.  Use the \`--force\` option to delete it.`,
         `Note that its changes will be lost, as its children will be restacked onto its parent.`,
       ].join('\n')
     );

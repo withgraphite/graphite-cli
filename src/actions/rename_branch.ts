@@ -9,6 +9,10 @@ export function renameCurrentBranch(
 ): void {
   const oldBranchName = context.metaCache.currentBranchPrecondition;
   if (context.metaCache.getPrInfo(oldBranchName)?.number && !args.force) {
+    context.splog.logTip(
+      `Renaming a branch that is already associated with a PR removes the association.`
+    );
+
     throw new ExitFailedError(
       'Renaming a branch for a submitted PR requires the `--force` option'
     );

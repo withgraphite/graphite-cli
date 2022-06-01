@@ -26,12 +26,7 @@ export const canonical = 'branch delete';
 export const description =
   'Delete a given git branch and its corresponding Graphite metadata.';
 export const builder = args;
-export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
-    if (!args.force) {
-      context.splog.logTip(`You can force branch deletion with -f`);
-    }
-
-    deleteBranchAction({ branchName: argv.name, force: argv.force }, context);
-  });
-};
+export const handler = async (argv: argsT): Promise<void> =>
+  profile(argv, canonical, async (context) =>
+    deleteBranchAction({ branchName: argv.name, force: argv.force }, context)
+  );
