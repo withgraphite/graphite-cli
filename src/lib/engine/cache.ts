@@ -248,9 +248,13 @@ export function composeMetaCache({
       const parentMeta = cache.branches[parentBranchName];
       assertCachedMetaIsValidOrTrunk(parentMeta);
 
-      const parentBranchRevision = parentMeta.branchRevision;
+      const mergeBase = getMergeBase(branchName, parentBranchName);
+
+      // We allow children of trunk to be tracked even if they are behind.
+      // So only fail if the parent is not trunk AND the branch is behind
       if (
-        getMergeBase(branchName, parentBranchRevision) !== parentBranchRevision
+        parentMeta.validationResult !== 'TRUNK' &&
+        mergeBase !== parentMeta.branchRevision
       ) {
         return 'NEEDS_REBASE';
       }
@@ -259,7 +263,8 @@ export function composeMetaCache({
         ...cache.branches[branchName],
         validationResult: 'VALID',
         parentBranchName,
-        parentBranchRevision,
+        // This is parentMeta.branchRevision unless parent is trunk
+        parentBranchRevision: mergeBase,
       };
       persistMeta(branchName);
       cache.branches[parentBranchName].children.push(branchName);
