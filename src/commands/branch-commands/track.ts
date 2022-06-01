@@ -30,5 +30,12 @@ export const description = [
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   profile(argv, canonical, async (context) =>
-    trackBranch({ branchName: argv.branch, parentBranchName: context.metaCache.currentBranchPrecondition, force: argv.force }, context)
+    trackBranch(
+      {
+        branchName: argv.branch,
+        parentBranchName: context.metaCache.currentBranchPrecondition,
+        force: argv.force,
+      },
+      context
+    )
   );

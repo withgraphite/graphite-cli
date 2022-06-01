@@ -20,13 +20,6 @@ export async function cleanBranches(
   },
   context: TContext
 ): Promise<string[]> {
-  context.splog.logInfo(
-    `Checking if any branches have been merged/closed and can be deleted...`
-  );
-  context.splog.logTip(
-    `Disable this behavior at any point in the future with --no-delete`
-  );
-
   /**
    * To find and delete all of the merged/closed branches, we traverse all of
    * the stacks off of trunk, greedily deleting the base branches and rebasing
