@@ -70,7 +70,7 @@ export async function interactiveBranchSelection(
     (choice) =>
       choice.value ===
       (opts.omitCurrentBranch
-        ? context.metaCache.getParent(
+        ? context.metaCache.getParentPrecondition(
             context.metaCache.currentBranchPrecondition
           )
         : context.metaCache.currentBranch)
