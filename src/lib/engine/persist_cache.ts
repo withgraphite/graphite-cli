@@ -1,9 +1,10 @@
+import { getBranchNamesAndRevisions } from '../git/sorted_branch_names';
 import { cuteString } from '../utils/cute_string';
 import { gpExecSync } from '../utils/exec_sync';
 import { TSplog } from '../utils/splog';
 import { TCachedMeta } from './cached_meta';
 import { CACHE_CHECK_REF, CACHE_DATA_REF } from './cache_loader';
-import { getAllBranchesAndMeta } from './readBranchesAndMeta';
+import { getMetadataRefList } from './metadata_ref';
 
 export function persistCache(
   trunkName: string | undefined,
@@ -15,8 +16,9 @@ export function persistCache(
     {
       command: `git update-ref ${CACHE_CHECK_REF} ${hashState(
         cuteString({
-          trunkName,
-          allBranchesAndMeta: getAllBranchesAndMeta(splog),
+          trunkName: trunkName,
+          gitBranchNamesAndRevisions: getBranchNamesAndRevisions(),
+          metadataRefList: getMetadataRefList(),
         }),
         true
       )}`,
