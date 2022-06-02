@@ -5,7 +5,7 @@ import { TRepoConfig } from './config/repo_config';
 import { TUserConfig } from './config/user_config';
 import { TContext } from './context';
 import {
-  allBranchesWithMeta,
+  getMetadataRefList,
   readMetadataRef,
   TMeta,
   writeMetadataRef,
@@ -14,7 +14,7 @@ import { getCommitTree } from './git/commit_tree';
 import { getCurrentBranchName } from './git/current_branch_name';
 import { deleteBranch } from './git/deleteBranch';
 import { getShaOrThrow } from './git/get_sha';
-import { branchNamesAndRevisions } from './git/sorted_branch_names';
+import { getBranchNamesAndRevisions } from './git/sorted_branch_names';
 import { switchBranch } from './git/switch_branch';
 import { cuteString } from './utils/cute_string';
 import { gpExecSync } from './utils/exec_sync';
@@ -30,13 +30,13 @@ type TState = {
 };
 
 export function captureState(context: TContext): string {
-  const branches = branchNamesAndRevisions();
+  const branches = getBranchNamesAndRevisions();
   const state: TState = {
     commitTree: getCommitTree(Object.keys(branches)),
     userConfig: context.userConfig.data,
     repoConfig: context.repoConfig.data,
     branches,
-    metadata: allBranchesWithMeta().map((branchName) => [
+    metadata: getMetadataRefList().map((branchName) => [
       branchName,
       readMetadataRef(branchName),
     ]),

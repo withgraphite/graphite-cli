@@ -1,5 +1,5 @@
 import yargs, { Arguments } from 'yargs';
-import { branchNamesAndRevisions } from '../lib/git/sorted_branch_names';
+import { getBranchNamesAndRevisions } from '../lib/git/sorted_branch_names';
 
 yargs.completion('completion', (current, argv) => {
   const branchArg = getBranchArg(current, argv);
@@ -9,7 +9,7 @@ yargs.completion('completion', (current, argv) => {
 
   // we don't want to load a full context here, so we'll just use the git call directly
   // once we persist the meta cache to disk, we can consider using a context here
-  return Object.keys(branchNamesAndRevisions());
+  return Object.keys(getBranchNamesAndRevisions());
 });
 
 /**

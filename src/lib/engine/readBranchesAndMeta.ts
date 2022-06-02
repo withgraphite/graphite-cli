@@ -1,8 +1,8 @@
-import { branchNamesAndRevisions } from '../git/sorted_branch_names';
+import { getBranchNamesAndRevisions } from '../git/sorted_branch_names';
 import { TSplog } from '../utils/splog';
 import {
-  allBranchesWithMeta,
   deleteMetadataRef,
+  getMetadataRefList,
   readMetadataRef,
   TMeta,
 } from './metadata_ref';
@@ -15,10 +15,11 @@ export function getAllBranchesAndMeta(
   splog: TSplog,
   pruneMeta?: boolean
 ): TBranchToParse[] {
-  const gitBranchNamesAndRevisions = branchNamesAndRevisions();
+  const gitBranchNamesAndRevisions = getBranchNamesAndRevisions();
+  const metadataRefList = getMetadataRefList();
 
   const branchesWithMeta = new Set(
-    allBranchesWithMeta().filter((branchName) => {
+    metadataRefList.filter((branchName) => {
       if (gitBranchNamesAndRevisions[branchName]) {
         return true;
       }
