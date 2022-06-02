@@ -3,10 +3,14 @@ import { TContext } from '../lib/context';
 import { displayBranchName } from './display_branches';
 import { getBranchInfo } from './show_branch';
 
-export function logAction(style: 'SHORT' | 'FULL', context: TContext): void {
+export function logAction(
+  opts: { style: 'SHORT' | 'FULL'; reverse: boolean },
+  context: TContext
+): void {
   printStack(
     {
-      short: style === 'SHORT',
+      short: opts.style === 'SHORT',
+      reverse: opts.reverse,
       branchName: context.metaCache.trunk,
       indentLevel: 0,
     },
@@ -14,76 +18,137 @@ export function logAction(style: 'SHORT' | 'FULL', context: TContext): void {
   );
 }
 
-export function printStack(
-  args: {
-    short: boolean;
-    branchName: string;
-    indentLevel: number;
-  },
-  context: TContext
-): void {
-  const children = context.metaCache.getChildren(args.branchName);
-  const currPrefix = (args.short ? '  ' : '│  ').repeat(args.indentLevel);
+type TPrintStackArgs = {
+  short: boolean;
+  reverse: boolean;
+  branchName: string;
+  indentLevel: number;
+};
 
-  children.forEach((child, i) => {
-    printStack(
-      {
-        short: args.short,
-        branchName: child,
-        indentLevel: args.indentLevel + i,
-      },
-      context
-    );
-  });
-
-  if (!args.short) {
-    printBranchingLine(currPrefix, children.length, context);
-    printInfoLines(currPrefix, args.branchName, context);
+export function printStack(args: TPrintStackArgs, context: TContext): void {
+  // In standard mode, print the children before this branch
+  if (!args.reverse) {
+    printStacksForChildren(args, context);
   }
 
-  context.splog.logInfo(
-    `${currPrefix}${displayBranchName(args.branchName, context)}`
-  );
-  if (context.metaCache.isTrunk(args.branchName)) {
+  printBranch(args, context);
+
+  // In reverse mode, print the children after this branch
+  if (args.reverse) {
+    printStacksForChildren(args, context);
+  }
+
+  // Only print this tip at the end of the whole stack
+  if (args.short && context.metaCache.isTrunk(args.branchName)) {
     context.splog.logTip(
       'Miss the old version of log short? Try the --classic flag!'
     );
   }
 }
 
-function printBranchingLine(
-  currPrefix: string,
-  numChildren: number,
-  context: TContext
-) {
-  if (!numChildren) {
+function printStacksForChildren(args: TPrintStackArgs, context: TContext) {
+  const children = context.metaCache.getChildren(args.branchName);
+  children.forEach((child, i) =>
+    printStack(
+      {
+        ...args,
+        branchName: child,
+        indentLevel:
+          args.indentLevel + (args.reverse ? children.length - i - 1 : i),
+      },
+      context
+    )
+  );
+}
+
+function printBranch(args: TPrintStackArgs, context: TContext) {
+  // `gt log short` case
+  if (args.short) {
+    context.splog.logInfo(
+      `${'  '.repeat(args.indentLevel)}${displayBranchName(
+        args.branchName,
+        context
+      )}`
+    );
     return;
   }
+
+  // `gt log` case
+
+  const numChildren = context.metaCache.getChildren(args.branchName).length;
+
+  // In reverse mode, we print the info before the branching line
+  // Don't print the stem next to this section if there are no children
+  if (args.reverse) {
+    printInfoLines({ ...args, noStem: numChildren === 0 }, context);
+  }
+
+  // Print branching line
+  if (numChildren) {
+    context.splog.logInfo(
+      getPrefix(args.indentLevel) +
+        getBranchingLine({
+          numChildren,
+          reverse: args.reverse,
+        })
+    );
+  }
+
+  // In standard (non-reverse) mode, we print the info after the branching line
+  if (!args.reverse) {
+    printInfoLines(args, context);
+  }
+}
+
+function getBranchingLine(args: {
+  numChildren: number;
+  reverse: boolean;
+}): string | undefined {
+  if (!args.numChildren) {
+    return undefined;
+  }
+  const [middleBranch, lastBranch] = args.reverse
+    ? ['──┬', '──┐']
+    : ['──┴', '──┘'];
+
   const newBranchOffshoots = '│'.concat(
-    '──┴'.repeat(numChildren > 2 ? numChildren - 2 : 0),
-    numChildren > 1 ? '──┘' : ''
+    middleBranch.repeat(args.numChildren > 2 ? args.numChildren - 2 : 0),
+    args.numChildren > 1 ? lastBranch : ''
   );
-  context.splog.logInfo(currPrefix + newBranchOffshoots);
+  return newBranchOffshoots;
 }
 
 function printInfoLines(
-  currPrefix: string,
-  branchName: string,
+  args: Omit<TPrintStackArgs, 'short'> & { noStem?: boolean },
   context: TContext
 ) {
-  const isCurrent = branchName === context.metaCache.currentBranch;
+  const isCurrent = args.branchName === context.metaCache.currentBranch;
   getBranchInfo(
     {
-      branchName: branchName,
+      branchName: args.branchName,
       displayAsCurrent: isCurrent,
-      showCommitNames: true,
+      showCommitNames: args.reverse ? 'REVERSE' : 'STANDARD',
     },
     context
-  )
-    .map((line, index) =>
-      index === 0 ? `${isCurrent ? chalk.cyan('◉') : '◯'} ${line}` : `│ ${line}`
+  ).forEach((line, index) =>
+    context.splog.logInfo(
+      `${getPrefix(args.indentLevel)}${
+        index === 0
+          ? isCurrent
+            ? chalk.cyan('◉')
+            : '◯'
+          : args.noStem
+          ? ' '
+          : '│'
+      } ${line}`
     )
-    .forEach((line) => context.splog.logInfo(currPrefix + line));
+  );
 
-  context.splog.logInfo(currPrefix + '│');
+  context.splog.logInfo(
+    getPrefix(args.indentLevel) + (args.noStem ? ' ' : '│')
+  );
+}
+
+function getPrefix(indentLevel: number) {
+  return '│  '.repeat(indentLevel);
 }
