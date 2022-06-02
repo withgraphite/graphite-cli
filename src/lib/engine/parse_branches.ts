@@ -1,14 +1,8 @@
 import { getMergeBase } from '../git/merge_base';
-import { branchNamesAndRevisions } from '../git/sorted_branch_names';
 import { TSplog } from '../utils/splog';
 import { TCachedMeta } from './cached_meta';
-import {
-  allBranchesWithMeta,
-  deleteMetadataRef,
-  readMetadataRef,
-  TMeta,
-  writeMetadataRef,
-} from './metadata_ref';
+import { writeMetadataRef } from './metadata_ref';
+import { getAllBranchesAndMeta } from './readBranchesAndMeta';
 
 // eslint-disable-next-line max-lines-per-function
 export function parseBranchesAndMeta(
@@ -144,27 +138,4 @@ export function parseBranchesAndMeta(
   }
 
   return parsedBranches;
-}
-
-type TBranchToParse = { branchName: string; branchRevision: string } & TMeta;
-function getAllBranchesAndMeta(splog: TSplog): TBranchToParse[] {
-  const gitBranchNamesAndRevisions = branchNamesAndRevisions();
-
-  const branchesWithMeta = new Set(
-    allBranchesWithMeta().filter((branchName) => {
-      if (gitBranchNamesAndRevisions[branchName]) {
-        return true;
-      }
-      // Clean up refs whose branch is missing
-      splog.logDebug(`Deleting metadata for missing branch: ${branchName}`);
-      deleteMetadataRef(branchName);
-      return false;
-    })
-  );
-
-  return Object.keys(gitBranchNamesAndRevisions).map((branchName) => ({
-    branchName,
-    branchRevision: gitBranchNamesAndRevisions[branchName],
-    ...(branchesWithMeta.has(branchName) ? readMetadataRef(branchName) : {}),
-  }));
 }
