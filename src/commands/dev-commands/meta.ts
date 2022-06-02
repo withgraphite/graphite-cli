@@ -52,7 +52,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         );
       }
     );
-    return writeMetadataRef(argv.branch, fs.readJSONSync(tmpfilePath));
-    // TODO: once we start persisting cache to disk, consider clearing it manually here?
+    writeMetadataRef(argv.branch, fs.readJSONSync(tmpfilePath));
+    context.metaCache.rebuild();
   });
 };

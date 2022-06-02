@@ -13,7 +13,7 @@ import {
 import { getCommitTree } from './git/commit_tree';
 import { getCurrentBranchName } from './git/current_branch_name';
 import { deleteBranch } from './git/deleteBranch';
-import { getBranchRevision } from './git/get_branch_revision';
+import { getShaOrThrow } from './git/get_sha';
 import { branchNamesAndRevisions } from './git/sorted_branch_names';
 import { switchBranch } from './git/switch_branch';
 import { cuteString } from './utils/cute_string';
@@ -140,7 +140,7 @@ function recreateCommits(
       opts.commitTree[ref] === undefined || opts.commitTree[ref].length === 0
   );
 
-  const firstCommitRef = getBranchRevision('HEAD');
+  const firstCommitRef = getShaOrThrow('HEAD');
   const treeSha = gpExecSync({
     command: `git cat-file -p HEAD | grep tree | awk '{print $2}'`,
   });

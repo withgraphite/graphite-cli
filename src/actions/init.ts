@@ -35,7 +35,7 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
     (await selectTrunkBranch(allBranchNames, context));
 
   context.repoConfig.setTrunk(newTrunkName);
-  context.metaCache.handleNewTrunk(newTrunkName);
+  context.metaCache.rebuild(newTrunkName);
 
   context.splog.logInfo(`Trunk set to (${chalk.green(newTrunkName)})`);
   context.splog.logInfo(

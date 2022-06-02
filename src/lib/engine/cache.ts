@@ -10,7 +10,7 @@ import {
   readFetchHead,
   writeFetchBase,
 } from '../git/fetch_branch';
-import { getBranchRevision } from '../git/get_branch_revision';
+import { getShaOrThrow } from '../git/get_sha';
 import { isEmptyBranch } from '../git/is_empty_branch';
 import { isMerged } from '../git/is_merged';
 import { getMergeBase } from '../git/merge_base';
@@ -28,18 +28,20 @@ import {
   assertCachedMetaIsValidAndNotTrunk,
   assertCachedMetaIsValidOrTrunk,
 } from './cached_meta';
+import { loadCachedBranches } from './cache_loader';
 import {
   deleteMetadataRef,
   TBranchPRInfo,
   writeMetadataRef,
 } from './metadata_ref';
-import { parseBranchesAndMeta } from './parse_branches';
+import { persistCache } from './persist_cache';
 import { TScopeSpec } from './scope_spec';
 
 export type TMetaCache = {
   debug: () => void;
+  persist: () => void;
 
-  handleNewTrunk: (newTrunkName: string) => void;
+  rebuild: (newTrunkName?: string) => void;
   trunk: string;
   isTrunk: (branchName: string) => boolean;
 
@@ -119,7 +121,7 @@ export function composeMetaCache({
 }): TMetaCache {
   const cache = {
     currentBranch: currentBranchOverride ?? getCurrentBranchName(),
-    branches: parseBranchesAndMeta(trunkName, splog),
+    branches: loadCachedBranches({ trunkName }, splog),
   };
 
   const assertTrunk = () => {
@@ -228,7 +230,7 @@ export function composeMetaCache({
 
     cachedMeta.parentBranchRevision =
       cache.branches[cachedMeta.parentBranchName].branchRevision;
-    cachedMeta.branchRevision = getBranchRevision(branchName);
+    cachedMeta.branchRevision = getShaOrThrow(branchName);
     splog.logDebug(
       `Cached meta for rebased branch ${branchName}:\n${cuteString(cachedMeta)}`
     );
@@ -262,8 +264,14 @@ export function composeMetaCache({
     debug() {
       splog.logDebug(cuteString(cache));
     },
-    handleNewTrunk(newTrunkName: string) {
-      cache.branches = parseBranchesAndMeta(newTrunkName, splog);
+    persist() {
+      persistCache(trunkName, cache.branches, splog);
+    },
+    rebuild(newTrunkName?: string) {
+      cache.branches = loadCachedBranches(
+        { trunkName: newTrunkName ?? trunkName, ignorePersistedCache: true },
+        splog
+      );
     },
     get trunk() {
       return assertTrunk();
@@ -432,7 +440,7 @@ export function composeMetaCache({
       const cachedMeta = cache.branches[cache.currentBranch];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
       commit({ ...opts, noVerify });
-      cachedMeta.branchRevision = getBranchRevision(cache.currentBranch);
+      cachedMeta.branchRevision = getShaOrThrow(cache.currentBranch);
     },
     restackBranch: (branchName: string) => {
       assertBranch(branchName);
@@ -510,7 +518,7 @@ export function composeMetaCache({
       try {
         switchBranch(trunkName);
         pullBranch(remote, trunkName);
-        cache.branches[trunkName].branchRevision = getBranchRevision(trunkName);
+        cache.branches[trunkName].branchRevision = getShaOrThrow(trunkName);
         return oldTrunkRevision == cache.branches[trunkName].branchRevision
           ? 'PULL_UNNEEDED'
           : 'PULL_DONE';

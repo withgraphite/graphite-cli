@@ -7,14 +7,23 @@ import {
   TMeta,
 } from './metadata_ref';
 
-type TBranchToParse = { branchName: string; branchRevision: string } & TMeta;
-export function getAllBranchesAndMeta(splog: TSplog): TBranchToParse[] {
+export type TBranchToParse = {
+  branchName: string;
+  branchRevision: string;
+} & TMeta;
+export function getAllBranchesAndMeta(
+  splog: TSplog,
+  pruneMeta?: boolean
+): TBranchToParse[] {
   const gitBranchNamesAndRevisions = branchNamesAndRevisions();
 
   const branchesWithMeta = new Set(
     allBranchesWithMeta().filter((branchName) => {
       if (gitBranchNamesAndRevisions[branchName]) {
         return true;
+      }
+      if (!pruneMeta) {
+        return false;
       }
       // Clean up refs whose branch is missing
       splog.logDebug(`Deleting metadata for missing branch: ${branchName}`);
