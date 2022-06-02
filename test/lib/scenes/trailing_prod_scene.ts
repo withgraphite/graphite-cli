@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { getBranchRevision } from '../../../src/lib/git/get_branch_revision';
+import { getShaOrThrow } from '../../../src/lib/git/get_sha';
 import { AbstractScene } from './abstract_scene';
 
 export class TrailingProdScene extends AbstractScene {
@@ -23,7 +23,7 @@ export class TrailingProdScene extends AbstractScene {
     this.repo.createChangeAndCommit('x2', 'x2');
     this.repo.upsertMeta('x2', {
       parentBranchName: 'x1',
-      parentBranchRevision: getBranchRevision('x1'),
+      parentBranchRevision: getShaOrThrow('x1'),
     });
     this.repo.deleteBranch('x1');
 
