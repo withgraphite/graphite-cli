@@ -36,7 +36,7 @@ export function captureState(context: TContext): string {
     userConfig: context.userConfig.data,
     repoConfig: context.repoConfig.data,
     branches,
-    metadata: getMetadataRefList().map((branchName) => [
+    metadata: Object.keys(getMetadataRefList()).map((branchName) => [
       branchName,
       readMetadataRef(branchName),
     ]),
