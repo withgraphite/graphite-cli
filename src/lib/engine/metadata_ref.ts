@@ -68,7 +68,7 @@ export function deleteMetadataRef(branchName: string): void {
   });
 }
 
-export function allBranchesWithMeta(): string[] {
+export function getMetadataRefList(): string[] {
   return gpExecSyncAndSplitLines({
     command: `git for-each-ref --format='%(refname:lstrip=2)' refs/branch-metadata/`,
   });

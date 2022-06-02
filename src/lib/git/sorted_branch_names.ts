@@ -1,6 +1,6 @@
 import { gpExecSyncAndSplitLines } from '../utils/exec_sync';
 
-export function branchNamesAndRevisions(): Record<string, string> {
+export function getBranchNamesAndRevisions(): Record<string, string> {
   const branches: Record<string, string> = {};
 
   gpExecSyncAndSplitLines({
