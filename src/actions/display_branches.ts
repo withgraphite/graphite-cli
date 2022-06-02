@@ -3,6 +3,21 @@ import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
 
+export function displayBranchName(
+  branchName: string,
+  context: TContext
+): string {
+  return `${
+    branchName === context.metaCache.currentBranch
+      ? chalk.cyan(branchName)
+      : branchName
+  } ${
+    context.metaCache.isBranchFixed(branchName)
+      ? ''
+      : chalk.yellowBright(`(needs restack)`)
+  }`;
+}
+
 function displayBranchesInternal(
   opts: {
     branchName: string;
@@ -14,15 +29,10 @@ function displayBranchesInternal(
 ): { display: string; branchName: string }[] {
   const currentBranchName = context.metaCache.currentBranch;
   const currentChoice = {
-    display: `${'  '.repeat(opts.indent ?? 0)}↱ ${
-      opts.branchName === currentBranchName && opts.highlightCurrentBranch
-        ? chalk.cyan(opts.branchName)
-        : opts.branchName
-    } ${
-      context.metaCache.isBranchFixed(opts.branchName)
-        ? ''
-        : chalk.yellowBright(`(needs restack)`)
-    }`,
+    display: `${'  '.repeat(opts.indent ?? 0)}↱ ${displayBranchName(
+      opts.branchName,
+      context
+    )}`,
     branchName: opts.branchName,
   };
   return (
@@ -43,7 +53,7 @@ function displayBranchesInternal(
   );
 }
 
-export function logShortAction(context: TContext): void {
+export function logShortClassic(context: TContext): void {
   context.splog.logInfo(
     displayBranchesInternal(
       { branchName: context.metaCache.trunk, highlightCurrentBranch: true },
