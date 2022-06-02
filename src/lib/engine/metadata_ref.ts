@@ -68,8 +68,18 @@ export function deleteMetadataRef(branchName: string): void {
   });
 }
 
-export function getMetadataRefList(): string[] {
-  return gpExecSyncAndSplitLines({
-    command: `git for-each-ref --format='%(refname:lstrip=2)' refs/branch-metadata/`,
-  });
+export function getMetadataRefList(): Record<string, string> {
+  const meta: Record<string, string> = {};
+
+  gpExecSyncAndSplitLines({
+    command: `git for-each-ref --format='%(refname:lstrip=2):%(objectname)' refs/branch-metadata/`,
+  })
+    .map((line) => line.split(':'))
+    .filter(
+      (lineSplit): lineSplit is [string, string] =>
+        lineSplit.length === 2 && lineSplit.every((s) => s.length > 0)
+    )
+    .forEach(([branchName, metaSha]) => (meta[branchName] = metaSha));
+
+  return meta;
 }
