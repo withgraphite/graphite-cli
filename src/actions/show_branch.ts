@@ -38,7 +38,7 @@ export function getBranchInfo(
   args: {
     branchName: string;
     displayAsCurrent?: boolean;
-    showCommitNames?: boolean;
+    showCommitNames?: 'STANDARD' | 'REVERSE';
   },
   context: TContext
 ): string[] {
@@ -65,14 +65,14 @@ export function getBranchInfo(
     )}`,
     ...(prTitleLine ? ['', prTitleLine] : []),
     ...(prInfo?.url ? [chalk.cyanBright(prInfo.url)] : []),
-    ...(!args.showCommitNames || context.metaCache.isTrunk(args.branchName)
-      ? ['']
-      : [
-          '',
-          ...context.metaCache
-            .getAllCommits(args.branchName, 'READABLE')
-            .map((line) => chalk.gray(line)),
-        ]),
+    '',
+    ...(args.showCommitNames && !context.metaCache.isTrunk(args.branchName)
+      ? getCommitLines(
+          args.branchName,
+          args.showCommitNames === 'REVERSE',
+          context
+        )
+      : []),
   ];
 
   return prInfo?.state === 'MERGED' || prInfo?.state === 'CLOSED'
@@ -117,4 +117,16 @@ function getPRState(prInfo: TBranchPRInfo | undefined): string {
       // review isn't required and we can skip displaying a review status.
       return '';
   }
+}
+
+function getCommitLines(
+  branchName: string,
+  reverse: boolean,
+  context: TContext
+) {
+  const lines = context.metaCache
+    .getAllCommits(branchName, 'READABLE')
+    .map((line) => chalk.gray(line));
+
+  return reverse ? lines.reverse() : lines;
 }
