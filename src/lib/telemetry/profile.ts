@@ -118,6 +118,14 @@ export async function profile(
     err = e;
   }
 
+  if (err) {
+    context.splog.logDebug(err);
+    context.splog.logDebug(err.stack);
+    process.exitCode = 1;
+  }
+
+  context.metaCache.persist();
+
   const end = Date.now();
   postTelemetryInBackground({
     canonicalCommandName: canonicalName,
@@ -125,12 +133,4 @@ export async function profile(
     durationMiliSeconds: end - start,
     err,
   });
-
-  if (err) {
-    context.splog.logDebug(err);
-    context.splog.logDebug(err.stack);
-
-    // eslint-disable-next-line no-restricted-syntax
-    process.exit(1);
-  }
 }

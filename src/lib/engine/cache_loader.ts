@@ -1,16 +1,69 @@
+import { getSha } from '../git/get_sha';
 import { getMergeBase } from '../git/merge_base';
+import { cuteString } from '../utils/cute_string';
+import { gpExecSync } from '../utils/exec_sync';
 import { TSplog } from '../utils/splog';
 import { TCachedMeta } from './cached_meta';
 import { writeMetadataRef } from './metadata_ref';
-import { getAllBranchesAndMeta } from './readBranchesAndMeta';
+import { hashState } from './persist_cache';
+import { getAllBranchesAndMeta, TBranchToParse } from './readBranchesAndMeta';
 
-// eslint-disable-next-line max-lines-per-function
-export function parseBranchesAndMeta(
-  trunkName: string | undefined,
+export const CACHE_CHECK_REF = 'GRAPHITE_CACHE_CHECK';
+export const CACHE_DATA_REF = 'GRAPHITE_CACHE_DATA';
+
+export function loadCachedBranches(
+  args: { trunkName: string | undefined; ignorePersistedCache?: boolean },
   splog: TSplog
 ): Record<string, TCachedMeta> {
   splog.logDebug('Reading branches and metadata...');
-  const branchesToParse = getAllBranchesAndMeta(splog);
+  const allBranchesAndMeta = getAllBranchesAndMeta(splog, /*pruneMeta: */ true);
+
+  return (
+    (args.ignorePersistedCache
+      ? undefined
+      : getPersistedCacheIfValid(
+          { trunkName: args.trunkName, allBranchesAndMeta },
+          splog
+        )) ?? parseBranchesAndMeta(allBranchesAndMeta, args.trunkName, splog)
+  );
+}
+
+type TPersistedState = {
+  trunkName: string | undefined;
+  allBranchesAndMeta: TBranchToParse[];
+};
+
+function getPersistedCacheIfValid(
+  state: TPersistedState,
+  splog: TSplog
+): Record<string, TCachedMeta> | undefined {
+  const cacheCheckSha = getSha(CACHE_CHECK_REF);
+  const currentStateSha = hashState(cuteString(state));
+  splog.logDebug(`Cache check SHA: ${cacheCheckSha}`);
+  splog.logDebug(`Current state SHA: ${currentStateSha}`);
+
+  return cacheCheckSha === currentStateSha ? readPersistedCache() : undefined;
+}
+
+function readPersistedCache(): Record<string, TCachedMeta> | undefined {
+  // TODO: validate with retype
+  try {
+    return JSON.parse(
+      gpExecSync({
+        command: `git cat-file -p ${CACHE_DATA_REF}`,
+      })
+    );
+  } catch {
+    return undefined;
+  }
+}
+
+// eslint-disable-next-line max-lines-per-function
+function parseBranchesAndMeta(
+  branchesToParse: TBranchToParse[],
+  trunkName: string | undefined,
+  splog: TSplog
+): Record<string, TCachedMeta> {
   const allBranchNames = new Set(
     branchesToParse.map((meta) => meta.branchName)
   );
