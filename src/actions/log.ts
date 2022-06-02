@@ -1,6 +1,7 @@
 import chalk from 'chalk';
+import prompts from 'prompts';
 import { TContext } from '../lib/context';
-import { displayBranchName } from './display_branches';
+import { KilledError } from '../lib/errors';
 import { getBranchInfo } from './show_branch';
 
 export function logAction(
@@ -24,11 +25,65 @@ export function logAction(
   }
 }
 
+export async function interactiveBranchSelection(
+  opts: { message: string; omitCurrentBranch?: boolean },
+  context: TContext
+): Promise<string> {
+  const choices = getStackLines(
+    {
+      short: true,
+      reverse: false,
+      branchName: context.metaCache.trunk,
+      indentLevel: 0,
+      omitCurrentBranch: opts.omitCurrentBranch,
+      noStyleBranchName: true,
+    },
+    context
+  ).map((stackLine) => ({ title: stackLine, value: stackLine.trim() }));
+
+  const indexOfCurrentIfPresent = choices.findIndex(
+    (choice) =>
+      choice.value ===
+      (opts.omitCurrentBranch
+        ? context.metaCache.getParentPrecondition(
+            context.metaCache.currentBranchPrecondition
+          )
+        : context.metaCache.currentBranch)
+  );
+
+  const initial =
+    indexOfCurrentIfPresent !== -1
+      ? indexOfCurrentIfPresent
+      : choices.length - 1;
+
+  const chosenBranch = (
+    await prompts(
+      {
+        type: 'select',
+        name: 'branch',
+        message: opts.message,
+        choices,
+        initial,
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    )
+  ).branch;
+
+  context.splog.logDebug(`Selected ${chosenBranch}`);
+  return chosenBranch;
+}
+
 type TPrintStackArgs = {
   short: boolean;
   reverse: boolean;
   branchName: string;
   indentLevel: number;
+  omitCurrentBranch?: boolean;
+  noStyleBranchName?: boolean; // Currently only implemented for short = true
 };
 
 function getStackLines(args: TPrintStackArgs, context: TContext): string[] {
@@ -42,27 +97,49 @@ function getStackLines(args: TPrintStackArgs, context: TContext): string[] {
 
 function getChildrenLines(args: TPrintStackArgs, context: TContext): string[] {
   const children = context.metaCache.getChildren(args.branchName);
-  return children.flatMap((child, i) =>
-    getStackLines(
-      {
-        ...args,
-        branchName: child,
-        indentLevel:
-          args.indentLevel + (args.reverse ? children.length - i - 1 : i),
-      },
-      context
+  return children
+    .filter(
+      (child) =>
+        !args.omitCurrentBranch ||
+        child !== context.metaCache.currentBranchPrecondition
     )
-  );
+    .flatMap((child, i) =>
+      getStackLines(
+        {
+          ...args,
+          branchName: child,
+          indentLevel:
+            args.indentLevel + (args.reverse ? children.length - i - 1 : i),
+        },
+        context
+      )
+    );
+}
+
+export function displayBranchName(
+  branchName: string,
+  context: TContext
+): string {
+  return `${
+    branchName === context.metaCache.currentBranch
+      ? chalk.cyan(branchName)
+      : branchName
+  } ${
+    context.metaCache.isBranchFixed(branchName)
+      ? ''
+      : chalk.yellowBright(`(needs restack)`)
+  }`;
 }
 
 function getBranchLines(args: TPrintStackArgs, context: TContext): string[] {
   // `gt log short` case
   if (args.short) {
     return [
-      `${'  '.repeat(args.indentLevel)}${displayBranchName(
-        args.branchName,
-        context
-      )}`,
+      `${'  '.repeat(args.indentLevel)}${
+        args.noStyleBranchName
+          ? args.branchName
+          : displayBranchName(args.branchName, context)
+      }`,
     ];
   }
 

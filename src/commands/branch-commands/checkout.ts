@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { checkoutBranch } from '../../actions/checkout_branch';
-import { interactiveBranchSelection } from '../../actions/display_branches';
+import { interactiveBranchSelection } from '../../actions/log';
 import { profile } from '../../lib/telemetry/profile';
 
 const args = {
