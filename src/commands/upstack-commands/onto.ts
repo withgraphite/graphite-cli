@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { currentBranchOnto } from '../../actions/current_branch_onto';
-import { interactiveBranchSelection } from '../../actions/display_branches';
+import { interactiveBranchSelection } from '../../actions/log';
 import { profile } from '../../lib/telemetry/profile';
 
 const args = {

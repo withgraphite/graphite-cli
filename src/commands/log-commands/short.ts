@@ -1,6 +1,6 @@
 import yargs from 'yargs';
-import { logShortClassic } from '../../actions/display_branches';
 import { logAction } from '../../actions/log';
+import { logShortClassic } from '../../actions/log_short_classic';
 import { profile } from '../../lib/telemetry/profile';
 
 const args = {
