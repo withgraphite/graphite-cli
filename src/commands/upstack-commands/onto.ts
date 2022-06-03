@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import { currentBranchOnto } from '../../actions/current_branch_onto';
 import { interactiveBranchSelection } from '../../actions/log';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   branch: {
@@ -20,7 +20,7 @@ export const description =
 export const builder = args;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     currentBranchOnto(
       argv.branch ??
         (await interactiveBranchSelection(

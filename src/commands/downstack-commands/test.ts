@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import { testStack } from '../../actions/test';
 import { SCOPE } from '../../lib/engine/scope_spec';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   command: {
@@ -28,7 +28,7 @@ export const description =
   'For each of the current branch and its recursive children, run the provided command, and aggregate the results. Good for finding bugs in your stack.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
-  profile(argv, canonical, async (context) =>
+  graphite(argv, canonical, async (context) =>
     testStack(
       {
         scope: SCOPE.DOWNSTACK,

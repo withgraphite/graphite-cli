@@ -3,28 +3,28 @@
 // All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { version } from '../../../package.json';
-import { init } from '../../actions/init';
-import { initContext, TContext } from '../context';
+import { version } from '../../package.json';
+import { init } from '../actions/init';
+import { initContext, TContext } from './context';
 import {
   ExitFailedError,
   KilledError,
   PreconditionsFailedError,
   RebaseConflictError,
-} from '../errors';
-import { getUnmergedFiles } from '../git/merge_conflict_help';
-import { TGlobalArguments } from '../global_arguments';
-import { refreshPRInfoInBackground } from '../requests/fetch_pr_info';
-import { parseArgs } from '../utils/parse_args';
-import { getUserEmail } from './context';
-import { postTelemetryInBackground } from './post_traces';
-import { registerSigintHandler } from './sigint_handler';
-import { postSurveyResponsesInBackground } from './survey/post_survey';
-import { tracer } from './tracer';
-import { fetchUpgradePromptInBackground } from './upgrade_prompt';
+} from './errors';
+import { getUnmergedFiles } from './git/merge_conflict_help';
+import { TGlobalArguments } from './global_arguments';
+import { refreshPRInfoInBackground } from './requests/fetch_pr_info';
+import { getUserEmail } from './telemetry/context';
+import { postTelemetryInBackground } from './telemetry/post_traces';
+import { registerSigintHandler } from './telemetry/sigint_handler';
+import { postSurveyResponsesInBackground } from './telemetry/survey/post_survey';
+import { tracer } from './telemetry/tracer';
+import { fetchUpgradePromptInBackground } from './telemetry/upgrade_prompt';
+import { parseArgs } from './utils/parse_args';
 
 // eslint-disable-next-line max-lines-per-function
-export async function profile(
+export async function graphite(
   args: yargs.Arguments,
   canonicalName: string,
   handler: (context: TContext) => Promise<void>

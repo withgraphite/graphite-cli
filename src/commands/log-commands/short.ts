@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import { logAction } from '../../actions/log';
 import { logShortClassic } from '../../actions/log_short_classic';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   classic: {
@@ -26,7 +26,7 @@ export const canonical = 'log short';
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> =>
-  profile(argv, canonical, async (context) =>
+  graphite(argv, canonical, async (context) =>
     argv.classic
       ? logShortClassic(context)
       : logAction({ style: 'SHORT', reverse: argv.reverse }, context)

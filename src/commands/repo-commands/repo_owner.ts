@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   set: {
@@ -19,7 +19,7 @@ export const description =
   "The current repo owner's name stored in Graphite. e.g. in 'withgraphite/graphite-cli', this is 'withgraphite'.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     if (argv.set) {
       context.repoConfig.update((data) => (data.owner = argv.set));
     } else {

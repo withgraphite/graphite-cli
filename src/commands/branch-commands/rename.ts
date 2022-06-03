@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { renameCurrentBranch } from '../../actions/rename_branch';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   'new-branch-name': {
@@ -26,7 +26,7 @@ export const description =
 export const builder = args;
 
 export const handler = async (args: argsT): Promise<void> =>
-  profile(args, canonical, async (context) =>
+  graphite(args, canonical, async (context) =>
     renameCurrentBranch(
       { newBranchName: args['new-branch-name'], force: args.force },
       context

@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { syncAction } from '../../actions/sync/sync';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   pull: {
@@ -47,7 +47,7 @@ export const description =
   'Pull the trunk branch from remote, delete any branches that have been merged, and upstack them onto main. Also restacks the current stack on main.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     await syncAction(
       {
         pull: argv.pull,

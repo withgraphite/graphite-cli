@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { continueRestack } from '../actions/restack';
-import { profile } from '../lib/telemetry/profile';
+import { graphite } from '../lib/runner';
 
 const args = {
   all: {
@@ -21,6 +21,6 @@ export const description =
   'Continues the most-recent Graphite command halted by a merge conflict.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
-  profile(argv, canonical, async (context) =>
+  graphite(argv, canonical, async (context) =>
     continueRestack({ addAll: argv.all }, context)
   );

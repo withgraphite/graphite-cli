@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { syncAction } from '../../actions/sync/sync';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   branch: {
@@ -19,7 +19,7 @@ export const description =
   'Sync a branch and its recursive parents from remote.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
-  profile(
+  graphite(
     argv,
     canonical,
     async (context) =>

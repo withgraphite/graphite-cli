@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   enable: {
@@ -23,7 +23,7 @@ export const description = 'Enable/disable experimental features';
 export const canonical = 'user experimental';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     if (argv.enable) {
       context.userConfig.update((data) => (data.experimental = true));
       context.splog.logInfo(`experimental features enabled`);

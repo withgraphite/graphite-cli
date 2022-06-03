@@ -1,6 +1,6 @@
 import open from 'open';
 import yargs from 'yargs';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   pr: {
@@ -22,7 +22,7 @@ const DASHBOARD_URL = 'https://app.graphite.dev/';
 const PR_PATH = DASHBOARD_URL + 'github/pr/';
 
 export const handler = async (argv: argsT): Promise<void> =>
-  profile(argv, canonical, async (context) => {
+  graphite(argv, canonical, async (context) => {
     const prNumber = parseInt(argv.pr || '');
     if (prNumber) {
       return void open(
