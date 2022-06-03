@@ -10,6 +10,13 @@ const args = {
     type: 'boolean',
     alias: 'p',
   },
+  description: {
+    describe: `Show the PR description, if it exists.`,
+    demandOption: false,
+    default: false,
+    type: 'boolean',
+    alias: 'd',
+  },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
@@ -21,7 +28,7 @@ export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
     await showBranchAction(
       context.metaCache.currentBranchPrecondition,
-      { patch: argv.patch },
+      { patch: argv.patch, description: argv.description },
       context
     );
   });
