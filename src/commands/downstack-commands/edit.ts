@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { editDownstack } from '../../actions/edit/edit_downstack';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   input: {
@@ -20,7 +20,7 @@ export const builder = args;
 export const aliases = ['e'];
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     await editDownstack(argv.input, context);
   });
 };

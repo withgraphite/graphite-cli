@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { showBranchAction } from '../../actions/show_branch';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   patch: {
@@ -25,7 +25,7 @@ export const canonical = 'branch show';
 export const description = 'Display information about the current branch.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     await showBranchAction(
       context.metaCache.currentBranchPrecondition,
       { patch: argv.patch, description: argv.description },

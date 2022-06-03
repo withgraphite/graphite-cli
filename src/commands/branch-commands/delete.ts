@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { deleteBranchAction } from '../../actions/delete_branch';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   name: {
@@ -27,6 +27,6 @@ export const description =
   'Delete a given git branch and its corresponding Graphite metadata.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
-  profile(argv, canonical, async (context) =>
+  graphite(argv, canonical, async (context) =>
     deleteBranchAction({ branchName: argv.name, force: argv.force }, context)
   );

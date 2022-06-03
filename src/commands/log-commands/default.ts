@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { logAction } from '../../actions/log';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   reverse: {
@@ -18,6 +18,6 @@ export const canonical = 'log';
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> =>
-  profile(argv, canonical, async (context) =>
+  graphite(argv, canonical, async (context) =>
     logAction({ style: 'FULL', reverse: argv.reverse }, context)
   );

@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { trackBranch } from '../../actions/track_branch';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   branch: {
@@ -29,7 +29,7 @@ export const description = [
 ].join(' ');
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
-  profile(argv, canonical, async (context) =>
+  graphite(argv, canonical, async (context) =>
     trackBranch(
       {
         branchName: argv.branch,
