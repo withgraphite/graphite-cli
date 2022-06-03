@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
-import { PreconditionsFailedError } from '../lib/errors';
+import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
 import { findRemoteBranch } from '../lib/git/find_remote_branch';
 import { getRepoRootPathPrecondition } from '../lib/preconditions';
 
@@ -30,8 +30,8 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
     );
   }
 
-  const newTrunkName =
-    allBranchNames.find((b) => b === trunk) ??
+  const newTrunkName: string =
+    (trunk ? allBranchNames.find((b) => b === trunk) : undefined) ??
     (await selectTrunkBranch(allBranchNames, context));
 
   context.repoConfig.setTrunk(newTrunkName);
@@ -58,8 +58,18 @@ async function selectTrunkBranch(
   context: TContext
 ): Promise<string> {
   const inferredTrunk =
-    findRemoteBranch(context.repoConfig.getRemote()) ||
+    findRemoteBranch(context.repoConfig.getRemote()) ??
     findCommonlyNamedTrunk(context);
+
+  if (!context.interactive) {
+    if (inferredTrunk) {
+      return inferredTrunk;
+    } else {
+      throw new ExitFailedError(
+        `Could not infer trunk branch, pass in an existing branch name with --trunk or run in interactive mode.`
+      );
+    }
+  }
 
   return (
     await prompts({
