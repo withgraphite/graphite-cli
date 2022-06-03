@@ -3,6 +3,7 @@ import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { ExitFailedError, KilledError } from '../../lib/errors';
 import { assertUnreachable } from '../../lib/utils/assert_unreachable';
+import { persistContinuation } from '../restack';
 
 export async function getBranchesFromRemote(
   downstack: string[],
@@ -84,6 +85,11 @@ async function handleSameParent(
   parentBranchName: string,
   context: TContext
 ): Promise<void> {
+  if (context.metaCache.isBranchUpToDateWithFetched(branchName)) {
+    context.splog.logInfo(`${chalk.cyan(branchName)} is up to date.`);
+    return;
+  }
+
   context.splog.logInfo(
     [
       `${chalk.yellow(
@@ -127,7 +133,26 @@ async function handleSameParent(
 
   switch (fetchChoice) {
     case 'REBASE':
-      throw new ExitFailedError(`Rebasing is not yet implemented.`);
+      if (
+        context.metaCache.rebaseLocalChangesOnFetched(
+          branchName,
+          parentBranchName
+        ) === 'REBASE_CONFLICT'
+      ) {
+        persistContinuation(
+          {context.metaCache.getRelativeStack(
+            currentBranchName,
+            SCOPE.UPSTACK_EXCLUSIVE
+          )},
+          context
+        );
+        throw new RebaseConflictError(
+          `Hit conflict during interactive rebase of ${chalk.yellow(
+            currentBranchName
+          )}.`
+        );
+      }
+
     case 'OVERWRITE':
       context.metaCache.overwriteBranchFromFetched(
         branchName,

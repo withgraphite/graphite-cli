@@ -17,7 +17,7 @@ import { getMergeBase } from '../git/merge_base';
 import { pruneRemote } from '../git/prune_remote';
 import { pullBranch } from '../git/pull_branch';
 import { pushBranch } from '../git/push_branch';
-import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
+import { rebaseContinue, rebaseInteractive, rebaseOnto } from '../git/rebase';
 import { setRemoteTracking } from '../git/set_remote_tracking';
 import { switchBranch } from '../git/switch_branch';
 import { writeBranch } from '../git/write_branch';
@@ -103,6 +103,10 @@ export type TMetaCache = {
     branchName: string,
     parentBranchName: string
   ) => void;
+  rebaseLocalChangesOnFetched: (
+    branchName: string,
+    parentBranchName: string
+  ) => 'REBASE_CONFLICT' | 'REBASE_DONE';
 };
 
 // eslint-disable-next-line max-lines-per-function
@@ -239,25 +243,6 @@ export function composeMetaCache({
     if (cache.currentBranch && cache.currentBranch in cache.branches) {
       switchBranch(cache.currentBranch);
     }
-  };
-
-  const overwriteBranchFromFetched = (
-    branchName: string,
-    parentBranchName: string
-  ) => {
-    const { head, base } = { head: readFetchHead(), base: readFetchBase() };
-    writeBranch(branchName, head);
-    setRemoteTracking({ remote, branchName, sha: head });
-
-    cache.branches[branchName] = {
-      validationResult: 'VALID',
-      parentBranchName,
-      parentBranchRevision: base,
-      branchRevision: head,
-      children: [],
-    };
-    persistMeta(branchName);
-    cache.branches[parentBranchName].children.push(branchName);
   };
 
   return {
@@ -452,9 +437,10 @@ export function composeMetaCache({
       assertCachedMetaIsNotTrunk(cachedMeta);
 
       if (
-        restack({
+        rebaseOnto({
+          onto: cachedMeta.parentBranchName,
+          upstream: cachedMeta.parentBranchRevision,
           branchName,
-          ...cachedMeta,
         }) === 'REBASE_CONFLICT'
       ) {
         return 'REBASE_CONFLICT';
@@ -481,7 +467,7 @@ export function composeMetaCache({
       return 'REBASE_DONE';
     },
     continueRebase: () => {
-      const result = restackContinue();
+      const result = rebaseContinue();
       if (result === 'REBASE_CONFLICT') {
         return { result };
       }
@@ -556,6 +542,56 @@ export function composeMetaCache({
 
       return 'EXISTS_SAME_PARENT';
     },
-    overwriteBranchFromFetched,
+    overwriteBranchFromFetched: (
+      branchName: string,
+      parentBranchName: string
+    ) => {
+      assertBranch(parentBranchName);
+      const parentCachedMeta = cache.branches[parentBranchName];
+      assertCachedMetaIsValidOrTrunk(parentCachedMeta);
+      const { head, base } = { head: readFetchHead(), base: readFetchBase() };
+      writeBranch(branchName, head);
+      setRemoteTracking({ remote, branchName, sha: head });
+
+      cache.branches[branchName] = {
+        validationResult: 'VALID',
+        parentBranchName,
+        parentBranchRevision: base,
+        branchRevision: head,
+        children: [],
+      };
+      persistMeta(branchName);
+      parentCachedMeta.children.push(branchName);
+    },
+    rebaseLocalChangesOnFetched: (
+      branchName: string,
+      parentBranchName: string
+    ) => {
+      assertBranch(branchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+      assertBranch(parentBranchName);
+      const parentCachedMeta = cache.branches[parentBranchName];
+      assertCachedMetaIsValidOrTrunk(parentCachedMeta);
+
+      const { head, base } = { head: readFetchHead(), base: readFetchBase() };
+      if (
+        rebaseOnto({
+          onto: readFetchHead(),
+          upstream: cachedMeta.parentBranchRevision,
+          branchName,
+        }) === 'REBASE_CONFLICT'
+      ) {
+        return 'REBASE_CONFLICT';
+      }
+
+      setRemoteTracking({ remote, branchName, sha: head });
+      cachedMeta.parentBranchRevision = base;
+      cachedMeta.branchRevision = head;
+
+      persistMeta(branchName);
+      parentCachedMeta.children.push(branchName);
+      return 'REBASE_DONE';
+    },
   };
 }
