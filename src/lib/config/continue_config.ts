@@ -3,15 +3,17 @@ import { composeConfig } from './compose_config';
 
 /**
  * After Graphite is interrupted by a merge conflict, upon continuing, there
- * are 2 main things we need to do.
+ * are 3 main things we need to do, in the following order.
  *
  * 1) Complete the original rebase operation.
- * 2) Restack any additional branches that were queued.
+ * 2) Sync any remaining branches from remote.
+ * 3) Restack any remaining branches that were queued.
  *
  * The below object persists the queue of branches to be restacked.
  * We also store the Graphite current branch, so that we can switch back to it.
  */
 const ContinueSchema = t.shape({
+  branchesToSync: t.array(t.string),
   branchesToRestack: t.array(t.string),
   currentBranchOverride: t.optional(t.string),
 });
