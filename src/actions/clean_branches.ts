@@ -68,6 +68,7 @@ export async function cleanBranches(
       );
     }
 
+    context.splog.logDebug(`Checking if should delete ${branchName}...`);
     const shouldDelete = await shouldDeleteBranch(
       {
         branchName: branchName,
@@ -79,10 +80,13 @@ export async function cleanBranches(
       const children = context.metaCache.getChildren(branchName);
 
       // We concat children here (because we pop above) to make our search a DFS.
-      branchesToProcess.concat(children);
+      children.forEach((b) => branchesToProcess.push(b));
 
       // Value in branchesToDelete is a list of children blocking deletion.
       branchesToDelete[branchName] = new Set(children);
+      context.splog.logDebug(
+        `Marked ${branchName} for deletion. Blockers: ${children}`
+      );
     } else {
       // We know this branch isn't being deleted.
       // If its parent IS being deleted, we have to change its parent.
@@ -98,52 +102,63 @@ export async function cleanBranches(
 
       // If the nearest ancestor is not already the parent, we make it so.
       if (newParentBranchName !== parentBranchName) {
-        context.metaCache.setParent(
-          branchName,
-          context.metaCache.getParentPrecondition(parentBranchName)
-        );
+        context.metaCache.setParent(branchName, newParentBranchName);
         context.splog.logInfo(
-          `Set parent of ${chalk.cyan(branchName)} to (${chalk.blue(
-            parentBranchName
-          )}).`
+          `Set parent of ${chalk.cyan(branchName)} to ${chalk.blueBright(
+            newParentBranchName
+          )}.`
         );
         branchesWithNewParents.push(branchName);
 
         // This branch is no longer blocking its parent's deletion.
         branchesToDelete[parentBranchName].delete(branchName);
+        context.splog.logDebug(
+          `Removed a blocker for ${parentBranchName}. Blockers: ${[
+            ...branchesToDelete[parentBranchName].entries(),
+          ]}`
+        );
       }
     }
 
-    // With either of the paths above, we may have unblocked a branch that can
-    // be deleted immediately. We repeatedly check for branches that can be
-    // deleted, because the act of deleting one branch may free up another.
-    const unblockedBranches = Object.keys(branchesToDelete).filter(
-      (branchToDelete) => branchesToDelete[branchToDelete].size === 0
-    );
-
-    while (unblockedBranches.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const branchToDelete = unblockedBranches.pop()!;
-
-      deleteBranchAction({ branchName: branchToDelete, force: true }, context);
-
-      // Remove the branch from the list of branches to delete.
-      delete branchesToDelete[branchToDelete];
-
-      // This branch is no longer blocking its parent's deletion.
-      const parentBranchName =
-        context.metaCache.getParentPrecondition(branchToDelete);
-      if (parentBranchName in branchesToDelete) {
-        branchesToDelete[parentBranchName].delete(branchName);
-
-        // Check if we can delete the parent immediately.
-        if (branchesToDelete[parentBranchName].size === 0) {
-          unblockedBranches.push(parentBranchName);
-        }
-      }
-    }
+    greedilyDeleteUnblockedBranches(branchesToDelete, context);
   }
   return branchesWithNewParents;
+}
+
+// With either path in the above, we may have unblocked a branch that can
+// be deleted immediately. We repeatedly check for branches that can be
+// deleted, because the act of deleting one branch may free up another.
+function greedilyDeleteUnblockedBranches(
+  branchesToDelete: Record<string, Set<string>>,
+  context: TContext
+) {
+  const unblockedBranches = Object.keys(branchesToDelete).filter(
+    (branchToDelete) => branchesToDelete[branchToDelete].size === 0
+  );
+  context.splog.logDebug(`Unblocked branches: ${unblockedBranches}`);
+
+  while (unblockedBranches.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const branchName = unblockedBranches.pop()!;
+
+    deleteBranchAction({ branchName: branchName, force: true }, context);
+
+    // This branch is no longer blocking its parent's deletion.
+    const parentBranchName =
+      context.metaCache.getParentPrecondition(branchName);
+    // Remove it from the parents list of blockers and check if parent is
+    // now unblocked for deletion.
+    if (
+      branchesToDelete[parentBranchName]?.delete(branchName) &&
+      branchesToDelete[parentBranchName].size === 0
+    ) {
+      context.splog.logDebug(`${parentBranchName} is now unblocked.`);
+      unblockedBranches.push(parentBranchName);
+    }
+
+    // Remove the branch from the list of branches to delete.
+    delete branchesToDelete[branchName];
+  }
 }
 
 function getProgressMarkers(trunkChildren: string[]): Record<string, string> {
