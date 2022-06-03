@@ -51,7 +51,7 @@
     "@types/node": "^14.14.37",
     "@types/prompts": "^2.0.14",
     "@types/tmp": "^0.2.0",
-    "@types/yargs": "^15.0.5",
+    "@types/yargs": "^17.0.10",
     "@typescript-eslint/eslint-plugin": "^4.26.1",
     "@typescript-eslint/parser": "^5.7.0",
     "chai": "^4.2.0",

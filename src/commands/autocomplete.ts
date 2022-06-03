@@ -3,13 +3,16 @@ import { getBranchNamesAndRevisions } from '../lib/git/sorted_branch_names';
 
 yargs.completion(
   'completion',
-  'Append the output of this command to your shell startup script',
-  (current, argv) =>
-    shouldCompleteBranch(current, argv)
+  'Append the output of this command to your shell startup script.',
+  //@ts-expect-error types/yargs is out of date with yargs
+  // eslint-disable-next-line max-params
+  (current, argv, defaultCompletion, done) => {
+    return shouldCompleteBranch(current, argv)
       ? // we don't want to load a full context here, so we'll just use the git call directly
         // once we persist the meta cache to disk, we can consider using a context here
-        Object.keys(getBranchNamesAndRevisions())
-      : void 0
+        done(Object.keys(getBranchNamesAndRevisions()))
+      : defaultCompletion();
+  }
 );
 
 function shouldCompleteBranch(current: string, argv: Arguments): boolean {
