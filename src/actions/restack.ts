@@ -5,6 +5,10 @@ import { PreconditionsFailedError, RebaseConflictError } from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
+import {
+  clearContinuation as clearContinuation,
+  persistContinuation,
+} from './persist_continuation';
 
 type TBranchList =
   | {
@@ -52,10 +56,7 @@ export function restackBranches(
         continue;
 
       case 'REBASE_CONFLICT':
-        context.splog.logDebug(
-          branchNames.reduce((cur, next) => `${cur}\n${next}`, 'PERSISTING:')
-        );
-        persistBranchesToRestack(branchNames, context);
+        persistContinuation({ branchesToRestack: branchNames }, context);
         throw new RebaseConflictError(
           `Hit conflict restacking ${chalk.yellow(branchName)} on ${chalk.cyan(
             context.metaCache.getParentPrecondition(branchName)
@@ -83,7 +84,7 @@ export function continueRestack(
   context: TContext
 ): void {
   if (!rebaseInProgress()) {
-    clearContinueConfig(context);
+    clearContinuation(context);
     throw new PreconditionsFailedError(`No Graphite command to continue.`);
   }
 
@@ -108,25 +109,5 @@ export function continueRestack(
       context
     );
   }
-  clearContinueConfig(context);
-}
-
-export function persistBranchesToRestack(
-  branchNames: string[],
-  context: TContext
-): void {
-  context.splog.logDebug(
-    branchNames.reduce((acc, curr) => `${acc}\n${curr}`, 'PERSISTING:')
-  );
-  context.continueConfig.update((data) => {
-    data.branchesToRestack = branchNames;
-    data.currentBranchOverride = context.metaCache.currentBranch;
-  });
-}
-
-function clearContinueConfig(context: TContext): void {
-  context.continueConfig.update((data) => {
-    data.branchesToRestack = [];
-    data.currentBranchOverride = undefined;
-  });
+  clearContinuation(context);
 }
