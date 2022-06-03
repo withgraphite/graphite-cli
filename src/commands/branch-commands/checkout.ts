@@ -1,7 +1,7 @@
 import yargs from 'yargs';
 import { checkoutBranch } from '../../actions/checkout_branch';
 import { interactiveBranchSelection } from '../../actions/log';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   branch: {
@@ -20,7 +20,7 @@ export const aliases = ['co'];
 export const builder = args;
 
 export const handler = async (args: argsT): Promise<void> =>
-  profile(args, canonical, async (context) =>
+  graphite(args, canonical, async (context) =>
     checkoutBranch(
       args.branch ??
         (await interactiveBranchSelection(

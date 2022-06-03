@@ -5,8 +5,8 @@ import yargs from 'yargs';
 import { API_SERVER } from '../../lib/api/server';
 import { captureState } from '../../lib/debug_context';
 import { ExitFailedError } from '../../lib/errors';
+import { graphite } from '../../lib/runner';
 import { getUserEmail } from '../../lib/telemetry/context';
-import { profile } from '../../lib/telemetry/profile';
 
 const args = {
   message: {
@@ -32,7 +32,7 @@ export const description =
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     const user = getUserEmail();
     if (!argv.message) {
       return;

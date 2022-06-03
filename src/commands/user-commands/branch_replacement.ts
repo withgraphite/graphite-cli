@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 import { getBranchReplacement } from '../../lib/utils/branch_name';
 
 const args = {
@@ -32,7 +32,7 @@ export const description =
   'Graphite only supports alphanumeric characters, underscores, and dashes in branch names.  Use this command to set what unsupported characters will be replaced with.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     if (argv['set-underscore']) {
       context.userConfig.update((data) => (data.branchReplacement = '_'));
       context.splog.logInfo(`Set underscore (_) as the replacement character`);

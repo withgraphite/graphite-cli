@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
   set: {
@@ -23,7 +23,7 @@ export const description = 'Editor used when using Graphite';
 export const canonical = 'user editor';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     if (argv.set) {
       context.userConfig.update((data) => (data.editor = argv.set));
       context.splog.logInfo(`Editor set to ${chalk.cyan(argv.set)}`);

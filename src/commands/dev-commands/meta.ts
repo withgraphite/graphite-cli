@@ -7,7 +7,7 @@ import {
   writeMetadataRef,
 } from '../../lib/engine/metadata_ref';
 import { ExitFailedError } from '../../lib/errors';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 import { cuteString } from '../../lib/utils/cute_string';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 
@@ -32,7 +32,7 @@ export const builder = args;
 // This command allows for direct access to the metadata ref. USE WITH CARE!
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     const metaString = cuteString(readMetadataRef(argv.branch));
     if (!argv.edit) {
       context.splog.logInfo(metaString);
