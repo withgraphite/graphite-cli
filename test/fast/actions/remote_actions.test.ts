@@ -41,7 +41,13 @@ for (const scene of [new CloneScene()]) {
       scene.originRepo.createChangeAndCommit('a');
 
       await syncAction(
-        { pull: true, force: false, delete: false, showDeleteProgress: false },
+        {
+          pull: true,
+          force: false,
+          delete: false,
+          showDeleteProgress: false,
+          restackCurrentStack: false,
+        },
         scene.context
       );
 

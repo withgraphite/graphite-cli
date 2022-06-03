@@ -29,6 +29,7 @@ export const handler = async (argv: argsT): Promise<void> =>
           delete: false,
           showDeleteProgress: false,
           force: false,
+          restackCurrentStack: false,
           tipOfDownstack: argv.branch,
         },
         context
