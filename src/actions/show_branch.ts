@@ -6,7 +6,7 @@ import { showCommits } from '../lib/git/show_commits';
 
 export async function showBranchAction(
   branchName: string,
-  opts: { patch: boolean },
+  opts: { patch: boolean; description: boolean },
   context: TContext
 ): Promise<void> {
   context.splog.logInfo(getBranchInfo({ branchName }, context).join('\n'));
@@ -21,6 +21,13 @@ export async function showBranchAction(
     context.splog.logInfo(
       `${chalk.cyan('Children')}:\n${children.map((c) => `→ ${c}`).join('\n')}`
     );
+  }
+
+  const description =
+    opts.description && context.metaCache.getPrInfo(branchName)?.body;
+  if (description) {
+    context.splog.logNewline();
+    context.splog.logInfo(description);
   }
 
   if (context.metaCache.isTrunk(branchName)) {
