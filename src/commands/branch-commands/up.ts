@@ -18,7 +18,7 @@ export const command = 'up [steps]';
 export const canonical = 'branch up';
 export const aliases = ['u', 'next', 'n'];
 export const description =
-  "If you're in a stack, i.e. Branch A → Branch B (you are here) → Branch C, checkout the branch directly upstack (Branch C). If there are multiple child branches above in the stack, `gt up` will prompt you to choose which branch to checkout.  Pass the `steps` arg to checkout the branch `[steps]` levels above in the stack.";
+  'Switch to the child of the current branch. Prompts if ambiguous.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(

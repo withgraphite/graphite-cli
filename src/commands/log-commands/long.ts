@@ -5,7 +5,8 @@ import { gpExecSync } from '../../lib/utils/exec_sync';
 const args = {} as const;
 
 export const command = 'long';
-export const description = 'Log all stacks tracked by Graphite.';
+export const description =
+  'Display a graph of the commit ancestry of all branches.';
 export const builder = args;
 export const aliases = ['l'];
 export const canonical = 'log long';

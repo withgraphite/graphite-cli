@@ -10,7 +10,7 @@ export const command = 'bottom';
 export const canonical = 'branch bottom';
 export const aliases = ['b'];
 export const description =
-  "If you're in a stack: Branch A → Branch B → Branch C (you are here), checkout the branch at the bottom of the stack (Branch A).";
+  'Switch to the first branch from trunk in the current stack.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(

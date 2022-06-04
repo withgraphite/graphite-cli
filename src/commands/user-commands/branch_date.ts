@@ -22,7 +22,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const command = 'branch-date';
 export const canonical = 'user branch-date';
 export const description =
-  "Toggle prepending date to auto-generated branch names (i.e. when you don't specify a branch name when calling `gt branch create`).";
+  'Toggle prepending date to auto-generated branch names on branch creation.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {

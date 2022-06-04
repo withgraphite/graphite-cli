@@ -25,7 +25,7 @@ export const command = 'test <command>';
 export const canonical = 'stack test';
 export const aliases = ['t'];
 export const description =
-  'Checkout each branch in your stack, run the provided command, and aggregate the results. Good for finding bugs in your stack.';
+  'Run the provided command on each branch in the current stack and aggregate the results.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) =>

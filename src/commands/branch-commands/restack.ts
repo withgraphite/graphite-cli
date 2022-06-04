@@ -9,7 +9,8 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const aliases = ['r', 'fix', 'f'];
 export const command = 'restack';
 export const canonical = 'branch restack';
-export const description = 'Restack the current branch onto its parent.';
+export const description =
+  'Ensure the current branch is based on its parent, rebasing if necessary.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) =>
