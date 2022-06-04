@@ -17,7 +17,7 @@ export async function getBranchesFromRemote(
     );
     switch (fetchResult) {
       case 'DOES_NOT_EXIST':
-        context.metaCache.overwriteBranchFromFetched(
+        context.metaCache.checkoutBranchFromFetched(
           branchName,
           parentBranchName
         );
@@ -75,7 +75,7 @@ async function handleDifferentParents(
     throw new KilledError();
   }
 
-  context.metaCache.overwriteBranchFromFetched(branchName, parentBranchName);
+  context.metaCache.checkoutBranchFromFetched(branchName, parentBranchName);
   context.splog.logInfo(`Synced ${chalk.cyan(branchName)} from remote.`);
 }
 
@@ -128,10 +128,8 @@ async function handleSameParent(
     case 'REBASE':
       throw new ExitFailedError(`Rebasing is not yet implemented.`);
     case 'OVERWRITE':
-      context.metaCache.overwriteBranchFromFetched(
-        branchName,
-        parentBranchName
-      );
+      context.metaCache.checkoutBranchFromFetched(branchName, parentBranchName);
+      context.splog.logInfo(`Synced ${chalk.cyan(branchName)} from remote.`);
       break;
     case 'ABORT':
       throw new KilledError();
