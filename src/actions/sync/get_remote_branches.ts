@@ -72,7 +72,7 @@ async function handleDifferentParents(
       )
     ).value
   ) {
-    throw new ExitFailedError(`Aborted.`);
+    throw new KilledError();
   }
 
   context.metaCache.overwriteBranchFromFetched(branchName, parentBranchName);
@@ -115,7 +115,6 @@ async function handleSameParent(
               },
               { title: 'Abort this command', value: 'ABORT' },
             ],
-            initial: 'REBASE',
           },
           {
             onCancel: () => {
@@ -135,7 +134,7 @@ async function handleSameParent(
       );
       break;
     case 'ABORT':
-      throw new ExitFailedError(`Aborted.`);
+      throw new KilledError();
     default:
       assertUnreachable(fetchChoice);
   }
