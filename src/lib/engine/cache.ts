@@ -20,7 +20,7 @@ import { pushBranch } from '../git/push_branch';
 import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
 import { setRemoteTracking } from '../git/set_remote_tracking';
 import { switchBranch } from '../git/switch_branch';
-import { writeBranch } from '../git/write_branch';
+import { forceCreateBranch } from '../git/write_branch';
 import { cuteString } from '../utils/cute_string';
 import { TSplog } from '../utils/splog';
 import {
@@ -99,7 +99,7 @@ export type TMetaCache = {
     branchName: string,
     parentBranchName: string
   ) => 'DOES_NOT_EXIST' | 'EXISTS_DIFFERENT_PARENTS' | 'EXISTS_SAME_PARENT';
-  overwriteBranchFromFetched: (
+  checkoutBranchFromFetched: (
     branchName: string,
     parentBranchName: string
   ) => void;
@@ -238,27 +238,6 @@ export function composeMetaCache({
     persistMeta(branchName);
     if (cache.currentBranch && cache.currentBranch in cache.branches) {
       switchBranch(cache.currentBranch);
-    }
-  };
-
-  const overwriteBranchFromFetched = (
-    branchName: string,
-    parentBranchName: string
-  ) => {
-    const { head, base } = { head: readFetchHead(), base: readFetchBase() };
-    writeBranch(branchName, head);
-    setRemoteTracking({ remote, branchName, sha: head });
-
-    cache.branches[branchName] = {
-      validationResult: 'VALID',
-      parentBranchName,
-      parentBranchRevision: base,
-      branchRevision: head,
-      children: [],
-    };
-    persistMeta(branchName);
-    if (!cache.branches[parentBranchName].children.includes(branchName)) {
-      cache.branches[parentBranchName].children.push(branchName);
     }
   };
 
@@ -558,6 +537,26 @@ export function composeMetaCache({
 
       return 'EXISTS_SAME_PARENT';
     },
-    overwriteBranchFromFetched,
+    checkoutBranchFromFetched: (
+      branchName: string,
+      parentBranchName: string
+    ) => {
+      const { head, base } = { head: readFetchHead(), base: readFetchBase() };
+      forceCreateBranch(branchName, head);
+      setRemoteTracking({ remote, branchName, sha: head });
+
+      cache.branches[branchName] = {
+        validationResult: 'VALID',
+        parentBranchName,
+        parentBranchRevision: base,
+        branchRevision: head,
+        children: [],
+      };
+      persistMeta(branchName);
+      if (!cache.branches[parentBranchName].children.includes(branchName)) {
+        cache.branches[parentBranchName].children.push(branchName);
+      }
+      cache.currentBranch = branchName;
+    },
   };
 }
