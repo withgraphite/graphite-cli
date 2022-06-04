@@ -7,9 +7,9 @@ import {
   cliAuthPrecondition,
   uncommittedTrackedChangesPrecondition,
 } from '../../lib/preconditions';
-import { cleanBranches } from '../clean_branches';
 import { restackBranches } from '../restack';
 import { syncPrInfo } from '../sync_pr_info';
+import { cleanBranches } from './clean_branches';
 import { getBranchesFromRemote } from './get_remote_branches';
 
 // eslint-disable-next-line max-lines-per-function
