@@ -88,6 +88,10 @@ async function graphiteHelper(
     handleGraphiteError(e, context);
     context.splog.logDebug(e);
     context.splog.logDebug(e.stack);
+    // print errors when debugging tests
+    if (process.env.DEBUG) {
+      process.stdout.write(e.stack.toString());
+    }
     process.exitCode = 1;
     err = e;
   } finally {
