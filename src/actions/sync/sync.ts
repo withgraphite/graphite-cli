@@ -12,7 +12,25 @@ import { syncPrInfo } from '../sync_pr_info';
 import { cleanBranches as cleanBranches } from './clean_branches';
 import { getBranchesFromRemote } from './get_remote_branches';
 
-// eslint-disable-next-line max-lines-per-function
+// Why can we use a Set to keep track of branches to restack?
+// We have three different sources for branches that could
+// need restacking: (of course, we currently don't have a
+// command that results in both 2. and 3.)
+//
+// 1. The current stack
+// 2. The full stack of the synced downstack.
+// 3. The upstack of any branches whose parent was deleted.
+//
+// Since we only delete ranges of branches from trunk, 3.
+// are actually also full stacks, which means we can add
+// these groups to the set in any order (as long as the
+// stacks themselves are ordered correctly, which they
+// will be) and we will have a topologically sorted list
+// of branches to restack.
+//
+// We end up not adding 1. until the end in case some of
+// its branches are deleted by the cleanBranches() step.
+
 export async function syncAction(
   opts: {
     pull: boolean;
@@ -48,41 +66,7 @@ export async function syncAction(
     }
   }
 
-  // Why can we use a Set to keep track of branches to restack?
-  // We have three different sources for branches that could
-  // need restacking:
-  //
-  // 1. The current stack
-  // 2. The full stack of the synced downstack.
-  // 3. The upstack of any branches whose parent was deleted.
-  //
-  // We want to:
-  // - avoid trying to restack the same branch more than once
-  // - ensure that branches are restacked in the correct order
-  //   (always restack parents before children)
-  //
-  // Since the first 2 groups of branches are full stacks,
-  // using a Set is perfectly fine for order, as any branch
-  // whose parent needs to be restacked will be added before
-  // it (as the metaCache always returns stacks topologically
-  // sorted).
-  //
-  // I doubt we'll actually ever do all 3 of these in a single
-  // command, but maybe we'll add a "true" repo sync option
-  // some day? (where all downstacks are synced from remote)
-
-  const currentBranch = context.metaCache.currentBranch;
-  const branchesToRestack = new Set(
-    opts.restackCurrentStack &&
-    currentBranch &&
-    context.metaCache.branchExists(currentBranch) &&
-    context.metaCache.isBranchTracked(currentBranch)
-      ? context.metaCache.getRelativeStack(
-          context.metaCache.currentBranchPrecondition,
-          SCOPE.STACK
-        )
-      : []
-  );
+  const branchesToRestack = new Set<string>();
 
   if (opts.tipOfDownstack) {
     const authToken = cliAuthPrecondition(context);
@@ -128,6 +112,21 @@ export async function syncAction(
     branchesWithNewParents
       .flatMap((branchName) =>
         context.metaCache.getRelativeStack(branchName, SCOPE.UPSTACK)
+      )
+      .forEach((branchName) => branchesToRestack.add(branchName));
+  }
+
+  const currentBranch = context.metaCache.currentBranch;
+  if (
+    opts.restackCurrentStack &&
+    currentBranch &&
+    context.metaCache.branchExists(currentBranch) &&
+    context.metaCache.isBranchTracked(currentBranch)
+  ) {
+    context.metaCache
+      .getRelativeStack(
+        context.metaCache.currentBranchPrecondition,
+        SCOPE.STACK
       )
       .forEach((branchName) => branchesToRestack.add(branchName));
   }
