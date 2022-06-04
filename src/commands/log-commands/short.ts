@@ -8,7 +8,8 @@ const args = {
     type: 'boolean',
     default: false,
     alias: 'c',
-    describe: 'Use the old logging style.',
+    describe:
+      'Use the old logging style, which runs out of screen real estate quicker.',
   },
   reverse: {
     describe: `Print the log upside down. Handy when you have a lot of branches!`,
@@ -19,7 +20,8 @@ const args = {
 } as const;
 
 export const command = 'short';
-export const description = 'Log all stacks tracked by Graphite.';
+export const description =
+  'Log all stacks tracked by Graphite, arranged to show dependencies.';
 export const builder = args;
 export const aliases = ['s'];
 export const canonical = 'log short';

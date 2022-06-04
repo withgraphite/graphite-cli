@@ -6,7 +6,7 @@ const args = {
   token: {
     type: 'string',
     alias: 't',
-    describe: 'Auth token.',
+    describe: 'Auth token. Get it from: https://app.graphite.dev/activate.',
     demandOption: false,
   },
 } as const;
@@ -14,7 +14,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = 'auth';
 export const description =
-  'Add your auth token to enable Graphite CLI to create and update your PRs on GitHub. You can get your auth token here: https://app.graphite.dev/activate.';
+  'Add your auth token to enable Graphite CLI to create and update your PRs on GitHub.';
 export const builder = args;
 export const canonical = 'auth';
 

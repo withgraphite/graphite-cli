@@ -17,8 +17,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const command = 'down [steps]';
 export const canonical = 'branch down';
 export const aliases = ['d', 'prev', 'p'];
-export const description =
-  "If you're in a stack: Branch A → Branch B (you are here) → Branch C, checkout the branch directly downstack (Branch A). Pass the `steps` arg to checkout the branch `[steps]` levels below in the stack.";
+export const description = 'Switch to the parent of the current branch.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(

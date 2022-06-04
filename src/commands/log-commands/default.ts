@@ -12,7 +12,8 @@ const args = {
 } as const;
 
 export const command = '*';
-export const description = 'Log all stacks tracked by Graphite.';
+export const description =
+  'Log all branches tracked by Graphite, showing dependencies and info for each.';
 export const builder = args;
 export const canonical = 'log';
 

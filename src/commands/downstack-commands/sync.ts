@@ -16,7 +16,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const command = 'sync [branch]';
 export const canonical = 'downstack sync';
 export const description =
-  'Sync a branch and its recursive parents from remote.';
+  'Sync branches from trunk to the specified branch from remote, prompting the user to resolve conflicts.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(

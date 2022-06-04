@@ -9,24 +9,20 @@ import { restackBranches } from './restack';
 export async function createBranchAction(
   opts: {
     branchName?: string;
-    commitMessage?: string;
-    addAll?: boolean;
+    message?: string;
+    all?: boolean;
     restack?: boolean;
   },
   context: TContext
 ): Promise<void> {
-  const branchName = newBranchName(
-    opts.branchName,
-    opts.commitMessage,
-    context
-  );
+  const branchName = newBranchName(opts.branchName, opts.message, context);
   if (!branchName) {
     throw new ExitFailedError(
       `Must specify either a branch name or commit message`
     );
   }
 
-  if (opts.addAll) {
+  if (opts.all) {
     addAll();
   }
 
@@ -42,7 +38,7 @@ export async function createBranchAction(
    */
   context.metaCache.commit({
     allowEmpty: isAddingEmptyCommit,
-    message: opts.commitMessage,
+    message: opts.message,
     rollbackOnError: () => context.metaCache.deleteBranch(branchName),
   });
 

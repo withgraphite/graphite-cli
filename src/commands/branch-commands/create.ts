@@ -10,21 +10,21 @@ const args = {
     optional: true,
     describe: 'The name of the new branch.',
   },
-  'commit-message': {
+  message: {
     describe: `Commit staged changes on the new branch with this message.`,
     demandOption: false,
     type: 'string',
     alias: 'm',
   },
-  'add-all': {
-    describe: `Stage all un-staged changes on the new branch with this message.`,
+  all: {
+    describe: `Stage all unstaged changes on the new branch with this message.`,
     demandOption: false,
     default: false,
     type: 'boolean',
     alias: 'a',
   },
   restack: {
-    describe: `Restack all existing children of the parent branch onto the new branch.`,
+    describe: `Restack all existing children of the current branch onto the new branch.`,
     demandOption: false,
     default: false,
     type: 'boolean',
@@ -44,8 +44,8 @@ export const handler = async (argv: argsT): Promise<void> => {
     await createBranchAction(
       {
         branchName: argv.name,
-        commitMessage: argv['commit-message'],
-        addAll: argv['add-all'],
+        message: argv.message,
+        all: argv.all,
         restack: argv.restack,
       },
       context

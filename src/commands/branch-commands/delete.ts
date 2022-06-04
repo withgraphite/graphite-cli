@@ -11,7 +11,7 @@ const args = {
     describe: 'The name of the branch to delete.',
   },
   force: {
-    describe: `Force delete the git branch.`,
+    describe: `Delete the branch even if it is not merged or closed.`,
     demandOption: false,
     type: 'boolean',
     alias: 'f',
@@ -24,7 +24,7 @@ export const aliases = ['dl'];
 export const command = 'delete [name]';
 export const canonical = 'branch delete';
 export const description =
-  'Delete a given git branch and its corresponding Graphite metadata.';
+  'Delete a branch and its corresponding Graphite metadata.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) =>
