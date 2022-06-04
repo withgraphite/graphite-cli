@@ -19,7 +19,7 @@ const args = {
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const command = 'editor';
-export const description = 'Editor used when using Graphite';
+export const description = 'The editor opened by Graphite';
 export const canonical = 'user editor';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {

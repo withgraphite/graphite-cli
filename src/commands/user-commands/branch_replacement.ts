@@ -29,7 +29,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const command = 'branch-replacement';
 export const canonical = 'user branch-replacement';
 export const description =
-  'Graphite only supports alphanumeric characters, underscores, and dashes in branch names.  Use this command to set what unsupported characters will be replaced with.';
+  'The character that will replace unsupported characters in generated branch names.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {

@@ -10,7 +10,7 @@ export const aliases = ['r', 'fix', 'f'];
 export const command = 'restack';
 export const canonical = 'downstack restack';
 export const description =
-  'From trunk to the current branch, restack each branch on its parent.';
+  'From trunk to the current branch, ensure each is based on its parent, rebasing if necessary.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) =>

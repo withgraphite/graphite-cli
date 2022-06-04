@@ -25,7 +25,7 @@ export const command = 'test <command>';
 export const canonical = 'upstack test';
 export const aliases = ['t'];
 export const description =
-  'For each of the current branch and its recursive children, run the provided command, and aggregate the results. Good for finding bugs in your stack.';
+  'From trunk to the current branch, run the provided command on each branch and aggregate the results.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) =>
