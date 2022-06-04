@@ -1,7 +1,7 @@
 import { gpExecSync } from '../utils/exec_sync';
 
-export function writeBranch(branchName: string, sha: string): void {
+export function forceCreateBranch(branchName: string, sha: string): void {
   gpExecSync({
-    command: `git branch -f ${branchName} ${sha}`,
+    command: `git switch -C ${branchName} ${sha}`,
   });
 }
