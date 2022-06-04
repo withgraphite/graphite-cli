@@ -54,7 +54,7 @@ export function assertCachedMetaIsNotTrunk(
   }
 }
 
-type TValidCachedMetaExceptTrunk = Extract<
+export type TValidCachedMetaExceptTrunk = Extract<
   TValidCachedMeta,
   TNonTrunkCachedMeta
 >;

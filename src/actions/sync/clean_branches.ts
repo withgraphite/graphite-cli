@@ -140,12 +140,12 @@ function greedilyDeleteUnblockedBranches(
   while (unblockedBranches.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const branchName = unblockedBranches.pop()!;
+    const parentBranchName =
+      context.metaCache.getParentPrecondition(branchName);
 
     deleteBranchAction({ branchName: branchName, force: true }, context);
 
     // This branch is no longer blocking its parent's deletion.
-    const parentBranchName =
-      context.metaCache.getParentPrecondition(branchName);
     // Remove it from the parents list of blockers and check if parent is
     // now unblocked for deletion.
     if (
