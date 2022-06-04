@@ -257,7 +257,9 @@ export function composeMetaCache({
       children: [],
     };
     persistMeta(branchName);
-    cache.branches[parentBranchName].children.push(branchName);
+    if (!cache.branches[parentBranchName].children.includes(branchName)) {
+      cache.branches[parentBranchName].children.push(branchName);
+    }
   };
 
   return {
