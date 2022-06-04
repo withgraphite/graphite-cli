@@ -1,12 +1,11 @@
 import { getSha } from '../git/get_sha';
 import { getBranchNamesAndRevisions } from '../git/sorted_branch_names';
-import { cuteString } from '../utils/cute_string';
 import { gpExecSync } from '../utils/exec_sync';
 import { TSplog } from '../utils/splog';
 import { TCachedMeta } from './cached_meta';
 import { getMetadataRefList } from './metadata_ref';
 import { parseBranchesAndMeta } from './parse_branches_and_meta';
-import { hashState } from './persist_cache';
+import { hashCacheOrKey } from './persist_cache';
 
 export const CACHE_CHECK_REF = 'GRAPHITE_CACHE_CHECK';
 export const CACHE_DATA_REF = 'GRAPHITE_CACHE_DATA';
@@ -38,7 +37,7 @@ export function loadCachedBranches(
   );
 }
 
-type TCacheKey = {
+export type TCacheKey = {
   trunkName: string | undefined;
   gitBranchNamesAndRevisions: Record<string, string>;
   metadataRefList: Record<string, string>;
@@ -49,7 +48,7 @@ function getPersistedCacheIfValid(
   splog: TSplog
 ): Record<string, TCachedMeta> | undefined {
   const cacheCheckSha = getSha(CACHE_CHECK_REF);
-  const currentStateSha = hashState(cuteString(cacheKey));
+  const currentStateSha = hashCacheOrKey(cacheKey);
   splog.logDebug(`Cache check SHA: ${cacheCheckSha}`);
   splog.logDebug(`Current state SHA: ${currentStateSha}`);
 
