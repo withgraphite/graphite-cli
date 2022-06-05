@@ -45,6 +45,7 @@ export function hashCacheOrKey(
       command: `git hash-object ${write ? '-w' : ''} --stdin`,
       options: {
         input: JSON.stringify(state),
+        timeout: 500,
       },
     },
     (err) => {
