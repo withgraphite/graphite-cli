@@ -1,4 +1,3 @@
-import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import tmp from 'tmp';
 import { initContext, TContext } from '../../../src/lib/context';
@@ -9,23 +8,13 @@ export abstract class AbstractScene {
   tmpDir: tmp.DirResult;
   repo: GitRepo;
   dir: string;
-  oldDir = execSync('pwd').toString().trim();
-  context: TContext;
+  oldDir: string;
 
   constructor() {
     this.tmpDir = tmp.dirSync();
     this.dir = this.tmpDir.name;
     this.repo = new GitRepo(this.dir);
-    this.context = initContext({
-      userConfigOverride: `${this.dir}/.git/.graphite_user_config`,
-      globalArguments: {
-        debug:
-          typeof process.env.DEBUG !== 'undefined' &&
-          process.env.DEBUG.length > 0 &&
-          process.env.DEBUG !== '0' &&
-          process.env.DEBUG !== 'false',
-      },
-    });
+    this.oldDir = process.cwd();
   }
 
   abstract toString(): string;
@@ -38,11 +27,11 @@ export abstract class AbstractScene {
       `${this.dir}/.git/.graphite_repo_config`,
       cuteString({ trunk: 'main' })
     );
-    fs.writeFileSync(`${this.dir}/.git/.graphite_user_config`, cuteString({}));
+    const userConfigPath = `${this.dir}/.git/.graphite_user_config`;
+    fs.writeFileSync(userConfigPath, cuteString({ tips: false }));
+    process.env.GRAPHITE_USER_CONFIG_PATH = userConfigPath;
+    this.oldDir = process.cwd();
     process.chdir(this.dir);
-    this.context = initContext({
-      userConfigOverride: `${this.dir}/.git/.graphite_user_config`,
-    });
   }
 
   public cleanup(): void {
@@ -51,5 +40,20 @@ export abstract class AbstractScene {
       fs.emptyDirSync(this.dir);
       this.tmpDir.removeCallback();
     }
+  }
+
+  public getContext(): TContext {
+    const oldDir = process.cwd();
+    process.chdir(this.tmpDir.name);
+    const context = initContext({
+      globalArguments: {
+        interactive: false,
+        quiet: !!process.env.DEBUG,
+        debug: !!process.env.DEBUG,
+        verify: false,
+      },
+    });
+    process.chdir(oldDir);
+    return context;
   }
 }
