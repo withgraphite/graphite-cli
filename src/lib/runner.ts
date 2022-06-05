@@ -24,38 +24,12 @@ import { fetchUpgradePromptInBackground } from './telemetry/upgrade_prompt';
 import { parseArgs } from './utils/parse_args';
 
 export async function graphite(
-  args: yargs.Arguments,
+  args: yargs.Arguments & TGlobalArguments,
   canonicalName: string,
   handler: (context: TContext) => Promise<void>
 ): Promise<void> {
   const parsedArgs = parseArgs(args);
-  const start = Date.now();
-  registerSigintHandler({
-    commandName: parsedArgs.command,
-    canonicalCommandName: canonicalName,
-    startTime: start,
-  });
 
-  const context = initContext({
-    globalArguments: args as TGlobalArguments,
-  });
-
-  fetchUpgradePromptInBackground(context);
-  refreshPRInfoInBackground(context);
-  postSurveyResponsesInBackground(context);
-
-  if (
-    parsedArgs.command !== 'repo init' &&
-    !context.repoConfig.graphiteInitialized()
-  ) {
-    context.splog.logInfo(
-      `Graphite has not been initialized, attempting to setup now...`
-    );
-    context.splog.logNewline();
-    await init(context);
-  }
-
-  let err;
   await tracer.span(
     {
       name: 'command',
@@ -67,28 +41,65 @@ export async function graphite(
         alias: parsedArgs.alias,
       },
     },
-    async () => {
-      try {
-        await handler(context);
-      } catch (e) {
-        handleGraphiteError(e, context);
-        context.splog.logDebug(e);
-        context.splog.logDebug(e.stack);
-        process.exitCode = 1;
-        err = e;
-      }
-    }
+    () => graphiteHelper(args, parsedArgs.command, canonicalName, handler)
   );
+}
 
-  context.metaCache.persist();
-
-  const end = Date.now();
-  postTelemetryInBackground({
+// TODO check with Greg about whether we still need all the OldTelemetry stuff?
+// Then we can simplify this function and signature a lot
+// eslint-disable-next-line max-params
+async function graphiteHelper(
+  args: yargs.Arguments & TGlobalArguments,
+  commandName: string,
+  canonicalName: string,
+  handler: (context: TContext) => Promise<void>
+): Promise<void> {
+  const start = Date.now();
+  registerSigintHandler({
+    commandName,
     canonicalCommandName: canonicalName,
-    commandName: parsedArgs.command,
-    durationMiliSeconds: end - start,
-    err,
+    startTime: start,
   });
+
+  const context = initContext({
+    globalArguments: args,
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let err: any;
+  try {
+    fetchUpgradePromptInBackground(context);
+    refreshPRInfoInBackground(context);
+    postSurveyResponsesInBackground(context);
+
+    if (
+      canonicalName !== 'repo init' &&
+      !context.repoConfig.graphiteInitialized()
+    ) {
+      context.splog.logInfo(
+        `Graphite has not been initialized, attempting to setup now...`
+      );
+      context.splog.logNewline();
+      await init(context);
+    }
+
+    await handler(context);
+    context.metaCache.persist();
+  } catch (e) {
+    handleGraphiteError(e, context);
+    context.splog.logDebug(e);
+    context.splog.logDebug(e.stack);
+    process.exitCode = 1;
+    err = e;
+  } finally {
+    const end = Date.now();
+    postTelemetryInBackground({
+      canonicalCommandName: canonicalName,
+      commandName,
+      durationMiliSeconds: end - start,
+      err,
+    });
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
