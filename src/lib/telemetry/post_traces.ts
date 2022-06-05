@@ -6,7 +6,7 @@ import path from 'path';
 import tmp from 'tmp';
 import { version } from '../../../package.json';
 import { API_SERVER } from '../api/server';
-import { initContext, TContext } from '../context';
+import { userConfigFactory } from '../config/user_config';
 import { tracer } from '../telemetry/tracer';
 import { cuteString } from '../utils/cute_string';
 import { spawnDetached } from '../utils/spawn';
@@ -44,7 +44,7 @@ export function postTelemetryInBackground(oldDetails: oldTelemetryT): void {
 
 async function logCommand(
   oldTelemetryFilePath: string,
-  context: TContext
+  authToken: string | undefined
 ): Promise<void> {
   const data = JSON.parse(
     fs.readFileSync(oldTelemetryFilePath).toString().trim()
@@ -55,7 +55,7 @@ async function logCommand(
         commandName: data.commandName,
         durationMiliSeconds: data.durationMiliSeconds,
         user: getUserEmail() || 'NotFound',
-        auth: context.userConfig.data.authToken,
+        auth: authToken,
         version: version,
         err: data.err
           ? {
@@ -72,7 +72,7 @@ async function logCommand(
   }
 }
 
-async function postTelemetry(context: TContext): Promise<void> {
+async function postTelemetry(): Promise<void> {
   if (!SHOULD_REPORT_TELEMETRY) {
     return;
   }
@@ -92,13 +92,14 @@ async function postTelemetry(context: TContext): Promise<void> {
   }
 
   const oldTelemetryFilePath = process.argv[3];
+  const authToken = userConfigFactory.load().data.authToken;
   if (oldTelemetryFilePath && fs.existsSync(oldTelemetryFilePath)) {
-    await logCommand(oldTelemetryFilePath, context);
+    await logCommand(oldTelemetryFilePath, authToken);
     // Cleanup despite it being a temp file.
     fs.removeSync(oldTelemetryFilePath);
   }
 }
 
 if (process.argv[1] === __filename) {
-  void postTelemetry(initContext());
+  void postTelemetry();
 }
