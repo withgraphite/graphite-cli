@@ -69,7 +69,6 @@ async function graphiteHelper(
   let err: any;
   try {
     fetchUpgradePromptInBackground(context);
-    refreshPRInfoInBackground(context);
     postSurveyResponsesInBackground(context);
 
     if (
@@ -92,6 +91,7 @@ async function graphiteHelper(
     process.exitCode = 1;
     err = e;
   } finally {
+    refreshPRInfoInBackground(context);
     const end = Date.now();
     postTelemetryInBackground({
       canonicalCommandName: canonicalName,
