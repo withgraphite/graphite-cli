@@ -11,27 +11,19 @@ export async function getBranchesFromRemote(
 ): Promise<void> {
   let parentBranchName = base;
   for (const branchName of downstack) {
-    const fetchResult = context.metaCache.fetchBranch(
-      branchName,
-      parentBranchName
-    );
-    switch (fetchResult) {
-      case 'DOES_NOT_EXIST':
-        context.metaCache.checkoutBranchFromFetched(
-          branchName,
-          parentBranchName
-        );
-        context.splog.logInfo(`Synced ${chalk.cyan(branchName)} from remote.`);
-        break;
-      case 'EXISTS_DIFFERENT_PARENTS':
-        await handleDifferentParents(branchName, parentBranchName, context);
-        break;
-      case 'EXISTS_SAME_PARENT':
-        await handleSameParent(branchName, parentBranchName, context);
-        break;
-      default:
-        assertUnreachable(fetchResult);
-        break;
+    context.metaCache.fetchBranch(branchName, parentBranchName);
+    if (!context.metaCache.branchExists(branchName)) {
+      // If the branch doesn't already exists, no conflict to resolve
+      context.metaCache.checkoutBranchFromFetched(branchName, parentBranchName);
+      context.splog.logInfo(`Synced ${chalk.cyan(branchName)} from remote.`);
+    } else if (
+      context.metaCache.getParentPrecondition(branchName) !== parentBranchName
+    ) {
+      await handleDifferentParents(branchName, parentBranchName, context);
+    } else if (context.metaCache.branchMatchesFetched(branchName)) {
+      context.splog.logInfo(`${chalk.cyan(branchName)} is up to date.`);
+    } else {
+      await handleSameParent(branchName, parentBranchName, context);
     }
     parentBranchName = branchName;
   }

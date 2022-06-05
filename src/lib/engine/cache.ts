@@ -97,10 +97,8 @@ export type TMetaCache = {
   pushBranch: (branchName: string) => void;
   pullTrunk: () => 'PULL_DONE' | 'PULL_UNNEEDED';
 
-  fetchBranch: (
-    branchName: string,
-    parentBranchName: string
-  ) => 'DOES_NOT_EXIST' | 'EXISTS_DIFFERENT_PARENTS' | 'EXISTS_SAME_PARENT';
+  fetchBranch: (branchName: string, parentBranchName: string) => void;
+  branchMatchesFetched: (branchName: string) => boolean;
   checkoutBranchFromFetched: (
     branchName: string,
     parentBranchName: string
@@ -576,20 +574,10 @@ export function composeMetaCache({
         writeFetchBase(readFetchHead());
         fetchBranch(remote, branchName);
       }
-
-      if (!branchExists(branchName)) {
-        return 'DOES_NOT_EXIST';
-      }
-
-      const existingMeta = cache.branches[branchName];
-      if (
-        existingMeta.validationResult !== 'VALID' ||
-        existingMeta.parentBranchName !== parentBranchName
-      ) {
-        return 'EXISTS_DIFFERENT_PARENTS';
-      }
-
-      return 'EXISTS_SAME_PARENT';
+    },
+    branchMatchesFetched: (branchName: string) => {
+      assertBranch(branchName);
+      return cache.branches[branchName].branchRevision === readFetchHead();
     },
     checkoutBranchFromFetched: (
       branchName: string,
