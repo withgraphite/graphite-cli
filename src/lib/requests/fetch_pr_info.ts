@@ -21,14 +21,16 @@ export function refreshPRInfoInBackground(context: TContext): void {
   }
 }
 
-async function refreshPRInfo(context: TContext): Promise<void> {
+async function refreshPRInfo(): Promise<void> {
   try {
+    const context = initContext();
     await syncPrInfo(context.metaCache.allBranchNames, context);
+    context.metaCache.persist();
   } catch (err) {
     return;
   }
 }
 
 if (process.argv[1] === __filename) {
-  void refreshPRInfo(initContext());
+  void refreshPRInfo();
 }
