@@ -53,16 +53,15 @@ export function recreateState(stateJson: string, splog: TSplog): string {
   splog.logInfo(`Creating repo`);
   const tmpTrunk = `initial-debug-context-head-${Date.now()}`;
   const tmpDir = tmp.dirSync().name;
+  process.chdir(tmpDir);
   gpExecSync({
     command: [
-      `git -C ${tmpDir} init -b "${tmpTrunk}"`,
-      `cd ${tmpDir}`,
+      `git init -b "${tmpTrunk}"`,
       `echo "first" > first.txt`,
       `git add first.txt`,
       `git commit -m "first"`,
     ].join(' && '),
   });
-  process.chdir(tmpDir);
 
   splog.logInfo(`Creating ${Object.keys(state.commitTree).length} commits`);
   recreateCommits({ commitTree: state.commitTree, refMappingsOldToNew }, splog);
