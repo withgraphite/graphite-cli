@@ -1,6 +1,5 @@
 import fs from 'fs-extra';
 import tmp from 'tmp';
-import { initContext } from '../../../src/lib/context';
 import { cuteString } from '../../../src/lib/utils/cute_string';
 import { GitRepo } from '../../../src/lib/utils/git_repo';
 import { AbstractScene } from './abstract_scene';
@@ -35,9 +34,6 @@ export class CloneScene extends AbstractScene {
     );
 
     process.chdir(this.dir);
-    this.context = initContext({
-      userConfigOverride: `${this.dir}/.git/.graphite_user_config`,
-    });
   }
 
   public cleanup(): void {

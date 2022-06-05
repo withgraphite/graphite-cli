@@ -29,11 +29,10 @@ export function initContext(opts?: {
     verify?: boolean;
     debug?: boolean;
   };
-  userConfigOverride?: string;
 }): TContext {
   const repoConfig = repoConfigFactory.load();
   const userConfig = userConfigFactory.load(
-    opts?.userConfigOverride ?? process.env[USER_CONFIG_OVERRIDE_ENV]
+    process.env[USER_CONFIG_OVERRIDE_ENV]
   );
   const splog = composeSplog({
     quiet: opts?.globalArguments?.quiet,

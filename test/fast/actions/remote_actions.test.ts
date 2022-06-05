@@ -48,7 +48,7 @@ for (const scene of [new CloneScene()]) {
           showDeleteProgress: false,
           restackCurrentStack: false,
         },
-        scene.context
+        scene.getContext()
       );
 
       expect(scene.repo.getRef('refs/heads/main')).to.equal(
