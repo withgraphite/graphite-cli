@@ -48,13 +48,15 @@ for (const scene of allScenes) {
       scene.repo.createChangeAndCommit('1.5');
 
       scene.repo.checkoutBranch('b');
-      scene.repo.execCliCommand('downstack restack -q');
 
+      expect(() =>
+        scene.repo.execCliCommand('downstack restack -q')
+      ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.eq(true);
 
       scene.repo.resolveMergeConflicts();
-      scene.repo.execCliCommand('continue -q');
 
+      expect(() => scene.repo.execCliCommand('continue -q')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.eq(true);
 
       scene.repo.markMergeConflictsAsResolved();

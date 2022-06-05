@@ -46,13 +46,12 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('main');
       scene.repo.createChangeAndCommit('1.5');
 
-      scene.repo.execCliCommand('stack restack -q');
-
+      expect(() => scene.repo.execCliCommand('stack restack -q')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.eq(true);
 
       scene.repo.resolveMergeConflicts();
-      scene.repo.execCliCommand('continue -q');
 
+      expect(() => scene.repo.execCliCommand('continue -q')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.eq(true);
 
       scene.repo.markMergeConflictsAsResolved();

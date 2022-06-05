@@ -74,9 +74,7 @@ export async function graphite(
         handleGraphiteError(e, context);
         context.splog.logDebug(e);
         context.splog.logDebug(e.stack);
-        // TODO in the next diff we remove this special case,
-        // its just to move changing all the tests into another PR
-        process.exitCode = e.constructor === RebaseConflictError ? 0 : 1;
+        process.exitCode = 1;
         err = e;
       }
     }
