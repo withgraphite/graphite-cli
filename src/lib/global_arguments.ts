@@ -12,6 +12,6 @@ export const globalArgumentsOptions = {
   debug: { default: false, type: 'boolean', demandOption: false },
 } as const;
 
-export type TGlobalArguments = yargs.Arguments<
+export type TGlobalArguments = Partial<
   yargs.InferredOptionTypes<typeof globalArgumentsOptions>
 >;
