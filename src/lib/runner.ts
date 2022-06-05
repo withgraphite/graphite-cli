@@ -23,7 +23,6 @@ import { tracer } from './telemetry/tracer';
 import { fetchUpgradePromptInBackground } from './telemetry/upgrade_prompt';
 import { parseArgs } from './utils/parse_args';
 
-// eslint-disable-next-line max-lines-per-function
 export async function graphite(
   args: yargs.Arguments,
   canonicalName: string,
@@ -44,6 +43,7 @@ export async function graphite(
   fetchUpgradePromptInBackground(context);
   refreshPRInfoInBackground(context);
   postSurveyResponsesInBackground(context);
+
   if (
     parsedArgs.command !== 'repo init' &&
     !context.repoConfig.graphiteInitialized()
@@ -55,74 +55,32 @@ export async function graphite(
     await init(context);
   }
 
-  let err = undefined;
-
-  try {
-    await tracer.span(
-      {
-        name: 'command',
-        resource: parsedArgs.command,
-        meta: {
-          user: getUserEmail() || 'NotFound',
-          version: version,
-          args: parsedArgs.args,
-          alias: parsedArgs.alias,
-        },
+  let err;
+  await tracer.span(
+    {
+      name: 'command',
+      resource: parsedArgs.command,
+      meta: {
+        user: getUserEmail() || 'NotFound',
+        version: version,
+        args: parsedArgs.args,
+        alias: parsedArgs.alias,
       },
-      async () => {
-        try {
-          await handler(context);
-        } catch (err) {
-          switch (err.constructor) {
-            case KilledError:
-              return;
-            case ExitFailedError:
-              context.splog.logError(err.message);
-              throw err;
-            case PreconditionsFailedError:
-              context.splog.logInfo(err.message);
-              throw err;
-            case RebaseConflictError:
-              context.splog.logInfo(
-                `${chalk.red(`Rebase Conflict`)}: ${err.message}`
-              );
-              context.splog.logNewline();
-              context.splog.logInfo(chalk.yellow(`Unmerged files:`));
-              context.splog.logInfo(
-                getUnmergedFiles()
-                  .map((line) => chalk.red(line))
-                  .join('\n')
-              );
-              context.splog.logNewline();
-              context.splog.logInfo(
-                `To fix and continue your previous Graphite command:`
-              );
-              context.splog.logInfo(`(1) resolve the listed merge conflicts`);
-              context.splog.logInfo(
-                `(2) mark them as resolved with ${chalk.cyan(`gt add`)}`
-              );
-              context.splog.logInfo(
-                `(3) run ${chalk.cyan(
-                  `gt continue`
-                )} to continue executing your previous Graphite command`
-              );
-              return;
-            default:
-              context.splog.logError(err.message);
-              throw err;
-          }
-        }
+    },
+    async () => {
+      try {
+        await handler(context);
+      } catch (e) {
+        handleGraphiteError(e, context);
+        context.splog.logDebug(e);
+        context.splog.logDebug(e.stack);
+        // TODO in the next diff we remove this special case,
+        // its just to move changing all the tests into another PR
+        process.exitCode = e.constructor === RebaseConflictError ? 0 : 1;
+        err = e;
       }
-    );
-  } catch (e) {
-    err = e;
-  }
-
-  if (err) {
-    context.splog.logDebug(err);
-    context.splog.logDebug(err.stack);
-    process.exitCode = 1;
-  }
+    }
+  );
 
   context.metaCache.persist();
 
@@ -133,4 +91,45 @@ export async function graphite(
     durationMiliSeconds: end - start,
     err,
   });
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleGraphiteError(err: any, context: TContext): void {
+  switch (err.constructor) {
+    case KilledError:
+      // pass
+      return;
+    case ExitFailedError:
+      context.splog.logError(err.message);
+      return;
+    case PreconditionsFailedError:
+      context.splog.logError(err.message);
+      return;
+    case RebaseConflictError:
+      context.splog.logInfo(`${chalk.red(`Rebase Conflict`)}: ${err.message}`);
+      context.splog.logNewline();
+      context.splog.logInfo(chalk.yellow(`Unmerged files:`));
+      context.splog.logInfo(
+        getUnmergedFiles()
+          .map((line) => chalk.red(line))
+          .join('\n')
+      );
+      context.splog.logNewline();
+      context.splog.logInfo(
+        `To fix and continue your previous Graphite command:`
+      );
+      context.splog.logInfo(`(1) resolve the listed merge conflicts`);
+      context.splog.logInfo(
+        `(2) mark them as resolved with ${chalk.cyan(`gt add`)}`
+      );
+      context.splog.logInfo(
+        `(3) run ${chalk.cyan(
+          `gt continue`
+        )} to continue executing your previous Graphite command`
+      );
+      return;
+    default:
+      context.splog.logError(err.message);
+      return;
+  }
 }
