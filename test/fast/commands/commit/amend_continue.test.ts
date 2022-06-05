@@ -17,7 +17,9 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('a');
       scene.repo.createChange('1');
 
-      scene.repo.execCliCommand("commit amend -m 'c' -q");
+      expect(() =>
+        scene.repo.execCliCommand("commit amend -m 'c' -q")
+      ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
@@ -50,14 +52,18 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('a');
       scene.repo.createChange('1', '1');
       scene.repo.createChange('2', '2');
-      scene.repo.execCliCommand("commit amend -m 'a12' -q");
 
+      expect(() =>
+        scene.repo.execCliCommand("commit amend -m 'a12' -q")
+      ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue');
 
+      expect(() => scene.repo.execCliCommand('continue')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
       scene.repo.execCliCommand('continue');

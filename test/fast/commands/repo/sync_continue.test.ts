@@ -59,8 +59,10 @@ for (const scene of allScenes) {
       fakeGitSquashAndMerge(scene.repo, 'b', 'squash');
       fakeGitSquashAndMerge(scene.repo, 'd', 'squash');
       fakeGitSquashAndMerge(scene.repo, 'e', 'squash');
-      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
 
+      expect(() =>
+        scene.repo.execCliCommand(`repo sync -qf --no-pull`)
+      ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
@@ -100,14 +102,17 @@ for (const scene of allScenes) {
       fakeGitSquashAndMerge(scene.repo, 'e', 'squash');
       fakeGitSquashAndMerge(scene.repo, 'f', 'squash');
 
-      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
-
+      expect(() =>
+        scene.repo.execCliCommand(`repo sync -qf --no-pull`)
+      ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue');
 
+      expect(() => scene.repo.execCliCommand('continue')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
       scene.repo.execCliCommand('continue');

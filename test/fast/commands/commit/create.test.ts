@@ -33,7 +33,7 @@ for (const scene of allScenes) {
       ).to.throw(Error);
     });
 
-    it('Automatically fixes upwards', () => {
+    it('Automatically restacks upwards', () => {
       scene.repo.createChange('2', '2');
       scene.repo.execCliCommand(`branch create a -m "2" -q`);
 
