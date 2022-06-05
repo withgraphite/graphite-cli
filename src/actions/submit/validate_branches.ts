@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { TScopeSpec } from '../../lib/engine/scope_spec';
-import { KilledError } from '../../lib/errors';
+import { ExitFailedError, KilledError } from '../../lib/errors';
 import { syncPrInfo } from '../sync_pr_info';
 
 export async function getValidBranchesToSubmit(
@@ -22,90 +22,58 @@ export async function getValidBranchesToSubmit(
 
   await syncPrInfo(branchNames, context);
 
-  return hasAnyMergedBranches(branchNames, context) ||
-    hasAnyClosedBranches(branchNames, context) ||
-    needsRestacking(branchNames, context) ||
-    (await shouldNotSubmitDueToEmptyBranches(branchNames, context))
-    ? []
-    : branchNames;
+  validateNoMergedOrClosedBranches(branchNames, context);
+  validateBaseRevisions(branchNames, context);
+  await validateNoEmptyBranches(branchNames, context);
+
+  return branchNames;
 }
 
-function hasAnyMergedBranches(
+function validateNoMergedOrClosedBranches(
   branchNames: string[],
   context: TContext
 ): boolean {
-  const mergedBranches = branchNames.filter(
-    (b) => context.metaCache.getPrInfo(b)?.state === 'MERGED'
+  const mergedOrClosedBranches = branchNames.filter((b) =>
+    ['MERGED', 'CLOSED'].includes(context.metaCache.getPrInfo(b)?.state ?? '')
   );
-  if (mergedBranches.length === 0) {
+  if (mergedOrClosedBranches.length === 0) {
     return false;
   }
 
-  const hasMultipleBranches = mergedBranches.length > 1;
-
-  context.splog.logError(
-    `PR${hasMultipleBranches ? 's' : ''} for the following branch${
-      hasMultipleBranches ? 'es have' : ' has'
-    } already been merged:`
-  );
-  mergedBranches.forEach((b) => context.splog.logError(`▸ ${chalk.reset(b)}`));
-  context.splog.logError(
-    `If this is expected, you can use 'gt repo sync' to delete ${
-      hasMultipleBranches ? 'these branches' : 'this branch'
-    } locally and restack dependencies.`
+  const hasMultipleBranches = mergedOrClosedBranches.length > 1;
+  context.splog.logTip(
+    `You can use repo sync to find and delete all merged/closed branches automatically and rebase their children.`
   );
 
-  return true;
+  throw new ExitFailedError(
+    [
+      `PR${hasMultipleBranches ? 's' : ''} for the following branch${
+        hasMultipleBranches ? 'es have' : ' has'
+      } already been merged or closed:`,
+      ...mergedOrClosedBranches.map((b) => `▸ ${chalk.reset(b)}`),
+    ].join('\n')
+  );
 }
 
-function hasAnyClosedBranches(
-  branchNames: string[],
-  context: TContext
-): boolean {
-  const closedBranches = branchNames.filter(
-    (b) => context.metaCache.getPrInfo(b)?.state === 'CLOSED'
-  );
-  if (closedBranches.length === 0) {
-    return false;
-  }
-
-  const hasMultipleBranches = closedBranches.length > 1;
-
-  context.splog.logError(
-    `PR${hasMultipleBranches ? 's' : ''} for the following branch${
-      hasMultipleBranches ? 'es have' : ' has'
-    } been closed:`
-  );
-  closedBranches.forEach((b) => context.splog.logError(`▸ ${chalk.reset(b)}`));
-  context.splog.logError(
-    `To submit ${
-      hasMultipleBranches ? 'these branches' : 'this branch'
-    }, please reopen the PR remotely.`
-  );
-
-  return true;
-}
-
-function needsRestacking(branchNames: string[], context: TContext): boolean {
+function validateBaseRevisions(branchNames: string[], context: TContext): void {
   if (branchNames.every(context.metaCache.isBranchFixed)) {
-    return false;
+    return;
   }
-  context.splog.logWarn(
+  throw new ExitFailedError(
     [
       `You are trying to submit at least one branch that has not been restacked.`,
       `Run the corresponding restack command and try again.`,
     ].join('\n')
   );
-  return true;
 }
 
-export async function shouldNotSubmitDueToEmptyBranches(
+export async function validateNoEmptyBranches(
   branchNames: string[],
   context: TContext
-): Promise<boolean> {
+): Promise<void> {
   const emptyBranches = branchNames.filter(context.metaCache.isBranchEmpty);
   if (emptyBranches.length === 0) {
-    return false;
+    return;
   }
 
   const hasMultipleBranches = emptyBranches.length > 1;
@@ -116,16 +84,13 @@ export async function shouldNotSubmitDueToEmptyBranches(
     } no changes:`
   );
   emptyBranches.forEach((b) => context.splog.logWarn(`▸ ${chalk.reset(b)}`));
-  if (!context.interactive) {
-    context.splog.logWarn(
-      `Aborting non-interactive submit.  This warning can be bypassed in interactive mode.`
-    );
-    return true;
-  }
   context.splog.logWarn(
     `Are you sure you want to submit ${hasMultipleBranches ? 'them' : 'it'}?`
   );
   context.splog.logNewline();
+  if (!context.interactive) {
+    throw new ExitFailedError(`Aborting non-interactive submit.`);
+  }
 
   const response = await prompts(
     {
@@ -151,7 +116,8 @@ export async function shouldNotSubmitDueToEmptyBranches(
       },
     }
   );
+  if (response.empty_branches_options.abort) {
+    throw new KilledError();
+  }
   context.splog.logNewline();
-
-  return response.empty_branches_options === 'abort';
 }

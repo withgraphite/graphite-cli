@@ -1,15 +1,18 @@
-import { expect } from 'chai';
+import { expect, use } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import { inferPRBody } from '../../../src/actions/submit/pr_body';
 import { inferPRTitle } from '../../../src/actions/submit/pr_title';
-import { shouldNotSubmitDueToEmptyBranches } from '../../../src/actions/submit/validate_branches';
+import { validateNoEmptyBranches } from '../../../src/actions/submit/validate_branches';
 import { BasicScene } from '../../lib/scenes/basic_scene';
 import { configureTest } from '../../lib/utils/configure_test';
+
+use(chaiAsPromised);
 
 for (const scene of [new BasicScene()]) {
   describe(`(${scene}): correctly infers submit info from commits`, function () {
     configureTest(this, scene);
 
-    it('can infer title/body from single commit', async () => {
+    it('can infer title/body from single commit', () => {
       const title = 'Test Title';
       const body = ['Test body line 1.', 'Test body line 2.'].join('\n');
       const message = `${title}\n\n${body}`;
@@ -20,7 +23,7 @@ for (const scene of [new BasicScene()]) {
       expect(inferPRBody('a', scene.getContext())).to.equals(body);
     });
 
-    it('can infer just title with no body', async () => {
+    it('can infer just title with no body', () => {
       const title = 'Test Title';
       const commitMessage = title;
 
@@ -45,15 +48,15 @@ for (const scene of [new BasicScene()]) {
 
     it('aborts if the branch is empty', async () => {
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
-      expect(await shouldNotSubmitDueToEmptyBranches(['a'], scene.getContext()))
-        .to.be.true;
+      await expect(validateNoEmptyBranches(['a'], scene.getContext())).to.be
+        .rejected;
     });
 
     it('does not abort if the branch is not empty', async () => {
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
-      expect(await shouldNotSubmitDueToEmptyBranches(['a'], scene.getContext()))
-        .to.be.false;
+      await expect(validateNoEmptyBranches(['a'], scene.getContext())).to.be
+        .fulfilled;
     });
   });
 }
