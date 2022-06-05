@@ -177,10 +177,14 @@ export function composeMetaCache({
       ...getRecursiveChildren(child),
     ]);
 
-  const removeChild = (parentBranchName: string, childBranchName: string) =>
-    (cache.branches[parentBranchName].children = cache.branches[
-      parentBranchName
-    ].children.filter((child) => child !== childBranchName));
+  const removeChild = (parentBranchName: string, childBranchName: string) => {
+    assertBranch(parentBranchName);
+    const parentCachedChildren = cache.branches[parentBranchName].children;
+    const index = parentCachedChildren.indexOf(childBranchName);
+    if (index > -1) {
+      parentCachedChildren.splice(index, 1);
+    }
+  };
   const setParent = (branchName: string, parentBranchName: string) => {
     const cachedMeta = cache.branches[branchName];
     assertCachedMetaIsValidAndNotTrunk(cachedMeta);
@@ -449,7 +453,10 @@ export function composeMetaCache({
       const cachedMeta = cache.branches[cache.currentBranch];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
       commit({ ...opts, noVerify });
-      cachedMeta.branchRevision = getShaOrThrow(cache.currentBranch);
+      cache.branches[cache.currentBranch] = {
+        ...cachedMeta,
+        branchRevision: getShaOrThrow(cache.currentBranch),
+      };
     },
     restackBranch: (branchName: string) => {
       assertBranch(branchName);
@@ -538,12 +545,16 @@ export function composeMetaCache({
       pruneRemote(remote);
       assertBranch(cache.currentBranch);
       const trunkName = assertTrunk();
-      const oldTrunkRevision = cache.branches[trunkName].branchRevision;
+      const oldTrunkCachedMeta = cache.branches[trunkName];
       try {
         switchBranch(trunkName);
         pullBranch(remote, trunkName);
-        cache.branches[trunkName].branchRevision = getShaOrThrow(trunkName);
-        return oldTrunkRevision == cache.branches[trunkName].branchRevision
+        const newTrunkRevision = getShaOrThrow(trunkName);
+        cache.branches[trunkName] = {
+          ...oldTrunkCachedMeta,
+          branchRevision: newTrunkRevision,
+        };
+        return oldTrunkCachedMeta.branchRevision === newTrunkRevision
           ? 'PULL_UNNEEDED'
           : 'PULL_DONE';
       } finally {

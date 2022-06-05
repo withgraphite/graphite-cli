@@ -13,7 +13,7 @@ export const CACHE_DATA_REF = 'GRAPHITE_CACHE_DATA';
 export function loadCachedBranches(
   args: { trunkName: string | undefined; ignorePersistedCache?: boolean },
   splog: TSplog
-): Record<string, TCachedMeta> {
+): Record<string, Readonly<TCachedMeta>> {
   splog.logDebug('Reading branches and metadata...');
   const cacheKey = {
     trunkName: args.trunkName,
