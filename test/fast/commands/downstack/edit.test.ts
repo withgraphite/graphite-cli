@@ -51,13 +51,18 @@ for (const scene of [new BasicScene()]) {
         });
         expect(() =>
           scene.repo.execCliCommand(`downstack edit --input "${inputPath}"`)
-        ).to.not.throw(Error);
+        ).to.throw(Error);
+        expect(scene.repo.rebaseInProgress()).to.be.true;
 
-        while (scene.repo.rebaseInProgress()) {
-          scene.repo.resolveMergeConflicts();
-          scene.repo.markMergeConflictsAsResolved();
-          scene.repo.execCliCommand('continue');
-        }
+        scene.repo.resolveMergeConflicts();
+        scene.repo.markMergeConflictsAsResolved();
+
+        expect(() => scene.repo.execCliCommand('continue')).to.throw();
+        expect(scene.repo.rebaseInProgress()).to.eq(true);
+
+        scene.repo.resolveMergeConflicts();
+        scene.repo.markMergeConflictsAsResolved();
+        scene.repo.execCliCommand('continue');
         expectCommits(scene.repo, '2, 3, 1');
       });
     });

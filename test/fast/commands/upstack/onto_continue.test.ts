@@ -16,9 +16,9 @@ for (const scene of allScenes) {
       scene.repo.createChange('b');
       scene.repo.execCliCommand("branch create 'b' -m 'b' -q");
 
-      scene.repo.execCliCommand('upstack onto a');
-
+      expect(() => scene.repo.execCliCommand('upstack onto a')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
       const output = scene.repo.execCliCommandAndGetOutput('continue');
@@ -46,14 +46,16 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand("branch create 'c' -m 'c' -q");
 
       scene.repo.checkoutBranch('b');
-      scene.repo.execCliCommand('upstack onto a');
 
+      expect(() => scene.repo.execCliCommand('upstack onto a')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue');
 
+      expect(() => scene.repo.execCliCommand('continue')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
       scene.repo.execCliCommand('continue');

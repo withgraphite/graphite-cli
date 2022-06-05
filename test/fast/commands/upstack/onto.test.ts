@@ -18,7 +18,7 @@ for (const scene of allScenes) {
       expectCommits(scene.repo, '3, 1');
     });
 
-    it('Can gracefully catch a merge conflict on first rebase', () => {
+    it('Can catch a merge conflict on first rebase', () => {
       scene.repo.createChange('2', 'a');
       scene.repo.execCliCommand("branch create 'a' -m '2' -q");
 
@@ -28,7 +28,8 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('a');
       expect(() => {
         scene.repo.execCliCommand('upstack onto main -q');
-      }).to.not.throw();
+      }).to.throw();
+      expect(scene.repo.rebaseInProgress()).to.be.true;
     });
 
     // TODO move this to become a test for `gt track`
