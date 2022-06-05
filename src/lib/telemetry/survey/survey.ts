@@ -184,7 +184,7 @@ async function logAnswers(
 ): Promise<void> {
   context.surveyConfig.setSurveyResponses(args.responses);
 
-  await postSurveyResponse(context);
+  await postSurveyResponse();
 
   if (args.completionMessage !== undefined) {
     context.splog.logMessageFromGraphite(args.completionMessage);
