@@ -3,10 +3,8 @@ import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
 import { findRemoteBranch } from '../lib/git/find_remote_branch';
-import { getRepoRootPathPrecondition } from '../lib/preconditions';
 
 export async function init(context: TContext, trunk?: string): Promise<void> {
-  getRepoRootPathPrecondition();
   const allBranchNames = context.metaCache.allBranchNames;
 
   logWelcomeMessage(context);
