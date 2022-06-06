@@ -25,6 +25,7 @@
     "lint": "eslint src --quiet --ext .ts --cache",
     "check": "tsc --noEmit",
     "build": "rm -rf dist/ && yarn lint && tsc",
+    "dev": "./scripts/installation/develop.sh",
     "cli": "node ./dist/src/index.js",
     "test": "tsc && yarn mocha \"dist/test/**/*.test.js\"  --parallel --jobs 8",
     "test-fast": "tsc && yarn mocha \"dist/test/fast/**/*.test.js\"  --parallel --jobs 8",
