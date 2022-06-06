@@ -117,21 +117,21 @@ function getPRAction(
       ? 'RESTACK'
       : detectUnsubmittedChanges(args.branchName)
       ? 'CHANGE'
-      : args.draftToggle === undefined
-      ? 'NOOP'
-      : args.draftToggle
+      : args.draftToggle === true && prInfo.isDraft !== true
       ? 'DRAFT'
-      : 'PUBLISH';
+      : args.draftToggle === false && prInfo.isDraft !== false
+      ? 'PUBLISH'
+      : 'NOOP';
 
   context.splog.logInfo(
     `▸ ${chalk.cyan(args.branchName)} (${
       {
-        CREATE: 'Create',
-        CHANGE: 'Update - code changes/rebase',
-        DRAFT: 'Convert to draft - set draft status',
         NOOP: 'No-op',
-        PUBLISH: 'Ready for review - set draft status',
-        RESTACK: 'Update - restacked',
+        CREATE: 'Create',
+        RESTACK: 'Update - new parent',
+        CHANGE: 'Update - code changes/restack',
+        DRAFT: 'Mark as draft',
+        PUBLISH: 'Ready for review',
       }[status]
     })`
   );
