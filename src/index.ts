@@ -15,11 +15,7 @@ process.on('uncaughtException', (err) => {
     canonicalCommandName: 'unknown',
     commandName: 'unknown',
     durationMiliSeconds: 0,
-    err: {
-      errName: err.name,
-      errMessage: err.message,
-      errStack: err.stack || '',
-    },
+    err,
   });
   console.log(chalk.red(`UNCAUGHT EXCEPTION: ${err.message}`));
   console.log(chalk.red(`UNCAUGHT EXCEPTION: ${err.stack}`));
