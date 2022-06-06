@@ -1,6 +1,5 @@
 import { TContext } from './context';
 import { PreconditionsFailedError } from './errors';
-import { branchExists } from './git/branch_exists';
 import { detectStagedChanges } from './git/detect_staged_changes';
 import {
   trackedUncommittedChanges,
@@ -16,14 +15,6 @@ export function getRepoRootPathPrecondition(): string {
     throw new PreconditionsFailedError('No .git repository found.');
   }
   return repoRootPath;
-}
-
-function branchExistsPrecondition(branchName: string): void {
-  if (!branchExists(branchName)) {
-    throw new PreconditionsFailedError(
-      `Cannot find branch named: (${branchName}).`
-    );
-  }
 }
 
 function uncommittedTrackedChangesPrecondition(): void {
@@ -69,7 +60,6 @@ function currentGitRepoPrecondition(): string {
 }
 
 export {
-  branchExistsPrecondition,
   uncommittedTrackedChangesPrecondition,
   currentGitRepoPrecondition,
   ensureSomeStagedChangesPrecondition,
