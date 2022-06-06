@@ -18,7 +18,7 @@ type oldTelemetryT = {
   canonicalCommandName: string;
   commandName: string;
   durationMiliSeconds: number;
-  err?: { errName: string; errMessage: string; errStack: string };
+  err?: Error;
 };
 
 function saveTracesToTmpFile(): string {
@@ -59,9 +59,9 @@ async function logCommand(
         version: version,
         err: data.err
           ? {
-              name: data.err.errName,
-              message: data.err.errMessage,
-              stackTrace: data.err.errStack || '',
+              name: data.err.name,
+              message: data.err.message,
+              stackTrace: data.err.stack || '',
               debugContext: undefined,
             }
           : undefined,

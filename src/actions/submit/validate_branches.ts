@@ -28,12 +28,12 @@ export async function validateBranchesToSubmit(
 function validateNoMergedOrClosedBranches(
   branchNames: string[],
   context: TContext
-): boolean {
+): void {
   const mergedOrClosedBranches = branchNames.filter((b) =>
     ['MERGED', 'CLOSED'].includes(context.metaCache.getPrInfo(b)?.state ?? '')
   );
   if (mergedOrClosedBranches.length === 0) {
-    return false;
+    return;
   }
 
   const hasMultipleBranches = mergedOrClosedBranches.length > 1;

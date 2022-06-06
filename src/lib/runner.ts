@@ -65,45 +65,46 @@ async function graphiteHelper(
     globalArguments: args,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let err: any;
-  try {
-    fetchUpgradePromptInBackground(context);
-    postSurveyResponsesInBackground(context);
+  const err = await (async (): Promise<Error | undefined> => {
+    try {
+      fetchUpgradePromptInBackground(context);
+      postSurveyResponsesInBackground(context);
 
-    if (
-      canonicalName !== 'repo init' &&
-      !context.repoConfig.graphiteInitialized()
-    ) {
-      context.splog.logInfo(
-        `Graphite has not been initialized, attempting to setup now...`
-      );
-      context.splog.logNewline();
-      await init(context);
-    }
+      if (
+        canonicalName !== 'repo init' &&
+        !context.repoConfig.graphiteInitialized()
+      ) {
+        context.splog.logInfo(
+          `Graphite has not been initialized, attempting to setup now...`
+        );
+        context.splog.logNewline();
+        await init(context);
+      }
 
-    await handler(context);
-    context.metaCache.persist();
-  } catch (e) {
-    handleGraphiteError(e, context);
-    context.splog.logDebug(e);
-    context.splog.logDebug(e.stack);
-    // print errors when debugging tests
-    if (process.env.DEBUG) {
-      process.stdout.write(e.stack.toString());
+      await handler(context);
+      return undefined;
+    } catch (err) {
+      handleGraphiteError(err, context);
+      context.splog.logDebug(err);
+      context.splog.logDebug(err.stack);
+      // print errors when debugging tests
+      if (process.env.DEBUG) {
+        process.stdout.write(err.stack.toString());
+      }
+      process.exitCode = 1;
+      return err;
     }
-    process.exitCode = 1;
-    err = e;
-  } finally {
-    refreshPRInfoInBackground(context);
-    const end = Date.now();
-    postTelemetryInBackground({
-      canonicalCommandName: canonicalName,
-      commandName,
-      durationMiliSeconds: end - start,
-      err,
-    });
-  }
+  })();
+  context.metaCache.persist();
+  refreshPRInfoInBackground(context);
+
+  const end = Date.now();
+  postTelemetryInBackground({
+    canonicalCommandName: canonicalName,
+    commandName,
+    durationMiliSeconds: end - start,
+    err,
+  });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
