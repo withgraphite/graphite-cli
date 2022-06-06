@@ -31,31 +31,5 @@ for (const scene of allScenes) {
       }).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
     });
-
-    // TODO move this to become a test for `gt track`
-
-    // it('Can recover a branch that has no git and meta parents', () => {
-    //   // Create our dangling branch
-    //   scene.repo.createAndCheckoutBranch('a');
-    //   scene.repo.createChangeAndCommit('a1', 'a1');
-    //   scene.repo.createChangeAndCommit('a2', 'a2');
-    //   scene.repo.createChangeAndCommit('a3', 'a3');
-
-    //   // Move main forward
-    //   scene.repo.checkoutBranch('main');
-    //   scene.repo.createChangeAndCommit('b', 'b');
-
-    //   // branch a is dangling now, but we should still be able to "upstack onto" main
-    //   scene.repo.checkoutBranch('a');
-    //   expect(() => {
-    //     scene.repo.execCliCommand('upstack onto main');
-    //   }).to.not.throw();
-    //   expectCommits(scene.repo, 'a3, a2, a1, b, 1');
-    //   scene.repo.checkoutBranch('a');
-
-    //   // Prove that we have meta now.
-    //   scene.repo.execCliCommand('branch prev --no-interactive');
-    //   expect(scene.repo.currentBranchName()).to.eq('main');
-    // });
   });
 }
