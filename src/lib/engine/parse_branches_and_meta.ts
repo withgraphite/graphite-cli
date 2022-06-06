@@ -43,7 +43,6 @@ function getAllBranchesAndMeta(
   }));
 }
 
-// eslint-disable-next-line max-lines-per-function
 export function parseBranchesAndMeta(
   args: {
     pruneMeta?: boolean;
@@ -101,18 +100,18 @@ export function parseBranchesAndMeta(
     }
 
     // If parent hasn't been checked yet, we'll come back to this branch
-    const parentCachedMeta = parsedBranches[parentBranchName];
-    if (typeof parentCachedMeta === 'undefined') {
+    if (typeof parsedBranches[parentBranchName] === 'undefined') {
       branchesToParse.push(current);
       continue;
     }
 
-    parentCachedMeta.children.push(branchName);
+    parsedBranches[parentBranchName].children.push(branchName);
 
     // Check if the parent is valid (or trunk)
     if (
-      parentCachedMeta.validationResult !== 'VALID' &&
-      parentCachedMeta.validationResult !== 'TRUNK'
+      !['VALID', 'TRUNK'].includes(
+        parsedBranches[parentBranchName].validationResult
+      )
     ) {
       splog.logDebug(`invalid parent: ${branchName}`);
       parsedBranches[branchName] = {
@@ -126,60 +125,75 @@ export function parseBranchesAndMeta(
       continue;
     }
 
-    // Check parentBranchRevision
-    if (
-      !parentBranchRevision ||
-      getMergeBase(branchName, parentBranchRevision) !== parentBranchRevision
-    ) {
-      if (
-        getMergeBase(branchName, parentCachedMeta.branchRevision) !==
-        parentCachedMeta.branchRevision
-      ) {
-        splog.logDebug(
-          `bad parent rev: ${branchName}\n\t${
-            parentBranchRevision ?? 'missing'
-          }`
-        );
-        parsedBranches[branchName] = {
-          validationResult: 'BAD_PARENT_REVISION',
-          parentBranchName,
-          branchRevision,
-          prInfo,
-          children: [],
-        };
-        continue;
-      } else {
-        writeMetadataRef(branchName, {
-          parentBranchName,
-          parentBranchRevision: parentCachedMeta.branchRevision,
-          prInfo,
-        });
-        splog.logDebug(
-          `validated and fixed parent rev: ${branchName}\n\t${parentCachedMeta.branchRevision}`
-        );
-        parsedBranches[branchName] = {
-          validationResult: 'VALID',
-          parentBranchName,
-          parentBranchRevision: parentCachedMeta.branchRevision,
-          branchRevision,
-          prInfo,
-          children: [],
-        };
-        continue;
-      }
-    }
+    // If we make it here, we just need to validate the parent branch revision!
+    const result = validateOrFixParentBranchRevision(
+      {
+        ...current,
+        parentBranchCurrentRevision:
+          parsedBranches[parentBranchName].branchRevision,
+      } as TBranchToParseWithValidatedParent,
+      splog
+    );
 
-    // This branch and its recursive parents are valid
-    splog.logDebug(`validated: ${branchName}`);
     parsedBranches[branchName] = {
-      validationResult: 'VALID',
-      parentBranchName,
-      parentBranchRevision,
-      branchRevision,
-      prInfo,
-      children: [],
+      ...{
+        parentBranchName,
+        branchRevision,
+        prInfo,
+        children: [],
+      },
+      ...result,
     };
   }
 
   return parsedBranches;
+}
+
+type TBranchToParseWithValidatedParent = TBranchToParse & {
+  parentBranchName: string;
+  parentBranchCurrentRevision: string;
+};
+
+function validateOrFixParentBranchRevision(
+  {
+    branchName,
+    parentBranchName,
+    parentBranchRevision,
+    prInfo,
+    parentBranchCurrentRevision,
+  }: TBranchToParseWithValidatedParent,
+  splog: TSplog
+):
+  | { validationResult: 'VALID'; parentBranchRevision: string }
+  | { validationResult: 'BAD_PARENT_REVISION' } {
+  // This branch is valid because its PBR is in its history
+  if (
+    parentBranchRevision &&
+    getMergeBase(branchName, parentBranchRevision) === parentBranchRevision
+  ) {
+    splog.logDebug(`validated: ${branchName}`);
+    return { validationResult: 'VALID', parentBranchRevision };
+  }
+
+  // PBR cannot be fixed because its parent is not in its history
+  if (getMergeBase(branchName, parentBranchName) !== parentBranchName) {
+    splog.logDebug(
+      `bad parent rev: ${branchName}\n\t${parentBranchRevision ?? 'missing'}`
+    );
+    return { validationResult: 'BAD_PARENT_REVISION' };
+  }
+
+  // PBR can be fixed because we see the parent in the branch's history
+  writeMetadataRef(branchName, {
+    parentBranchName,
+    parentBranchRevision: parentBranchCurrentRevision,
+    prInfo,
+  });
+  splog.logDebug(
+    `validated and fixed parent rev: ${branchName}\n\t${parentBranchCurrentRevision}`
+  );
+  return {
+    validationResult: 'VALID',
+    parentBranchRevision: parentBranchCurrentRevision,
+  };
 }
