@@ -8,7 +8,7 @@ import {
   writeMetadataRef,
 } from './metadata_ref';
 
-export type TBranchToParse = {
+type TBranchToParse = {
   branchName: string;
   branchRevision: string;
 } & TMeta;
@@ -154,7 +154,7 @@ type TBranchToParseWithValidatedParent = TBranchToParse & {
   parentBranchCurrentRevision: string;
 };
 
-function validateOrFixParentBranchRevision(
+export function validateOrFixParentBranchRevision(
   {
     branchName,
     parentBranchName,

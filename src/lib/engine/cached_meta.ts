@@ -29,7 +29,7 @@ export type TCachedMeta = {
     })
 );
 
-export type TValidCachedMeta = Extract<
+type TValidCachedMeta = Extract<
   TCachedMeta,
   { validationResult: 'TRUNK' | 'VALID' }
 >;
