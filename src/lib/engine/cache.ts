@@ -35,6 +35,7 @@ import {
   TBranchPRInfo,
   writeMetadataRef,
 } from './metadata_ref';
+import { validateOrFixParentBranchRevision } from './parse_branches_and_meta';
 import { persistCache } from './persist_cache';
 import { TScopeSpec } from './scope_spec';
 
@@ -221,7 +222,7 @@ export function composeMetaCache({
   // Validates the new metadata
   // Updates children of the old+new parent
   // Writes to disk
-  // TODO Revalidates 'INVALID_PARENT' children
+  // Revalidates 'INVALID_PARENT' children
   const updateMeta = (
     branchName: string,
     newCachedMeta: TValidCachedMetaExceptTrunk
@@ -262,6 +263,34 @@ export function composeMetaCache({
         newCachedMeta
       )}`
     );
+
+    // Any 'INVALID_PARENT' children can be revalidated
+    if (oldCachedMeta.validationResult !== 'VALID') {
+      revalidateChildren(newCachedMeta.children);
+    }
+  };
+
+  const revalidateChildren = (children: string[]) => {
+    children.forEach((childBranchName) => {
+      assertBranch(childBranchName);
+      const childCachedMeta = cache.branches[childBranchName];
+      if (childCachedMeta.validationResult !== 'INVALID_PARENT') {
+        return;
+      }
+
+      const result = validateOrFixParentBranchRevision(
+        {
+          branchName: childBranchName,
+          ...childCachedMeta,
+          parentBranchCurrentRevision:
+            cache.branches[childCachedMeta.parentBranchName].branchRevision,
+        },
+        splog
+      );
+      cache.branches[childBranchName] = { ...childCachedMeta, ...result };
+      // fix children recursively
+      revalidateChildren(childCachedMeta.children);
+    });
   };
 
   const handleRebase = (branchName: string) => {
