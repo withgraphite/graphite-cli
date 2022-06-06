@@ -65,7 +65,12 @@ export async function submitAction(
     context
   );
 
-  if (await shouldAbort(args, context)) {
+  if (
+    await shouldAbort(
+      { ...args, hasAnyPrs: submissionInfos.length > 0 },
+      context
+    )
+  ) {
     return;
   }
 
@@ -104,11 +109,16 @@ export async function submitAction(
 }
 
 async function shouldAbort(
-  args: { dryRun: boolean; confirm: boolean },
+  args: { dryRun: boolean; confirm: boolean; hasAnyPrs: boolean },
   context: TContext
 ): Promise<boolean> {
   if (args.dryRun) {
     context.splog.logInfo(chalk.blueBright('✅ Dry run complete.'));
+    return true;
+  }
+
+  if (!args.hasAnyPrs) {
+    context.splog.logInfo('No PRs to submit.');
     return true;
   }
 
@@ -132,7 +142,7 @@ async function shouldAbort(
     ).value
   ) {
     context.splog.logInfo(chalk.blueBright('🛑 Aborted submit.'));
-    return true;
+    throw new KilledError();
   }
 
   return false;
