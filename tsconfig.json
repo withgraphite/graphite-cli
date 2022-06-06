@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es6",
+    "target": "esnext",
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
@@ -17,7 +17,8 @@
     "baseUrl": ".",
     "rootDir": ".",
     "declaration": true,
-    "lib": ["esnext", "dom"]
+    "lib": ["esnext", "dom"],
+    "useUnknownInCatchVariables": false
   },
   "editor.codeActionsOnSave": {
     "source.fixAll.tslint": true
