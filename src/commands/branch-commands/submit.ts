@@ -14,8 +14,8 @@ export const handler = async (argv: argsT): Promise<void> => {
       [
         `You are submitting a pull request for a specific branch.`,
         `In common cases, we recommend you use:`,
-        `* gt stack submit`,
-        `* gt downstack submit`,
+        `▸ gt stack submit`,
+        `▸ gt downstack submit`,
         `because these will ensure any downstack changes will be synced to existing PRs.`,
         `This submit will fail if the branch's remote parent doesn't match its local base.`,
       ].join('\n')

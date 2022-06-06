@@ -18,8 +18,8 @@ export const handler = async (argv: argsT): Promise<void> =>
       [
         `You are restacking a specific branch.`,
         `In common cases, we recommend you use:`,
-        `* gt stack restack`,
-        `* gt upstack restack`,
+        `▸ gt stack restack`,
+        `▸ gt upstack restack`,
         `because these will ensure any upstack branches will be restacked on their restacked parents.`,
         `If this branch has any descendants, they will likely need a restack after this command.`,
       ].join('\n')
