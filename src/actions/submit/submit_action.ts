@@ -7,7 +7,7 @@ import { cliAuthPrecondition } from '../../lib/preconditions';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
 import { getPRInfoForBranches } from './prepare_branches';
 import { submitPullRequest } from './submit_prs';
-import { getValidBranchesToSubmit } from './validate_branches';
+import { validateBranchesToSubmit } from './validate_branches';
 
 export async function submitAction(
   args: {
@@ -47,15 +47,15 @@ export async function submitAction(
     context.splog.logNewline();
   }
 
-  const branchNames = await getValidBranchesToSubmit(args.scope, context);
+  const branchNames = context.metaCache
+    .getRelativeStack(context.metaCache.currentBranchPrecondition, args.scope)
+    .filter((b) => !context.metaCache.isTrunk(b));
 
-  if (!branchNames.length) {
-    return;
-  }
+  await validateBranchesToSubmit(branchNames, context);
 
   const submissionInfos = await getPRInfoForBranches(
     {
-      branchNames,
+      branchNames: branchNames,
       editPRFieldsInline: args.editPRFieldsInline,
       draftToggle: args.draftToggle,
       updateOnly: args.updateOnly,

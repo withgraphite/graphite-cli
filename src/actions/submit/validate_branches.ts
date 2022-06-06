@@ -1,12 +1,11 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
-import { TScopeSpec } from '../../lib/engine/scope_spec';
 import { ExitFailedError, KilledError } from '../../lib/errors';
 import { syncPrInfo } from '../sync_pr_info';
 
-export async function getValidBranchesToSubmit(
-  scope: TScopeSpec,
+export async function validateBranchesToSubmit(
+  branchNames: string[],
   context: TContext
 ): Promise<string[]> {
   context.splog.logInfo(
@@ -15,16 +14,13 @@ export async function getValidBranchesToSubmit(
     )
   );
 
-  const branchNames = context.metaCache
-    .getRelativeStack(context.metaCache.currentBranchPrecondition, scope)
-    .filter((b) => !context.metaCache.isTrunk(b));
   context.splog.logNewline();
 
   await syncPrInfo(branchNames, context);
 
   validateNoMergedOrClosedBranches(branchNames, context);
-  validateBaseRevisions(branchNames, context);
   await validateNoEmptyBranches(branchNames, context);
+  validateBaseRevisions(branchNames, context);
 
   return branchNames;
 }
@@ -55,16 +51,42 @@ function validateNoMergedOrClosedBranches(
   );
 }
 
+// We want to ensure that for each branch, either:
+// 1. Its parent is trunk
+// 2. We are submitting its parent before it and it does not need restacking
+// 3. Its base matches the existing head for its parent's PR
 function validateBaseRevisions(branchNames: string[], context: TContext): void {
-  if (branchNames.every(context.metaCache.isBranchFixed)) {
-    return;
+  const validatedBranches = new Set<string>();
+  for (const branchName of branchNames) {
+    const parentBranchName =
+      context.metaCache.getParentPrecondition(branchName);
+    if (context.metaCache.isTrunk(parentBranchName)) {
+      // valid
+    } else if (validatedBranches.has(parentBranchName)) {
+      if (!context.metaCache.isBranchFixed(branchName)) {
+        throw new ExitFailedError(
+          [
+            `You are trying to submit at least one branch that has not been restacked.`,
+            `Please restack upstack from ${chalk.yellow(
+              branchName
+            )} and try again.`,
+          ].join('\n')
+        );
+      }
+    } else {
+      if (!context.metaCache.baseMatchesRemoteParent(branchName)) {
+        throw new ExitFailedError(
+          [
+            `You are trying to submit at least one branch whose base does not match its parent remotely, without including its parent.`,
+            `Please include downstack from ${chalk.yellow(
+              branchName
+            )} in your submit scope and try again.`,
+          ].join('\n')
+        );
+      }
+    }
+    validatedBranches.add(branchName);
   }
-  throw new ExitFailedError(
-    [
-      `You are trying to submit at least one branch that has not been restacked.`,
-      `Run the corresponding restack command and try again.`,
-    ].join('\n')
-  );
 }
 
 export async function validateNoEmptyBranches(

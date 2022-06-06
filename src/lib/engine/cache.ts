@@ -10,7 +10,7 @@ import {
   readFetchHead,
   writeFetchBase,
 } from '../git/fetch_branch';
-import { getShaOrThrow } from '../git/get_sha';
+import { getRemoteSha, getShaOrThrow } from '../git/get_sha';
 import { isEmptyBranch } from '../git/is_empty_branch';
 import { isMerged } from '../git/is_merged';
 import { getMergeBase } from '../git/merge_base';
@@ -91,6 +91,7 @@ export type TMetaCache = {
   isMergedIntoTrunk: (branchName: string) => boolean;
   isBranchFixed: (branchName: string) => boolean;
   isBranchEmpty: (branchName: string) => boolean;
+  baseMatchesRemoteParent: (branchName: string) => boolean;
 
   pushBranch: (branchName: string) => void;
   pullTrunk: () => 'PULL_DONE' | 'PULL_UNNEEDED';
@@ -152,6 +153,11 @@ export function composeMetaCache({
     if (cachedMeta?.validationResult !== 'VALID') {
       return false;
     }
+    splog.logDebug(`${branchName} fixed?`);
+    splog.logDebug(`${cachedMeta.parentBranchRevision}`);
+    splog.logDebug(
+      `${cache.branches[cachedMeta.parentBranchName].branchRevision}`
+    );
     return (
       cachedMeta.parentBranchRevision ===
       cache.branches[cachedMeta.parentBranchName].branchRevision
@@ -484,6 +490,20 @@ export function composeMetaCache({
       const cachedMeta = cache.branches[branchName];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
       return isEmptyBranch(branchName, cachedMeta.parentBranchRevision);
+    },
+    baseMatchesRemoteParent: (branchName: string) => {
+      assertBranch(branchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+      const remoteParentRevision = getRemoteSha(
+        cachedMeta.parentBranchName,
+        remote
+      );
+      splog.logDebug(`${branchName} base matches remote?`);
+      splog.logDebug(cachedMeta.parentBranchRevision);
+      splog.logDebug(remoteParentRevision ?? '');
+
+      return cachedMeta.parentBranchRevision === remoteParentRevision;
     },
     pushBranch: (branchName: string) => {
       assertBranch(branchName);

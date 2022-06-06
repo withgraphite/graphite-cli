@@ -11,3 +11,10 @@ export function getSha(ref: string): string | undefined {
     gpExecSync({ command: `git rev-parse ${ref} 2>/dev/null` }) || undefined
   );
 }
+
+export function getRemoteSha(ref: string, remote: string): string | undefined {
+  return (
+    gpExecSync({ command: `git ls-remote ${remote} ${ref} | cut -f1 -w` }) ||
+    undefined
+  );
+}
