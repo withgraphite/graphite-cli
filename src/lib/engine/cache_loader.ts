@@ -7,8 +7,8 @@ import { getMetadataRefList } from './metadata_ref';
 import { parseBranchesAndMeta } from './parse_branches_and_meta';
 import { hashCacheOrKey } from './persist_cache';
 
-export const CACHE_CHECK_REF = 'GRAPHITE_CACHE_CHECK';
-export const CACHE_DATA_REF = 'GRAPHITE_CACHE_DATA';
+export const CACHE_CHECK_REF = 'refs/gt-metadata/GRAPHITE_CACHE_CHECK';
+export const CACHE_DATA_REF = 'refs/gt-metadata/GRAPHITE_CACHE_DATA';
 
 export function loadCachedBranches(
   args: { trunkName: string | undefined; ignorePersistedCache?: boolean },
