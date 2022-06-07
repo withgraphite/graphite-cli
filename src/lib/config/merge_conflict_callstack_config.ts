@@ -37,10 +37,6 @@ const DeleteBranchesStackFrameSchema = t.shape({
   showDeleteProgress: t.boolean,
 });
 
-const RepoFixBranchCountSanityCheckStackFrameSchema = t.shape({
-  op: t.literal('REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION' as const),
-});
-
 const RepoSyncStackFrameSchema = t.shape({
   op: t.literal('REPO_SYNC_CONTINUATION' as const),
   force: t.boolean,
@@ -64,7 +60,6 @@ const GraphiteFrameSchema = t.unionMany([
   StackFixActionStackFrameSchema,
   RestackNodeStackFrameSchema,
   DeleteBranchesStackFrameSchema,
-  RepoFixBranchCountSanityCheckStackFrameSchema,
   RepoSyncStackFrameSchema,
   StackEditStackFrameSchema,
 ]);

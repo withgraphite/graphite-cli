@@ -12,7 +12,6 @@ import { addAll } from '../lib/git/add_all';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { profile } from '../lib/telemetry/profile';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
-import { deleteMergedBranchesContinuation } from './repo-commands/fix';
 
 const args = {
   all: {
@@ -104,9 +103,6 @@ async function resolveCallstack(
         },
         context
       );
-      break;
-    case 'REPO_FIX_BRANCH_COUNT_SANTIY_CHECK_CONTINUATION':
-      deleteMergedBranchesContinuation(context);
       break;
     case 'REPO_SYNC_CONTINUATION':
       await cleanBranchesContinuation(frame, context);
