@@ -87,7 +87,7 @@ async function shouldRetrackBranch(
   context.splog.logWarn(
     `This operation may result in a duplicated commit history.`
   );
-  context.splog.logTip(`Did you mean to use ${chalk.cyan(`gt upstack onto`)}?`);
+  context.splog.logTip('Did you mean to use `gt upstack onto`?');
 
   return (
     force ||

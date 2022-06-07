@@ -89,7 +89,7 @@ export async function submitAction(
       context.splog.logTip(
         [
           `This push may have failed due to external changes to the remote branch.`,
-          `If you are collaborating on this stack, try the downstack sync command to pull in changes.`,
+          'If you are collaborating on this stack, try `gt downstack sync`  to pull in changes.',
         ].join('\n')
       );
 

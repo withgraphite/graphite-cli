@@ -38,7 +38,7 @@ function validateNoMergedOrClosedBranches(
 
   const hasMultipleBranches = mergedOrClosedBranches.length > 1;
   context.splog.logTip(
-    `You can use repo sync to find and delete all merged/closed branches automatically and rebase their children.`
+    'You can use `gt repo sync` to find and delete all merged/closed branches automatically and rebase their children.'
   );
 
   throw new ExitFailedError(

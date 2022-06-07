@@ -7,10 +7,12 @@ import { version } from '../../package.json';
 import { init } from '../actions/init';
 import { initContext, TContext } from './context';
 import {
+  BadTrunkOperationError,
   ExitFailedError,
   KilledError,
   PreconditionsFailedError,
   RebaseConflictError,
+  UntrackedBranchError,
 } from './errors';
 import { getUnmergedFiles } from './git/merge_conflict_help';
 import { TGlobalArguments } from './global_arguments';
@@ -113,12 +115,7 @@ function handleGraphiteError(err: any, context: TContext): void {
     case KilledError:
       // pass
       return;
-    case ExitFailedError:
-      context.splog.logError(err.message);
-      return;
-    case PreconditionsFailedError:
-      context.splog.logError(err.message);
-      return;
+
     case RebaseConflictError:
       context.splog.logInfo(`${chalk.red(`Rebase Conflict`)}: ${err.message}`);
       context.splog.logNewline();
@@ -141,7 +138,20 @@ function handleGraphiteError(err: any, context: TContext): void {
           `gt continue`
         )} to continue executing your previous Graphite command`
       );
+      context.splog.logTip(
+        "It's safe to cancel the ongoing rebase with `gt rebase --abort`."
+      );
+
       return;
+
+    case UntrackedBranchError:
+      context.splog.logTip('You can track a branch with `gt branch track`.');
+      context.splog.logError(err.message);
+      return;
+
+    case BadTrunkOperationError:
+    case ExitFailedError:
+    case PreconditionsFailedError:
     default:
       context.splog.logError(err.message);
       return;

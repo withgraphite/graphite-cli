@@ -20,7 +20,7 @@ export function logAction(
 
   if (opts.style === 'SHORT' && !opts.reverse) {
     context.splog.logTip(
-      'Miss the old version of log short? Try the --classic flag!'
+      'Miss the old version of log short? Try the `--classic` flag!'
     );
   }
 }

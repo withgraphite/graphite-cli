@@ -1,4 +1,4 @@
-import { PreconditionsFailedError } from '../errors';
+import { BadTrunkOperationError, UntrackedBranchError } from '../errors';
 import { TBranchPRInfo } from './metadata_ref';
 
 export type TCachedMeta = {
@@ -37,9 +37,7 @@ export function assertCachedMetaIsValidOrTrunk(
   meta: TCachedMeta
 ): asserts meta is TValidCachedMeta {
   if (meta.validationResult !== 'VALID' && meta.validationResult !== 'TRUNK') {
-    throw new PreconditionsFailedError(
-      `Cannot perform this operation on an invalid branch.`
-    );
+    throw new UntrackedBranchError();
   }
 }
 
@@ -48,9 +46,7 @@ export function assertCachedMetaIsNotTrunk(
   meta: TCachedMeta
 ): asserts meta is TNonTrunkCachedMeta {
   if (meta.validationResult === 'TRUNK') {
-    throw new PreconditionsFailedError(
-      `Cannot perform this operation on the trunk branch.`
-    );
+    throw new BadTrunkOperationError();
   }
 }
 
@@ -61,9 +57,6 @@ export type TValidCachedMetaExceptTrunk = Extract<
 export function assertCachedMetaIsValidAndNotTrunk(
   meta: TCachedMeta
 ): asserts meta is TValidCachedMetaExceptTrunk {
-  if (meta.validationResult !== 'VALID') {
-    throw new PreconditionsFailedError(
-      `Cannot perform this operation on this branch (invalid or trunk).`
-    );
-  }
+  assertCachedMetaIsValidOrTrunk(meta);
+  assertCachedMetaIsNotTrunk(meta);
 }

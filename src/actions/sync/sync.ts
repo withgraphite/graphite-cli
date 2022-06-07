@@ -48,7 +48,9 @@ export async function syncAction(
     context.splog.logInfo(
       `Pulling ${chalk.cyan(context.metaCache.trunk)} from remote...`
     );
-    context.splog.logTip(`You can skip pulling trunk with the --no-pull flag.`);
+    context.splog.logTip(
+      'You can skip pulling trunk with the `--no-pull` flag.'
+    );
 
     try {
       context.splog.logInfo(
@@ -102,7 +104,7 @@ export async function syncAction(
       `Checking if any branches have been merged/closed and can be deleted...`
     );
     context.splog.logTip(
-      `You can skip deleting branches with the --no-delete flag.`
+      'You can skip deleting branches with the `--no-delete` flag.'
     );
     const branchesWithNewParents = await cleanBranches(
       { showDeleteProgress: opts.showDeleteProgress, force: opts.force },

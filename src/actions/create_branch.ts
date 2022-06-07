@@ -46,7 +46,7 @@ export async function createBranchAction(
     restackSiblings(branchName, context);
   } else {
     context.splog.logTip(
-      `To insert a branch into a stack, try out the --restack flag.`
+      'To insert a branch into a stack, try out the `--restack` flag.'
     );
     return;
   }
