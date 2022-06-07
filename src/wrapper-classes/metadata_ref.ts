@@ -24,7 +24,6 @@ export type TBranchPRInfo = {
 export type TMeta = {
   parentBranchName?: string;
   parentBranchRevision?: string;
-  prevRef?: string;
   prInfo?: TBranchPRInfo;
 };
 

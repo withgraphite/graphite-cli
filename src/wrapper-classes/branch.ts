@@ -10,7 +10,6 @@ import { branchExists } from '../lib/git/branch_exists';
 import { getCommitterDate } from '../lib/git/committer_date';
 import { getCurrentBranchName } from '../lib/git/current_branch_name';
 import { getBranchRevision } from '../lib/git/get_branch_revision';
-import { getMergeBase } from '../lib/git/merge_base';
 import { sortedBranchNames } from '../lib/git/sorted_branch_names';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { getTrunk } from '../lib/utils/trunk';
@@ -167,40 +166,12 @@ export class Branch {
     return getRef(this);
   }
 
-  // TODO: Migrate to parentRevision with validation
-  public getMetaMergeBase(context: TContext): string | undefined {
-    const parent = this.getParentFromMeta(context);
-    if (!parent) {
-      return undefined;
-    }
-
-    const curParentMergeBase = getMergeBase(parent.name, this.name);
-
-    const prevParentRef = parent.getMetaPrevRef();
-    if (!prevParentRef) {
-      return curParentMergeBase;
-    }
-
-    const prevParentMergeBase = getMergeBase(prevParentRef, this.name);
-
-    // The merge base of the two merge bases = the one closer to the trunk.
-    // Therefore, the other must be closer or equal to the head of the branch.
-    return getMergeBase(prevParentMergeBase, curParentMergeBase) ===
-      curParentMergeBase
-      ? prevParentMergeBase
-      : curParentMergeBase;
-  }
-
   private getMeta(): TMeta | undefined {
     return readMetadataRef(this.name);
   }
 
   private writeMeta(meta: TMeta): void {
     writeMetadataRef(this.name, meta);
-  }
-
-  public getMetaPrevRef(): string | undefined {
-    return readMetadataRef(this.name)?.prevRef;
   }
 
   public clearMetadata(): this {
@@ -235,12 +206,6 @@ export class Branch {
     const meta: TMeta = this.getMeta() || {};
     meta.parentBranchName = parentBranchName;
     meta.parentBranchRevision = getBranchRevision(parentBranchName);
-    this.writeMeta(meta);
-  }
-
-  public savePrevRef(): void {
-    const meta: TMeta = this.getMeta() || {};
-    meta.prevRef = getBranchRevision(this.name);
     this.writeMeta(meta);
   }
 
