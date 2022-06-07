@@ -1,5 +1,4 @@
 import * as t from '@withgraphite/retype';
-import { isMatch } from 'micromatch';
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
 import { composeConfig } from './compose_config';
@@ -9,7 +8,6 @@ const schema = t.shape({
   name: t.optional(t.string),
   trunk: t.optional(t.string),
   remote: t.optional(t.string),
-  ignoreBranches: t.optional(t.array(t.string)),
   maxStacksShownBehindTrunk: t.optional(t.number),
   maxDaysShownBehindTrunk: t.optional(t.number),
   maxBranchLength: t.optional(t.number),
@@ -29,7 +27,6 @@ export const repoConfigFactory = composeConfig({
   },
   helperFunctions: (data, update) => {
     return {
-      getIgnoreBranches: () => data.ignoreBranches || [],
       getMaxBranchLength: (): number => data.maxBranchLength ?? 50,
 
       setRemote: (remote: string) => {
@@ -41,9 +38,6 @@ export const repoConfigFactory = composeConfig({
       setTrunk: (trunk: string) => {
         update((data) => (data.trunk = trunk));
       },
-
-      branchIsIgnored: (branchName: string): boolean =>
-        data.ignoreBranches ? isMatch(branchName, data.ignoreBranches) : false,
 
       graphiteInitialized: (): boolean => !!data.trunk,
 
@@ -67,25 +61,6 @@ export const repoConfigFactory = composeConfig({
         throw new ExitFailedError(
           "Could not determine the owner of this repo (e.g. 'withgraphite' in the repo 'withgraphite/graphite-cli'). Please run `gt repo owner --set <owner>` to manually set the repo owner."
         );
-      },
-
-      addIgnoreBranchPatterns: (ignoreBranches: string[]): void => {
-        update((data) => {
-          data.ignoreBranches = (data.ignoreBranches || []).concat(
-            ignoreBranches
-          );
-        });
-      },
-
-      removeIgnoreBranches: (branchPatternToRemove: string): void => {
-        update((data) => {
-          if (!data.ignoreBranches) {
-            return;
-          }
-          data.ignoreBranches = data.ignoreBranches.filter(function (pattern) {
-            return pattern != branchPatternToRemove;
-          });
-        });
       },
 
       getRepoName: (): string => {
