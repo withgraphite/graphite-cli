@@ -12,6 +12,6 @@ export const builder = args;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
   return profile(argv, canonical, async (context) => {
-    context.splog.logInfo(`cache size: ${context.metaCache.size}`);
+    context.metaCache.debug();
   });
 };
