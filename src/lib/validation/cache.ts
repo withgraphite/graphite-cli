@@ -8,7 +8,11 @@ import { getMergeBase } from '../git/merge_base';
 import { branchNamesAndRevisions } from '../git/sorted_branch_names';
 import { TSplog } from '../utils/splog';
 
-export type TMetaCache = Map<string, TCachedMeta>;
+export type TMetaCache = {
+  size: number;
+  getChildren: (branchName: string) => string[] | undefined;
+};
+
 type TCachedMeta = { children: string[]; branchRevision: string } & (
   | {
       validationResult: 'TRUNK';
@@ -35,8 +39,27 @@ type TCachedMeta = { children: string[]; branchRevision: string } & (
     }
 );
 
-export function loadCache(trunkName: string, splog: TSplog): TMetaCache {
-  const cache: TMetaCache = new Map();
+export function composeMetaCache(
+  trunkName: string | undefined,
+  splog: TSplog
+): TMetaCache {
+  const cache: Map<string, TCachedMeta> = trunkName
+    ? loadCache(trunkName, splog)
+    : new Map();
+
+  return {
+    get size() {
+      return cache.size;
+    },
+    getChildren: (branchName: string) => cache.get(branchName)?.children,
+  };
+}
+
+export function loadCache(
+  trunkName: string,
+  splog: TSplog
+): Map<string, TCachedMeta> {
+  const cache = new Map();
 
   cache.set(trunkName, {
     validationResult: 'TRUNK',
