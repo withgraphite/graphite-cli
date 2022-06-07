@@ -14,15 +14,19 @@ on:
 jobs:
   lint_and_fast_tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x, 15.x, 16.x, 17.x, 18.x]
     steps:
       # Basic setup
       - uses: actions/checkout@v2
         with:
           clean: 'false'
           fetch-depth: 0
-      - uses: actions/setup-node@v2-beta
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.15.0
+          node-version: ${{ matrix.node-version }}
       - name: Install
         run: yarn install --immutable
       - name: Lint
