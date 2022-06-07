@@ -11,7 +11,7 @@ import {
   writeFetchBase,
 } from '../git/fetch_branch';
 import { getRemoteSha, getShaOrThrow } from '../git/get_sha';
-import { isEmptyBranch } from '../git/is_empty_branch';
+import { isDiffEmpty } from '../git/is_empty_branch';
 import { isMerged } from '../git/is_merged';
 import { getMergeBase } from '../git/merge_base';
 import { pruneRemote } from '../git/prune_remote';
@@ -546,7 +546,8 @@ export function composeMetaCache({
       assertBranch(branchName);
       const cachedMeta = cache.branches[branchName];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
-      return isEmptyBranch(branchName, cachedMeta.parentBranchRevision);
+
+      return isDiffEmpty(branchName, cachedMeta.parentBranchRevision);
     },
     baseMatchesRemoteParent: (branchName: string) => {
       assertBranch(branchName);
