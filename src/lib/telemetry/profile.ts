@@ -42,7 +42,10 @@ export async function profile(
     startTime: start,
   });
 
-  const context = initContext({ globalArguments: args as TGlobalArguments });
+  const context = initContext({
+    globalArguments: args as TGlobalArguments,
+    useMetaCache: canonicalName === 'dev migration',
+  });
   fetchUpgradePromptInBackground(context);
   refreshPRInfoInBackground(context);
   postSurveyResponsesInBackground(context);
