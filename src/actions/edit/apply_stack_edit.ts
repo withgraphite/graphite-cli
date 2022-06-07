@@ -3,7 +3,7 @@ import { RebaseConflictError } from '../../lib/errors';
 import { checkoutBranch } from '../../lib/git/checkout_branch';
 import { currentBranchPrecondition } from '../../lib/preconditions';
 import { gpExecSync } from '../../lib/utils/exec_sync';
-import { currentBranchOnto } from '../onto/current_branch_onto';
+import { currentBranchOnto } from '../current_branch_onto';
 import { TStackEdit } from './stack_edits';
 
 export function applyStackEditPick(
