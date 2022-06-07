@@ -21,16 +21,6 @@ const StackEditStackFrameSchema = t.shape({
   remainingEdits: t.array(StackedEditSchema),
 });
 
-const StackFixActionStackFrameSchema = t.shape({
-  op: t.literal('STACK_FIX_ACTION_CONTINUATION' as const),
-  checkoutBranchName: t.string,
-});
-
-const RestackNodeStackFrameSchema = t.shape({
-  op: t.literal('STACK_FIX' as const),
-  sourceBranchName: t.string,
-});
-
 const DeleteBranchesStackFrameSchema = t.shape({
   op: t.literal('DELETE_BRANCHES_CONTINUATION' as const),
   force: t.boolean,
@@ -45,20 +35,12 @@ const RepoSyncStackFrameSchema = t.shape({
 });
 
 export type TStackEditStackFrame = t.TypeOf<typeof StackEditStackFrameSchema>;
-export type TStackFixActionStackFrame = t.TypeOf<
-  typeof StackFixActionStackFrameSchema
->;
-export type TRestackNodeStackFrame = t.TypeOf<
-  typeof RestackNodeStackFrameSchema
->;
 export type TDeleteBranchesStackFrame = t.TypeOf<
   typeof DeleteBranchesStackFrameSchema
 >;
 export type TRepoSyncStackFrame = t.TypeOf<typeof RepoSyncStackFrameSchema>;
 
 const GraphiteFrameSchema = t.unionMany([
-  StackFixActionStackFrameSchema,
-  RestackNodeStackFrameSchema,
   DeleteBranchesStackFrameSchema,
   RepoSyncStackFrameSchema,
   StackEditStackFrameSchema,
