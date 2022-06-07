@@ -134,6 +134,9 @@ export function persistBranchesToRestack(
   branchNames: string[],
   context: TContext
 ): void {
+  context.splog.logDebug(
+    branchNames.reduce((cur, next) => `${cur}\n${next}`, 'PERSISTING:')
+  );
   context.mergeConflictCallstackConfig.update((data) => {
     data.branchNames = branchNames;
     data.currentBranchOverride = context.metaCache.currentBranch;
