@@ -13,12 +13,7 @@ import { getBranchRevision } from '../lib/git/get_branch_revision';
 import { sortedBranchNames } from '../lib/git/sorted_branch_names';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { getTrunk } from '../lib/utils/trunk';
-import {
-  readMetadataRef,
-  TBranchPRInfo,
-  TMeta,
-  writeMetadataRef,
-} from './metadata_ref';
+import { readMetadataRef, TMeta, writeMetadataRef } from './metadata_ref';
 
 export class Branch {
   name: string;
@@ -359,22 +354,6 @@ export class Branch {
     return otherBranchesWithSameCommit(this);
   }
 
-  public upsertPRInfo(prInfo: TBranchPRInfo): void {
-    const meta: TMeta = this.getMeta() || {};
-    meta.prInfo = { ...meta.prInfo, ...prInfo };
-    this.writeMeta(meta);
-  }
-
-  public clearPRInfo(): void {
-    const meta: TMeta = this.getMeta() || {};
-    delete meta.prInfo;
-    this.writeMeta(meta);
-  }
-
-  public getPRInfo(): TBranchPRInfo | undefined {
-    return this.getMeta()?.prInfo;
-  }
-
   public isBaseSameAsRemotePr(context: TContext): boolean {
     const parent = this.getParentFromMeta(context);
     if (parent === undefined) {
@@ -382,7 +361,7 @@ export class Branch {
         `Could not find parent for branch ${this.name} to submit PR against. Please checkout ${this.name} and run \`gt upstack onto <parent_branch>\` to set its parent.`
       );
     }
-    return parent.name !== this.getPRInfo()?.base;
+    return parent.name !== context.metaCache.getPrInfo(this.name)?.base;
   }
 
   // Due to deprecate in favor of other functions.
