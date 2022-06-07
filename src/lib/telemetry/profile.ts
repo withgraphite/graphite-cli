@@ -28,6 +28,7 @@ import { registerSigintHandler } from './sigint_handler';
 import { postSurveyResponsesInBackground } from './survey/post_survey';
 import { tracer } from './tracer';
 import { fetchUpgradePromptInBackground } from './upgrade_prompt';
+
 export async function profile(
   args: yargs.Arguments,
   canonicalName: string,
