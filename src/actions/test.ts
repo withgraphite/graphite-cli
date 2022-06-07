@@ -11,7 +11,7 @@ type TTestState = {
 };
 
 export function testStack(
-  opts: { scope: TScopeSpec; includeTrunk: boolean; command: string },
+  opts: { scope: TScopeSpec; includeTrunk?: boolean; command: string },
   context: TContext
 ): void {
   const currentBranch = context.metaCache.currentBranchPrecondition;
