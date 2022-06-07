@@ -8,7 +8,7 @@ import { passthrough } from './lib/passthrough';
 import { postTelemetryInBackground } from './lib/telemetry/post_traces';
 import { preprocessCommand } from './lib/utils/preprocess_command';
 
-const requiredVersion = '^v16.15.0 || v18';
+const requiredVersion = '>=v14';
 if (!semver.satisfies(process.version, requiredVersion)) {
   console.error(
     `Required node version ${requiredVersion} not satisfied with current version ${process.version}.`
