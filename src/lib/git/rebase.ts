@@ -1,10 +1,4 @@
-import { Branch } from '../../wrapper-classes/branch';
-import { cache } from '../config/cache';
-import { TMergeConflictCallstack } from '../config/merge_conflict_callstack_config';
-import { TContext } from '../context';
-import { ExitFailedError, RebaseConflictError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
-import { getBranchRevision } from './get_branch_revision';
 import { rebaseInProgress } from './rebase_in_progress';
 
 type TRebaseResult = 'REBASE_CONFLICT' | 'REBASE_DONE';
@@ -37,44 +31,4 @@ export function rebaseInteractive(args: {
     options: { stdio: 'inherit' },
   });
   return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
-}
-
-// TODO deprecate this version
-export function rebaseOnto(
-  args: {
-    ontoBranchName: string;
-    mergeBase: string;
-    branch: Branch;
-    mergeConflictCallstack: TMergeConflictCallstack;
-  },
-  context: TContext
-): boolean {
-  if (args.mergeBase === getBranchRevision(args.ontoBranchName)) {
-    context.splog.logDebug(
-      `No rebase needed for (${args.branch.name}) onto (${args.ontoBranchName}).`
-    );
-    return false;
-  }
-  gpExecSync(
-    {
-      command: `git rebase --onto ${args.ontoBranchName} ${args.mergeBase} ${args.branch.name}`,
-      options: { stdio: 'ignore' },
-    },
-    (err) => {
-      if (rebaseInProgress()) {
-        throw new RebaseConflictError(
-          `Interactive rebase in progress, cannot fix (${args.branch.name}) onto (${args.ontoBranchName}).`,
-          args.mergeConflictCallstack,
-          context
-        );
-      } else {
-        throw new ExitFailedError(
-          `Rebase failed when moving (${args.branch.name}) onto (${args.ontoBranchName}).`,
-          err
-        );
-      }
-    }
-  );
-  cache.clearAll();
-  return true;
 }
