@@ -1,7 +1,6 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { cleanBranches } from '../actions/clean_branches';
-import { applyStackEdits } from '../actions/edit/edit_downstack';
 import { restackBranches } from '../actions/restack';
 import { cleanBranchesContinuation } from '../actions/sync/sync';
 import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_config';
@@ -98,13 +97,6 @@ async function resolveCallstack(
       break;
     case 'REPO_SYNC_CONTINUATION':
       await cleanBranchesContinuation(frame, context);
-      break;
-    case 'STACK_EDIT_CONTINUATION':
-      applyStackEdits(
-        frame.currentBranchName,
-        frame.remainingBranchNames,
-        context
-      );
       break;
     default:
       assertUnreachable(frame);

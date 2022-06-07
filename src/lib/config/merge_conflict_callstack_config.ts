@@ -14,12 +14,6 @@ import { composeConfig } from './compose_config';
  * invocations of the CLI.
  */
 
-const StackEditStackFrameSchema = t.shape({
-  op: t.literal('STACK_EDIT_CONTINUATION' as const),
-  currentBranchName: t.string,
-  remainingBranchNames: t.array(t.string),
-});
-
 const DeleteBranchesStackFrameSchema = t.shape({
   op: t.literal('DELETE_BRANCHES_CONTINUATION' as const),
   force: t.boolean,
@@ -41,7 +35,6 @@ export type TRepoSyncStackFrame = t.TypeOf<typeof RepoSyncStackFrameSchema>;
 const GraphiteFrameSchema = t.unionMany([
   DeleteBranchesStackFrameSchema,
   RepoSyncStackFrameSchema,
-  StackEditStackFrameSchema,
 ]);
 
 const MergeConflictCallstackSchema = t.shape({

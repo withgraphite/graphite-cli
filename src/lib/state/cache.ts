@@ -166,12 +166,15 @@ export function composeMetaCache({
     assertCachedMetaIsNotTrunk(cachedMeta);
 
     const oldParentBranchName = cachedMeta.parentBranchName;
+    if (oldParentBranchName === parentBranchName) {
+      return;
+    }
 
     cachedMeta.parentBranchName = parentBranchName;
     persistMeta(branchName);
 
-    cache.branches[parentBranchName].children.push(branchName);
     removeChild(oldParentBranchName, branchName);
+    cache.branches[parentBranchName].children.push(branchName);
   };
 
   const getParent = (branchName: string) => {
