@@ -33,6 +33,20 @@ export class PreconditionsFailedError extends ExitError {
   }
 }
 
+export class UntrackedBranchError extends ExitError {
+  constructor() {
+    super(`Cannot perform this operation on an untracked branch.`);
+    this.name = 'UntrackedBranchError';
+  }
+}
+
+export class BadTrunkOperationError extends ExitError {
+  constructor() {
+    super(`Cannot perform this operation on the trunk branch.`);
+    this.name = 'BadTrunkOperationError';
+  }
+}
+
 export class KilledError extends ExitError {
   constructor() {
     super(`User killed Graphite early`);

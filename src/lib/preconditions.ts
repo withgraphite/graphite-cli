@@ -32,7 +32,7 @@ function ensureSomeStagedChangesPrecondition(context: TContext): void {
 
   if (unstagedChanges()) {
     context.splog.logTip(
-      'There are unstaged changes. Use the --all option to stage all changes.'
+      'There are unstaged changes. Use the `--all` option to stage all changes.'
     );
   }
 
