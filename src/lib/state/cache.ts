@@ -11,9 +11,11 @@ import { branchExists } from '../git/branch_exists';
 import { branchMove } from '../git/branch_move';
 import { switchBranch } from '../git/checkout_branch';
 import { commit, TCommitOpts } from '../git/commit';
+import { getCommitRange } from '../git/commit_range';
 import { getCurrentBranchName } from '../git/current_branch_name';
 import { deleteBranch } from '../git/deleteBranch';
 import { getBranchRevision } from '../git/get_branch_revision';
+import { isEmptyBranch } from '../git/is_empty_branch';
 import { isMerged } from '../git/is_merged';
 import { getMergeBase } from '../git/merge_base';
 import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
@@ -29,6 +31,8 @@ export type TMetaCache = {
   trunk: string;
   allBranchNames: string[];
   isTrunk: (branchName: string) => boolean;
+  getRevision: (branchName: string) => string;
+  getAllCommits: (branchName: string) => string[];
   getPrInfo: (branchName: string) => TBranchPRInfo | undefined;
   resetPrInfo: (branchName: string) => void;
   upsertPrInfo: (branchName: string, prInfo: Partial<TBranchPRInfo>) => void;
@@ -53,6 +57,8 @@ export type TMetaCache = {
       }
     | { result: 'REBASE_CONFLICT' };
   isMerged: (branchName: string) => boolean;
+  isBranchFixed: (branchName: string) => boolean;
+  isBranchEmpty: (branchName: string) => boolean;
 };
 
 type TCachedMeta = { children: string[]; branchRevision: string } & (
@@ -251,6 +257,18 @@ export function composeMetaCache({
       return Object.keys(cache.branches);
     },
     isTrunk: (branchName: string) => branchName === trunkName,
+    getRevision: (branchName: string) => {
+      assertBranchIsValid(branchName);
+      const meta = cache.branches[branchName];
+      return meta.branchRevision;
+    },
+    getAllCommits: (branchName: string) => {
+      assertBranchIsValid(branchName);
+      const meta = cache.branches[branchName];
+      assertCachedMetaIsNotTrunk(meta);
+
+      return getCommitRange(meta.parentBranchRevision, meta.branchRevision);
+    },
     getPrInfo: (branchName: string) => {
       assertBranchIsValid(branchName);
       const meta = cache.branches[branchName];
@@ -428,6 +446,13 @@ export function composeMetaCache({
       assertBranchIsValid(branchName);
       assertBranchIsValid(trunkName);
       return isMerged({ branchName, trunkName });
+    },
+    isBranchFixed,
+    isBranchEmpty: (branchName: string) => {
+      assertBranchIsValid(branchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsNotTrunk(cachedMeta);
+      return isEmptyBranch(branchName, cachedMeta.parentBranchRevision);
     },
   };
 }

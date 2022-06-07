@@ -1,5 +1,6 @@
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
+import { SCOPE } from '../../lib/state/scope_spec';
 import { Branch } from '../../wrapper-classes/branch';
 import { submitAction } from '../submit/submit_action';
 
@@ -7,7 +8,7 @@ export async function resubmitBranchesWithNewBases(
   force: boolean,
   context: TContext
 ): Promise<void> {
-  const needsResubmission: Branch[] = [];
+  const branchNames: string[] = [];
   Branch.allBranches(context, {
     filter: (b) => {
       const prState = context.metaCache.getPrInfo(b.name)?.state;
@@ -23,11 +24,11 @@ export async function resubmitBranchesWithNewBases(
     const githubBase = context.metaCache.getPrInfo(b.name)?.base;
 
     if (githubBase && githubBase !== currentBase) {
-      needsResubmission.push(b);
+      branchNames.push(b.name);
     }
   });
 
-  if (needsResubmission.length === 0) {
+  if (branchNames.length === 0) {
     return;
   }
 
@@ -35,7 +36,7 @@ export async function resubmitBranchesWithNewBases(
   context.splog.logInfo(
     [
       `The following branches appear to have been rebased (or cherry-picked) in your local repo but changes have not yet propagated to PR (remote):`,
-      ...needsResubmission.map((b) => `- ${b.name}`),
+      ...branchNames.map((b) => `- ${b}`),
     ].join('\n')
   );
 
@@ -58,12 +59,12 @@ export async function resubmitBranchesWithNewBases(
     context.splog.logInfo(`Updating PR to propagate local rebase changes...`);
     await submitAction(
       {
-        scope: 'FULLSTACK',
+        scope: SCOPE.STACK,
         editPRFieldsInline: false,
         draftToggle: false,
         dryRun: false,
         updateOnly: false,
-        branchesToSubmit: needsResubmission,
+        branchNames,
         reviewers: false,
         confirm: false,
       },

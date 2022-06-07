@@ -1,4 +1,5 @@
 import { submitAction } from '../../actions/submit/submit_action';
+import { SCOPE } from '../../lib/state/scope_spec';
 import { profile } from '../../lib/telemetry/profile';
 import { argsT } from '../shared-commands/submit';
 
@@ -11,7 +12,7 @@ export const handler = async (argv: argsT): Promise<void> => {
   await profile(argv, canonical, async (context) => {
     await submitAction(
       {
-        scope: 'UPSTACK',
+        scope: SCOPE.UPSTACK,
         editPRFieldsInline: argv.edit,
         draftToggle: argv.draft,
         dryRun: argv['dry-run'],
