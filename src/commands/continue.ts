@@ -100,7 +100,11 @@ async function resolveCallstack(
       await cleanBranchesContinuation(frame, context);
       break;
     case 'STACK_EDIT_CONTINUATION':
-      applyStackEdits(frame.currentBranchName, frame.remainingEdits, context);
+      applyStackEdits(
+        frame.currentBranchName,
+        frame.remainingBranchNames,
+        context
+      );
       break;
     default:
       assertUnreachable(frame);
