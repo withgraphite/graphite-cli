@@ -1,6 +1,6 @@
 import { TContext } from './context';
 import { PreconditionsFailedError } from './errors';
-import { detectStagedChanges } from './git/detect_staged_changes';
+import { detectStagedChanges } from './git/diff';
 import {
   trackedUncommittedChanges,
   unstagedChanges,
