@@ -27,5 +27,5 @@ export function currentBranchOntoAction(
     context
   );
 
-  checkoutBranch(originalBranch.name, { quiet: true });
+  checkoutBranch(originalBranch.name);
 }

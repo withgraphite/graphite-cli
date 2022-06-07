@@ -90,7 +90,7 @@ function testStack(
   });
 
   // Finish off.
-  checkoutBranch(originalBranch.name, { quiet: true });
+  checkoutBranch(originalBranch.name);
 }
 
 function testBranch(
@@ -102,7 +102,7 @@ function testBranch(
   },
   context: TContext
 ) {
-  checkoutBranch(opts.branchName, { quiet: true });
+  checkoutBranch(opts.branchName);
 
   // Mark the branch as running.
   opts.state[opts.branchName].status = '[running]';

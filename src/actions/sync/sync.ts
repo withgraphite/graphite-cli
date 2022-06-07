@@ -26,7 +26,7 @@ export async function syncAction(
 ): Promise<void> {
   uncommittedTrackedChangesPrecondition();
   const oldBranchName = currentBranchPrecondition().name;
-  checkoutBranch(getTrunk(context).name, { quiet: true });
+  checkoutBranch(getTrunk(context).name);
 
   if (opts.pull) {
     pull(
@@ -82,7 +82,6 @@ export async function cleanBranchesContinuation(
   checkoutBranch(
     branchExists(frame.oldBranchName)
       ? frame.oldBranchName
-      : getTrunk(context).name,
-    { quiet: true }
+      : getTrunk(context).name
   );
 }

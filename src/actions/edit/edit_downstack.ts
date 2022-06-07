@@ -40,7 +40,7 @@ export function applyStackEdits(
   stackEdits: TStackEdit[],
   context: TContext
 ): void {
-  checkoutBranch(fromBranchName, { quiet: true });
+  checkoutBranch(fromBranchName);
   stackEdits.forEach((stackEdit, index) => {
     switch (stackEdit.type) {
       case 'pick':

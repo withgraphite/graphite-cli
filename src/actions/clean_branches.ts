@@ -135,7 +135,7 @@ export async function cleanBranches(
       // This means that we may need to rebase it - if the branch's parent is
       // going to be deleted.
       if (parentName !== undefined && parentName in branchesToDelete) {
-        checkoutBranch(branch.name, { quiet: true });
+        checkoutBranch(branch.name);
         context.splog.logInfo(
           `Stacking (${branch.name}) onto (${getTrunk(context).name})...`
         );
@@ -153,7 +153,7 @@ export async function cleanBranches(
       }
     }
 
-    checkoutBranch(getTrunk(context).name, { quiet: true });
+    checkoutBranch(getTrunk(context).name);
 
     // With either of the paths above, we may have unblocked a branch that can
     // be deleted immediately. We recursively check whether we can delete a
