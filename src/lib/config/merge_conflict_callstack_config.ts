@@ -21,18 +21,6 @@ const StackEditStackFrameSchema = t.shape({
   remainingEdits: t.array(StackedEditSchema),
 });
 
-const StackOntoBaseRebaseStackFrameSchema = t.shape({
-  op: t.literal('STACK_ONTO_BASE_REBASE_CONTINUATION' as const),
-  currentBranchName: t.string,
-  onto: t.string,
-});
-
-const StackOntoFixStackFrameSchema = t.shape({
-  op: t.literal('STACK_ONTO_FIX_CONTINUATION' as const),
-  currentBranchName: t.string,
-  onto: t.string,
-});
-
 const StackFixActionStackFrameSchema = t.shape({
   op: t.literal('STACK_FIX_ACTION_CONTINUATION' as const),
   checkoutBranchName: t.string,
@@ -61,12 +49,6 @@ const RepoSyncStackFrameSchema = t.shape({
 });
 
 export type TStackEditStackFrame = t.TypeOf<typeof StackEditStackFrameSchema>;
-export type TStackOntoBaseRebaseStackFrame = t.TypeOf<
-  typeof StackOntoBaseRebaseStackFrameSchema
->;
-export type TStackOntoFixStackFrame = t.TypeOf<
-  typeof StackOntoFixStackFrameSchema
->;
 export type TStackFixActionStackFrame = t.TypeOf<
   typeof StackFixActionStackFrameSchema
 >;
@@ -76,14 +58,9 @@ export type TRestackNodeStackFrame = t.TypeOf<
 export type TDeleteBranchesStackFrame = t.TypeOf<
   typeof DeleteBranchesStackFrameSchema
 >;
-export type TRepoFixBranchCountSanityCheckStackFrame = t.TypeOf<
-  typeof RepoFixBranchCountSanityCheckStackFrameSchema
->;
 export type TRepoSyncStackFrame = t.TypeOf<typeof RepoSyncStackFrameSchema>;
 
 const GraphiteFrameSchema = t.unionMany([
-  StackOntoBaseRebaseStackFrameSchema,
-  StackOntoFixStackFrameSchema,
   StackFixActionStackFrameSchema,
   RestackNodeStackFrameSchema,
   DeleteBranchesStackFrameSchema,

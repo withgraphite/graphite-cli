@@ -3,10 +3,6 @@ import yargs from 'yargs';
 import { cleanBranches } from '../actions/clean_branches';
 import { applyStackEdits } from '../actions/edit/edit_downstack';
 import { fixAction, stackFixActionContinuation } from '../actions/fix';
-import {
-  stackOntoBaseRebaseContinuation,
-  stackOntoFixContinuation,
-} from '../actions/onto/stack_onto';
 import { restackBranches } from '../actions/restack';
 import { cleanBranchesContinuation } from '../actions/sync/sync';
 import { TMergeConflictCallstack } from '../lib/config/merge_conflict_callstack_config';
@@ -90,12 +86,6 @@ async function resolveCallstack(
   context.splog.logDebug(`Resolving frame: ${frame.op}`);
 
   switch (frame.op) {
-    case 'STACK_ONTO_BASE_REBASE_CONTINUATION':
-      stackOntoBaseRebaseContinuation(frame, remaining, context);
-      break;
-    case 'STACK_ONTO_FIX_CONTINUATION':
-      stackOntoFixContinuation(frame, context);
-      break;
     case 'STACK_FIX': {
       fixAction(
         { scope: 'UPSTACK', mergeConflictCallstack: remaining },

@@ -10,7 +10,7 @@ import { currentBranchPrecondition } from '../lib/preconditions';
 import { newBranchName } from '../lib/utils/branch_name';
 import { Branch } from '../wrapper-classes/branch';
 import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
-import { currentBranchOntoAction } from './onto/current_branch_onto';
+import { currentBranchOnto } from './onto/current_branch_onto';
 
 export async function createBranchAction(
   opts: {
@@ -81,13 +81,7 @@ export async function createBranchAction(
       .forEach((b) => {
         checkoutBranch(b.name);
         context.splog.logInfo(`Stacking (${b.name}) onto (${branchName})...`);
-        currentBranchOntoAction(
-          {
-            onto: branchName,
-            mergeConflictCallstack: [],
-          },
-          context
-        );
+        currentBranchOnto(branchName, context);
       });
     checkoutBranch(branchName);
   }

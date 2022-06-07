@@ -12,7 +12,7 @@ import { isMerged } from '../lib/git/is_merged';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { deleteBranchAction } from './delete_branch';
-import { currentBranchOntoAction } from './onto/current_branch_onto';
+import { currentBranchOnto } from './onto/current_branch_onto';
 
 /**
  * This method is assumed to be idempotent -- if a merge conflict interrupts
@@ -139,13 +139,7 @@ export async function cleanBranches(
         context.splog.logInfo(
           `Stacking (${branch.name}) onto (${getTrunk(context).name})...`
         );
-        currentBranchOntoAction(
-          {
-            onto: getTrunk(context).name,
-            mergeConflictCallstack: [opts.frame, ...opts.parent],
-          },
-          context
-        );
+        currentBranchOnto(getTrunk(context).name, context);
 
         branchesToDelete[parentName].children = branchesToDelete[
           parentName
