@@ -8,7 +8,7 @@ import { Stack } from '../wrapper-classes/stack';
 import { TScope } from './scope';
 
 export function validate(scope: TScope, context: TContext): Branch[] {
-  const currentBranch = currentBranchPrecondition(context);
+  const currentBranch = currentBranchPrecondition();
 
   const { metaStack, gitStack } = getStacksForValidation(
     currentBranch,

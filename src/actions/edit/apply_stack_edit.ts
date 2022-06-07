@@ -10,7 +10,7 @@ export function applyStackEditPick(
   opts: { branchName: string; remainingEdits: TStackEdit[] },
   context: TContext
 ): void {
-  const onto = currentBranchPrecondition(context).name;
+  const onto = currentBranchPrecondition().name;
   checkoutBranch(opts.branchName, { quiet: true });
   currentBranchOntoAction(
     {
@@ -31,7 +31,7 @@ export function applyStackEditExec(
   opts: { command: string; remainingEdits: TStackEdit[] },
   context: TContext
 ): void {
-  const currentBranchName = currentBranchPrecondition(context).name;
+  const currentBranchName = currentBranchPrecondition().name;
   context.splog.logInfo(`Executing: ${opts.command}`);
   gpExecSync(
     {

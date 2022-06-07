@@ -51,7 +51,7 @@ function testStack(
   command: string,
   opts: { skipTrunk: boolean }
 ): void {
-  const originalBranch = currentBranchPrecondition(context);
+  const originalBranch = currentBranchPrecondition();
   validateStack(context);
 
   context.splog.logInfo(chalk.grey(`Getting stack...`));

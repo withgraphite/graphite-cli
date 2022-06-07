@@ -1,10 +1,9 @@
 import { Branch } from '../../wrapper-classes/branch';
 import { cache } from '../config/cache';
-import { TContext } from '../context';
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
 
-function refreshRefsCache(_context: TContext): void {
+function refreshRefsCache(): void {
   cache.clearBranchRefs();
   const memoizedRefToBranches: Record<string, string[]> = {};
   const memoizedBranchToRef: Record<string, string> = {};
@@ -33,18 +32,16 @@ function refreshRefsCache(_context: TContext): void {
   });
 }
 
-export function getBranchToRefMapping(
-  context: TContext
-): Record<string, string> {
+export function getBranchToRefMapping(): Record<string, string> {
   if (!cache.getBranchToRef()) {
-    refreshRefsCache(context);
+    refreshRefsCache();
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return cache.getBranchToRef()!;
 }
-export function getRef(branch: Branch, context: TContext): string {
+export function getRef(branch: Branch): string {
   if (!branch.shouldUseMemoizedResults || !cache.getBranchToRef()) {
-    refreshRefsCache(context);
+    refreshRefsCache();
   }
   const ref = cache.getBranchToRef()?.[branch.name];
   if (!ref) {
@@ -52,14 +49,11 @@ export function getRef(branch: Branch, context: TContext): string {
   }
   return ref;
 }
-export function otherBranchesWithSameCommit(
-  branch: Branch,
-  context: TContext
-): Branch[] {
+export function otherBranchesWithSameCommit(branch: Branch): Branch[] {
   if (!branch.shouldUseMemoizedResults || !cache.getRefToBranches()) {
-    refreshRefsCache(context);
+    refreshRefsCache();
   }
-  const ref = branch.ref(context);
+  const ref = branch.ref();
   const branchNames = cache.getRefToBranches()?.[ref];
   if (!branchNames) {
     throw new ExitFailedError(`Failed to find branches for ref ${ref}`);

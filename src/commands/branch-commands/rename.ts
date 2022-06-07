@@ -34,7 +34,7 @@ export const builder = args;
 
 export const handler = async (args: argsT): Promise<void> => {
   return profile(args, canonical, async (context) => {
-    const currentBranch = currentBranchPrecondition(context);
+    const currentBranch = currentBranchPrecondition();
     const oldName = currentBranch.name;
     const newName = replaceUnsupportedCharacters(
       args['new-branch-name'],
