@@ -5,7 +5,7 @@ import {
 } from '../../wrapper-classes/metadata_ref';
 import { PreconditionsFailedError } from '../errors';
 import { branchExists } from '../git/branch_exists';
-import { checkoutBranch } from '../git/checkout_branch';
+import { switchBranch } from '../git/checkout_branch';
 import { commit, TCommitOpts } from '../git/commit';
 import { getCurrentBranchName } from '../git/current_branch_name';
 import { getBranchRevision } from '../git/get_branch_revision';
@@ -183,7 +183,7 @@ export function composeMetaCache({
 
     persistMeta(branchName);
     assertBranchIsValid(cache.currentBranch);
-    checkoutBranch(cache.currentBranch);
+    switchBranch(cache.currentBranch);
   };
 
   return {
@@ -255,7 +255,7 @@ export function composeMetaCache({
       if (!getValidMeta(branchName)) {
         return false;
       }
-      checkoutBranch(branchName);
+      switchBranch(branchName);
       cache.currentBranch = branchName;
       return true;
     },
