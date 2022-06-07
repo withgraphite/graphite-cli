@@ -15,20 +15,6 @@ export class Stack {
       .reduce((acc, arr) => acc.concat(arr), [this.source.branch]);
   }
 
-  public toPromptChoices(
-    omit?: string,
-    indent = 0
-  ): { title: string; value: string }[] {
-    const currentChoice = {
-      title: `${'  '.repeat(indent)}↱ (${this.source.branch.name})`,
-      value: this.source.branch.name,
-    };
-    return this.source.children
-      .filter((c) => c.branch.name !== omit)
-      .map((c) => new Stack(c).toPromptChoices(omit, indent + 1))
-      .reduceRight((acc, arr) => arr.concat(acc), [currentChoice]);
-  }
-
   public toString(): string {
     return this.source.children
       .map((c) => new Stack(c).toString())
