@@ -21,7 +21,6 @@ function setupScene(scene: BasicScene | TrailingProdScene) {
 }
 
 for (const scene of allScenes) {
-  // eslint-disable-next-line max-lines-per-function
   describe(`(${scene}): validate action`, function () {
     configureTest(this, scene);
 
