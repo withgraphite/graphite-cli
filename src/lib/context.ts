@@ -4,7 +4,7 @@ import { repoConfigFactory } from './config/repo_config';
 import { surveyConfigFactory } from './config/survey_config';
 import { userConfigFactory } from './config/user_config';
 import { composeSplog, TSplog } from './utils/splog';
-import { loadCache, TMetaCache } from './validation/cache';
+import { composeMetaCache, TMetaCache } from './validation/cache';
 
 export const USER_CONFIG_OVERRIDE_ENV = 'GRAPHITE_USER_CONFIG_PATH' as const;
 
@@ -41,6 +41,10 @@ export function initContext(opts?: {
     outputDebugLogs: opts?.globalArguments?.debug,
     tips: userConfig.data.tips,
   });
+  const metaCache = composeMetaCache(
+    opts?.useMetaCache ? repoConfig.data.trunk : undefined,
+    splog
+  );
   return {
     splog,
     interactive: opts?.globalArguments?.interactive ?? true,
@@ -51,9 +55,6 @@ export function initContext(opts?: {
     messageConfig: messageConfigFactory.load(),
     mergeConflictCallstackConfig:
       mergeConflictCallstackConfigFactory.loadIfExists(),
-    metaCache:
-      opts?.useMetaCache && repoConfig.data.trunk
-        ? loadCache(repoConfig.data.trunk, splog)
-        : new Map(),
+    metaCache,
   };
 }
