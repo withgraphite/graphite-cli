@@ -15,7 +15,7 @@ for (const scene of allScenes) {
       scene.repo.createChangeAndCommit('a', 'a');
       scene.repo.createAndCheckoutBranch('b');
       scene.repo.createChangeAndCommit('b', 'b');
-      scene.repo.execCliCommand(`branch parent --set a`);
+      scene.repo.execCliCommand(`upstack onto a`);
       scene.repo.deleteBranch('a');
 
       scene.repo.checkoutBranch('main');
