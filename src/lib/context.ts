@@ -17,7 +17,7 @@ export type TContext = {
   userConfig: ReturnType<typeof userConfigFactory.load>;
   messageConfig: ReturnType<typeof messageConfigFactory.load>;
   mergeConflictCallstackConfig: ReturnType<
-    typeof mergeConflictCallstackConfigFactory.loadIfExists
+    typeof mergeConflictCallstackConfigFactory.load
   >;
   metaCache: TMetaCache;
 };
@@ -40,7 +40,14 @@ export function initContext(opts?: {
     outputDebugLogs: opts?.globalArguments?.debug,
     tips: userConfig.data.tips,
   });
-  const metaCache = composeMetaCache(repoConfig.data.trunk, splog);
+  const mergeConflictCallstackConfig =
+    mergeConflictCallstackConfigFactory.load();
+  const metaCache = composeMetaCache({
+    trunkName: repoConfig.data.trunk,
+    currentBranchOverride:
+      mergeConflictCallstackConfig?.data.currentBranchOverride,
+    splog,
+  });
   return {
     splog,
     interactive: opts?.globalArguments?.interactive ?? true,
@@ -49,8 +56,7 @@ export function initContext(opts?: {
     surveyConfig: surveyConfigFactory.load(),
     userConfig,
     messageConfig: messageConfigFactory.load(),
-    mergeConflictCallstackConfig:
-      mergeConflictCallstackConfigFactory.loadIfExists(),
+    mergeConflictCallstackConfig,
     metaCache,
   };
 }
