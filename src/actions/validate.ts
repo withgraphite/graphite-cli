@@ -17,15 +17,7 @@ export function validate(scope: TScope, context: TContext): Branch[] {
   );
 
   if (!metaStack.equals(gitStack)) {
-    throw new ValidationFailedError(
-      [
-        `Graphite stack does not match git-derived stack\n`,
-        '\nGraphite Stack:',
-        metaStack.toString(),
-        '\nGit Stack:',
-        gitStack.toString(),
-      ].join('\n')
-    );
+    throw new ValidationFailedError(metaStack, gitStack, currentBranch);
   }
 
   // Stacks are valid, we can update parentRevision
@@ -39,7 +31,7 @@ export function validate(scope: TScope, context: TContext): Branch[] {
     .map((b) => new Branch(b.name));
 }
 
-export function backfillParentShasOnValidatedStack(
+function backfillParentShasOnValidatedStack(
   stack: Stack,
   context: TContext
 ): void {
@@ -59,7 +51,7 @@ export function backfillParentShasOnValidatedStack(
     });
 }
 
-export function getStacksForValidation(
+function getStacksForValidation(
   currentBranch: Branch,
   scope: TScope,
   context: TContext

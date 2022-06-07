@@ -4,20 +4,18 @@ import {
   TStackFixActionStackFrame,
 } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context';
-import { ExitFailedError, RebaseConflictError } from '../lib/errors';
+import {
+  ExitFailedError,
+  RebaseConflictError,
+  ValidationFailedError,
+} from '../lib/errors';
 import { checkoutBranch } from '../lib/git/checkout_branch';
 import { rebaseOnto } from '../lib/git/rebase';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
-import {
-  currentBranchPrecondition,
-  uncommittedTrackedChangesPrecondition,
-} from '../lib/preconditions';
+import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
 import { Branch } from '../wrapper-classes/branch';
 import { TScope } from './scope';
-import {
-  backfillParentShasOnValidatedStack,
-  getStacksForValidation,
-} from './validate';
+import { validate } from './validate';
 
 // Should be called whenever we change the tip of a branch
 export function rebaseUpstack(
@@ -45,52 +43,48 @@ export function fixAction(
   },
   context: TContext
 ): void {
-  const currentBranch = currentBranchPrecondition();
   uncommittedTrackedChangesPrecondition();
 
-  const { metaStack, gitStack } = getStacksForValidation(
-    currentBranch,
-    scope,
-    context
-  );
-
-  // Consider noop
-  if (metaStack.equals(gitStack)) {
-    context.splog.logInfo(`No fix needed`);
-    // Stacks are valid, we can update parentRevision
-    // TODO: Remove after migrating validation to parentRevision
-    backfillParentShasOnValidatedStack(metaStack, context);
+  try {
+    validate(scope, context);
+    context.splog.logInfo('No fix needed');
     return;
+  } catch (err) {
+    if (!(err instanceof ValidationFailedError)) {
+      throw err;
+    }
+
+    // If we get interrupted and need to continue, first we'll do a stack fix
+    // and then we'll continue the stack fix action.
+    const stackFixFrame = {
+      op: 'STACK_FIX' as const,
+      sourceBranchName: err.currentBranch.name,
+    };
+    const stackFixActionContinuationFrame = {
+      op: 'STACK_FIX_ACTION_CONTINUATION' as const,
+      checkoutBranchName: err.currentBranch.name,
+    };
+
+    err.branchesToFix.forEach((branch) =>
+      restackUpstack(
+        {
+          branch,
+          mergeConflictCallstack: [
+            stackFixFrame,
+            stackFixActionContinuationFrame,
+            ...mergeConflictCallstack,
+          ],
+        },
+        context
+      )
+    );
+
+    stackFixActionContinuation(stackFixActionContinuationFrame);
   }
-
-  // If we get interrupted and need to continue, first we'll do a stack fix
-  // and then we'll continue the stack fix action.
-  const stackFixFrame = {
-    op: 'STACK_FIX' as const,
-    sourceBranchName: currentBranch.name,
-  };
-
-  const stackFixActionContinuationFrame = {
-    op: 'STACK_FIX_ACTION_CONTINUATION' as const,
-    checkoutBranchName: currentBranch.name,
-  };
-
-  metaStack.source.children.forEach((child) =>
-    restackUpstack(
-      {
-        branch: child.branch,
-        mergeConflictCallstack: [
-          stackFixFrame,
-          stackFixActionContinuationFrame,
-          ...mergeConflictCallstack,
-        ],
-      },
-      context
-    )
-  );
-
-  stackFixActionContinuation(stackFixActionContinuationFrame);
 }
+
+// If we get interrupted and need to continue, first we'll do a stack fix
+// and then we'll continue the stack fix action.
 
 export function stackFixActionContinuation(
   frame: TStackFixActionStackFrame
