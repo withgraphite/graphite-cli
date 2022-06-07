@@ -40,14 +40,14 @@ export const description =
   'Amend the most recent commit and fix upstack branches.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
-    await commitAmendAction(
+  return profile(argv, canonical, async (context) =>
+    commitAmendAction(
       {
         message: argv.message,
         noEdit: argv['no-edit'] || !argv.edit,
         addAll: argv.all,
       },
       context
-    );
-  });
+    )
+  );
 };
