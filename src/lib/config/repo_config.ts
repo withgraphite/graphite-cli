@@ -8,9 +8,6 @@ const schema = t.shape({
   name: t.optional(t.string),
   trunk: t.optional(t.string),
   remote: t.optional(t.string),
-  maxStacksShownBehindTrunk: t.optional(t.number),
-  maxDaysShownBehindTrunk: t.optional(t.number),
-  maxBranchLength: t.optional(t.number),
   lastFetchedPRInfoMs: t.optional(t.number),
 });
 
@@ -27,8 +24,6 @@ export const repoConfigFactory = composeConfig({
   },
   helperFunctions: (data, update) => {
     return {
-      getMaxBranchLength: (): number => data.maxBranchLength ?? 50,
-
       setRemote: (remote: string) => {
         update((data) => (data.remote = remote));
       },
@@ -40,12 +35,6 @@ export const repoConfigFactory = composeConfig({
       },
 
       graphiteInitialized: (): boolean => !!data.trunk,
-
-      getMaxDaysShownBehindTrunk: (): number =>
-        data.maxDaysShownBehindTrunk ?? 30,
-
-      getMaxStacksShownBehindTrunk: (): number =>
-        data.maxStacksShownBehindTrunk ?? 10,
 
       getRepoOwner: (): string => {
         const configOwner = data.owner;
