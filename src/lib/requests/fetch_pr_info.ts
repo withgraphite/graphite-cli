@@ -1,4 +1,3 @@
-import { Branch } from '../../wrapper-classes/branch';
 import { initContext, TContext } from '../context';
 import { syncPRInfoForBranches } from '../sync/pr_info';
 import { spawnDetached } from '../utils/spawn';
@@ -24,10 +23,7 @@ export function refreshPRInfoInBackground(context: TContext): void {
 
 async function refreshPRInfo(context: TContext): Promise<void> {
   try {
-    const branchesWithPRInfo = Branch.allBranches(context).filter(
-      (branch) => branch.getPRInfo() !== undefined
-    );
-    await syncPRInfoForBranches(branchesWithPRInfo, context);
+    await syncPRInfoForBranches(context.metaCache.allBranchNames, context);
   } catch (err) {
     return;
   }
