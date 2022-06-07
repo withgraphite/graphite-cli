@@ -2,53 +2,27 @@ import chalk from 'chalk';
 import { persistBranchesToRestack } from '../lib/config/merge_conflict_callstack_config';
 import { TContext } from '../lib/context';
 import { RebaseConflictError } from '../lib/errors';
+import { TScopeSpec } from '../lib/state/scope_spec';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 
-export function restackCurrentBranch(context: TContext): void {
-  restackBranches([context.metaCache.currentBranchPrecondition], context);
-}
-
-export function restackCurrentDownstack(context: TContext): void {
-  const currentBranch = context.metaCache.currentBranchPrecondition;
-  restackBranches(
-    [...context.metaCache.getRecursiveParents(currentBranch), currentBranch],
-    context
-  );
-}
-
-export function restackCurrentStack(context: TContext): void {
-  const currentBranch = context.metaCache.currentBranchPrecondition;
-  restackBranches(
-    [
-      ...context.metaCache.getRecursiveParents(currentBranch),
-      currentBranch,
-      ...context.metaCache.getRecursiveChildren(currentBranch),
-    ],
-    context
-  );
-}
-
-export function restackCurrentUpstack(context: TContext): void {
-  const currentBranch = context.metaCache.currentBranchPrecondition;
-  restackBranches(
-    [currentBranch, ...context.metaCache.getRecursiveChildren(currentBranch)],
-    context
-  );
-}
-
-export function restackCurrentUpstackExclusive(context: TContext): void {
-  restackBranches(
-    context.metaCache.getRecursiveChildren(
-      context.metaCache.currentBranchPrecondition
-    ),
-    context
-  );
-}
+export type TBranchList =
+  | {
+      relative: false;
+      branchNames: string[];
+    }
+  | {
+      relative: true;
+      scope: TScopeSpec;
+    };
 
 export function restackBranches(
-  branchNames: string[],
+  branchList: TBranchList,
   context: TContext
 ): void {
+  const branchNames = branchList.relative
+    ? context.metaCache.getCurrentStack(branchList.scope)
+    : branchList.branchNames;
+
   context.splog.logDebug(
     branchNames.reduce((cur, next) => `${cur}\n${next}`, 'RESTACKING:')
   );
