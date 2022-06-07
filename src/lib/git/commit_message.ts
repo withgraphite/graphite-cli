@@ -10,6 +10,6 @@ export function getCommitMessage(
   format: keyof typeof GIT_LOG_FORMAT
 ): string {
   return gpExecSync({
-    command: `git log --format=${GIT_LOG_FORMAT[format]} -n 1 ${sha} --`,
+    command: `git --no-pager log --format=${GIT_LOG_FORMAT[format]} -n 1 ${sha} --`,
   });
 }

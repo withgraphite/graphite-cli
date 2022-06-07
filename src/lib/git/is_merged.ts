@@ -1,4 +1,5 @@
 import { gpExecSync } from '../utils/exec_sync';
+import { isDiffEmpty } from './is_empty_branch';
 
 export function isMerged({
   branchName,
@@ -17,11 +18,7 @@ export function isMerged({
   }
 
   // Is this branch in the same state as main?
-  if (
-    gpExecSync({
-      command: `git diff --no-ext-diff ${branchName} ${trunkName} | wc -l`,
-    }) === '0'
-  ) {
+  if (isDiffEmpty(branchName, trunkName)) {
     return true;
   }
 
