@@ -110,8 +110,8 @@ export class MetadataRef {
     return meta;
   }
 
-  public delete(): void {
-    fs.removeSync(this.getPath());
+  public static delete(branchName: string): void {
+    fs.removeSync(MetadataRef.pathForBranchName(branchName));
   }
 
   public static allMetadataRefs(): MetadataRef[] {
