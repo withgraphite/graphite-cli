@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import { push } from '../../../src/actions/submit/push_branch';
 import { pull } from '../../../src/actions/sync/pull';
-import { Branch } from '../../../src/wrapper-classes/branch';
 import { CloneScene } from '../../lib/scenes/clone_scene';
 import { configureTest } from '../../lib/utils/configure_test';
 
@@ -15,7 +14,7 @@ for (const scene of [new CloneScene()]) {
       scene.repo.execCliCommand(`branch create 1 -am "1"`);
       expect(scene.repo.currentBranchName()).to.equal('1');
 
-      push(new Branch('1'), scene.context);
+      push('1', scene.context);
 
       expect(scene.repo.getRef('refs/heads/1')).to.equal(
         scene.originRepo.getRef('refs/heads/1')
@@ -33,7 +32,7 @@ for (const scene of [new CloneScene()]) {
         scene.repo.getRef('refs/heads/1')
       );
 
-      expect(() => push(new Branch('1'), scene.context)).to.throw();
+      expect(() => push('1', scene.context)).to.throw();
     });
 
     it('can fetch a branch from remote', async () => {

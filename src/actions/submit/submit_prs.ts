@@ -7,10 +7,7 @@ import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
 import { cuteString } from '../../lib/utils/cute_string';
 import { Unpacked } from '../../lib/utils/ts_helpers';
-import {
-  TPRSubmissionInfoWithBranch,
-  TSubmittedPRRequest,
-} from './submit_action';
+import { TSubmittedPRRequest } from './submit_action';
 
 type TPRSubmissionInfo = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.submitPullRequests.params
@@ -27,7 +24,7 @@ type TSubmittedPR = {
 
 export async function submitPullRequest(
   args: {
-    submissionInfoWithBranch: TPRSubmissionInfoWithBranch;
+    submissionInfo: TPRSubmissionInfo;
     cliAuthToken: string;
   },
   context: TContext
@@ -36,7 +33,7 @@ export async function submitPullRequest(
     (
       await requestServerToSubmitPRs(
         args.cliAuthToken,
-        [args.submissionInfoWithBranch],
+        args.submissionInfo,
         context
       )
     )[0],

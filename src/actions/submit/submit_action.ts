@@ -5,34 +5,25 @@ import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
 import { cliAuthPrecondition } from '../../lib/preconditions';
+import { TScopeSpec } from '../../lib/state/scope_spec';
 import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
 import { Unpacked } from '../../lib/utils/ts_helpers';
-import { Branch } from '../../wrapper-classes/branch';
-import { TScope } from '../scope';
 import { getPRInfoForBranches } from './prepare_branches';
 import { push } from './push_branch';
 import { submitPullRequest } from './submit_prs';
 import { getValidBranchesToSubmit } from './validate_branches';
 
-export type TSubmitScope = TScope | 'BRANCH';
-
 export type TSubmittedPRRequest = Unpacked<
   t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.params>['prs']
 >;
-export type TPRSubmissionInfoWithBranch = TSubmittedPRRequest & {
-  branch: Branch;
-};
-
-export type TPRSubmissionInfoWithBranches = TPRSubmissionInfoWithBranch[];
-
 export async function submitAction(
   args: {
-    scope: TSubmitScope;
+    scope: TScopeSpec;
     editPRFieldsInline: boolean;
     draftToggle: boolean | undefined;
     dryRun: boolean;
     updateOnly: boolean;
-    branchesToSubmit?: Branch[];
+    branchNames?: string[];
     reviewers: boolean;
     confirm: boolean;
   },
@@ -65,17 +56,16 @@ export async function submitAction(
   }
 
   // args.branchesToSubmit is for the sync flow. Skips validation.
-  const branchesToSubmit =
-    args.branchesToSubmit ??
-    (await getValidBranchesToSubmit(args.scope, context));
+  const branchNames =
+    args.branchNames ?? (await getValidBranchesToSubmit(args.scope, context));
 
-  if (!branchesToSubmit) {
+  if (!branchNames.length) {
     return;
   }
 
-  const submissionInfoWithBranches = await getPRInfoForBranches(
+  const submissionInfos = await getPRInfoForBranches(
     {
-      branches: branchesToSubmit,
+      branchNames,
       editPRFieldsInline: args.editPRFieldsInline,
       draftToggle: args.draftToggle,
       updateOnly: args.updateOnly,
@@ -93,10 +83,10 @@ export async function submitAction(
     chalk.blueBright('📂 Pushing to remote and creating/updating PRs...')
   );
 
-  for (const submissionInfoWithBranch of submissionInfoWithBranches) {
-    push(submissionInfoWithBranch.branch, context);
+  for (const submissionInfo of submissionInfos) {
+    push(submissionInfo.head, context);
     await submitPullRequest(
-      { submissionInfoWithBranch, cliAuthToken },
+      { submissionInfo: [submissionInfo], cliAuthToken },
       context
     );
   }

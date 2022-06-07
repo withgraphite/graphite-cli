@@ -1,12 +1,11 @@
-import { Branch } from '../../wrapper-classes/branch';
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
 
-export function detectUnsubmittedChanges(branch: Branch): boolean {
+export function detectUnsubmittedChanges(branchName: string): boolean {
   return (
     gpExecSync(
       {
-        command: `git log ${branch.name} --not --remotes --simplify-by-decoration --decorate --oneline --`,
+        command: `git log ${branchName} --not --remotes --simplify-by-decoration --decorate --oneline --`,
       },
       () => {
         throw new ExitFailedError(
