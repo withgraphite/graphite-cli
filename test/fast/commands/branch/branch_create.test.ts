@@ -3,6 +3,7 @@ import { unstagedChanges } from '../../../../src/lib/git/git_status_utils';
 import { Branch } from '../../../../src/wrapper-classes/branch';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
+import { expectCommits } from '../../../lib/utils/expect_commits';
 
 for (const scene of allScenes) {
   describe(`(${scene}): branch create`, function () {
@@ -13,7 +14,7 @@ for (const scene of allScenes) {
       expect(scene.repo.currentBranchName()).to.equal('a');
       scene.repo.createChangeAndCommit('2', '2');
 
-      scene.repo.execCliCommand('branch prev --no-interactive');
+      scene.repo.execCliCommand('branch down');
       expect(scene.repo.currentBranchName()).to.equal('main');
     });
 
@@ -61,6 +62,21 @@ for (const scene of allScenes) {
 
       // Upon recreating the branch, the old PR info should be gone.
       expect(Branch.branchWithName('a').getPRInfo() === undefined).to.be.true;
+    });
+
+    it('Can restack its parents children', () => {
+      scene.repo.createChange('a', 'a');
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+
+      scene.repo.createChange('b', 'b');
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+      scene.repo.execCliCommand('branch down');
+
+      scene.repo.createChange('c', 'c');
+      scene.repo.execCliCommand(`branch create "c" -m "c" -q --restack`);
+      expect(() => scene.repo.execCliCommand('branch up')).not.to.throw();
+
+      expectCommits(scene.repo, 'b, c, a');
     });
   });
 }

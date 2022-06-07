@@ -34,6 +34,7 @@ export type TMetaCache = {
   getParent: (branchName: string) => string | undefined;
   getParentPrecondition: (branchName: string) => string;
   getCurrentStack: (scope: TScopeSpec) => string[];
+  checkoutNewBranch: (branchName: string) => void;
   checkoutBranch: (branchName: string | undefined) => boolean;
   renameCurrentBranch: (branchName: string) => void;
   deleteBranch: (branchName: string) => string[];
@@ -273,6 +274,23 @@ export function composeMetaCache({
           ? getRecursiveChildren(cache.currentBranch)
           : []),
       ];
+    },
+    checkoutNewBranch: (branchName: string) => {
+      const parentBranchName = cache.currentBranch;
+      assertBranchIsValid(parentBranchName);
+      const parentCachedMeta = cache.branches[parentBranchName];
+      switchBranch(branchName, { new: true });
+
+      cache.branches[branchName] = {
+        validationResult: 'VALID',
+        parentBranchName,
+        parentBranchRevision: parentCachedMeta.branchRevision,
+        branchRevision: parentCachedMeta.branchRevision,
+        children: [],
+      };
+      persistMeta(branchName);
+      cache.branches[parentBranchName].children.push(branchName);
+      cache.currentBranch = branchName;
     },
     checkoutBranch,
     renameCurrentBranch: (branchName: string) => {
