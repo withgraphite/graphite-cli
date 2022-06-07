@@ -36,12 +36,16 @@ class ExitFailedError extends ExitError {
 class RebaseConflictError extends ExitError {
   constructor(
     message: string,
-    callstack: TMergeConflictCallstack,
-    context: TContext
+    callstack?: TMergeConflictCallstack,
+    context?: TContext
   ) {
     super(message);
     this.name = 'RebaseConflict';
-    persistMergeConflictCallstack(callstack, context);
+
+    // TODO kill this after migrating to restack
+    if (callstack && context) {
+      persistMergeConflictCallstack(callstack, context);
+    }
   }
 }
 
