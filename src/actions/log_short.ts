@@ -154,7 +154,6 @@ function logRegenTip(context: TContext): void {
       'Graphite does not know the parent of untracked branches. Consider:',
       `> gt branch checkout <branch> && gt upstack onto <parent> # fix a stack and update the parent`,
       `> gt branch checkout <branch> && gt stack fix --regen # generate stack based on current commit tree`,
-      `> gt repo ignored-branches --add <branch> # set branch to be ignored by Graphite`,
       `> gt branch delete -f <branch> # delete branch from git`,
     ].join('\n')
   );
