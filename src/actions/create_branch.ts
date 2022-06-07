@@ -10,7 +10,7 @@ import { currentBranchPrecondition } from '../lib/preconditions';
 import { newBranchName } from '../lib/utils/branch_name';
 import { Branch } from '../wrapper-classes/branch';
 import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
-import { currentBranchOnto } from './onto/current_branch_onto';
+import { currentBranchOnto } from './current_branch_onto';
 
 export async function createBranchAction(
   opts: {
