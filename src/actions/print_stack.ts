@@ -110,9 +110,9 @@ function getBranchInfo(
 ): string[] {
   let branchInfoLines = [];
 
-  branchInfoLines.push(getBranchTitle(branch, config));
+  branchInfoLines.push(getBranchTitle(branch, config, context));
 
-  const prInfo = branch.getPRInfo();
+  const prInfo = context.metaCache.getPrInfo(branch.name);
   const prTitle = prInfo?.title;
   if (prTitle !== undefined) {
     branchInfoLines.push(prTitle);
@@ -139,10 +139,13 @@ function getBranchInfo(
     }
   }
 
-  branchInfoLines = dimMergedOrClosedBranches({
-    lines: branchInfoLines,
-    branch: branch,
-  });
+  branchInfoLines = dimMergedOrClosedBranches(
+    {
+      lines: branchInfoLines,
+      branch: branch,
+    },
+    context
+  );
 
   branchInfoLines = prefixWithBranchStem({
     branch: branch,
@@ -155,9 +158,10 @@ function getBranchInfo(
 
 export function getBranchTitle(
   branch: Branch,
-  config: TPrintStackConfig
+  config: TPrintStackConfig,
+  context: TContext
 ): string {
-  const prInfo = branch.getPRInfo();
+  const prInfo = context.metaCache.getPrInfo(branch.name);
   const branchName =
     config.currentBranchName === branch.name
       ? chalk.cyan(`${branch.name} (current)`)
@@ -249,11 +253,16 @@ function prefixWithBranchStem(args: {
   );
 }
 
-function dimMergedOrClosedBranches(args: {
-  lines: string[];
-  branch: Branch;
-}): string[] {
-  const isBranchMergedOrClosed = getMergedOrClosed(args.branch.getPRInfo());
+function dimMergedOrClosedBranches(
+  args: {
+    lines: string[];
+    branch: Branch;
+  },
+  context: TContext
+): string[] {
+  const isBranchMergedOrClosed = getMergedOrClosed(
+    context.metaCache.getPrInfo(args.branch.name)
+  );
   if (isBranchMergedOrClosed) {
     return args.lines.map((line) => chalk.dim.gray(line));
   }

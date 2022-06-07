@@ -25,13 +25,13 @@ export const handler = async (argv: argsT): Promise<void> => {
     const branch = currentBranchPrecondition();
 
     if (argv.reset) {
-      branch.clearPRInfo();
+      context.metaCache.resetPrInfo(branch.name);
       return;
     }
 
     await syncPRInfoForBranchByName([branch.name], context);
 
-    const prInfo = branch.getPRInfo();
+    const prInfo = context.metaCache.getPrInfo(branch.name);
     if (prInfo === undefined) {
       context.splog.logError(
         `Could not find associated PR. Please double-check that a PR exists on GitHub in repo ${chalk.bold(
@@ -42,10 +42,14 @@ export const handler = async (argv: argsT): Promise<void> => {
     }
 
     console.log(
-      getBranchTitle(branch, {
-        offTrunk: false,
-        visited: [],
-      })
+      getBranchTitle(
+        branch,
+        {
+          offTrunk: false,
+          visited: [],
+        },
+        context
+      )
     );
 
     const prTitle = prInfo.title;
