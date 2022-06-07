@@ -34,7 +34,12 @@ jobs:
       - name: Git Version
         run: git --version
       - name: Test
-        run: yarn test-fast
+        run: yarn test-ci
+      - name: Coveralls Parallel
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+
   superlinter:
     # Name the Job
     name: Run Superlinter

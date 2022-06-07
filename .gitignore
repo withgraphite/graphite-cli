@@ -11,3 +11,5 @@ dist/
 .eslintcache
 .graphite_repo_config
 .idea/*
+.nyc_output/
+coverage/
