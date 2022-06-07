@@ -9,12 +9,14 @@ type TBranchNameWithPrNumber = {
   prNumber: number | undefined;
 };
 
+export type TPRInfoToUpsert = t.UnwrapSchemaMap<
+  typeof graphiteCLIRoutes.pullRequestInfo.response
+>['prs'];
+
 export async function getPrInfoForBranches(
   branchNamesWithExistingPrInfo: TBranchNameWithPrNumber[],
   params: TRepoParams
-): Promise<
-  t.UnwrapSchemaMap<typeof graphiteCLIRoutes.pullRequestInfo.response>['prs']
-> {
+): Promise<TPRInfoToUpsert> {
   // We sync branches without existing PR info by name.  For branches
   // that are already associated with a PR, we only sync if both the
   // the associated PR (keyed by number) if the name matches the headRef.
