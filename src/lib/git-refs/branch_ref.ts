@@ -4,7 +4,7 @@ import { TContext } from '../context';
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
 
-function refreshRefsCache(context: TContext): void {
+function refreshRefsCache(_context: TContext): void {
   cache.clearBranchRefs();
   const memoizedRefToBranches: Record<string, string[]> = {};
   const memoizedBranchToRef: Record<string, string> = {};
@@ -22,12 +22,10 @@ function refreshRefsCache(context: TContext): void {
       }
       const ref = pair[0];
       const branchName = pair[1].replace('refs/heads/', '');
-      if (!context.repoConfig.branchIsIgnored(branchName)) {
-        memoizedRefToBranches[ref]
-          ? memoizedRefToBranches[ref].push(branchName)
-          : (memoizedRefToBranches[ref] = [branchName]);
-        memoizedBranchToRef[branchName] = ref;
-      }
+      memoizedRefToBranches[ref]
+        ? memoizedRefToBranches[ref].push(branchName)
+        : (memoizedRefToBranches[ref] = [branchName]);
+      memoizedBranchToRef[branchName] = ref;
     });
   cache.setBranchRefs({
     branchToRef: memoizedBranchToRef,
