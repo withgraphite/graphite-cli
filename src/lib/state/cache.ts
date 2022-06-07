@@ -8,6 +8,7 @@ import {
 } from '../../wrapper-classes/metadata_ref';
 import { PreconditionsFailedError } from '../errors';
 import { branchExists } from '../git/branch_exists';
+import { branchMove } from '../git/branch_move';
 import { switchBranch } from '../git/checkout_branch';
 import { commit, TCommitOpts } from '../git/commit';
 import { getCurrentBranchName } from '../git/current_branch_name';
@@ -34,6 +35,7 @@ export type TMetaCache = {
   getParentPrecondition: (branchName: string) => string;
   getCurrentStack: (scope: TScopeSpec) => string[];
   checkoutBranch: (branchName: string | undefined) => boolean;
+  renameCurrentBranch: (branchName: string) => void;
   deleteBranch: (branchName: string) => string[];
   commit: (opts: TCommitOpts) => void;
   restackBranch: (
@@ -273,6 +275,32 @@ export function composeMetaCache({
       ];
     },
     checkoutBranch,
+    renameCurrentBranch: (branchName: string) => {
+      assertBranchIsValid(cache.currentBranch);
+      const cachedMeta = cache.branches[cache.currentBranch];
+      assertCachedMetaIsNotTrunk(cachedMeta);
+
+      branchMove(branchName);
+      cachedMeta.prInfo = {};
+
+      cache.branches[branchName] = cachedMeta;
+      persistMeta(branchName);
+
+      cachedMeta.children.forEach((childBranchName) =>
+        setParent(childBranchName, branchName)
+      );
+
+      assertBranchIsValid(cachedMeta.parentBranchName);
+      const parentCachedMeta = cache.branches[cachedMeta.parentBranchName];
+      parentCachedMeta.children = parentCachedMeta.children.map(
+        (childBranchName) =>
+          childBranchName === cache.currentBranch ? branchName : childBranchName
+      );
+
+      delete cache.branches[cache.currentBranch];
+      deleteMetadataRef(cache.currentBranch);
+      cache.currentBranch = branchName;
+    },
     deleteBranch: (branchName: string): string[] => {
       if (
         branchName === cache.currentBranch &&
