@@ -1,11 +1,21 @@
 #!/usr/bin/env node
 import chalk from 'chalk';
+import semver from 'semver';
 import tmp from 'tmp';
 import yargs from 'yargs';
 import { globalArgumentsOptions } from './lib/global_arguments';
 import { passthrough } from './lib/passthrough';
 import { postTelemetryInBackground } from './lib/telemetry/post_traces';
 import { preprocessCommand } from './lib/utils/preprocess_command';
+
+const requiredVersion = '^v16.15.0 || v18';
+if (!semver.satisfies(process.version, requiredVersion)) {
+  console.error(
+    `Required node version ${requiredVersion} not satisfied with current version ${process.version}.`
+  );
+  // eslint-disable-next-line no-restricted-syntax
+  process.exit(1);
+}
 
 // https://www.npmjs.com/package/tmp#graceful-cleanup
 tmp.setGracefulCleanup();
