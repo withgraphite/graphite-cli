@@ -49,6 +49,7 @@ export function initContext(opts?: {
     noVerify: !(opts?.globalArguments?.verify ?? true),
     remote: repoConfig.getRemote(),
   });
+  continueConfig?.update((data) => (data.currentBranchOverride = undefined));
   const prInfoConfig = prInfoConfigFactory.loadIfExists();
   if (prInfoConfig) {
     upsertPrInfoForBranches(prInfoConfig.data.prInfoToUpsert ?? [], metaCache);
