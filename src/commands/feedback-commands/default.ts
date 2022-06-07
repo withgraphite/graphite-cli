@@ -3,7 +3,7 @@ import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
 import yargs from 'yargs';
 import { API_SERVER } from '../../lib/api';
-import { captureState } from '../../lib/debugContext';
+import { captureState } from '../../lib/debug_context';
 import { ExitFailedError } from '../../lib/errors';
 import { getUserEmail } from '../../lib/telemetry/context';
 import { profile } from '../../lib/telemetry/profile';

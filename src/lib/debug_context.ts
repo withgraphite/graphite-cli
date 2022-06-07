@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
-import { MetadataRef } from '../wrapper-classes/metadata_ref';
+import { MetadataRef, TMeta } from '../wrapper-classes/metadata_ref';
 import { TContext } from './context';
 import { getBranchToRefMapping } from './git-refs/branch_ref';
 import { getRevListGitTree } from './git-refs/branch_relations';
@@ -10,7 +10,7 @@ import { deleteBranch } from './git/deleteBranch';
 import { currentBranchPrecondition } from './preconditions';
 import { gpExecSync } from './utils/exec_sync';
 
-type stateT = {
+type TState = {
   refTree: Record<string, string[]>;
   branchToRefMapping: Record<string, string>;
   userConfig: string;
@@ -35,7 +35,7 @@ export function captureState(context: TContext): string {
 
   const currentBranchName = currentBranchPrecondition().name;
 
-  const state: stateT = {
+  const state: TState = {
     refTree,
     branchToRefMapping,
     userConfig: JSON.stringify(context.userConfig.data),
@@ -48,7 +48,7 @@ export function captureState(context: TContext): string {
 }
 
 export function recreateState(stateJson: string, context: TContext): string {
-  const state = JSON.parse(stateJson) as stateT;
+  const state = JSON.parse(stateJson) as TState;
   const refMappingsOldToNew: Record<string, string> = {};
 
   const tmpTrunk = `initial-debug-context-head-${Date.now()}`;
@@ -84,7 +84,7 @@ export function recreateState(stateJson: string, context: TContext): string {
   );
 
   context.splog.logInfo(`Creating the metadata`);
-  createMetadata({ metadata: state.metadata, tmpDir });
+  createMetadata({ metadata: state.metadata, tmpDir, refMappingsOldToNew });
 
   checkoutBranch(state.currentBranchName);
   deleteBranch(tmpTrunk);
@@ -94,14 +94,24 @@ export function recreateState(stateJson: string, context: TContext): string {
 
 function createMetadata(opts: {
   metadata: Record<string, string>;
+  refMappingsOldToNew: Record<string, string>;
   tmpDir: string;
 }) {
   fs.mkdirSync(`${opts.tmpDir}/.git/refs/branch-metadata`);
   Object.keys(opts.metadata).forEach((branchName) => {
+    // Replace parentBranchRevision with the commit hash in the recreated repo
+    const meta: TMeta = JSON.parse(opts.metadata[branchName]);
+    if (
+      meta.parentBranchRevision &&
+      opts.refMappingsOldToNew[meta.parentBranchRevision]
+    ) {
+      meta.parentBranchRevision =
+        opts.refMappingsOldToNew[meta.parentBranchRevision];
+    }
     const metaSha = gpExecSync({
       command: `git hash-object -w --stdin`,
       options: {
-        input: opts.metadata[branchName],
+        input: JSON.stringify(meta),
       },
     });
     fs.writeFileSync(
