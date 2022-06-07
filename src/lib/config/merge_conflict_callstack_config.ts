@@ -1,6 +1,5 @@
 import * as t from '@withgraphite/retype';
 import { TContext } from '../context';
-import { StackedEditSchema } from './../../actions/edit/stack_edits';
 import { composeConfig } from './compose_config';
 
 /**
@@ -18,7 +17,7 @@ import { composeConfig } from './compose_config';
 const StackEditStackFrameSchema = t.shape({
   op: t.literal('STACK_EDIT_CONTINUATION' as const),
   currentBranchName: t.string,
-  remainingEdits: t.array(StackedEditSchema),
+  remainingBranchNames: t.array(t.string),
 });
 
 const DeleteBranchesStackFrameSchema = t.shape({

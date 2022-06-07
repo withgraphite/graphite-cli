@@ -5,24 +5,18 @@ import { getTrunk } from '../../lib/utils/trunk';
 import { Stack } from '../../wrapper-classes/stack';
 
 const FILE_NAME = 'graphite_stack_edit';
-const COLUMN_SPACING = ' '.repeat(5);
 const FILE_FOOTER = [
   '#',
-  '# Operations (applied bottom to top):',
-  '# p, pick <branch> = use branch (branches are rebased onto trunk in the specified order)',
-  '# x, exec <command> = run command (the rest of the line) using shell',
+  '# Stack will be rearranged on trunk to match the above order.',
 ];
 
 /* Example file:
 
-pick    gf--02-09-second
-pick    gf--02-09-first
-
-# pick  main (Bottom of stack)
+gf--02-09-second
+gf--02-09-first
+# main (trunk, shown for orientation)
 #
-# Operations:
-# p, pick <branch> = use branch (branches are rebased onto trunk in the specified order)
-# x, exec <command> = run command (the rest of the line) using shell
+# Stack will be rearranged on trunk to match the above order.
 */
 
 export function createStackEditFile(
@@ -38,11 +32,9 @@ export function createStackEditFile(
     .map((b) => b.name)
     .filter((n) => n !== trunkName);
   branchNames.reverse(); // show the trunk at the bottom of the list to better match "upstack" and "downstack"
-  const fileContents = [
-    ...branchNames.map((b) => `pick${COLUMN_SPACING}${b}`),
-    `\n# pick   ${trunkName} (trunk, shown for orientation)`,
-    ...FILE_FOOTER,
-  ].join('\n');
+  const fileContents = [...branchNames, `# ${trunkName} `, ...FILE_FOOTER].join(
+    '\n'
+  );
 
   const filePath = path.join(opts.tmpDir, FILE_NAME);
   fs.writeFileSync(filePath, fileContents);
