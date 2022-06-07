@@ -1,6 +1,5 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { ExitFailedError } from '../lib/errors';
 import { getRepoRootPathPrecondition } from '../lib/preconditions';
 import { cuteString } from '../lib/utils/cute_string';
 import { gpExecSync } from '../lib/utils/exec_sync';
@@ -61,20 +60,6 @@ export function readMetadataRef(
   // TODO: Better account for malformed desc; possibly validate with retype
   const meta = JSON.parse(metaString);
   return meta;
-}
-
-export function moveMetadataRef(
-  oldBranchName: string,
-  newBranchName: string
-): void {
-  const oldPath = getMetadataPath(oldBranchName);
-  if (!fs.existsSync(oldPath)) {
-    throw new ExitFailedError(`No Graphite metadata ref found at ${oldPath}`);
-  }
-  fs.moveSync(
-    path.join(oldPath),
-    path.join(path.dirname(oldPath), newBranchName)
-  );
 }
 
 export function deleteMetadataRef(branchName: string): void {
