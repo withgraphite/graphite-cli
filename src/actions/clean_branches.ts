@@ -8,11 +8,10 @@ import {
 import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
 import { checkoutBranch } from '../lib/git/checkout_branch';
-import { isMerged } from '../lib/git/is_merged';
 import { getTrunk } from '../lib/utils/trunk';
 import { Branch } from '../wrapper-classes/branch';
 import { currentBranchOnto } from './current_branch_onto';
-import { deleteBranchAction } from './delete_branch';
+import { deleteBranchAction, isSafeToDelete } from './delete_branch';
 
 /**
  * This method is assumed to be idempotent -- if a merge conflict interrupts
@@ -184,14 +183,16 @@ async function shouldDeleteBranch(
   },
   context: TContext
 ): Promise<boolean> {
-  const mergedBase = mergedBaseIfMerged(args.branch, context);
-  if (!mergedBase && args.branch.getPRInfo()?.state !== 'CLOSED') {
+  const reason = isSafeToDelete(args.branch.name, context);
+  if (!reason) {
     return false;
   }
 
   if (args.force) {
     return true;
-  } else if (!context.interactive) {
+  }
+
+  if (!context.interactive) {
     return false;
   }
 
@@ -201,9 +202,7 @@ async function shouldDeleteBranch(
         {
           type: 'confirm',
           name: 'value',
-          message: `Delete (${chalk.green(args.branch.name)}), which has been ${
-            mergedBase ? `merged into (${mergedBase})` : 'closed on GitHub'
-          }?`,
+          message: `${reason}. Delete it?`,
           initial: true,
         },
         {
@@ -216,29 +215,11 @@ async function shouldDeleteBranch(
   );
 }
 
-// Where did we merge this? If it was merged on GitHub, we see where it was
-// merged into. If we don't detect that it was merged in GitHub but we do
-// see the code in trunk, we fallback to say that it was merged into trunk.
-// This extra check (rather than just saying trunk) is used to catch the
-// case where one feature branch is merged into another on GitHub.
-export function mergedBaseIfMerged(
-  branch: Branch,
-  context: TContext
-): string | undefined {
-  const trunkName = getTrunk(context).name;
-  return branch.getPRInfo()?.state === 'MERGED'
-    ? branch.getPRInfo()?.base ?? trunkName
-    : isMerged({ branchName: branch.name, trunkName })
-    ? trunkName
-    : undefined;
-}
-
 function deleteBranch(branch: Branch, context: TContext) {
   context.splog.logInfo(`Deleting (${chalk.red(branch.name)})`);
   deleteBranchAction(
     {
       branchName: branch.name,
-      force: true,
     },
     context
   );
