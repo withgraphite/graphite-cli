@@ -1,7 +1,8 @@
 import { TContext } from '../lib/context';
 import { addAll } from '../lib/git/add_all';
 import { ensureSomeStagedChangesPrecondition } from '../lib/preconditions';
-import { restackCurrentUpstackExclusive } from './restack';
+import { SCOPE } from '../lib/state/scope_spec';
+import { restackBranches } from './restack';
 
 export function commitAmendAction(
   opts: {
@@ -25,5 +26,5 @@ export function commitAmendAction(
     noEdit: opts.noEdit,
     message: opts.message,
   });
-  restackCurrentUpstackExclusive(context);
+  restackBranches({ relative: true, scope: SCOPE.UPSTACK_EXCLUSIVE }, context);
 }
