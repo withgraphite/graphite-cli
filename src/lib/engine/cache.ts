@@ -36,12 +36,13 @@ import {
   writeMetadataRef,
 } from './metadata_ref';
 import { validateOrFixParentBranchRevision } from './parse_branches_and_meta';
-import { persistCache } from './persist_cache';
+import { clearPersistedCache, persistCache } from './persist_cache';
 import { TScopeSpec } from './scope_spec';
 
 export type TMetaCache = {
   debug: () => void;
   persist: () => void;
+  clear: () => void;
 
   rebuild: (newTrunkName?: string) => void;
   trunk: string;
@@ -315,6 +316,9 @@ export function composeMetaCache({
     },
     persist() {
       persistCache(trunkName, cache.branches, splog);
+    },
+    clear() {
+      clearPersistedCache(splog);
     },
     rebuild(newTrunkName?: string) {
       cache.branches = loadCachedBranches(

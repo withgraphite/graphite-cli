@@ -2,6 +2,9 @@
 // We the creators want to understand how people are using the tool
 // All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
 import chalk from 'chalk';
+import fs from 'fs-extra';
+import path from 'path';
+import tmp from 'tmp';
 import yargs from 'yargs';
 import { version } from '../../package.json';
 import { init } from '../actions/init';
@@ -97,7 +100,22 @@ async function graphiteHelper(
       return err;
     }
   })();
-  context.metaCache.persist();
+
+  try {
+    context.metaCache.persist();
+  } catch (persistError) {
+    context.metaCache.clear();
+    const persistFailureLog = path.join(tmp.dirSync().name, 'PERSIST_FAILURE');
+    context.splog.logError(
+      `Failed to persist Graphite cache, saving debug to:\n${chalk.reset(
+        persistFailureLog
+      )}`
+    );
+    fs.appendFileSync(persistFailureLog, tracer.flushJson());
+    fs.appendFileSync(persistFailureLog, persistError?.toString());
+    fs.appendFileSync(persistFailureLog, persistError?.stack?.toString());
+  }
+
   refreshPRInfoInBackground(context);
 
   const end = Date.now();
