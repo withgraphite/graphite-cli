@@ -1,12 +1,7 @@
 import chalk from 'chalk';
 import { TContext } from '../lib/context';
 import { ExitFailedError } from '../lib/errors';
-import { switchBranch } from '../lib/git/checkout_branch';
-import { getCurrentBranchName } from '../lib/git/current_branch_name';
-import { deleteBranch } from '../lib/git/deleteBranch';
-import { getTrunk } from '../lib/utils/trunk';
-import { Branch } from '../wrapper-classes/branch';
-import { MetadataRef } from '../wrapper-classes/metadata_ref';
+import { restackBranches } from './restack';
 
 export function deleteBranchAction(
   args: {
@@ -15,31 +10,25 @@ export function deleteBranchAction(
   },
   context: TContext
 ): void {
-  const trunk = getTrunk(context).name;
-  if (trunk === args.branchName) {
+  if (context.metaCache.isTrunk(args.branchName)) {
     throw new ExitFailedError('Cannot delete trunk!');
   }
 
-  const current = getCurrentBranchName();
-
   if (!args.force && !isSafeToDelete(args.branchName, context)) {
     throw new ExitFailedError(
-      `The branch ${args.branchName} is not fully merged.  Use the \`--force\` option to delete it.`
+      [
+        `The branch ${args.branchName} is not fully merged.  Use the \`--force\` option to delete it.`,
+        `Note that its changes will be lost, as its children will be restacked onto its parent.`,
+      ].join('\n')
     );
   }
 
-  if (current === args.branchName) {
-    switchBranch(
-      Branch.branchWithName(current).getParentFromMeta(context)?.name ?? trunk
-    );
-  }
-
-  deleteBranch(args.branchName);
+  const movedChildren = context.metaCache.deleteBranch(args.branchName);
   context.splog.logInfo(`Deleted branch ${chalk.red(args.branchName)}`);
 
-  // No need for a try-catch here; this already silently does nothing if the
-  // metadata does not exist.
-  new MetadataRef(args.branchName).delete();
+  if (movedChildren.length > 0) {
+    restackBranches({ relative: false, branchNames: movedChildren }, context);
+  }
 }
 
 export function isSafeToDelete(
