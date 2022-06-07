@@ -44,7 +44,7 @@ export async function fixDanglingBranches(
 
   const trunk = getTrunk(context).name;
   for (const branch of danglingBranches) {
-    type TFixStrategy = 'parent_trunk' | 'ignore_branch' | 'no_fix' | undefined;
+    type TFixStrategy = 'parent_trunk' | 'no_fix' | undefined;
     let fixStrategy: TFixStrategy | undefined = undefined;
 
     if (opts.force) {
@@ -70,12 +70,6 @@ export async function fixDanglingBranches(
               )}'s parent to ${trunk}`,
               value: 'parent_trunk',
             },
-            {
-              title: `Add ${chalk.green(
-                `(${branch.name})`
-              )} to the list of branches Graphite should ignore`,
-              value: 'ignore_branch',
-            },
             { title: `Fix later`, value: 'no_fix' },
           ],
         },
@@ -90,9 +84,6 @@ export async function fixDanglingBranches(
         case 'parent_trunk':
           fixStrategy = 'parent_trunk';
           break;
-        case 'ignore_branch':
-          fixStrategy = 'ignore_branch';
-          break;
         case 'no_fix':
         default:
           fixStrategy = 'no_fix';
@@ -102,9 +93,6 @@ export async function fixDanglingBranches(
     switch (fixStrategy) {
       case 'parent_trunk':
         branch.setParentBranchName(trunk);
-        break;
-      case 'ignore_branch':
-        context.repoConfig.addIgnoreBranchPatterns([branch.name]);
         break;
       case 'no_fix':
         break;
