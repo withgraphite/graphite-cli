@@ -52,3 +52,11 @@ export function hashCacheOrKey(
     }
   );
 }
+
+export function clearPersistedCache(splog: TSplog): void {
+  splog.logDebug(`Deleting ${CACHE_CHECK_REF}...`);
+  gpExecSync({ command: `git update-ref -d ${CACHE_CHECK_REF}` });
+  splog.logDebug(`Deleting ${CACHE_DATA_REF}...`);
+  gpExecSync({ command: `git update-ref -d ${CACHE_DATA_REF}` });
+  splog.logDebug(`Cleared cache`);
+}
