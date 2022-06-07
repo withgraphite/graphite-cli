@@ -2,7 +2,7 @@ import { TContext } from '../lib/context';
 import { SCOPE } from '../lib/engine/scope_spec';
 import { ExitFailedError } from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
-import { detectStagedChanges } from '../lib/git/detect_staged_changes';
+import { detectStagedChanges } from '../lib/git/diff';
 import { newBranchName } from '../lib/utils/branch_name';
 import { restackBranches } from './restack';
 

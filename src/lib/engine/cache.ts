@@ -4,6 +4,7 @@ import { commit, TCommitOpts } from '../git/commit';
 import { getCommitRange, TCommitFormat } from '../git/commit_range';
 import { getCurrentBranchName } from '../git/current_branch_name';
 import { deleteBranch } from '../git/deleteBranch';
+import { isDiffEmpty } from '../git/diff';
 import {
   fetchBranch,
   readFetchBase,
@@ -11,7 +12,6 @@ import {
   writeFetchBase,
 } from '../git/fetch_branch';
 import { getRemoteSha, getShaOrThrow } from '../git/get_sha';
-import { isDiffEmpty } from '../git/is_empty_branch';
 import { isMerged } from '../git/is_merged';
 import { getMergeBase } from '../git/merge_base';
 import { pruneRemote } from '../git/prune_remote';
@@ -550,7 +550,6 @@ export function composeMetaCache({
       assertBranch(branchName);
       const cachedMeta = cache.branches[branchName];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
-
       return isDiffEmpty(branchName, cachedMeta.parentBranchRevision);
     },
     baseMatchesRemoteParent: (branchName: string) => {
