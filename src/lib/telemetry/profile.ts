@@ -15,13 +15,11 @@ import {
   PreconditionsFailedError,
   RebaseConflictError,
   SiblingBranchError,
-  ValidationFailedError,
 } from '../errors';
 import { getUnmergedFiles } from '../git/merge_conflict_help';
 import { TGlobalArguments } from '../global_arguments';
 import { refreshPRInfoInBackground } from '../requests/fetch_pr_info';
 import { parseArgs } from '../utils/parse_args';
-import { VALIDATION_HELPER_MESSAGE } from '../utils/validation_helper_message';
 import { getUserEmail } from './context';
 import { postTelemetryInBackground } from './post_traces';
 import { registerSigintHandler } from './sigint_handler';
@@ -110,10 +108,6 @@ export async function profile(
                   `gt continue`
                 )} to continue executing your previous Graphite command`
               );
-              throw err;
-            case ValidationFailedError:
-              context.splog.logError(`Validation: ${err.message}`);
-              context.splog.logInfo(VALIDATION_HELPER_MESSAGE);
               throw err;
             case ConfigError:
               context.splog.logError(`Bad Config: ${err.message}`);
