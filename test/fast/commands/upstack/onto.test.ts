@@ -16,7 +16,6 @@ for (const scene of allScenes) {
 
       scene.repo.execCliCommand('upstack onto main -q');
       expectCommits(scene.repo, '3, 1');
-      expect(() => scene.repo.execCliCommand('validate -q')).not.to.throw;
     });
 
     it('Can gracefully catch a merge conflict on first rebase', () => {
@@ -32,28 +31,30 @@ for (const scene of allScenes) {
       }).to.not.throw();
     });
 
-    it('Can recover a branch that has no git and meta parents', () => {
-      // Create our dangling branch
-      scene.repo.createAndCheckoutBranch('a');
-      scene.repo.createChangeAndCommit('a1', 'a1');
-      scene.repo.createChangeAndCommit('a2', 'a2');
-      scene.repo.createChangeAndCommit('a3', 'a3');
+    // TODO move this to become a test for `gt track`
 
-      // Move main forward
-      scene.repo.checkoutBranch('main');
-      scene.repo.createChangeAndCommit('b', 'b');
+    // it('Can recover a branch that has no git and meta parents', () => {
+    //   // Create our dangling branch
+    //   scene.repo.createAndCheckoutBranch('a');
+    //   scene.repo.createChangeAndCommit('a1', 'a1');
+    //   scene.repo.createChangeAndCommit('a2', 'a2');
+    //   scene.repo.createChangeAndCommit('a3', 'a3');
 
-      // branch a is dangling now, but we should still be able to "upstack onto" main
-      scene.repo.checkoutBranch('a');
-      expect(() => {
-        scene.repo.execCliCommand('upstack onto main');
-      }).to.not.throw();
-      expectCommits(scene.repo, 'a3, a2, a1, b, 1');
-      scene.repo.checkoutBranch('a');
+    //   // Move main forward
+    //   scene.repo.checkoutBranch('main');
+    //   scene.repo.createChangeAndCommit('b', 'b');
 
-      // Prove that we have meta now.
-      scene.repo.execCliCommand('branch prev --no-interactive');
-      expect(scene.repo.currentBranchName()).to.eq('main');
-    });
+    //   // branch a is dangling now, but we should still be able to "upstack onto" main
+    //   scene.repo.checkoutBranch('a');
+    //   expect(() => {
+    //     scene.repo.execCliCommand('upstack onto main');
+    //   }).to.not.throw();
+    //   expectCommits(scene.repo, 'a3, a2, a1, b, 1');
+    //   scene.repo.checkoutBranch('a');
+
+    //   // Prove that we have meta now.
+    //   scene.repo.execCliCommand('branch prev --no-interactive');
+    //   expect(scene.repo.currentBranchName()).to.eq('main');
+    // });
   });
 }
