@@ -1,6 +1,6 @@
-import { syncPrInfo } from '../../actions/sync_pr_info';
-import { initContext, TContext } from '../context';
-import { spawnDetached } from '../utils/spawn';
+import { syncPrInfo } from '../actions/sync_pr_info';
+import { initContext, TContext } from '../lib/context';
+import { spawnDetached } from '../lib/utils/spawn';
 
 export function refreshPRInfoInBackground(context: TContext): void {
   if (!context.repoConfig.graphiteInitialized()) {
