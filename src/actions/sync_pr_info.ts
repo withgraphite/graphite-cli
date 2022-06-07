@@ -1,5 +1,6 @@
-import { getPrInfoForBranches } from '../lib/api/pr_info';
+import { getPrInfoForBranches, TPRInfoToUpsert } from '../lib/api/pr_info';
 import { TContext } from '../lib/context';
+import { TMetaCache } from '../lib/engine/cache';
 
 export async function syncPrInfo(
   branchNames: string[],
@@ -10,7 +11,7 @@ export async function syncPrInfo(
     return;
   }
 
-  (
+  upsertPrInfoForBranches(
     await getPrInfoForBranches(
       branchNames.map((branchName) => ({
         branchName,
@@ -21,9 +22,17 @@ export async function syncPrInfo(
         repoName: context.repoConfig.getRepoName(),
         repoOwner: context.repoConfig.getRepoOwner(),
       }
-    )
-  ).forEach((pr) =>
-    context.metaCache.upsertPrInfo(pr.headRefName, {
+    ),
+    context.metaCache
+  );
+}
+
+export function upsertPrInfoForBranches(
+  prInfoToUpsert: TPRInfoToUpsert,
+  metaCache: TMetaCache
+): void {
+  prInfoToUpsert.forEach((pr) =>
+    metaCache.upsertPrInfo(pr.headRefName, {
       number: pr.prNumber,
       title: pr.title,
       body: pr.body,
