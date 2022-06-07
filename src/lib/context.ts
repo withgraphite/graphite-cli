@@ -30,7 +30,6 @@ export function initContext(opts?: {
     debug?: boolean;
   };
   userConfigOverride?: string;
-  useMetaCache?: boolean;
 }): TContext {
   const repoConfig = repoConfigFactory.load();
   const userConfig = userConfigFactory.load(
@@ -41,10 +40,7 @@ export function initContext(opts?: {
     outputDebugLogs: opts?.globalArguments?.debug,
     tips: userConfig.data.tips,
   });
-  const metaCache = composeMetaCache(
-    opts?.useMetaCache ? repoConfig.data.trunk : undefined,
-    splog
-  );
+  const metaCache = composeMetaCache(repoConfig.data.trunk, splog);
   return {
     splog,
     interactive: opts?.globalArguments?.interactive ?? true,

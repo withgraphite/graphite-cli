@@ -44,7 +44,6 @@ export async function profile(
 
   const context = initContext({
     globalArguments: args as TGlobalArguments,
-    useMetaCache: canonicalName === 'dev migration',
   });
   fetchUpgradePromptInBackground(context);
   refreshPRInfoInBackground(context);

@@ -3,6 +3,9 @@ import {
   TBranchPRInfo,
   TMeta,
 } from '../../wrapper-classes/metadata_ref';
+import { PreconditionsFailedError } from '../errors';
+import { checkoutBranch } from '../git/checkout_branch';
+import { getCurrentBranchName } from '../git/current_branch_name';
 import { getBranchRevision } from '../git/get_branch_revision';
 import { getMergeBase } from '../git/merge_base';
 import { branchNamesAndRevisions } from '../git/sorted_branch_names';
@@ -10,12 +13,18 @@ import { TSplog } from '../utils/splog';
 
 export type TMetaCache = {
   size: number;
-  getChildren: (branchName: string) => string[] | undefined;
+  currentBranch: string | undefined;
+  currentBranchPrecondition: string;
+  isTrunk: (branchName: string) => boolean;
+  getChildren: (branchName: string) => string[];
+  getParent: (branchName: string) => string | undefined;
+  checkoutBranch: (branchName: string) => boolean;
 };
 
 type TCachedMeta = { children: string[]; branchRevision: string } & (
   | {
       validationResult: 'TRUNK';
+      parentBranchName: undefined;
       fixed: true;
     }
   | {
@@ -45,12 +54,13 @@ export function composeMetaCache(
   trunkName: string | undefined,
   splog: TSplog
 ): TMetaCache {
-  const cache: Map<string, TCachedMeta> = trunkName
-    ? loadCache(trunkName, splog)
-    : new Map();
+  const cache = {
+    currentBranch: getCurrentBranchName(),
+    branches: trunkName ? loadCache(trunkName, splog) : new Map(),
+  };
 
   const getValidMeta = (branchName: string): TValidCachedMeta | undefined => {
-    const cachedMeta = cache.get(branchName);
+    const cachedMeta = cache.branches.get(branchName);
     return cachedMeta?.validationResult === 'TRUNK' ||
       cachedMeta?.validationResult === 'VALID'
       ? cachedMeta
@@ -59,9 +69,34 @@ export function composeMetaCache(
 
   return {
     get size() {
-      return cache.size;
+      return cache.branches.size;
     },
-    getChildren: (branchName: string) => getValidMeta(branchName)?.children,
+    get currentBranch() {
+      return cache.currentBranch;
+    },
+    get currentBranchPrecondition() {
+      if (!cache.currentBranch || !getValidMeta(cache.currentBranch)) {
+        throw new PreconditionsFailedError(
+          `Please check out a valid Graphite branch.`
+        );
+      }
+      return cache.currentBranch;
+    },
+    isTrunk: (branchName: string) =>
+      cache.branches.get(branchName)?.validationResult === 'TRUNK',
+    getChildren: (branchName: string) =>
+      cache.branches.get(branchName).children,
+    getParent: (branchName: string) =>
+      cache.branches.get(branchName)?.parentBranchName,
+    checkoutBranch: (branchName: string): boolean => {
+      if (!getValidMeta(branchName)) {
+        return false;
+      }
+      // TODO quiet should be the default here
+      checkoutBranch(branchName, { quiet: true });
+      cache.currentBranch = branchName;
+      return true;
+    },
   };
 }
 
