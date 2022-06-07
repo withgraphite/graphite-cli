@@ -14,7 +14,12 @@ import { getMergeBase } from '../lib/git/merge_base';
 import { sortedBranchNames } from '../lib/git/sorted_branch_names';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { getTrunk } from '../lib/utils/trunk';
-import { MetadataRef, TBranchPRInfo, TMeta } from './metadata_ref';
+import {
+  readMetadataRef,
+  TBranchPRInfo,
+  TMeta,
+  writeMetadataRef,
+} from './metadata_ref';
 
 export class Branch {
   name: string;
@@ -77,7 +82,7 @@ export class Branch {
       return undefined;
     }
 
-    let parentName = MetadataRef.getMeta(this.name)?.parentBranchName;
+    let parentName = readMetadataRef(this.name)?.parentBranchName;
 
     if (!parentName) {
       return undefined;
@@ -85,7 +90,7 @@ export class Branch {
 
     // Cycle until we find a parent that has a real branch, or just is undefined.
     while (parentName && !branchExists(parentName)) {
-      parentName = MetadataRef.getMeta(parentName)?.parentBranchName;
+      parentName = readMetadataRef(parentName)?.parentBranchName;
     }
     if (parentName) {
       this.setParentBranchName(parentName);
@@ -142,7 +147,7 @@ export class Branch {
 
     if (!this.shouldUseMemoizedResults) {
       const children = Branch.allBranches(context).filter(
-        (b) => MetadataRef.getMeta(b.name)?.parentBranchName === this.name
+        (b) => readMetadataRef(b.name)?.parentBranchName === this.name
       );
       context.splog.logDebug(`Meta Children (${this.name}): end`);
       return children;
@@ -187,15 +192,15 @@ export class Branch {
   }
 
   private getMeta(): TMeta | undefined {
-    return MetadataRef.getMeta(this.name);
+    return readMetadataRef(this.name);
   }
 
   private writeMeta(meta: TMeta): void {
-    MetadataRef.updateOrCreate(this.name, meta);
+    writeMetadataRef(this.name, meta);
   }
 
   public getMetaPrevRef(): string | undefined {
-    return MetadataRef.getMeta(this.name)?.prevRef;
+    return readMetadataRef(this.name)?.prevRef;
   }
 
   public clearMetadata(): this {
