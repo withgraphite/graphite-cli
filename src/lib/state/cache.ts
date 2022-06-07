@@ -1,7 +1,7 @@
 import {
   MetadataRef,
   TBranchPRInfo,
-  TMeta,
+  TMeta
 } from '../../wrapper-classes/metadata_ref';
 import { PreconditionsFailedError } from '../errors';
 import { checkoutBranch } from '../git/checkout_branch';
@@ -9,6 +9,7 @@ import { getCurrentBranchName } from '../git/current_branch_name';
 import { getBranchRevision } from '../git/get_branch_revision';
 import { getMergeBase } from '../git/merge_base';
 import { branchNamesAndRevisions } from '../git/sorted_branch_names';
+import { cuteString } from '../utils/cute_string';
 import { TSplog } from '../utils/splog';
 
 export type TMetaCache = {
@@ -70,7 +71,7 @@ export function composeMetaCache(
 
   return {
     debug() {
-      splog.logDebug(JSON.stringify(cache, null, 2));
+      splog.logDebug(cuteString(cache));
     },
     get currentBranch() {
       return cache.currentBranch;

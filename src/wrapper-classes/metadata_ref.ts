@@ -2,6 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { ExitFailedError } from '../lib/errors';
 import { getRepoRootPathPrecondition } from '../lib/preconditions';
+import { cuteString } from '../lib/utils/cute_string';
 import { gpExecSync } from '../lib/utils/exec_sync';
 
 export type TBranchPRState = 'OPEN' | 'CLOSED' | 'MERGED';
@@ -57,7 +58,7 @@ export class MetadataRef {
     const metaSha = gpExecSync({
       command: `git ${opts ? `-C "${opts.dir}"` : ''} hash-object -w --stdin`,
       options: {
-        input: JSON.stringify(meta),
+        input: cuteString(meta),
       },
     });
     gpExecSync({

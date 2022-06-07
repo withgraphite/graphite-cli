@@ -1,6 +1,7 @@
 import fs from 'fs-extra';
 import tmp from 'tmp';
 import { initContext } from '../../../src/lib/context';
+import { cuteString } from '../../../src/lib/utils/cute_string';
 import { GitRepo } from '../../../src/lib/utils/git_repo';
 import { AbstractScene } from './abstract_scene';
 
@@ -26,11 +27,11 @@ export class CloneScene extends AbstractScene {
     this.repo = new GitRepo(this.dir, { repoUrl: this.originDir });
     fs.writeFileSync(
       `${this.dir}/.git/.graphite_repo_config`,
-      JSON.stringify({ trunk: 'main' }, null, 2)
+      cuteString({ trunk: 'main' })
     );
     fs.writeFileSync(
       `${this.dir}/.git/.graphite_user_config`,
-      JSON.stringify({ experimental: true }, null, 2)
+      cuteString({ experimental: true })
     );
 
     process.chdir(this.dir);
