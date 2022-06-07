@@ -1,20 +1,27 @@
 import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
-import { MetadataRef, TMeta } from '../wrapper-classes/metadata_ref';
+import {
+  allBranchesWithMeta,
+  readMetadataRef,
+  TMeta,
+} from '../wrapper-classes/metadata_ref';
+import { TRepoConfig } from './config/repo_config';
+import { TUserConfig } from './config/user_config';
 import { TContext } from './context';
 import { getBranchToRefMapping } from './git-refs/branch_ref';
 import { getRevListGitTree } from './git-refs/branch_relations';
 import { switchBranch } from './git/checkout_branch';
 import { deleteBranch } from './git/deleteBranch';
 import { currentBranchPrecondition } from './preconditions';
+import { cuteString } from './utils/cute_string';
 import { gpExecSync } from './utils/exec_sync';
 
 type TState = {
   refTree: Record<string, string[]>;
   branchToRefMapping: Record<string, string>;
-  userConfig: string;
-  repoConfig: string;
+  userConfig: TUserConfig['data'];
+  repoConfig: TRepoConfig['data'];
   metadata: Record<string, string>;
   currentBranchName: string;
 };
@@ -29,8 +36,8 @@ export function captureState(context: TContext): string {
   const branchToRefMapping = getBranchToRefMapping();
 
   const metadata: Record<string, string> = {};
-  MetadataRef.allMetadataRefs().forEach((ref) => {
-    metadata[ref._branchName] = JSON.stringify(ref.read());
+  allBranchesWithMeta().forEach((branchName) => {
+    metadata[branchName] = cuteString(readMetadataRef(branchName));
   });
 
   const currentBranchName = currentBranchPrecondition().name;
@@ -38,13 +45,13 @@ export function captureState(context: TContext): string {
   const state: TState = {
     refTree,
     branchToRefMapping,
-    userConfig: JSON.stringify(context.userConfig.data),
-    repoConfig: JSON.stringify(context.repoConfig.data),
+    userConfig: context.userConfig.data,
+    repoConfig: context.repoConfig.data,
     metadata,
     currentBranchName,
   };
 
-  return JSON.stringify(state, null, 2);
+  return cuteString(state);
 }
 
 export function recreateState(stateJson: string, context: TContext): string {
@@ -80,7 +87,7 @@ export function recreateState(stateJson: string, context: TContext): string {
   context.splog.logInfo(`Creating the repo config`);
   fs.writeFileSync(
     path.join(tmpDir, '/.git/.graphite_repo_config'),
-    state.repoConfig
+    cuteString(state.repoConfig)
   );
 
   context.splog.logInfo(`Creating the metadata`);
@@ -111,7 +118,7 @@ function createMetadata(opts: {
     const metaSha = gpExecSync({
       command: `git hash-object -w --stdin`,
       options: {
-        input: JSON.stringify(meta),
+        input: cuteString(meta),
       },
     });
     fs.writeFileSync(

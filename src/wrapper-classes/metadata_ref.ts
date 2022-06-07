@@ -28,98 +28,71 @@ export type TMeta = {
   prInfo?: TBranchPRInfo;
 };
 
-export class MetadataRef {
-  _branchName: string;
+export function writeMetadataRef(
+  branchName: string,
+  meta: TMeta,
+  opts?: { dir: string }
+): void {
+  const metaSha = gpExecSync({
+    command: `git ${opts ? `-C "${opts.dir}"` : ''} hash-object -w --stdin`,
+    options: {
+      input: cuteString(meta),
+    },
+  });
+  gpExecSync({
+    command: `git update-ref refs/branch-metadata/${branchName} ${metaSha}`,
+    options: {
+      stdio: 'ignore',
+    },
+  });
+}
 
-  constructor(branchName: string) {
-    this._branchName = branchName;
+export function readMetadataRef(
+  branchName: string,
+  opts?: { dir: string }
+): TMeta | undefined {
+  const metaString = gpExecSync({
+    command: `git ${
+      opts ? `-C "${opts.dir}" ` : ''
+    }cat-file -p refs/branch-metadata/${branchName} 2> /dev/null`,
+  });
+  if (metaString.length == 0) {
+    return undefined;
   }
+  // TODO: Better account for malformed desc; possibly validate with retype
+  const meta = JSON.parse(metaString);
+  return meta;
+}
 
-  private static branchMetadataDirPath(): string {
-    return path.join(getRepoRootPathPrecondition(), `refs/branch-metadata/`);
+export function moveMetadataRef(
+  oldBranchName: string,
+  newBranchName: string
+): void {
+  const oldPath = getMetadataPath(oldBranchName);
+  if (!fs.existsSync(oldPath)) {
+    throw new ExitFailedError(`No Graphite metadata ref found at ${oldPath}`);
   }
+  fs.moveSync(
+    path.join(oldPath),
+    path.join(path.dirname(oldPath), newBranchName)
+  );
+}
 
-  private static pathForBranchName(branchName: string): string {
-    return path.join(MetadataRef.branchMetadataDirPath(), branchName);
-  }
+export function deleteMetadataRef(branchName: string): void {
+  fs.removeSync(getMetadataPath(branchName));
+}
 
-  static getMeta(
-    branchName: string,
-    opts?: { dir: string }
-  ): TMeta | undefined {
-    return new MetadataRef(branchName).read(opts);
-  }
+function getMetadataPath(branchName: string): string {
+  return path.join(branchMetadataDirPath(), branchName);
+}
 
-  static updateOrCreate(
-    branchName: string,
-    meta: TMeta,
-    opts?: { dir: string }
-  ): void {
-    const metaSha = gpExecSync({
-      command: `git ${opts ? `-C "${opts.dir}"` : ''} hash-object -w --stdin`,
-      options: {
-        input: cuteString(meta),
-      },
-    });
-    gpExecSync({
-      command: `git update-ref refs/branch-metadata/${branchName} ${metaSha}`,
-      options: {
-        stdio: 'ignore',
-      },
-    });
-  }
+function branchMetadataDirPath(): string {
+  return path.join(getRepoRootPathPrecondition(), `refs/branch-metadata/`);
+}
 
-  public getPath(): string {
-    return MetadataRef.pathForBranchName(this._branchName);
+export function allBranchesWithMeta(): string[] {
+  if (!fs.existsSync(branchMetadataDirPath())) {
+    return [];
   }
-
-  public rename(newBranchName: string): void {
-    if (!fs.existsSync(this.getPath())) {
-      throw new ExitFailedError(
-        `No Graphite metadata ref found at ${this.getPath()}`
-      );
-    }
-    fs.moveSync(
-      path.join(this.getPath()),
-      path.join(path.dirname(this.getPath()), newBranchName)
-    );
-    this._branchName = newBranchName;
-  }
-
-  public read(opts?: { dir: string }): TMeta | undefined {
-    return MetadataRef.readImpl(
-      `refs/branch-metadata/${this._branchName}`,
-      opts
-    );
-  }
-
-  private static readImpl(
-    ref: string,
-    opts?: { dir: string }
-  ): TMeta | undefined {
-    const metaString = gpExecSync({
-      command: `git ${
-        opts ? `-C "${opts.dir}" ` : ''
-      }cat-file -p ${ref} 2> /dev/null`,
-    });
-    if (metaString.length == 0) {
-      return undefined;
-    }
-    // TODO: Better account for malformed desc; possibly validate with retype
-    const meta = JSON.parse(metaString);
-    return meta;
-  }
-
-  public static delete(branchName: string): void {
-    fs.removeSync(MetadataRef.pathForBranchName(branchName));
-  }
-
-  public static allMetadataRefs(): MetadataRef[] {
-    if (!fs.existsSync(MetadataRef.branchMetadataDirPath())) {
-      return [];
-    }
-    return fs
-      .readdirSync(MetadataRef.branchMetadataDirPath())
-      .map((dirent) => new MetadataRef(dirent));
-  }
+  return fs.readdirSync(branchMetadataDirPath());
 }
