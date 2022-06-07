@@ -17,20 +17,6 @@ import { Branch } from '../wrapper-classes/branch';
 import { TScope } from './scope';
 import { validate } from './validate';
 
-// Should be called whenever we change the tip of a branch
-export function rebaseUpstack(
-  context: TContext,
-  mergeConflictCallstack: TMergeConflictCallstack = []
-): void {
-  try {
-    fixAction({ scope: 'UPSTACK', mergeConflictCallstack }, context);
-  } catch {
-    context.splog.logWarn(
-      'Cannot fix upstack automatically, some uncommitted changes remain. Please commit or stash, and then `gt upstack fix`'
-    );
-  }
-}
-
 type TFixScope = Exclude<TScope, 'DOWNSTACK'>;
 
 export function fixAction(
@@ -102,7 +88,7 @@ function restackUpstack(
   const branch = args.branch;
   if (rebaseInProgress()) {
     throw new RebaseConflictError(
-      `Interactive rebase still in progress, cannot fix (${branch.name}).`,
+      'Cannot fix upstack yet; some uncommitted changes remain. Please commit or stash, and then run `gt continue`',
       args.mergeConflictCallstack,
       context
     );
