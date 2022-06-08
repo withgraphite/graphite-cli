@@ -205,9 +205,11 @@ export function composeMetaCache({
       : meta.parentBranchName;
   };
 
-  const getRecursiveParents = (branchName: string): string[] => {
+  const getRecursiveParentsExcludingTrunk = (branchName: string): string[] => {
     const parent = getParent(branchName);
-    return parent ? [...getRecursiveParents(parent), parent] : [];
+    return parent && parent !== trunkName
+      ? [...getRecursiveParentsExcludingTrunk(parent), parent]
+      : [];
   };
 
   const checkoutBranch = (branchName: string) => {
@@ -422,8 +424,11 @@ export function composeMetaCache({
       assertBranch(branchName);
       const meta = cache.branches[branchName];
       assertCachedMetaIsValidOrTrunk(meta);
+      // Only includes trunk if branchName is trunk
       return [
-        ...(scope.recursiveParents ? getRecursiveParents(branchName) : []),
+        ...(scope.recursiveParents
+          ? getRecursiveParentsExcludingTrunk(branchName)
+          : []),
         ...(scope.currentBranch ? [branchName] : []),
         ...(scope.recursiveChildren ? getRecursiveChildren(branchName) : []),
       ];

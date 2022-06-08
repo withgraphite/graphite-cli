@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { TContext } from '../../lib/context';
 
 const FILE_NAME = 'graphite_stack_edit';
 const FILE_FOOTER = [
@@ -16,14 +17,17 @@ gf--02-09-first
 # Stack will be rearranged on trunk to match the above order.
 */
 
-export function createStackEditFile(opts: {
-  branchNames: string[];
-  tmpDir: string;
-}): string {
+export function createStackEditFile(
+  opts: {
+    branchNames: string[];
+    tmpDir: string;
+  },
+  context: TContext
+): string {
   // show the trunk at the bottom of the list to better match "upstack" and "downstack"
   const fileContents = [
-    ...opts.branchNames.slice(1).reverse(),
-    `# ${opts.branchNames[0]} (trunk, shown for orientation)`,
+    ...opts.branchNames.reverse(),
+    `# ${context.metaCache.trunk} (trunk, shown for orientation)`,
     ...FILE_FOOTER,
   ].join('\n');
 

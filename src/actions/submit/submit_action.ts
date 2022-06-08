@@ -47,9 +47,10 @@ export async function submitAction(
     context.splog.logNewline();
   }
 
-  const branchNames = context.metaCache
-    .getRelativeStack(context.metaCache.currentBranchPrecondition, args.scope)
-    .filter((b) => !context.metaCache.isTrunk(b));
+  const branchNames = context.metaCache.getRelativeStack(
+    context.metaCache.currentBranchPrecondition,
+    args.scope
+  );
 
   await validateBranchesToSubmit(branchNames, context);
 
