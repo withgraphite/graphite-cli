@@ -35,7 +35,8 @@ export function composeSplog(opts: {
               [
                 '',
                 `${chalk.bold('tip')}: ${s}`,
-                chalk.italic('Feeling expert? "gt user tips --disable"'),
+                chalk.italic('Feeling expert? `gt user tips --disable`'),
+                '',
               ].join('\n')
             )
           )
