@@ -1,33 +1,15 @@
 import chalk from 'chalk';
 import { TContext } from '../lib/context';
-import { TScopeSpec } from '../lib/engine/scope_spec';
 import { PreconditionsFailedError, RebaseConflictError } from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 import { clearContinuation, persistContinuation } from './persist_continuation';
 
-type TBranchList =
-  | {
-      relative: false;
-      branchNames: string[];
-    }
-  | {
-      relative: true;
-      scope: TScopeSpec;
-    };
-
 export function restackBranches(
-  branchList: TBranchList,
+  branchNames: string[],
   context: TContext
 ): void {
-  const branchNames = branchList.relative
-    ? context.metaCache.getRelativeStack(
-        context.metaCache.currentBranchPrecondition,
-        branchList.scope
-      )
-    : branchList.branchNames;
-
   context.splog.logDebug(
     branchNames.reduce((acc, curr) => `${acc}\n${curr}`, 'RESTACKING:')
   );
@@ -101,10 +83,7 @@ export function continueRestack(
   );
 
   if (branchesToRestack) {
-    restackBranches(
-      { relative: false, branchNames: branchesToRestack },
-      context
-    );
+    restackBranches(branchesToRestack, context);
   }
   clearContinuation(context);
 }

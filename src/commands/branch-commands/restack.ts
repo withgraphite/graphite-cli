@@ -1,6 +1,5 @@
 import yargs from 'yargs';
 import { restackBranches } from '../../actions/restack';
-import { SCOPE } from '../../lib/engine/scope_spec';
 import { graphite } from '../../lib/runner';
 
 const args = {} as const;
@@ -25,5 +24,5 @@ export const handler = async (argv: argsT): Promise<void> =>
       ].join('\n')
     );
 
-    restackBranches({ relative: true, scope: SCOPE.BRANCH }, context);
+    restackBranches([context.metaCache.currentBranchPrecondition], context);
   });

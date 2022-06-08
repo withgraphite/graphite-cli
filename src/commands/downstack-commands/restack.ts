@@ -25,5 +25,11 @@ export const handler = async (argv: argsT): Promise<void> =>
       ].join('\n')
     );
 
-    restackBranches({ relative: true, scope: SCOPE.DOWNSTACK }, context);
+    restackBranches(
+      context.metaCache.getRelativeStack(
+        context.metaCache.currentBranchPrecondition,
+        SCOPE.DOWNSTACK
+      ),
+      context
+    );
   });

@@ -64,5 +64,5 @@ function restackSiblings(branchName: string, context: TContext) {
       return context.metaCache.getRelativeStack(childBranchName, SCOPE.UPSTACK);
     });
 
-  restackBranches({ relative: false, branchNames: branchesToRestack }, context);
+  restackBranches(branchesToRestack, context);
 }

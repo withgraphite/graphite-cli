@@ -35,5 +35,11 @@ export function editBranchAction(context: TContext): void {
     );
   }
 
-  restackBranches({ relative: true, scope: SCOPE.UPSTACK_EXCLUSIVE }, context);
+  restackBranches(
+    context.metaCache.getRelativeStack(
+      context.metaCache.currentBranchPrecondition,
+      SCOPE.UPSTACK_EXCLUSIVE
+    ),
+    context
+  );
 }
