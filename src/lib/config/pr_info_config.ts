@@ -22,5 +22,3 @@ export const prInfoConfigFactory = composeConfig({
   },
   options: { removeIfEmpty: true },
 });
-
-export type TPRInfoConfig = ReturnType<typeof prInfoConfigFactory.load>;

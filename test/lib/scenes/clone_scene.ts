@@ -28,10 +28,7 @@ export class CloneScene extends AbstractScene {
       `${this.dir}/.git/.graphite_repo_config`,
       cuteString({ trunk: 'main' })
     );
-    fs.writeFileSync(
-      `${this.dir}/.git/.graphite_user_config`,
-      cuteString({ experimental: true })
-    );
+    fs.writeFileSync(`${this.dir}/.git/.graphite_user_config`, cuteString({}));
 
     process.chdir(this.dir);
   }

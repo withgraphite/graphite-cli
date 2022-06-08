@@ -23,5 +23,3 @@ export const cacheLockConfigFactory = composeConfig({
   },
   options: { removeIfEmpty: true },
 });
-
-export type TPRInfoConfig = ReturnType<typeof cacheLockConfigFactory.load>;
