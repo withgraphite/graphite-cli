@@ -7,6 +7,5 @@ export const builder = function (yargs: yargs.Argv): yargs.Argv {
     .commandDir('dash-commands', {
       extensions: ['js'],
     })
-    .strict()
-    .demandCommand();
+    .strict();
 };
