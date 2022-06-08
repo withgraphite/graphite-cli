@@ -48,7 +48,7 @@ async function promptForEdit(context: TContext): Promise<string[]> {
     SCOPE.DOWNSTACK
   );
   return performInTmpDir((tmpDir) => {
-    const editFilePath = createStackEditFile({ branchNames, tmpDir });
+    const editFilePath = createStackEditFile({ branchNames, tmpDir }, context);
     gpExecSync(
       {
         command: `${context.userConfig.getEditor()} "${editFilePath}"`,
