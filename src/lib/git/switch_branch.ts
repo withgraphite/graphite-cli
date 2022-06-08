@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
 
@@ -9,7 +10,9 @@ export function switchBranch(branch: string, opts?: { new?: boolean }): void {
     },
     () => {
       throw new ExitFailedError(
-        `Failed to switch to ${opts?.new ? 'new ' : ''}branch (${branch})`
+        `Failed to switch to ${opts?.new ? 'new ' : ''}branch ${chalk.yellow(
+          branch
+        )}`
       );
     }
   );
