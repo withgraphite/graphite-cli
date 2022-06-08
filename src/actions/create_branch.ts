@@ -11,7 +11,7 @@ export async function createBranchAction(
     branchName?: string;
     message?: string;
     all?: boolean;
-    restack?: boolean;
+    insert?: boolean;
   },
   context: TContext
 ): Promise<void> {
@@ -42,11 +42,11 @@ export async function createBranchAction(
     rollbackOnError: () => context.metaCache.deleteBranch(branchName),
   });
 
-  if (opts.restack) {
+  if (opts.insert) {
     restackSiblings(branchName, context);
   } else {
     context.splog.tip(
-      'To insert a branch into a stack, try out the `--restack` flag.'
+      'To insert a branch into a stack, try out the `--insert` flag.'
     );
     return;
   }

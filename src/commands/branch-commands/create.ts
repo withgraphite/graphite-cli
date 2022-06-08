@@ -23,12 +23,12 @@ const args = {
     type: 'boolean',
     alias: 'a',
   },
-  restack: {
-    describe: `Restack all existing children of the current branch onto the new branch.`,
+  insert: {
+    describe: `When true, any existing children of the current branch will become children of the new branch.`,
     demandOption: false,
     default: false,
     type: 'boolean',
-    alias: 'r',
+    alias: 'i',
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -46,7 +46,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         branchName: argv.name,
         message: argv.message,
         all: argv.all,
-        restack: argv.restack,
+        insert: argv.insert,
       },
       context
     );
