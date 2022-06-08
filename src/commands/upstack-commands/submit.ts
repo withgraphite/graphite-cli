@@ -10,7 +10,7 @@ export const canonical = 'upstack submit';
 
 export const handler = async (argv: argsT): Promise<void> => {
   await graphite(argv, canonical, async (context) => {
-    context.splog.logTip(
+    context.splog.tip(
       [
         `You are submitting with upstack scope.`,
         `In common cases, we recommend you use:`,

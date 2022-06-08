@@ -36,9 +36,7 @@ function reorderBranches(
     return;
   }
   context.metaCache.setParent(branchNames[0], parentBranchName);
-  context.splog.logDebug(
-    `Set parent of ${branchNames[0]} to ${parentBranchName}`
-  );
+  context.splog.debug(`Set parent of ${branchNames[0]} to ${parentBranchName}`);
   reorderBranches(branchNames[0], branchNames.slice(1), context);
 }
 

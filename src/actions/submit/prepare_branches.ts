@@ -38,7 +38,7 @@ export async function getPRInfoForBranches(
   },
   context: TContext
 ): Promise<TPRSubmissionInfo> {
-  context.splog.logInfo(
+  context.splog.info(
     chalk.blueBright('🥞 Preparing to submit PRs for the following branches...')
   );
 
@@ -86,7 +86,7 @@ export async function getPRInfoForBranches(
           }),
     });
   }
-  context.splog.logNewline();
+  context.splog.newline();
   return submissionInfo;
 }
 
@@ -123,7 +123,7 @@ function getPRAction(
       ? 'PUBLISH'
       : 'NOOP';
 
-  context.splog.logInfo(
+  context.splog.info(
     `▸ ${chalk.cyan(args.branchName)} (${
       {
         NOOP: 'No-op',
@@ -161,8 +161,8 @@ async function getPRCreationInfo(
   draft: boolean;
 }> {
   if (context.interactive) {
-    context.splog.logNewline();
-    context.splog.logInfo(
+    context.splog.newline();
+    context.splog.info(
       `Enter info for new pull request for ${chalk.yellow(
         args.branchName
       )} ▸ ${context.metaCache.getParentPrecondition(args.branchName)}:`

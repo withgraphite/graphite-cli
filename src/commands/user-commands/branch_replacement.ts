@@ -35,18 +35,18 @@ export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {
     if (argv['set-underscore']) {
       context.userConfig.update((data) => (data.branchReplacement = '_'));
-      context.splog.logInfo(`Set underscore (_) as the replacement character`);
+      context.splog.info(`Set underscore (_) as the replacement character`);
     } else if (argv['set-dash']) {
       context.userConfig.update((data) => (data.branchReplacement = '-'));
-      context.splog.logInfo(`Set dash (-) as the replacement character`);
+      context.splog.info(`Set dash (-) as the replacement character`);
     } else if (argv['set-empty']) {
       context.userConfig.update((data) => (data.branchReplacement = ''));
-      context.splog.logInfo(
+      context.splog.info(
         `Invalid characters will be removed without being replaced`
       );
     } else {
       const replacement = getBranchReplacement(context);
-      context.splog.logInfo(
+      context.splog.info(
         `Invalid characters will be ${
           replacement === ''
             ? 'removed without being replaced'

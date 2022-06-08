@@ -63,12 +63,12 @@ export async function cleanBranches(
     }
 
     if (branchName in progressMarkers) {
-      context.splog.logInfo(
+      context.splog.info(
         `${progressMarkers[branchName]} done searching for merged/closed branches to delete...`
       );
     }
 
-    context.splog.logDebug(`Checking if should delete ${branchName}...`);
+    context.splog.debug(`Checking if should delete ${branchName}...`);
     const shouldDelete = await shouldDeleteBranch(
       {
         branchName: branchName,
@@ -84,7 +84,7 @@ export async function cleanBranches(
 
       // Value in branchesToDelete is a list of children blocking deletion.
       branchesToDelete[branchName] = new Set(children);
-      context.splog.logDebug(
+      context.splog.debug(
         `Marked ${branchName} for deletion. Blockers: ${children}`
       );
     } else {
@@ -103,7 +103,7 @@ export async function cleanBranches(
       // If the nearest ancestor is not already the parent, we make it so.
       if (newParentBranchName !== parentBranchName) {
         context.metaCache.setParent(branchName, newParentBranchName);
-        context.splog.logInfo(
+        context.splog.info(
           `Set parent of ${chalk.cyan(branchName)} to ${chalk.blueBright(
             newParentBranchName
           )}.`
@@ -112,7 +112,7 @@ export async function cleanBranches(
 
         // This branch is no longer blocking its parent's deletion.
         branchesToDelete[parentBranchName].delete(branchName);
-        context.splog.logDebug(
+        context.splog.debug(
           `Removed a blocker for ${parentBranchName}. Blockers: ${[
             ...branchesToDelete[parentBranchName].entries(),
           ]}`
@@ -135,7 +135,7 @@ function greedilyDeleteUnblockedBranches(
   const unblockedBranches = Object.keys(branchesToDelete).filter(
     (branchToDelete) => branchesToDelete[branchToDelete].size === 0
   );
-  context.splog.logDebug(`Unblocked branches: ${unblockedBranches}`);
+  context.splog.debug(`Unblocked branches: ${unblockedBranches}`);
 
   while (unblockedBranches.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -152,7 +152,7 @@ function greedilyDeleteUnblockedBranches(
       branchesToDelete[parentBranchName]?.delete(branchName) &&
       branchesToDelete[parentBranchName].size === 0
     ) {
-      context.splog.logDebug(`${parentBranchName} is now unblocked.`);
+      context.splog.debug(`${parentBranchName} is now unblocked.`);
       unblockedBranches.push(parentBranchName);
     }
 

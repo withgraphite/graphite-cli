@@ -8,13 +8,13 @@ export async function validateBranchesToSubmit(
   branchNames: string[],
   context: TContext
 ): Promise<string[]> {
-  context.splog.logInfo(
+  context.splog.info(
     chalk.blueBright(
       `✏️  Validating that this Graphite stack is ready to submit...`
     )
   );
 
-  context.splog.logNewline();
+  context.splog.newline();
 
   await syncPrInfo(branchNames, context);
 
@@ -37,7 +37,7 @@ function validateNoMergedOrClosedBranches(
   }
 
   const hasMultipleBranches = mergedOrClosedBranches.length > 1;
-  context.splog.logTip(
+  context.splog.tip(
     'You can use `gt repo sync` to find and delete all merged/closed branches automatically and rebase their children.'
   );
 
@@ -100,16 +100,16 @@ export async function validateNoEmptyBranches(
 
   const hasMultipleBranches = emptyBranches.length > 1;
 
-  context.splog.logWarn(
+  context.splog.warn(
     `The following branch${
       hasMultipleBranches ? 'es have' : ' has'
     } no changes:`
   );
-  emptyBranches.forEach((b) => context.splog.logWarn(`▸ ${chalk.reset(b)}`));
-  context.splog.logWarn(
+  emptyBranches.forEach((b) => context.splog.warn(`▸ ${chalk.reset(b)}`));
+  context.splog.warn(
     `Are you sure you want to submit ${hasMultipleBranches ? 'them' : 'it'}?`
   );
-  context.splog.logNewline();
+  context.splog.newline();
   if (!context.interactive) {
     throw new ExitFailedError(`Aborting non-interactive submit.`);
   }
@@ -141,5 +141,5 @@ export async function validateNoEmptyBranches(
   if (response.empty_branches_options.abort) {
     throw new KilledError();
   }
-  context.splog.logNewline();
+  context.splog.newline();
 }

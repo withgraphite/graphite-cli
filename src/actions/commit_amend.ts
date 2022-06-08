@@ -27,7 +27,7 @@ export function commitAmendAction(
   });
 
   if (!opts.noEdit) {
-    context.splog.logTip(
+    context.splog.tip(
       'In the future, you can skip editing the commit message with the `--no-edit` flag.'
     );
   }

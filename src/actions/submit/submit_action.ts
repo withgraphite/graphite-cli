@@ -24,12 +24,12 @@ export async function submitAction(
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition(context);
   if (args.dryRun) {
-    context.splog.logInfo(
+    context.splog.info(
       chalk.yellow(
         `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
       )
     );
-    context.splog.logNewline();
+    context.splog.newline();
     args.editPRFieldsInline = false;
   }
 
@@ -37,14 +37,14 @@ export async function submitAction(
     args.editPRFieldsInline = false;
     args.reviewers = false;
 
-    context.splog.logInfo(
+    context.splog.info(
       `Running in non-interactive mode. Inline prompts to fill PR fields will be skipped${
         args.draftToggle === undefined
           ? ' and new PRs will be created in draft mode'
           : ''
       }.`
     );
-    context.splog.logNewline();
+    context.splog.newline();
   }
 
   const branchNames = context.metaCache.getRelativeStack(
@@ -75,7 +75,7 @@ export async function submitAction(
     return;
   }
 
-  context.splog.logInfo(
+  context.splog.info(
     chalk.blueBright('📂 Pushing to remote and creating/updating PRs...')
   );
 
@@ -83,11 +83,11 @@ export async function submitAction(
     try {
       context.metaCache.pushBranch(submissionInfo.head);
     } catch (err) {
-      context.splog.logError(
+      context.splog.error(
         `Failed to push changes for ${submissionInfo.head} to remote.`
       );
 
-      context.splog.logTip(
+      context.splog.tip(
         [
           `This push may have failed due to external changes to the remote branch.`,
           'If you are collaborating on this stack, try `gt downstack sync`  to pull in changes.',
@@ -118,12 +118,12 @@ async function shouldAbort(
   context: TContext
 ): Promise<boolean> {
   if (args.dryRun) {
-    context.splog.logInfo(chalk.blueBright('✅ Dry run complete.'));
+    context.splog.info(chalk.blueBright('✅ Dry run complete.'));
     return true;
   }
 
   if (!args.hasAnyPrs) {
-    context.splog.logInfo('No PRs to submit.');
+    context.splog.info('No PRs to submit.');
     return true;
   }
 
@@ -146,7 +146,7 @@ async function shouldAbort(
       )
     ).value
   ) {
-    context.splog.logInfo(chalk.blueBright('🛑 Aborted submit.'));
+    context.splog.info(chalk.blueBright('🛑 Aborted submit.'));
     throw new KilledError();
   }
 

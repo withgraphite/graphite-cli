@@ -59,7 +59,7 @@ function gpExecSyncImpl(command: {
       encoding: 'utf-8',
     }) ?? ''; // this can return null, which is dumb
   if (command.options?.printStdout) {
-    command.options.printStdout.splog.logInfo(
+    command.options.printStdout.splog.info(
       command.options.printStdout.transform
         ? command.options.printStdout.transform(output)
         : output

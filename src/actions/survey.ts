@@ -57,12 +57,12 @@ export async function showSurvey(
       return;
     }
 
-    context.splog.logNewline();
+    context.splog.newline();
     if (survey?.introMessage !== undefined) {
-      context.splog.logMessageFromGraphite(survey.introMessage);
+      context.splog.message(survey.introMessage);
     }
 
-    context.splog.logNewline();
+    context.splog.newline();
     await askSurveyQuestions(
       {
         questions: survey.questions,
@@ -71,7 +71,7 @@ export async function showSurvey(
       context
     );
 
-    context.splog.logNewline();
+    context.splog.newline();
     await logAnswers(
       {
         responses: responses,
@@ -83,7 +83,7 @@ export async function showSurvey(
     switch (err.constructor) {
       case ExitedSurveyError:
         responses.exitedEarly = true;
-        context.splog.logNewline();
+        context.splog.newline();
         await logAnswers(
           {
             responses: responses,
@@ -166,7 +166,7 @@ async function askSurveyQuestions(
 
     // Add newline after each response to create visual separation to next
     // question.
-    context.splog.logNewline();
+    context.splog.newline();
 
     args.responses.responses.push({
       question: question.question,
@@ -187,7 +187,7 @@ async function logAnswers(
   await postSurveyResponse();
 
   if (args.completionMessage !== undefined) {
-    context.splog.logMessageFromGraphite(args.completionMessage);
+    context.splog.message(args.completionMessage);
   }
   return;
 }

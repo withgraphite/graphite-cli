@@ -16,7 +16,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {
     const tmpDir = tmp.dirSync();
-    context.splog.logInfo(tmpDir.name);
+    context.splog.info(tmpDir.name);
     const repo = new GitRepo(tmpDir.name);
 
     const id = makeId(4);

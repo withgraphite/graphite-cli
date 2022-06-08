@@ -23,7 +23,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     if (argv.set) {
       context.repoConfig.update((data) => (data.name = argv.set));
     } else {
-      context.splog.logInfo(context.repoConfig.getRepoName());
+      context.splog.info(context.repoConfig.getRepoName());
     }
   });
 };
