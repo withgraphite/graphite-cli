@@ -8,6 +8,9 @@ import tmp from 'tmp';
 import yargs from 'yargs';
 import { version } from '../../package.json';
 import { init } from '../actions/init';
+import { refreshPRInfoInBackground } from '../background_tasks/fetch_pr_info';
+import { postSurveyResponsesInBackground } from '../background_tasks/post_survey';
+import { fetchUpgradePromptInBackground } from '../background_tasks/upgrade_prompt';
 import { initContext, TContext } from './context';
 import {
   BadTrunkOperationError,
@@ -19,13 +22,10 @@ import {
 } from './errors';
 import { getUnmergedFiles } from './git/merge_conflict_help';
 import { TGlobalArguments } from './global_arguments';
-import { refreshPRInfoInBackground } from './requests/fetch_pr_info';
 import { getUserEmail } from './telemetry/context';
 import { postTelemetryInBackground } from './telemetry/post_traces';
 import { registerSigintHandler } from './telemetry/sigint_handler';
-import { postSurveyResponsesInBackground } from './telemetry/survey/post_survey';
 import { tracer } from './telemetry/tracer';
-import { fetchUpgradePromptInBackground } from './telemetry/upgrade_prompt';
 import { parseArgs } from './utils/parse_args';
 
 export async function graphite(

@@ -1,10 +1,10 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
-import { API_SERVER } from '../../api/server';
-import { surveyConfigFactory } from '../../config/survey_config';
-import { userConfigFactory } from '../../config/user_config';
-import { TContext } from '../../context';
-import { spawnDetached } from '../../utils/spawn';
+import { API_SERVER } from '../lib/api/server';
+import { surveyConfigFactory } from '../lib/config/survey_config';
+import { userConfigFactory } from '../lib/config/user_config';
+import { TContext } from '../lib/context';
+import { spawnDetached } from '../lib/utils/spawn';
 
 // We try to post the survey response right after the user takes it, but in
 // case they quit early or there's some error, we'll continue to try to post
