@@ -14,5 +14,11 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) =>
-    restackBranches({ relative: true, scope: SCOPE.STACK }, context)
+    restackBranches(
+      context.metaCache.getRelativeStack(
+        context.metaCache.currentBranchPrecondition,
+        SCOPE.STACK
+      ),
+      context
+    )
   );
