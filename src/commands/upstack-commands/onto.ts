@@ -28,7 +28,7 @@ export const handler = async (argv: argsT): Promise<void> => {
           {
             message: `Choose a new base for ${chalk.yellow(
               context.metaCache.currentBranchPrecondition
-            )}`,
+            )} (autocomplete or arrow keys)`,
             omitCurrentBranch: true,
           },
           context

@@ -59,7 +59,7 @@ export async function interactiveBranchSelection(
   const chosenBranch = (
     await prompts(
       {
-        type: 'select',
+        type: 'autocomplete',
         name: 'branch',
         message: opts.message,
         choices,
