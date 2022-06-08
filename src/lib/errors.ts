@@ -33,6 +33,13 @@ export class PreconditionsFailedError extends ExitError {
   }
 }
 
+export class ConcurrentExecutionError extends ExitError {
+  constructor() {
+    super(`Cannot run more than one Graphite process at once.`);
+    this.name = 'ConcurrentExecutionError';
+  }
+}
+
 export class UntrackedBranchError extends ExitError {
   constructor() {
     super(`Cannot perform this operation on an untracked branch.`);
