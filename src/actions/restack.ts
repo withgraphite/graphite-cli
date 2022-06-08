@@ -5,10 +5,7 @@ import { PreconditionsFailedError, RebaseConflictError } from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
-import {
-  clearContinuation as clearContinuation,
-  persistContinuation,
-} from './persist_continuation';
+import { clearContinuation, persistContinuation } from './persist_continuation';
 
 type TBranchList =
   | {
@@ -91,17 +88,17 @@ export function continueRestack(
   if (opts.addAll) {
     addAll();
   }
+  const branchesToRestack = context.continueConfig.data?.branchesToRestack;
 
   const cont = context.metaCache.continueRebase();
   if (cont.result === 'REBASE_CONFLICT') {
+    persistContinuation({ branchesToRestack: branchesToRestack }, context);
     throw new RebaseConflictError(`Rebase conflict is not yet resolved.`);
   }
 
   context.splog.logInfo(
     `Resolved rebase conflict for ${chalk.green(cont.branchName)}.`
   );
-
-  const branchesToRestack = context.continueConfig.data?.branchesToRestack;
 
   if (branchesToRestack) {
     restackBranches(
