@@ -337,8 +337,9 @@ export function composeMetaCache({
       clearPersistedCache(splog);
     },
     rebuild(newTrunkName?: string) {
+      trunkName = newTrunkName ?? trunkName;
       cache.branches = loadCachedBranches(
-        { trunkName: newTrunkName ?? trunkName, ignorePersistedCache: true },
+        { trunkName, ignorePersistedCache: true },
         splog
       );
     },

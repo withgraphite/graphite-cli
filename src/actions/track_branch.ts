@@ -61,7 +61,7 @@ export async function trackBranch(
   }: {
     branchName: string;
     parentBranchName: string;
-    force: boolean;
+    force?: boolean;
   },
   context: TContext
 ): Promise<void> {
@@ -91,6 +91,7 @@ function trackBranchInternal(
       branchName
     )} with parent ${chalk.cyan(parentBranchName)}.`
   );
+  return true;
 }
 
 async function shouldTrackBranch(
@@ -101,7 +102,7 @@ async function shouldTrackBranch(
   }: {
     branchName: string;
     parentBranchName: string;
-    force: boolean;
+    force?: boolean;
   },
   context: TContext
 ): Promise<boolean> {
@@ -157,7 +158,7 @@ async function shouldRetrackBranch(
     branchName,
     parentBranchName,
     force,
-  }: { branchName: string; parentBranchName: string; force: boolean },
+  }: { branchName: string; parentBranchName: string; force?: boolean },
   context: TContext
 ): Promise<boolean> {
   context.splog.info(`Already tracking ${chalk.yellow(branchName)}.`);
