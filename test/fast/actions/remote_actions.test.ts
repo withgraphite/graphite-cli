@@ -46,7 +46,7 @@ for (const scene of [new CloneScene()]) {
           force: false,
           delete: false,
           showDeleteProgress: false,
-          restackCurrentStack: false,
+          restack: false,
         },
         scene.getContext()
       );

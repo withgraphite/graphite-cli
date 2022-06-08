@@ -61,7 +61,7 @@ for (const scene of allScenes) {
       fakeGitSquashAndMerge(scene.repo, 'e', 'squash');
 
       expect(() =>
-        scene.repo.execCliCommand(`repo sync -qf --no-pull`)
+        scene.repo.execCliCommand(`repo sync -qf --no-pull --restack`)
       ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
@@ -103,7 +103,7 @@ for (const scene of allScenes) {
       fakeGitSquashAndMerge(scene.repo, 'f', 'squash');
 
       expect(() =>
-        scene.repo.execCliCommand(`repo sync -qf --no-pull`)
+        scene.repo.execCliCommand(`repo sync -qf --no-pull --restack`)
       ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
