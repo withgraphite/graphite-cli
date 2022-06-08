@@ -3,7 +3,7 @@ import { branchMove } from '../git/branch_move';
 import { commit, TCommitOpts } from '../git/commit';
 import { getCommitRange, TCommitFormat } from '../git/commit_range';
 import { getCurrentBranchName } from '../git/current_branch_name';
-import { deleteBranch } from '../git/deleteBranch';
+import { deleteBranch } from '../git/delete_branch';
 import { isDiffEmpty } from '../git/diff';
 import {
   fetchBranch,

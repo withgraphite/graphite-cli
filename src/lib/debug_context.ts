@@ -12,7 +12,7 @@ import {
 } from './engine/metadata_ref';
 import { getCommitTree } from './git/commit_tree';
 import { getCurrentBranchName } from './git/current_branch_name';
-import { deleteBranch } from './git/deleteBranch';
+import { deleteBranch } from './git/delete_branch';
 import { getShaOrThrow } from './git/get_sha';
 import { getBranchNamesAndRevisions } from './git/sorted_branch_names';
 import { switchBranch } from './git/switch_branch';
