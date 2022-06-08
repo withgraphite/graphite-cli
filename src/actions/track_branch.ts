@@ -3,14 +3,108 @@ import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
 
+export async function trackBranchInteractive(
+  parentBranchName: string,
+  context: TContext
+): Promise<boolean> {
+  if (!context.interactive) {
+    throw new ExitFailedError(
+      'Must provide a branch to track in non-interactive mode.'
+    );
+  }
+
+  const choices = context.metaCache.allBranchNames
+    .filter(
+      (branchName) =>
+        !context.metaCache.isBranchTracked(branchName) &&
+        context.metaCache.canTrackBranch(branchName, parentBranchName)
+    )
+    .map((branchName) => ({ title: branchName, value: branchName }));
+
+  if (!choices.length) {
+    context.splog.info(
+      `No branches available to track as children of ${chalk.blueBright(
+        parentBranchName
+      )}!`
+    );
+    return false;
+  }
+
+  const branchName = (
+    await prompts(
+      {
+        type: 'autocomplete',
+        name: 'value',
+        message: `Enter a branch to track as a child of ${parentBranchName} (autocomplete or arrow keys)`,
+        choices,
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    )
+  ).value;
+
+  if (!branchName) {
+    throw new KilledError();
+  }
+
+  trackBranchInternal({ branchName, parentBranchName }, context);
+  return true;
+}
 export async function trackBranch(
   {
     branchName,
     parentBranchName,
     force,
-  }: { branchName: string; parentBranchName: string; force: boolean },
+  }: {
+    branchName: string;
+    parentBranchName: string;
+    force: boolean;
+  },
   context: TContext
 ): Promise<void> {
+  if (
+    branchName &&
+    !(await shouldTrackBranch({ branchName, parentBranchName, force }, context))
+  ) {
+    return;
+  }
+  trackBranchInternal({ branchName, parentBranchName }, context);
+}
+
+function trackBranchInternal(
+  {
+    branchName,
+    parentBranchName,
+  }: {
+    branchName: string;
+    parentBranchName: string;
+  },
+  context: TContext
+) {
+  context.metaCache.trackBranch(branchName, parentBranchName);
+  context.metaCache.checkoutBranch(branchName);
+  context.splog.info(
+    `Checked out newly tracked branch ${chalk.green(
+      branchName
+    )} with parent ${chalk.cyan(parentBranchName)}.`
+  );
+}
+
+async function shouldTrackBranch(
+  {
+    branchName,
+    parentBranchName,
+    force,
+  }: {
+    branchName: string;
+    parentBranchName: string;
+    force: boolean;
+  },
+  context: TContext
+): Promise<boolean> {
   if (!context.metaCache.branchExists(branchName)) {
     throw new ExitFailedError(
       `Branch ${chalk.yellow(branchName)} does not exist.`
@@ -34,13 +128,10 @@ export async function trackBranch(
       context
     ))
   ) {
-    return;
+    return false;
   }
 
-  if (
-    context.metaCache.trackBranch(branchName, parentBranchName) ===
-    'NEEDS_REBASE'
-  ) {
+  if (!context.metaCache.canTrackBranch(branchName, parentBranchName)) {
     context.splog.tip(
       `Are you sure that ${chalk.cyan(
         parentBranchName
@@ -58,12 +149,7 @@ export async function trackBranch(
     );
   }
 
-  context.metaCache.checkoutBranch(branchName);
-  context.splog.info(
-    `Checked out newly tracked branch ${chalk.green(
-      branchName
-    )} with parent ${chalk.cyan(parentBranchName)}.`
-  );
+  return true;
 }
 
 async function shouldRetrackBranch(
