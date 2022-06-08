@@ -24,16 +24,16 @@ const args = {
     type: 'boolean',
   },
   force: {
-    describe: `Don't prompt you to confirm when a branch will be deleted or re-submitted.`,
+    describe: `Don't prompt for confirmation before deleting a branch.`,
     demandOption: false,
     default: false,
     type: 'boolean',
     alias: 'f',
   },
   restack: {
-    describe: `Restack the current branch onto main.`,
+    describe: `Restack the current stack and any stacks with deleted branches.`,
     demandOption: false,
-    default: true,
+    default: false,
     type: 'boolean',
     alias: 'r',
   },
@@ -44,7 +44,7 @@ export const command = 'sync';
 export const canonical = 'repo sync';
 export const aliases = ['s'];
 export const description =
-  'Pull the trunk branch from remote, delete any branches that have been merged, and upstack them onto main. Also restacks the current stack on main.';
+  'Pull the trunk branch from remote and delete any branches that have been merged.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {
@@ -54,7 +54,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         force: argv.force,
         delete: argv.delete,
         showDeleteProgress: argv['show-delete-progress'],
-        restackCurrentStack: argv.restack,
+        restack: argv.restack,
       },
       context
     );
