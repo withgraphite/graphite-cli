@@ -19,5 +19,12 @@ export function commitCreateAction(
   context.metaCache.commit({
     message: opts.message,
   });
-  restackBranches({ relative: true, scope: SCOPE.UPSTACK_EXCLUSIVE }, context);
+
+  restackBranches(
+    context.metaCache.getRelativeStack(
+      context.metaCache.currentBranchPrecondition,
+      SCOPE.UPSTACK_EXCLUSIVE
+    ),
+    context
+  );
 }

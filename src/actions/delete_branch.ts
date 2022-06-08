@@ -35,7 +35,7 @@ export function deleteBranchAction(
   context.metaCache.deleteBranch(args.branchName);
   context.splog.logInfo(`Deleted branch ${chalk.red(args.branchName)}`);
 
-  restackBranches({ relative: false, branchNames: branchesToRestack }, context);
+  restackBranches(branchesToRestack, context);
 }
 
 // Where did we merge this? If it was merged on GitHub, we see where it was

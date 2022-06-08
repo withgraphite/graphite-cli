@@ -67,7 +67,7 @@ export async function syncAction(
       .forEach((branchName) => branchesToRestack.push(branchName));
   }
 
-  restackBranches({ relative: false, branchNames: branchesToRestack }, context);
+  restackBranches(branchesToRestack, context);
 }
 
 export function pullTrunk(context: TContext): void {
