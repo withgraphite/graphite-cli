@@ -1,0 +1,57 @@
+name: Pull request CI
+
+on:
+  pull_request:
+    types: [
+        # Default pull_request trigger types.
+        opened,
+        synchronize,
+        reopened,
+      ]
+
+jobs:
+  lint_and_fast_tests:
+    name: 'Run CLI tests'
+    runs-on: ubuntu-latest
+    steps:
+      # Basic setup
+      - uses: actions/checkout@v2
+        with:
+          clean: 'false'
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+      - name: Install
+        run: yarn install --immutable
+      - name: Lint
+        run: yarn lint
+      - name: Build
+        run: yarn build
+      - name: Setup git
+        run: git config --global user.email "test@gmail.com" && git config --global user.name "test"
+      - name: Git Version
+        run: git --version
+      - name: Test
+        run: yarn test-ci
+      - name: Coveralls Parallel
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+
+  superlinter:
+    name: 'Run superlinter'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          # Full git history is needed to get a proper list of changed files within `super-linter`
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: github/super-linter@v4
+        continue-on-error: true
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TYPESCRIPT_DEFAULT_STYLE: prettier

@@ -1,28 +1,26 @@
-name: premerge
+name: Push CI
 
 on:
-  pull_request:
-    types: [
-        # Default pull_request trigger types.
-        opened,
-        synchronize,
-        reopened,
-      ]
   push:
     branches: [main]
 
 jobs:
   lint_and_fast_tests:
+    name: 'Run CLI tests'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x, 15.x, 16.x, 17.x, 18x, current]
     steps:
       # Basic setup
       - uses: actions/checkout@v2
         with:
           clean: 'false'
           fetch-depth: 0
-      - uses: actions/setup-node@v2-beta
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.15.0
+          node-version: ${{ matrix.node-version }}
       - name: Install
         run: yarn install --immutable
       - name: Lint
@@ -34,36 +32,21 @@ jobs:
       - name: Git Version
         run: git --version
       - name: Test
-        run: yarn test-ci
-      - name: Coveralls Parallel
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.github_token }}
+        run: yarn test-fast
 
   superlinter:
-    # Name the Job
-    name: Run Superlinter
-    # Set the agent to run on
+    name: 'Run superlinter'
     runs-on: ubuntu-latest
-
-    ##################
-    # Load all steps #
-    ##################
     steps:
-      ##########################
-      # Checkout the code base #
-      ##########################
       - name: Checkout Code
         uses: actions/checkout@v2
         with:
           # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
 
-      ################################
-      # Run Linter against code base #
-      ################################
       - name: Lint Code Base
         uses: github/super-linter@v4
+        continue-on-error: true
         env:
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: main
