@@ -1,5 +1,6 @@
 import yargs from 'yargs';
 import { initContext } from '../../lib/context';
+import { getCacheLock } from '../../lib/engine/cache_lock';
 
 export const command = 'cache';
 export const canonical = 'dev cache';
@@ -15,7 +16,10 @@ const args = {
 export const builder = args;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
-export const handler = async (argv: argsT): Promise<void> =>
-  argv.clear
-    ? initContext({ globalArguments: { debug: true } }).metaCache.clear()
-    : initContext({ globalArguments: { debug: true } }).metaCache.debug();
+export const handler = async (argv: argsT): Promise<void> => {
+  const cacheLock = getCacheLock();
+  cacheLock.lock();
+  const context = initContext({ globalArguments: { debug: true } });
+  context.metaCache[argv.clear ? 'clear' : 'debug']();
+  cacheLock.release();
+};

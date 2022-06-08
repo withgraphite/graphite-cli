@@ -12,8 +12,10 @@ import { refreshPRInfoInBackground } from '../background_tasks/fetch_pr_info';
 import { postSurveyResponsesInBackground } from '../background_tasks/post_survey';
 import { fetchUpgradePromptInBackground } from '../background_tasks/upgrade_prompt';
 import { initContext, TContext } from './context';
+import { getCacheLock } from './engine/cache_lock';
 import {
   BadTrunkOperationError,
+  ConcurrentExecutionError,
   ExitFailedError,
   KilledError,
   PreconditionsFailedError,
@@ -60,10 +62,14 @@ async function graphiteHelper(
   handler: (context: TContext) => Promise<void>
 ): Promise<void> {
   const start = Date.now();
+
+  const cacheLock = getCacheLock();
+
   registerSigintHandler({
     commandName,
     canonicalCommandName: canonicalName,
     startTime: start,
+    cacheLock,
   });
 
   const context = initContext({
@@ -72,6 +78,7 @@ async function graphiteHelper(
 
   const err = await (async (): Promise<Error | undefined> => {
     try {
+      cacheLock.lock();
       fetchUpgradePromptInBackground(context);
       postSurveyResponsesInBackground(context);
       refreshPRInfoInBackground(context);
@@ -117,6 +124,7 @@ async function graphiteHelper(
     fs.appendFileSync(persistFailureLog, persistError?.stack?.toString());
   }
 
+  cacheLock.release();
   const end = Date.now();
   postTelemetryInBackground({
     canonicalCommandName: canonicalName,
@@ -168,6 +176,7 @@ function handleGraphiteError(err: any, context: TContext): void {
 
     case BadTrunkOperationError:
     case ExitFailedError:
+    case ConcurrentExecutionError:
     case PreconditionsFailedError:
     default:
       context.splog.logError(err.message);
