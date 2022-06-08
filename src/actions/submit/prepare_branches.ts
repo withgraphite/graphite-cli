@@ -109,10 +109,10 @@ function getPRAction(
   const prNumber = prInfo?.number;
 
   const status =
-    prNumber === undefined
-      ? args.updateOnly
-        ? 'NOOP'
-        : 'CREATE'
+    prNumber === undefined && !args.updateOnly
+      ? 'CREATE'
+      : prNumber === undefined
+      ? 'NOOP'
       : parentBranchName !== prInfo?.base
       ? 'RESTACK'
       : detectUnsubmittedChanges(args.branchName)
