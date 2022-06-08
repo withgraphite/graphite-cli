@@ -103,6 +103,10 @@ export async function submitAction(
     );
   }
 
+  if (!context.interactive) {
+    return;
+  }
+
   const survey = await getSurvey(context);
   if (survey) {
     await showSurvey(survey, context);
