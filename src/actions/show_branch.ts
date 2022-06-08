@@ -19,7 +19,7 @@ export async function showBranchAction(
   const children = context.metaCache.getChildren(branchName);
   if (children.length) {
     context.splog.logInfo(
-      `${chalk.cyan('Children')}:\n${children.map((c) => `→ ${c}`).join('\n')}`
+      `${chalk.cyan('Children')}:\n${children.map((c) => `▸ ${c}`).join('\n')}`
     );
   }
 
