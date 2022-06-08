@@ -35,7 +35,7 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
   context.repoConfig.setTrunk(newTrunkName);
   context.metaCache.rebuild(newTrunkName);
 
-  context.splog.logInfo(`Trunk set to (${chalk.green(newTrunkName)})`);
+  context.splog.logInfo(`Trunk set to ${chalk.green(newTrunkName)}`);
   context.splog.logInfo(
     `Graphite repo config saved at "${context.repoConfig.path}"`
   );
@@ -74,7 +74,7 @@ async function selectTrunkBranch(
       type: 'autocomplete',
       name: 'branch',
       message: `Select a trunk branch, which you open pull requests against${
-        inferredTrunk ? ` [inferred trunk (${chalk.green(inferredTrunk)})]` : ''
+        inferredTrunk ? ` [inferred trunk ${chalk.green(inferredTrunk)}]` : ''
       }`,
       choices: allBranchNames.map((b) => {
         return { title: b, value: b };
