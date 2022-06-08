@@ -9,9 +9,12 @@ export function currentBranchOnto(
 ): void {
   uncommittedTrackedChangesPrecondition();
 
-  context.metaCache.setParent(
-    context.metaCache.currentBranchPrecondition,
-    ontoBranchName
+  const currentBranch = context.metaCache.currentBranchPrecondition;
+
+  context.metaCache.setParent(currentBranch, ontoBranchName);
+
+  restackBranches(
+    context.metaCache.getRelativeStack(currentBranch, SCOPE.UPSTACK),
+    context
   );
-  restackBranches({ relative: true, scope: SCOPE.UPSTACK }, context);
 }

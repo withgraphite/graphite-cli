@@ -24,7 +24,7 @@ export async function editDownstack(
 
   // We to check out the top of the new stack BEFORE we restack in case of conflicts.
   context.metaCache.checkoutBranch(branchNames.reverse()[0]);
-  restackBranches({ relative: false, branchNames: branchesToRestack }, context);
+  restackBranches(branchesToRestack, context);
 }
 
 function reorderBranches(
