@@ -25,8 +25,8 @@ export function renameCurrentBranch(
 
   context.metaCache.renameCurrentBranch(newBranchName);
   context.splog.logInfo(
-    `Successfully renamed (${chalk.cyan(oldBranchName)}) to (${chalk.green(
+    `Successfully renamed ${chalk.blueBright(oldBranchName)} to ${chalk.green(
       newBranchName
-    )})`
+    )}`
   );
 }
