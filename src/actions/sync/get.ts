@@ -1,10 +1,59 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
+import { getDownstackDependencies } from '../../lib/api/get_downstack_dependencies';
 import { TContext } from '../../lib/context';
 import { ExitFailedError, KilledError } from '../../lib/errors';
+import {
+  cliAuthPrecondition,
+  uncommittedTrackedChangesPrecondition,
+} from '../../lib/preconditions';
 import { assertUnreachable } from '../../lib/utils/assert_unreachable';
+import { syncPrInfo } from '../sync_pr_info';
 
-export async function getBranchesFromRemote(
+export async function getAction(
+  branchName: string,
+  context: TContext
+): Promise<void> {
+  uncommittedTrackedChangesPrecondition();
+  context.splog.logInfo(
+    `Pulling ${chalk.cyan(context.metaCache.trunk)} from remote...`
+  );
+
+  try {
+    context.splog.logInfo(
+      context.metaCache.pullTrunk() === 'PULL_UNNEEDED'
+        ? `${chalk.green(context.metaCache.trunk)} is up to date.`
+        : `${chalk.green(
+            context.metaCache.trunk
+          )} fast-forwarded to ${chalk.gray(
+            context.metaCache.getRevision(context.metaCache.trunk)
+          )}.`
+    );
+    context.splog.logNewline();
+  } catch (err) {
+    throw new ExitFailedError(`Failed to pull trunk`, err);
+  }
+
+  const authToken = cliAuthPrecondition(context);
+  const downstackToSync = await getDownstackDependencies(
+    { branchName, trunkName: context.metaCache.trunk },
+    {
+      authToken,
+      repoName: context.repoConfig.getRepoName(),
+      repoOwner: context.repoConfig.getRepoOwner(),
+    }
+  );
+
+  await getBranchesFromRemote(
+    downstackToSync,
+    context.metaCache.trunk,
+    context
+  );
+
+  await syncPrInfo(context.metaCache.allBranchNames, context);
+}
+
+async function getBranchesFromRemote(
   downstack: string[],
   base: string,
   context: TContext

@@ -78,7 +78,7 @@ for (const scene of allScenes) {
       ).to.not.throw(Error);
     });
 
-    it('Can delete the foundation of a double stack', async () => {
+    it('Can delete the foundation of a double stack and restack it', async () => {
       scene.repo.createChange('2', 'a');
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
@@ -88,7 +88,7 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, 'a, b, main');
 
       fakeGitSquashAndMerge(scene.repo, 'a', 'squash');
-      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull --restack`);
 
       expectBranches(scene.repo, 'b, main');
       expectCommits(scene.repo, 'squash, 1');
