@@ -64,7 +64,6 @@ export async function syncAction(
   ) {
     context.metaCache
       .getRelativeStack(currentBranch, SCOPE.STACK)
-      .slice(1) // Don't add trunk
       .forEach((branchName) => branchesToRestack.push(branchName));
   }
 
