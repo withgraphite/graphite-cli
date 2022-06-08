@@ -74,6 +74,7 @@ async function graphiteHelper(
     try {
       fetchUpgradePromptInBackground(context);
       postSurveyResponsesInBackground(context);
+      refreshPRInfoInBackground(context);
 
       if (
         canonicalName !== 'repo init' &&
@@ -115,8 +116,6 @@ async function graphiteHelper(
     fs.appendFileSync(persistFailureLog, persistError?.toString());
     fs.appendFileSync(persistFailureLog, persistError?.stack?.toString());
   }
-
-  refreshPRInfoInBackground(context);
 
   const end = Date.now();
   postTelemetryInBackground({

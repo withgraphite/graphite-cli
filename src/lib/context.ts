@@ -1,8 +1,10 @@
+import { upsertPrInfoForBranches } from '../actions/sync_pr_info';
 import {
   continueConfigFactory,
   TContinueConfig,
 } from './config/continue_config';
 import { messageConfigFactory, TMessageConfig } from './config/message_config';
+import { prInfoConfigFactory } from './config/pr_info_config';
 import { repoConfigFactory, TRepoConfig } from './config/repo_config';
 import { surveyConfigFactory, TSurveyConfig } from './config/survey_config';
 import { TUserConfig, userConfigFactory } from './config/user_config';
@@ -47,6 +49,12 @@ export function initContext(opts?: {
     noVerify: !(opts?.globalArguments?.verify ?? true),
     remote: repoConfig.getRemote(),
   });
+  const prInfoConfig = prInfoConfigFactory.loadIfExists();
+  if (prInfoConfig) {
+    upsertPrInfoForBranches(prInfoConfig.data.prInfoToUpsert ?? [], metaCache);
+    prInfoConfig.delete();
+  }
+
   return {
     splog,
     interactive: opts?.globalArguments?.interactive ?? true,

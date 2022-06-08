@@ -1,5 +1,12 @@
-import { syncPrInfo } from '../actions/sync_pr_info';
-import { initContext, TContext } from '../lib/context';
+import { getPrInfoForBranches } from '../lib/api/pr_info';
+import { prInfoConfigFactory } from '../lib/config/pr_info_config';
+import { repoConfigFactory } from '../lib/config/repo_config';
+import { userConfigFactory } from '../lib/config/user_config';
+import { TContext } from '../lib/context';
+import {
+  getMetadataRefList,
+  readMetadataRef,
+} from '../lib/engine/metadata_ref';
 import { spawnDetached } from '../lib/utils/spawn';
 
 export function refreshPRInfoInBackground(context: TContext): void {
@@ -23,11 +30,34 @@ export function refreshPRInfoInBackground(context: TContext): void {
 
 async function refreshPRInfo(): Promise<void> {
   try {
-    const context = initContext();
-    await syncPrInfo(context.metaCache.allBranchNames, context);
-    context.metaCache.persist();
+    const userConfig = userConfigFactory.load();
+    if (!userConfig.data.authToken) {
+      return;
+    }
+    const repoConfig = repoConfigFactory.load();
+    if (!repoConfig.data.name || !repoConfig.data.owner) {
+      return;
+    }
+    const branchNamesWithExistingPrNumbers = Object.keys(
+      getMetadataRefList()
+    ).map((branchName) => ({
+      branchName,
+      prNumber: readMetadataRef(branchName)?.prInfo?.number,
+    }));
+    const prInfoToUpsert = await getPrInfoForBranches(
+      branchNamesWithExistingPrNumbers,
+      {
+        authToken: userConfig.data.authToken,
+        repoName: repoConfig.data.name,
+        repoOwner: repoConfig.data.owner,
+      }
+    );
+
+    prInfoConfigFactory
+      .loadIfExists()
+      ?.update((data) => (data.prInfoToUpsert = prInfoToUpsert));
   } catch (err) {
-    return;
+    prInfoConfigFactory.load().delete();
   }
 }
 
