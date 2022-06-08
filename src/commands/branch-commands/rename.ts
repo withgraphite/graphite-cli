@@ -20,6 +20,7 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = 'rename <name>';
+export const aliases = ['rn'];
 export const canonical = 'branch rename';
 export const description =
   'Rename a branch and update metadata referencing it.  Note that this removes any associated GitHub pull request.';

@@ -21,10 +21,10 @@ for (const scene of allScenes) {
 
       expectCommits(scene.repo, 'b, a, 1');
 
-      scene.repo.execCliCommand(`branch prev --no-interactive`);
+      scene.repo.execCliCommand(`branch down --no-interactive`);
       expect(scene.repo.currentBranchName()).to.equal('a1');
 
-      scene.repo.execCliCommand(`branch prev --no-interactive`);
+      scene.repo.execCliCommand(`branch down --no-interactive`);
       expect(scene.repo.currentBranchName()).to.equal('main');
     });
   });

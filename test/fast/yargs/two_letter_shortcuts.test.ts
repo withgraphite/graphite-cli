@@ -6,11 +6,11 @@ for (const scene of [new BasicScene()]) {
   describe(`(${scene}): two letter shortcuts`, function () {
     configureTest(this, scene);
 
-    it("Can run 'bn' shortcut command", () => {
+    it("Can run 'bu' shortcut command", () => {
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
       scene.repo.checkoutBranch('main');
       expect(() =>
-        scene.repo.execCliCommand('bn --no-interactive')
+        scene.repo.execCliCommand('bu --no-interactive')
       ).to.not.throw(Error);
     });
   });
