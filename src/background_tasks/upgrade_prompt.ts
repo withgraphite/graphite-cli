@@ -1,15 +1,15 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
-import { version } from '../../../package.json';
-import { API_SERVER } from '../api/server';
-import { TContext } from '../context';
-import { spawnDetached } from '../utils/spawn';
+import { version } from '../../package.json';
+import { API_SERVER } from '../lib/api/server';
 import {
   messageConfigFactory,
   TMessageConfig,
-} from './../config/message_config';
-import { getUserEmail } from './context';
-import { SHOULD_REPORT_TELEMETRY } from './post_traces';
+} from '../lib/config/message_config';
+import { TContext } from '../lib/context';
+import { getUserEmail } from '../lib/telemetry/context';
+import { SHOULD_REPORT_TELEMETRY } from '../lib/telemetry/post_traces';
+import { spawnDetached } from '../lib/utils/spawn';
 
 function printAndClearOldMessage(context: TContext): void {
   const oldMessage = context.messageConfig.data.message;

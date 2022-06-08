@@ -2,12 +2,12 @@ import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { default as t } from '@withgraphite/retype';
 import { request } from '@withgraphite/retyped-routes';
 import prompts from 'prompts';
-import { assertUnreachable } from '../../../lib/utils/assert_unreachable';
-import { API_SERVER } from '../../api/server';
-import { TContext } from '../../context';
-import { cliAuthPrecondition } from '../../preconditions';
-import { TSurveyResponse } from './../../config/survey_config';
-import { postSurveyResponse } from './post_survey';
+import { postSurveyResponse } from '../background_tasks/post_survey';
+import { API_SERVER } from '../lib/api/server';
+import { TSurveyResponse } from '../lib/config/survey_config';
+import { TContext } from '../lib/context';
+import { cliAuthPrecondition } from '../lib/preconditions';
+import { assertUnreachable } from '../lib/utils/assert_unreachable';
 
 type SurveyT = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.cliSurvey.response
