@@ -71,7 +71,7 @@ export function getBranchInfo(
       })
     )}`,
     ...(prTitleLine ? ['', prTitleLine] : []),
-    ...(prInfo?.url ? [chalk.cyanBright(prInfo.url)] : []),
+    ...(prInfo?.url ? [chalk.magenta(prInfo.url)] : []),
     '',
     ...(args.showCommitNames && !context.metaCache.isTrunk(args.branchName)
       ? getCommitLines(
