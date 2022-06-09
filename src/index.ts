@@ -27,8 +27,8 @@ process.on('uncaughtException', (err) => {
     durationMiliSeconds: 0,
     err,
   });
-  console.log(chalk.red(`UNCAUGHT EXCEPTION: ${err.message}`));
-  console.log(chalk.red(`UNCAUGHT EXCEPTION: ${err.stack}`));
+  console.log(chalk.redBright(`UNCAUGHT EXCEPTION: ${err.message}`));
+  console.log(chalk.redBright(`UNCAUGHT EXCEPTION: ${err.stack}`));
   // eslint-disable-next-line no-restricted-syntax
   process.exit(1);
 });

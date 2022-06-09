@@ -51,7 +51,7 @@ export function isSafeToDelete(
 
   const reason =
     prInfo?.state === 'CLOSED'
-      ? `${chalk.red(branchName)} is closed on GitHub`
+      ? `${chalk.redBright(branchName)} is closed on GitHub`
       : prInfo?.state === 'MERGED'
       ? `${chalk.green(branchName)} is merged into ${chalk.cyan(
           prInfo?.base ?? context.metaCache.trunk
