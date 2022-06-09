@@ -15,6 +15,12 @@ const args = {
     alias: 's',
     default: false,
   },
+  steps: {
+    describe: `Only show this many levels upstack and downstack. Implies --stack.`,
+    type: 'number',
+    alias: 'n',
+    default: undefined,
+  },
 } as const;
 
 export const command = '*';
@@ -27,7 +33,12 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) =>
     logAction(
-      { style: 'FULL', reverse: argv.reverse, stack: argv.stack },
+      {
+        style: 'FULL',
+        reverse: argv.reverse,
+        stack: argv.steps || argv.stack,
+        steps: argv.steps,
+      },
       context
     )
   );
