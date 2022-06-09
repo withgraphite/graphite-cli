@@ -1,7 +1,6 @@
 // Why does an open source CLI include telemetry?
 // We the creators want to understand how people are using the tool
 // All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
-import chalk from 'chalk';
 import yargs from 'yargs';
 import { version } from '../../package.json';
 import { init } from '../actions/init';
@@ -24,7 +23,6 @@ import {
   RebaseConflictError,
   UntrackedBranchError,
 } from './errors';
-import { getUnmergedFiles } from './git/merge_conflict_help';
 import { TGlobalArguments } from './global_arguments';
 import { getUserEmail } from './telemetry/context';
 import { postTelemetryInBackground } from './telemetry/post_traces';
@@ -170,34 +168,9 @@ async function graphiteHelper(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function handleGraphiteError(err: any, context: TContextLite): void {
   switch (err.constructor) {
-    case KilledError:
+    case KilledError: // the user doesn't need a message if they ended gt
+    case RebaseConflictError: // we've already logged a message
       // pass
-      return;
-
-    case RebaseConflictError:
-      context.splog.info(`${chalk.red(`Rebase Conflict`)}: ${err.message}`);
-      context.splog.newline();
-      context.splog.info(chalk.yellow(`Unmerged files:`));
-      context.splog.info(
-        getUnmergedFiles()
-          .map((line) => chalk.red(line))
-          .join('\n')
-      );
-      context.splog.newline();
-      context.splog.info(`To fix and continue your previous Graphite command:`);
-      context.splog.info(`(1) resolve the listed merge conflicts`);
-      context.splog.info(
-        `(2) mark them as resolved with ${chalk.cyan(`gt add`)}`
-      );
-      context.splog.info(
-        `(3) run ${chalk.cyan(
-          `gt continue`
-        )} to continue executing your previous Graphite command`
-      );
-      context.splog.tip(
-        "It's safe to cancel the ongoing rebase with `gt rebase --abort`."
-      );
-
       return;
 
     case UntrackedBranchError:
