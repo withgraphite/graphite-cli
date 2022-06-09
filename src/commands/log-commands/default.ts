@@ -9,6 +9,12 @@ const args = {
     alias: 'r',
     default: false,
   },
+  stack: {
+    describe: `Only show ancestors and descendants of the current branch.`,
+    type: 'boolean',
+    alias: 's',
+    default: false,
+  },
 } as const;
 
 export const command = '*';
@@ -20,5 +26,8 @@ export const canonical = 'log';
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) =>
-    logAction({ style: 'FULL', reverse: argv.reverse }, context)
+    logAction(
+      { style: 'FULL', reverse: argv.reverse, stack: argv.stack },
+      context
+    )
   );
