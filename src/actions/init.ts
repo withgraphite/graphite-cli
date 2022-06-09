@@ -82,6 +82,8 @@ async function selectTrunkBranch(
         return { title: b, value: b };
       }),
       ...(inferredTrunk ? { initial: inferredTrunk } : {}),
+      suggest: (input, choices) =>
+        choices.filter((c: { value: string }) => c.value.includes(input)),
     })
   ).branch;
 }

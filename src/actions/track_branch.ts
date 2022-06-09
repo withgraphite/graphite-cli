@@ -37,6 +37,8 @@ export async function trackBranchInteractive(
         name: 'value',
         message: `Enter a branch to track as a child of ${parentBranchName} (autocomplete or arrow keys)`,
         choices,
+        suggest: (input, choices) =>
+          choices.filter((c: { value: string }) => c.value.includes(input)),
       },
       {
         onCancel: () => {

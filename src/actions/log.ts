@@ -64,6 +64,8 @@ export async function interactiveBranchSelection(
         message: opts.message,
         choices,
         initial,
+        suggest: (input, choices) =>
+          choices.filter((c: { value: string }) => c.value.includes(input)),
       },
       {
         onCancel: () => {
