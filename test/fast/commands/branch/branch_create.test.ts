@@ -50,7 +50,7 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand('branch down');
 
       scene.repo.createChange('c', 'c');
-      scene.repo.execCliCommand(`branch create "c" -m "c" -q --restack`);
+      scene.repo.execCliCommand(`branch create "c" -m "c" -q --insert`);
       expect(() => scene.repo.execCliCommand('branch up')).not.to.throw();
 
       expectCommits(scene.repo, 'b, c, a');
