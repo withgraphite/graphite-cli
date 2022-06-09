@@ -1,6 +1,5 @@
 import yargs from 'yargs';
 import { checkoutBranch } from '../../actions/checkout_branch';
-import { interactiveBranchSelection } from '../../actions/log';
 import { graphite } from '../../lib/runner';
 
 const args = {
@@ -21,14 +20,5 @@ export const builder = args;
 
 export const handler = async (args: argsT): Promise<void> =>
   graphite(args, canonical, async (context) =>
-    checkoutBranch(
-      args.branch ??
-        (await interactiveBranchSelection(
-          {
-            message: 'Checkout a branch',
-          },
-          context
-        )),
-      context
-    )
+    checkoutBranch(args.branch, context)
   );
