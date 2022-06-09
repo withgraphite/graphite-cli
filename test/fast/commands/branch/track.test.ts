@@ -4,7 +4,7 @@ import { configureTest } from '../../../lib/utils/configure_test';
 import { expectCommits } from '../../../lib/utils/expect_commits';
 
 for (const scene of allScenes) {
-  describe(`(${scene}): upstack onto`, function () {
+  describe(`(${scene}): branch track`, function () {
     configureTest(this, scene);
 
     it('Can track and restack a dangling untracked branch', () => {
