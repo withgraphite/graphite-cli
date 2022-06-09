@@ -27,35 +27,35 @@ export type TMeta = {
 export function writeMetadataRef(
   branchName: string,
   meta: TMeta,
-  opts?: { dir: string }
+  cwd?: string
 ): void {
   const metaSha = gpExecSync({
-    command: `git ${opts ? `-C "${opts.dir}"` : ''} hash-object -w --stdin`,
+    command: `git hash-object -w --stdin`,
     options: {
       input: cuteString(meta),
+      cwd,
     },
   });
   gpExecSync({
-    command: `git ${
-      opts ? `-C "${opts.dir}"` : ''
-    } update-ref refs/branch-metadata/${q(branchName)} ${metaSha}`,
+    command: `git update-ref refs/branch-metadata/${q(branchName)} ${metaSha}`,
     options: {
       stdio: 'ignore',
+      cwd,
     },
   });
 }
 
-export function readMetadataRef(
-  branchName: string,
-  opts?: { dir: string }
-): TMeta {
+export function readMetadataRef(branchName: string, cwd?: string): TMeta {
   // TODO: Better account for malformed desc; possibly validate with retype
   try {
     return JSON.parse(
       gpExecSync({
-        command: `git ${
-          opts ? `-C "${opts.dir}" ` : ''
-        }cat-file -p refs/branch-metadata/${q(branchName)} 2> /dev/null`,
+        command: `git cat-file -p refs/branch-metadata/${q(
+          branchName
+        )} 2> /dev/null`,
+        options: {
+          cwd,
+        },
       })
     );
   } catch {

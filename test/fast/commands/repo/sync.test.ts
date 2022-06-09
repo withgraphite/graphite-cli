@@ -3,6 +3,10 @@ import { expect } from 'chai';
 import fs from 'fs-extra';
 import nock from 'nock';
 import { API_SERVER } from '../../../../src/lib/api/server';
+import {
+  readMetadataRef,
+  writeMetadataRef,
+} from '../../../../src/lib/engine/metadata_ref';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
 import { expectBranches } from '../../../lib/utils/expect_branches';
@@ -51,7 +55,11 @@ for (const scene of allScenes) {
 
       expectBranches(scene.repo, 'a, main');
 
-      scene.repo.upsertMeta('a', { prInfo: { state: 'MERGED' } });
+      writeMetadataRef(
+        'a',
+        { ...readMetadataRef('a', scene.dir), prInfo: { state: 'MERGED' } },
+        scene.dir
+      );
 
       scene.repo.execCliCommand(`repo owner`);
       scene.repo.execCliCommand(`repo sync -qf --no-pull`);
@@ -64,7 +72,11 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       expectBranches(scene.repo, 'a, main');
-      scene.repo.upsertMeta('a', { prInfo: { state: 'CLOSED' } });
+      writeMetadataRef(
+        'a',
+        { ...readMetadataRef('a', scene.dir), prInfo: { state: 'CLOSED' } },
+        scene.dir
+      );
 
       scene.repo.execCliCommand(`repo owner`);
       scene.repo.execCliCommand(`repo sync -qf --no-pull`);
