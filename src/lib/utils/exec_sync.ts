@@ -1,5 +1,6 @@
 import { execSync, ExecSyncOptions, SpawnSyncReturns } from 'child_process';
 import { tracer } from '../telemetry/tracer';
+import { cuteString } from './cute_string';
 import { TSplog } from './splog';
 
 type GPExecSyncOptions = {
@@ -34,7 +35,7 @@ export function gpExecSync(
         {
           name: 'execSync',
           resource: 'gpExecSync',
-          meta: { command: command.command },
+          meta: { command: cuteString(command) },
         },
         () => {
           return gpExecSyncImpl(command);
