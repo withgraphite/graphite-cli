@@ -1,6 +1,10 @@
 import fs from 'fs-extra';
 import tmp from 'tmp';
-import { initContext, TContext } from '../../../src/lib/context';
+import {
+  initContext,
+  initContextLite,
+  TContext,
+} from '../../../src/lib/context';
 import { cuteString } from '../../../src/lib/utils/cute_string';
 import { GitRepo } from '../../../src/lib/utils/git_repo';
 
@@ -45,14 +49,16 @@ export abstract class AbstractScene {
   public getContext(): TContext {
     const oldDir = process.cwd();
     process.chdir(this.tmpDir.name);
-    const context = initContext({
-      globalArguments: {
+    const context = initContext(
+      initContextLite({
         interactive: false,
         quiet: !!process.env.DEBUG,
         debug: !!process.env.DEBUG,
+      }),
+      {
         verify: false,
-      },
-    });
+      }
+    );
     process.chdir(oldDir);
     return context;
   }

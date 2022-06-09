@@ -7,10 +7,10 @@ export function registerSigintHandler(opts: {
   commandName: string;
   canonicalCommandName: string;
   startTime: number;
-  cacheLock: TCacheLock;
+  cacheLock: TCacheLock | undefined;
 }): void {
   process.on('SIGINT', (): never => {
-    opts.cacheLock.release();
+    opts.cacheLock?.release();
     const err = new KilledError();
     // End all current traces abruptly.
     tracer.allSpans.forEach((s) => s.end(err));

@@ -3,13 +3,13 @@ import { request } from '@withgraphite/retyped-routes';
 import { API_SERVER } from '../lib/api/server';
 import { surveyConfigFactory } from '../lib/config/survey_config';
 import { userConfigFactory } from '../lib/config/user_config';
-import { TContext } from '../lib/context';
+import { TContextLite } from '../lib/context';
 import { spawnDetached } from '../lib/utils/spawn';
 
 // We try to post the survey response right after the user takes it, but in
 // case they quit early or there's some error, we'll continue to try to post
 // it in the future until it succeeds.
-export function postSurveyResponsesInBackground(context: TContext): void {
+export function postSurveyResponsesInBackground(context: TContextLite): void {
   // We don't worry about race conditions here - we can dedup on the server.
   if (context.surveyConfig.hasSurveyResponse()) {
     spawnDetached(__filename);

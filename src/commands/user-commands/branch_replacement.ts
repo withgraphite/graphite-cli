@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { graphite } from '../../lib/runner';
+import { graphiteWithoutRepo } from '../../lib/runner';
 import { getBranchReplacement } from '../../lib/utils/branch_name';
 
 const args = {
@@ -32,7 +32,7 @@ export const description =
   'The character that will replace unsupported characters in generated branch names.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return graphite(argv, canonical, async (context) => {
+  return graphiteWithoutRepo(argv, canonical, async (context) => {
     if (argv['set-underscore']) {
       context.userConfig.update((data) => (data.branchReplacement = '_'));
       context.splog.info(`Set underscore (_) as the replacement character`);

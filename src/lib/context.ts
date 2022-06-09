@@ -13,40 +13,58 @@ import { composeSplog, TSplog } from './utils/splog';
 
 export const USER_CONFIG_OVERRIDE_ENV = 'GRAPHITE_USER_CONFIG_PATH' as const;
 
-export type TContext = {
+export type TContextLite = {
   splog: TSplog;
   interactive: boolean;
-  repoConfig: TRepoConfig;
   surveyConfig: TSurveyConfig;
   userConfig: TUserConfig;
   messageConfig: TMessageConfig;
+};
+
+type TRepoContext = {
+  repoConfig: TRepoConfig;
   continueConfig: TContinueConfig;
   metaCache: TMetaCache;
 };
 
-export function initContext(opts?: {
-  globalArguments?: {
-    interactive?: boolean;
-    quiet?: boolean;
-    verify?: boolean;
-    debug?: boolean;
-  };
-}): TContext {
-  const repoConfig = repoConfigFactory.load();
+export function initContextLite(opts?: {
+  interactive?: boolean;
+  quiet?: boolean;
+  debug?: boolean;
+}): TContextLite {
   const userConfig = userConfigFactory.load(
     process.env[USER_CONFIG_OVERRIDE_ENV]
   );
   const splog = composeSplog({
-    quiet: opts?.globalArguments?.quiet,
-    outputDebugLogs: opts?.globalArguments?.debug,
+    quiet: opts?.quiet,
+    outputDebugLogs: opts?.debug,
     tips: userConfig.data.tips,
   });
+
+  return {
+    splog,
+    interactive: opts?.interactive ?? true,
+    surveyConfig: surveyConfigFactory.load(),
+    userConfig,
+    messageConfig: messageConfigFactory.load(),
+  };
+}
+
+export type TContext = TRepoContext & TContextLite;
+
+export function initContext(
+  contextLite: TContextLite,
+  opts?: {
+    verify?: boolean;
+  }
+): TContext {
+  const repoConfig = repoConfigFactory.load();
   const continueConfig = continueConfigFactory.load();
   const metaCache = composeMetaCache({
     trunkName: repoConfig.data.trunk,
     currentBranchOverride: continueConfig?.data.currentBranchOverride,
-    splog,
-    noVerify: !(opts?.globalArguments?.verify ?? true),
+    splog: contextLite.splog,
+    noVerify: !(opts?.verify ?? true),
     remote: repoConfig.getRemote(),
   });
   continueConfig?.update((data) => (data.currentBranchOverride = undefined));
@@ -55,14 +73,9 @@ export function initContext(opts?: {
     upsertPrInfoForBranches(prInfoConfig.data.prInfoToUpsert ?? [], metaCache);
     prInfoConfig.delete();
   }
-
   return {
-    splog,
-    interactive: opts?.globalArguments?.interactive ?? true,
+    ...contextLite,
     repoConfig,
-    surveyConfig: surveyConfigFactory.load(),
-    userConfig,
-    messageConfig: messageConfigFactory.load(),
     continueConfig,
     metaCache,
   };
