@@ -1,8 +1,14 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
-import { ExitFailedError, PreconditionsFailedError } from '../lib/errors';
+import {
+  ExitFailedError,
+  KilledError,
+  PreconditionsFailedError,
+} from '../lib/errors';
 import { findRemoteBranch } from '../lib/git/find_remote_branch';
+import { checkoutBranch } from './checkout_branch';
+import { trackBranchInteractive } from './track_branch';
 
 export async function init(context: TContext, trunk?: string): Promise<void> {
   const allBranchNames = context.metaCache.allBranchNames;
@@ -10,14 +16,6 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
   logWelcomeMessage(context);
   context.splog.newline();
 
-  /**
-   * When a branch new repo is created, it technically has 0 branches as a
-   * branch doesn't become 'born' until it has a commit on it. In this case,
-   * we exit early from init - which will continue to run and short-circuit
-   * until the repo has a proper commit.
-   *
-   * https://newbedev.com/git-branch-not-returning-any-results
-   */
   if (allBranchNames.length === 0) {
     context.splog.error(
       `Ouch! We can't setup Graphite in a repo without any branches -- this is likely because you're initializing Graphite in a blank repo. Please create your first commit and then re-run your Graphite command.`
@@ -39,6 +37,10 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
   context.splog.info(
     `Graphite repo config saved at "${context.repoConfig.path}"`
   );
+
+  if (context.interactive) {
+    await branchOnboardingFlow(context);
+  }
 }
 
 function logWelcomeMessage(context: TContext): void {
@@ -92,4 +94,41 @@ function findCommonlyNamedTrunk(context: TContext): string | undefined {
     return potentialTrunks[0];
   }
   return undefined;
+}
+async function branchOnboardingFlow(context: TContext) {
+  context.splog.tip(
+    [
+      "If you have an existing branch or stack that you'd like to start working on with Graphite, you can begin tracking it now!",
+      'To add other non-Graphite branches to Graphite later, check out `gt branch track`.',
+      'If you only want to use Graphite for new branches, feel free to exit now and use `gt branch create`.',
+    ].join('\n')
+  );
+  if (
+    !(
+      await prompts(
+        {
+          type: 'confirm',
+          name: 'value',
+          message: `Would you like start tracking existing branches to create your first stack?`,
+          initial: false,
+        },
+        {
+          onCancel: () => {
+            throw new KilledError();
+          },
+        }
+      )
+    ).value
+  ) {
+    return;
+  }
+
+  await checkoutBranch(context.metaCache.trunk, context);
+
+  while (
+    await trackBranchInteractive(
+      context.metaCache.currentBranchPrecondition,
+      context
+    )
+  );
 }
