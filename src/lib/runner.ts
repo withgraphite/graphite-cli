@@ -2,9 +2,6 @@
 // We the creators want to understand how people are using the tool
 // All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
 import chalk from 'chalk';
-import fs from 'fs-extra';
-import path from 'path';
-import tmp from 'tmp';
 import yargs from 'yargs';
 import { version } from '../../package.json';
 import { init } from '../actions/init';
@@ -12,7 +9,7 @@ import { refreshPRInfoInBackground } from '../background_tasks/fetch_pr_info';
 import { postSurveyResponsesInBackground } from '../background_tasks/post_survey';
 import { fetchUpgradePromptInBackground } from '../background_tasks/upgrade_prompt';
 import { initContext, TContext } from './context';
-import { getCacheLock } from './engine/cache_lock';
+import { getCacheLock, TCacheLock } from './engine/cache_lock';
 import {
   BadTrunkOperationError,
   ConcurrentExecutionError,
@@ -37,7 +34,17 @@ export async function graphite(
 ): Promise<void> {
   const parsedArgs = parseArgs(args);
 
-  await tracer.span(
+  const start = Date.now();
+  const cacheLock = getCacheLock();
+
+  registerSigintHandler({
+    commandName: parsedArgs.command,
+    canonicalCommandName: canonicalName,
+    startTime: start,
+    cacheLock,
+  });
+
+  const err = await tracer.span(
     {
       name: 'command',
       resource: parsedArgs.command,
@@ -48,8 +55,15 @@ export async function graphite(
         alias: parsedArgs.alias,
       },
     },
-    () => graphiteHelper(args, parsedArgs.command, canonicalName, handler)
+    () => graphiteHelper(args, cacheLock, canonicalName, handler)
   );
+  const end = Date.now();
+  postTelemetryInBackground({
+    canonicalCommandName: canonicalName,
+    commandName: parsedArgs.command,
+    durationMiliSeconds: end - start,
+    err,
+  });
 }
 
 // TODO check with Greg about whether we still need all the OldTelemetry stuff?
@@ -57,21 +71,10 @@ export async function graphite(
 // eslint-disable-next-line max-params
 async function graphiteHelper(
   args: yargs.Arguments & TGlobalArguments,
-  commandName: string,
+  cacheLock: TCacheLock,
   canonicalName: string,
   handler: (context: TContext) => Promise<void>
-): Promise<void> {
-  const start = Date.now();
-
-  const cacheLock = getCacheLock();
-
-  registerSigintHandler({
-    commandName,
-    canonicalCommandName: canonicalName,
-    startTime: start,
-    cacheLock,
-  });
-
+): Promise<Error | undefined> {
   const context = initContext({
     globalArguments: args,
   });
@@ -113,25 +116,11 @@ async function graphiteHelper(
     context.metaCache.persist();
   } catch (persistError) {
     context.metaCache.clear();
-    const persistFailureLog = path.join(tmp.dirSync().name, 'PERSIST_FAILURE');
-    context.splog.error(
-      `Failed to persist Graphite cache, saving debug to:\n${chalk.reset(
-        persistFailureLog
-      )}`
-    );
-    fs.appendFileSync(persistFailureLog, tracer.flushJson());
-    fs.appendFileSync(persistFailureLog, persistError?.toString());
-    fs.appendFileSync(persistFailureLog, persistError?.stack?.toString());
+    context.splog.debug(`Failed to persist Graphite cache`);
   }
 
   cacheLock.release();
-  const end = Date.now();
-  postTelemetryInBackground({
-    canonicalCommandName: canonicalName,
-    commandName,
-    durationMiliSeconds: end - start,
-    err,
-  });
+  return err;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
