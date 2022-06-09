@@ -51,10 +51,8 @@ export type TMetaCache = {
   branchExists: (branchName: string | undefined) => boolean;
   allBranchNames: string[];
   isBranchTracked: (branchName: string) => boolean;
-  trackBranch: (
-    branchName: string,
-    parentBranchName: string
-  ) => 'TRACKED' | 'NEEDS_REBASE';
+  canTrackBranch: (branchName: string, parentBranchName: string) => boolean;
+  trackBranch: (branchName: string, parentBranchName: string) => void;
   untrackBranch: (branchName: string) => void;
 
   currentBranch: string | undefined;
@@ -145,6 +143,21 @@ export function composeMetaCache({
         `${branchName} is unknown to Graphite.`
       );
     }
+  };
+
+  const canTrackBranch = (branchName: string, parentBranchName: string) => {
+    assertBranch(branchName);
+    assertBranch(parentBranchName);
+
+    const parentMeta = cache.branches[parentBranchName];
+    assertCachedMetaIsValidOrTrunk(parentMeta);
+
+    // We allow children of trunk to be tracked even if they are behind.
+    // So only fail if the parent is not trunk AND the branch is behind
+    return (
+      parentMeta.validationResult === 'TRUNK' ||
+      getMergeBase(branchName, parentBranchName) === parentMeta.branchRevision
+    );
   };
 
   const isBranchFixed = (branchName: string): boolean => {
@@ -341,22 +354,11 @@ export function composeMetaCache({
       assertBranch(branchName);
       return cache.branches[branchName].validationResult === 'VALID';
     },
+    canTrackBranch,
     trackBranch: (branchName: string, parentBranchName: string) => {
-      assertBranch(branchName);
-      assertBranch(parentBranchName);
-
-      const parentMeta = cache.branches[parentBranchName];
-      assertCachedMetaIsValidOrTrunk(parentMeta);
-
-      const mergeBase = getMergeBase(branchName, parentBranchName);
-
-      // We allow children of trunk to be tracked even if they are behind.
-      // So only fail if the parent is not trunk AND the branch is behind
-      if (
-        parentMeta.validationResult !== 'TRUNK' &&
-        mergeBase !== parentMeta.branchRevision
-      ) {
-        return 'NEEDS_REBASE';
+      if (!canTrackBranch(branchName, parentBranchName)) {
+        // escape hatch
+        return;
       }
 
       updateMeta(branchName, {
@@ -364,7 +366,7 @@ export function composeMetaCache({
         validationResult: 'VALID',
         parentBranchName,
         // This is parentMeta.branchRevision unless parent is trunk
-        parentBranchRevision: mergeBase,
+        parentBranchRevision: getMergeBase(branchName, parentBranchName),
       });
       return 'TRACKED';
     },
