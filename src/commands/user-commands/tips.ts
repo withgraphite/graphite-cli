@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { graphite } from '../../lib/runner';
+import { graphiteWithoutRepo } from '../../lib/runner';
 
 const args = {
   enable: {
@@ -23,7 +23,7 @@ export const description = 'Show tips while using Graphite';
 export const canonical = 'user tips';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return graphite(argv, canonical, async (context) => {
+  return graphiteWithoutRepo(argv, canonical, async (context) => {
     if (argv.enable) {
       context.userConfig.update((data) => (data.tips = true));
       context.splog.info(`tips enabled`);

@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { graphite } from '../lib/runner';
+import { graphiteWithoutRepo } from '../lib/runner';
 
 const args = {
   token: {
@@ -19,7 +19,7 @@ export const builder = args;
 export const canonical = 'auth';
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return graphite(argv, canonical, async (context) => {
+  return graphiteWithoutRepo(argv, canonical, async (context) => {
     if (argv.token) {
       context.userConfig.update((data) => (data.authToken = argv.token));
       context.splog.info(
