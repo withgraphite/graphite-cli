@@ -1,4 +1,3 @@
-import { TContext } from '../context';
 import { TCacheLock } from '../engine/cache_lock';
 import { KilledError } from '../errors';
 import { postTelemetryInBackground } from './post_traces';
@@ -9,10 +8,8 @@ export function registerSigintHandler(opts: {
   canonicalCommandName: string;
   startTime: number;
   cacheLock: TCacheLock;
-}): { attachContext: (context: TContext) => void } {
-  const contextRef: { context?: TContext } = { context: undefined };
-
-  process.on('SIGINT', () => {
+}): void {
+  process.on('SIGINT', (): never => {
     opts.cacheLock.release();
     const err = new KilledError();
     // End all current traces abruptly.
@@ -26,8 +23,4 @@ export function registerSigintHandler(opts: {
     // eslint-disable-next-line no-restricted-syntax
     process.exit(1);
   });
-
-  return {
-    attachContext: (context: TContext) => (contextRef.context = context),
-  };
 }
