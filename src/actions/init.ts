@@ -74,8 +74,8 @@ async function selectTrunkBranch(
       type: 'autocomplete',
       name: 'branch',
       message: `Select a trunk branch, which you open pull requests against${
-        inferredTrunk ? ` [inferred trunk ${chalk.green(inferredTrunk)}]` : ''
-      }`,
+        inferredTrunk ? ` - inferred trunk ${chalk.green(inferredTrunk)}` : ''
+      } (autocomplete or arrow keys)`,
       choices: allBranchNames.map((b) => {
         return { title: b, value: b };
       }),
