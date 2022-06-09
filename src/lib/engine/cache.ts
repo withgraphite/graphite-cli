@@ -155,9 +155,9 @@ export function composeMetaCache({
     if (cachedMeta?.validationResult !== 'VALID') {
       return false;
     }
-    splog.logDebug(`${branchName} fixed?`);
-    splog.logDebug(`${cachedMeta.parentBranchRevision}`);
-    splog.logDebug(
+    splog.debug(`${branchName} fixed?`);
+    splog.debug(`${cachedMeta.parentBranchRevision}`);
+    splog.debug(
       `${cache.branches[cachedMeta.parentBranchName].branchRevision}`
     );
     return (
@@ -262,7 +262,7 @@ export function composeMetaCache({
       prInfo: newCachedMeta.prInfo,
     });
 
-    splog.logDebug(
+    splog.debug(
       `Updated cached meta for branch ${branchName}:\n${cuteString(
         newCachedMeta
       )}`
@@ -315,7 +315,7 @@ export function composeMetaCache({
 
   return {
     debug() {
-      splog.logDebug(cuteString(cache));
+      splog.debug(cuteString(cache));
     },
     persist() {
       persistCache(trunkName, cache.branches, splog);
@@ -592,9 +592,9 @@ export function composeMetaCache({
         cachedMeta.parentBranchName,
         remote
       );
-      splog.logDebug(`${branchName} base matches remote?`);
-      splog.logDebug(cachedMeta.parentBranchRevision);
-      splog.logDebug(remoteParentRevision ?? '');
+      splog.debug(`${branchName} base matches remote?`);
+      splog.debug(cachedMeta.parentBranchRevision);
+      splog.debug(remoteParentRevision ?? '');
 
       return cachedMeta.parentBranchRevision === remoteParentRevision;
     },

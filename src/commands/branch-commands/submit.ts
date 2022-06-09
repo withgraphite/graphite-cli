@@ -10,7 +10,7 @@ export const canonical = 'branch submit';
 
 export const handler = async (argv: argsT): Promise<void> => {
   await graphite(argv, canonical, async (context) => {
-    context.splog.logTip(
+    context.splog.tip(
       [
         `You are submitting a pull request for a specific branch.`,
         `In common cases, we recommend you use:`,

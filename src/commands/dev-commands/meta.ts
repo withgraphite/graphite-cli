@@ -35,7 +35,7 @@ export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {
     const metaString = cuteString(readMetadataRef(argv.branch));
     if (!argv.edit) {
-      context.splog.logInfo(metaString);
+      context.splog.info(metaString);
       return;
     }
     const tmpfilePath = path.join(tmp.dirSync().name, 'meta');

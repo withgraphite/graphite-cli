@@ -35,12 +35,12 @@ export const handler = async (argv: argsT): Promise<void> => {
         fs.readFileSync(argv['recreate-from-file']).toString(),
         context.splog
       );
-      context.splog.logInfo(`${chalk.green(dir)}`);
+      context.splog.info(`${chalk.green(dir)}`);
     } else if (argv.recreate) {
       const dir = recreateState(argv.recreate, context.splog);
-      context.splog.logInfo(`${chalk.green(dir)}`);
+      context.splog.info(`${chalk.green(dir)}`);
     } else {
-      context.splog.logInfo(captureState(context));
+      context.splog.info(captureState(context));
     }
   });
 };

@@ -15,12 +15,12 @@ export async function getAction(
   context: TContext
 ): Promise<void> {
   uncommittedTrackedChangesPrecondition();
-  context.splog.logInfo(
+  context.splog.info(
     `Pulling ${chalk.cyan(context.metaCache.trunk)} from remote...`
   );
 
   try {
-    context.splog.logInfo(
+    context.splog.info(
       context.metaCache.pullTrunk() === 'PULL_UNNEEDED'
         ? `${chalk.green(context.metaCache.trunk)} is up to date.`
         : `${chalk.green(
@@ -29,7 +29,7 @@ export async function getAction(
             context.metaCache.getRevision(context.metaCache.trunk)
           )}.`
     );
-    context.splog.logNewline();
+    context.splog.newline();
   } catch (err) {
     throw new ExitFailedError(`Failed to pull trunk`, err);
   }
@@ -64,13 +64,13 @@ async function getBranchesFromRemote(
     if (!context.metaCache.branchExists(branchName)) {
       // If the branch doesn't already exists, no conflict to resolve
       context.metaCache.checkoutBranchFromFetched(branchName, parentBranchName);
-      context.splog.logInfo(`Synced ${chalk.cyan(branchName)} from remote.`);
+      context.splog.info(`Synced ${chalk.cyan(branchName)} from remote.`);
     } else if (
       context.metaCache.getParentPrecondition(branchName) !== parentBranchName
     ) {
       await handleDifferentParents(branchName, parentBranchName, context);
     } else if (context.metaCache.branchMatchesFetched(branchName)) {
-      context.splog.logInfo(`${chalk.cyan(branchName)} is up to date.`);
+      context.splog.info(`${chalk.cyan(branchName)} is up to date.`);
     } else {
       await handleSameParent(branchName, parentBranchName, context);
     }
@@ -83,7 +83,7 @@ async function handleDifferentParents(
   parentBranchName: string,
   context: TContext
 ): Promise<void> {
-  context.splog.logInfo(
+  context.splog.info(
     [
       `${chalk.yellow(
         branchName
@@ -117,7 +117,7 @@ async function handleDifferentParents(
   }
 
   context.metaCache.checkoutBranchFromFetched(branchName, parentBranchName);
-  context.splog.logInfo(`Synced ${chalk.cyan(branchName)} from remote.`);
+  context.splog.info(`Synced ${chalk.cyan(branchName)} from remote.`);
 }
 
 async function handleSameParent(
@@ -125,7 +125,7 @@ async function handleSameParent(
   parentBranchName: string,
   context: TContext
 ): Promise<void> {
-  context.splog.logInfo(
+  context.splog.info(
     [
       `${chalk.yellow(
         branchName
@@ -170,7 +170,7 @@ async function handleSameParent(
       throw new ExitFailedError(`Rebasing is not yet implemented.`);
     case 'OVERWRITE':
       context.metaCache.checkoutBranchFromFetched(branchName, parentBranchName);
-      context.splog.logInfo(`Synced ${chalk.cyan(branchName)} from remote.`);
+      context.splog.info(`Synced ${chalk.cyan(branchName)} from remote.`);
       break;
     case 'ABORT':
       throw new KilledError();

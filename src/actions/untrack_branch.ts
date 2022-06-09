@@ -14,7 +14,7 @@ export async function untrackBranch(
   }
 
   if (!context.metaCache.isBranchTracked(branchName)) {
-    context.splog.logInfo(
+    context.splog.info(
       `Branch ${chalk.yellow(branchName)} is not tracked by Graphite.`
     );
     return;
@@ -22,7 +22,7 @@ export async function untrackBranch(
 
   const children = context.metaCache.getChildren(branchName);
   if (children.length) {
-    context.splog.logTip(
+    context.splog.tip(
       'If you would like to keep these branches tracked, use `upstack onto` to change their parent before untracking.'
     );
     if (
@@ -36,7 +36,7 @@ export async function untrackBranch(
   }
 
   context.metaCache.untrackBranch(branchName);
-  context.splog.logInfo(`Untracked branch ${chalk.yellow(branchName)}.`);
+  context.splog.info(`Untracked branch ${chalk.yellow(branchName)}.`);
 }
 
 async function shouldUntrackBranchWithChildren(
@@ -47,7 +47,7 @@ async function shouldUntrackBranchWithChildren(
   }: { branchName: string; children: string[]; force: boolean },
   context: TContext
 ): Promise<boolean> {
-  context.splog.logInfo(
+  context.splog.info(
     `${chalk.yellow(branchName)} has tracked children:\n${children
       .map((child) => `▸ ${child}`)
       .join('\n')}`

@@ -10,24 +10,24 @@ export function restackBranches(
   branchNames: string[],
   context: TContext
 ): void {
-  context.splog.logDebug(
+  context.splog.debug(
     branchNames.reduce((acc, curr) => `${acc}\n${curr}`, 'RESTACKING:')
   );
   while (branchNames.length > 0) {
     const branchName = branchNames.shift() as string;
 
     if (context.metaCache.isTrunk(branchName)) {
-      context.splog.logInfo(
+      context.splog.info(
         `${chalk.cyan(branchName)} does not need to be restacked.`
       );
       continue;
     }
 
     const result = context.metaCache.restackBranch(branchName);
-    context.splog.logDebug(`${result}: ${branchName}`);
+    context.splog.debug(`${result}: ${branchName}`);
     switch (result) {
       case 'REBASE_DONE':
-        context.splog.logInfo(
+        context.splog.info(
           `Restacked ${chalk.green(branchName)} on ${chalk.cyan(
             context.metaCache.getParentPrecondition(branchName)
           )}.`
@@ -43,7 +43,7 @@ export function restackBranches(
         );
 
       case 'REBASE_UNNEEDED':
-        context.splog.logInfo(
+        context.splog.info(
           `${chalk.cyan(
             branchName
           )} does not need to be restacked${` on ${chalk.cyan(
@@ -78,7 +78,7 @@ export function continueRestack(
     throw new RebaseConflictError(`Rebase conflict is not yet resolved.`);
   }
 
-  context.splog.logInfo(
+  context.splog.info(
     `Resolved rebase conflict for ${chalk.green(cont.branchName)}.`
   );
 

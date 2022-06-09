@@ -41,7 +41,7 @@ export async function trackBranch(
     context.metaCache.trackBranch(branchName, parentBranchName) ===
     'NEEDS_REBASE'
   ) {
-    context.splog.logTip(
+    context.splog.tip(
       `Are you sure that ${chalk.cyan(
         parentBranchName
       )} is the right parent for ${chalk.cyan(
@@ -59,7 +59,7 @@ export async function trackBranch(
   }
 
   context.metaCache.checkoutBranch(branchName);
-  context.splog.logInfo(
+  context.splog.info(
     `Checked out newly tracked branch ${chalk.green(
       branchName
     )} with parent ${chalk.cyan(parentBranchName)}.`
@@ -74,20 +74,20 @@ async function shouldRetrackBranch(
   }: { branchName: string; parentBranchName: string; force: boolean },
   context: TContext
 ): Promise<boolean> {
-  context.splog.logInfo(`Already tracking ${chalk.yellow(branchName)}.`);
+  context.splog.info(`Already tracking ${chalk.yellow(branchName)}.`);
   if (
     parentBranchName === context.metaCache.getParentPrecondition(branchName)
   ) {
-    context.splog.logInfo(
+    context.splog.info(
       `Parent is already set to ${chalk.cyan(parentBranchName)}.`
     );
     return false;
   }
 
-  context.splog.logWarn(
+  context.splog.warn(
     `This operation may result in a duplicated commit history.`
   );
-  context.splog.logTip('Did you mean to use `gt upstack onto`?');
+  context.splog.tip('Did you mean to use `gt upstack onto`?');
 
   return (
     force ||

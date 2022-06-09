@@ -87,10 +87,10 @@ async function graphiteHelper(
         canonicalName !== 'repo init' &&
         !context.repoConfig.graphiteInitialized()
       ) {
-        context.splog.logInfo(
+        context.splog.info(
           `Graphite has not been initialized, attempting to setup now...`
         );
-        context.splog.logNewline();
+        context.splog.newline();
         await init(context);
       }
 
@@ -98,8 +98,8 @@ async function graphiteHelper(
       return undefined;
     } catch (err) {
       handleGraphiteError(err, context);
-      context.splog.logDebug(err);
-      context.splog.logDebug(err.stack);
+      context.splog.debug(err);
+      context.splog.debug(err.stack);
       // print errors when debugging tests
       if (process.env.DEBUG) {
         process.stdout.write(err.stack.toString());
@@ -114,7 +114,7 @@ async function graphiteHelper(
   } catch (persistError) {
     context.metaCache.clear();
     const persistFailureLog = path.join(tmp.dirSync().name, 'PERSIST_FAILURE');
-    context.splog.logError(
+    context.splog.error(
       `Failed to persist Graphite cache, saving debug to:\n${chalk.reset(
         persistFailureLog
       )}`
@@ -142,36 +142,34 @@ function handleGraphiteError(err: any, context: TContext): void {
       return;
 
     case RebaseConflictError:
-      context.splog.logInfo(`${chalk.red(`Rebase Conflict`)}: ${err.message}`);
-      context.splog.logNewline();
-      context.splog.logInfo(chalk.yellow(`Unmerged files:`));
-      context.splog.logInfo(
+      context.splog.info(`${chalk.red(`Rebase Conflict`)}: ${err.message}`);
+      context.splog.newline();
+      context.splog.info(chalk.yellow(`Unmerged files:`));
+      context.splog.info(
         getUnmergedFiles()
           .map((line) => chalk.red(line))
           .join('\n')
       );
-      context.splog.logNewline();
-      context.splog.logInfo(
-        `To fix and continue your previous Graphite command:`
-      );
-      context.splog.logInfo(`(1) resolve the listed merge conflicts`);
-      context.splog.logInfo(
+      context.splog.newline();
+      context.splog.info(`To fix and continue your previous Graphite command:`);
+      context.splog.info(`(1) resolve the listed merge conflicts`);
+      context.splog.info(
         `(2) mark them as resolved with ${chalk.cyan(`gt add`)}`
       );
-      context.splog.logInfo(
+      context.splog.info(
         `(3) run ${chalk.cyan(
           `gt continue`
         )} to continue executing your previous Graphite command`
       );
-      context.splog.logTip(
+      context.splog.tip(
         "It's safe to cancel the ongoing rebase with `gt rebase --abort`."
       );
 
       return;
 
     case UntrackedBranchError:
-      context.splog.logTip('You can track a branch with `gt branch track`.');
-      context.splog.logError(err.message);
+      context.splog.tip('You can track a branch with `gt branch track`.');
+      context.splog.error(err.message);
       return;
 
     case BadTrunkOperationError:
@@ -179,7 +177,7 @@ function handleGraphiteError(err: any, context: TContext): void {
     case ConcurrentExecutionError:
     case PreconditionsFailedError:
     default:
-      context.splog.logError(err.message);
+      context.splog.error(err.message);
       return;
   }
 }

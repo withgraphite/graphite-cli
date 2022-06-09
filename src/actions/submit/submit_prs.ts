@@ -125,7 +125,7 @@ function handlePRReponse(
       : {}),
     ...(pr.request.draft !== undefined ? { draft: pr.request.draft } : {}),
   });
-  context.splog.logInfo(
+  context.splog.info(
     `${chalk.green(pr.response.head)}: ${pr.response.prURL} (${{
       updated: chalk.yellow,
       created: chalk.green,

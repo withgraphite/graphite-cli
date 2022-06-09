@@ -50,7 +50,7 @@ export function recreateState(stateJson: string, splog: TSplog): string {
   const state = JSON.parse(stateJson) as TState;
   const refMappingsOldToNew: Record<string, string> = {};
 
-  splog.logInfo(`Creating repo`);
+  splog.info(`Creating repo`);
   const tmpTrunk = `initial-debug-context-head-${Date.now()}`;
   const tmpDir = tmp.dirSync().name;
   process.chdir(tmpDir);
@@ -63,10 +63,10 @@ export function recreateState(stateJson: string, splog: TSplog): string {
     ].join(' && '),
   });
 
-  splog.logInfo(`Creating ${Object.keys(state.commitTree).length} commits`);
+  splog.info(`Creating ${Object.keys(state.commitTree).length} commits`);
   recreateCommits({ commitTree: state.commitTree, refMappingsOldToNew }, splog);
 
-  splog.logInfo(`Creating ${Object.keys(state.branches).length} branches`);
+  splog.info(`Creating ${Object.keys(state.branches).length} branches`);
   createBranches(
     {
       branches: state.branches,
@@ -75,13 +75,13 @@ export function recreateState(stateJson: string, splog: TSplog): string {
     splog
   );
 
-  splog.logInfo(`Creating the repo config`);
+  splog.info(`Creating the repo config`);
   fs.writeFileSync(
     path.join(tmpDir, '/.git/.graphite_repo_config'),
     cuteString(state.repoConfig)
   );
 
-  splog.logInfo(`Creating the metadata`);
+  splog.info(`Creating the metadata`);
   state.metadata.forEach((pair) => {
     const [branchName, meta] = pair;
     // Replace parentBranchRevision with the commit hash in the recreated repo
@@ -99,7 +99,7 @@ export function recreateState(stateJson: string, splog: TSplog): string {
     switchBranch(state.currentBranchName);
     deleteBranch(tmpTrunk);
   } else {
-    splog.logWarn(`No currentBranchName found, retaining temporary trunk.`);
+    splog.warn(`No currentBranchName found, retaining temporary trunk.`);
     switchBranch(tmpTrunk);
   }
 
@@ -118,7 +118,7 @@ function createBranches(
     if (branch != gpExecSync({ command: `git branch --show-current` })) {
       gpExecSync({ command: `git branch -f ${branch} ${originalRef}` });
     } else {
-      splog.logWarn(
+      splog.warn(
         `Skipping creating ${branch} which matches the name of the current branch`
       );
     }
@@ -179,9 +179,7 @@ function recreateCommits(
 
     const totalNewCommits = Object.keys(opts.refMappingsOldToNew).length;
     if (totalNewCommits % 100 === 0) {
-      splog.logInfo(
-        `Progress: ${totalNewCommits} / ${totalOldCommits} created`
-      );
+      splog.info(`Progress: ${totalNewCommits} / ${totalOldCommits} created`);
     }
 
     // Find all commits with this as parent, and enque them for creation.

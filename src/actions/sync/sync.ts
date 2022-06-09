@@ -21,9 +21,7 @@ export async function syncAction(
 
   if (opts.pull) {
     pullTrunk(context);
-    context.splog.logTip(
-      'You can skip pulling trunk with the `--no-pull` flag.'
-    );
+    context.splog.tip('You can skip pulling trunk with the `--no-pull` flag.');
   }
 
   const branchesToRestack: string[] = [];
@@ -31,14 +29,14 @@ export async function syncAction(
   await syncPrInfo(context.metaCache.allBranchNames, context);
 
   if (opts.delete) {
-    context.splog.logInfo(
+    context.splog.info(
       `Checking if any branches have been merged/closed and can be deleted...`
     );
     const branchesWithNewParents = await cleanBranches(
       { showDeleteProgress: opts.showDeleteProgress, force: opts.force },
       context
     );
-    context.splog.logTip(
+    context.splog.tip(
       'You can skip deleting branches with the `--no-delete` flag.'
     );
     if (!opts.restack) {
@@ -71,12 +69,12 @@ export async function syncAction(
 }
 
 export function pullTrunk(context: TContext): void {
-  context.splog.logInfo(
+  context.splog.info(
     `Pulling ${chalk.cyan(context.metaCache.trunk)} from remote...`
   );
 
   try {
-    context.splog.logInfo(
+    context.splog.info(
       context.metaCache.pullTrunk() === 'PULL_UNNEEDED'
         ? `${chalk.green(context.metaCache.trunk)} is up to date.`
         : `${chalk.green(

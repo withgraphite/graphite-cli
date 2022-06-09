@@ -23,7 +23,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     if (argv.set) {
       context.repoConfig.setRemote(argv.set);
     } else {
-      context.splog.logInfo(context.repoConfig.getRemote());
+      context.splog.info(context.repoConfig.getRemote());
     }
   });
 };

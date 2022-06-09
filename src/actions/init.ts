@@ -8,7 +8,7 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
   const allBranchNames = context.metaCache.allBranchNames;
 
   logWelcomeMessage(context);
-  context.splog.logNewline();
+  context.splog.newline();
 
   /**
    * When a branch new repo is created, it technically has 0 branches as a
@@ -19,10 +19,10 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
    * https://newbedev.com/git-branch-not-returning-any-results
    */
   if (allBranchNames.length === 0) {
-    context.splog.logError(
+    context.splog.error(
       `Ouch! We can't setup Graphite in a repo without any branches -- this is likely because you're initializing Graphite in a blank repo. Please create your first commit and then re-run your Graphite command.`
     );
-    context.splog.logNewline();
+    context.splog.newline();
     throw new PreconditionsFailedError(
       `No branches found in current repo; cannot initialize Graphite.`
     );
@@ -35,17 +35,17 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
   context.repoConfig.setTrunk(newTrunkName);
   context.metaCache.rebuild(newTrunkName);
 
-  context.splog.logInfo(`Trunk set to ${chalk.green(newTrunkName)}`);
-  context.splog.logInfo(
+  context.splog.info(`Trunk set to ${chalk.green(newTrunkName)}`);
+  context.splog.info(
     `Graphite repo config saved at "${context.repoConfig.path}"`
   );
 }
 
 function logWelcomeMessage(context: TContext): void {
   if (!context.repoConfig.graphiteInitialized()) {
-    context.splog.logInfo('Welcome to Graphite!');
+    context.splog.info('Welcome to Graphite!');
   } else {
-    context.splog.logInfo(
+    context.splog.info(
       `Regenerating Graphite repo config (${context.repoConfig.path})`
     );
   }
