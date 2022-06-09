@@ -8,8 +8,8 @@ export function logAction(
   opts: {
     style: 'SHORT' | 'FULL';
     reverse: boolean;
-    stack: boolean;
     steps: number | undefined;
+    branchName: string;
   },
   context: TContext
 ): void {
@@ -17,16 +17,19 @@ export function logAction(
     {
       short: opts.style === 'SHORT',
       reverse: opts.reverse,
-      branchName: opts.stack
-        ? context.metaCache.currentBranchPrecondition
-        : context.metaCache.trunk,
+      branchName: opts.branchName,
       indentLevel: 0,
       steps: opts.steps,
     },
     context
   ).forEach((line) => context.splog.info(line));
 
-  if (opts.style === 'SHORT' && !opts.reverse && !opts.stack) {
+  if (
+    opts.style === 'SHORT' &&
+    context.metaCache.isTrunk(opts.branchName) &&
+    !opts.reverse &&
+    !opts.steps
+  ) {
     context.splog.tip(
       'Miss the old version of log short? Try the `--classic` flag!'
     );
