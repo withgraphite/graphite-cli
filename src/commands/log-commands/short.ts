@@ -23,6 +23,12 @@ const args = {
     alias: 's',
     default: false,
   },
+  steps: {
+    describe: `Only show this many levels upstack and downstack. Implies --stack.`,
+    type: 'number',
+    alias: 'n',
+    default: undefined,
+  },
 } as const;
 
 export const command = 'short';
@@ -38,7 +44,12 @@ export const handler = async (argv: argsT): Promise<void> =>
     argv.classic
       ? logShortClassic(context)
       : logAction(
-          { style: 'SHORT', reverse: argv.reverse, stack: argv.stack },
+          {
+            style: 'SHORT',
+            reverse: argv.reverse,
+            stack: argv.steps || argv.stack,
+            steps: argv.steps,
+          },
           context
         )
   );

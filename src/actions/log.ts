@@ -5,7 +5,12 @@ import { KilledError } from '../lib/errors';
 import { getBranchInfo } from './show_branch';
 
 export function logAction(
-  opts: { style: 'SHORT' | 'FULL'; reverse: boolean; stack: boolean },
+  opts: {
+    style: 'SHORT' | 'FULL';
+    reverse: boolean;
+    stack: boolean;
+    steps: number | undefined;
+  },
   context: TContext
 ): void {
   getStackLines(
@@ -16,6 +21,7 @@ export function logAction(
         ? context.metaCache.currentBranchPrecondition
         : context.metaCache.trunk,
       indentLevel: 0,
+      steps: opts.steps,
     },
     context
   ).forEach((line) => context.splog.info(line));
@@ -88,6 +94,7 @@ type TPrintStackArgs = {
   indentLevel: number;
   omitCurrentBranch?: boolean;
   noStyleBranchName?: boolean; // Currently only implemented for short = true
+  steps?: number;
 };
 
 function getStackLines(args: TPrintStackArgs, context: TContext): string[] {
@@ -113,7 +120,9 @@ function getDownstackExclusiveLines(
     ...context.metaCache.getRelativeStack(args.branchName, {
       recursiveParents: true,
     }),
-  ].map((branchName) => getBranchLines({ ...args, branchName }, context));
+  ]
+    .slice(-(args.steps ?? 0))
+    .map((branchName) => getBranchLines({ ...args, branchName }, context));
 
   // opposite of the rest of these because we got the list from trunk upward
   return args.reverse ? outputDeep.flat() : outputDeep.reverse().flat();
@@ -135,6 +144,9 @@ function getUpstackExclusiveLines(
   args: TPrintStackArgs,
   context: TContext
 ): string[] {
+  if (args.steps === 0) {
+    return [];
+  }
   const children = context.metaCache.getChildren(args.branchName);
   return children
     .filter(
@@ -146,6 +158,7 @@ function getUpstackExclusiveLines(
       getUpstackInclusiveLines(
         {
           ...args,
+          steps: args.steps ? args.steps - 1 : undefined,
           branchName: child,
           indentLevel:
             args.indentLevel + (args.reverse ? children.length - i - 1 : i),
