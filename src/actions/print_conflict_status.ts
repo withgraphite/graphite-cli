@@ -10,13 +10,13 @@ export function printConflictStatus(
   errMessage: string,
   context: TContext
 ): void {
-  context.splog.info(chalk.red(errMessage));
+  context.splog.info(chalk.redBright(errMessage));
   context.splog.newline();
 
   context.splog.info(chalk.yellow(`Unmerged files:`));
   context.splog.info(
     getUnmergedFiles()
-      .map((line) => chalk.red(line))
+      .map((line) => chalk.redBright(line))
       .join('\n')
   );
   context.splog.newline();
