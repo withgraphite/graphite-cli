@@ -5,6 +5,7 @@ import { addAll } from '../lib/git/add_all';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 import { clearContinuation, persistContinuation } from './persist_continuation';
+import { printConflictStatus } from './print_conflict_status';
 
 export function restackBranches(
   branchNames: string[],
@@ -36,11 +37,13 @@ export function restackBranches(
 
       case 'REBASE_CONFLICT':
         persistContinuation({ branchesToRestack: branchNames }, context);
-        throw new RebaseConflictError(
+        printConflictStatus(
           `Hit conflict restacking ${chalk.yellow(branchName)} on ${chalk.cyan(
             context.metaCache.getParentPrecondition(branchName)
-          )}.`
+          )}.`,
+          context
         );
+        throw new RebaseConflictError();
 
       case 'REBASE_UNNEEDED':
         context.splog.info(
@@ -75,7 +78,8 @@ export function continueRestack(
   const cont = context.metaCache.continueRebase();
   if (cont.result === 'REBASE_CONFLICT') {
     persistContinuation({ branchesToRestack: branchesToRestack }, context);
-    throw new RebaseConflictError(`Rebase conflict is not yet resolved.`);
+    printConflictStatus(`Rebase conflict is not yet resolved.`, context);
+    throw new RebaseConflictError();
   }
 
   context.splog.info(

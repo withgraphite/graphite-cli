@@ -3,6 +3,7 @@ import { TContext } from '../lib/context';
 import { SCOPE } from '../lib/engine/scope_spec';
 import { ExitFailedError, RebaseConflictError } from '../lib/errors';
 import { persistContinuation } from './persist_continuation';
+import { printConflictStatus } from './print_conflict_status';
 import { restackBranches } from './restack';
 
 export function editBranchAction(context: TContext): void {
@@ -16,6 +17,7 @@ export function editBranchAction(context: TContext): void {
       'Can only edit restacked branches in this version, will be fixed soon!'
     );
   }
+
   if (
     context.metaCache.rebaseInteractive(currentBranchName) === 'REBASE_CONFLICT'
   ) {
@@ -28,11 +30,13 @@ export function editBranchAction(context: TContext): void {
       },
       context
     );
-    throw new RebaseConflictError(
+    printConflictStatus(
       `Hit conflict during interactive rebase of ${chalk.yellow(
         currentBranchName
-      )}.`
+      )}.`,
+      context
     );
+    throw new RebaseConflictError();
   }
 
   restackBranches(

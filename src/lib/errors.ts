@@ -20,8 +20,8 @@ export class ExitFailedError extends ExitError {
 }
 
 export class RebaseConflictError extends ExitError {
-  constructor(message: string) {
-    super(message);
+  constructor() {
+    super(`Hit a conflict during rebase.`);
     this.name = 'RebaseConflict';
   }
 }
@@ -56,7 +56,7 @@ export class BadTrunkOperationError extends ExitError {
 
 export class KilledError extends ExitError {
   constructor() {
-    super(`User killed Graphite early`);
+    super(`Killed Graphite early.`);
     this.name = 'Killed';
   }
 }
