@@ -1,11 +1,14 @@
 import yargs from 'yargs';
-import { trackBranch } from '../../actions/track_branch';
+import {
+  trackBranch,
+  trackBranchInteractive,
+} from '../../actions/track_branch';
 import { graphite } from '../../lib/runner';
 
 const args = {
   branch: {
     describe: `Branch to begin tracking.`,
-    demandOption: true,
+    demandOption: false,
     positional: true,
     type: 'string',
   },
@@ -28,7 +31,7 @@ const args = {
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
-export const command = 'track <branch>';
+export const command = 'track [branch]';
 export const canonical = 'branch track';
 export const aliases = ['tr'];
 export const description = [
@@ -37,14 +40,18 @@ export const description = [
 ].join(' ');
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
-  graphite(argv, canonical, async (context) =>
-    trackBranch(
-      {
-        branchName: argv.branch,
-        parentBranchName:
-          argv.parent ?? context.metaCache.currentBranchPrecondition,
-        force: argv.force,
-      },
-      context
-    )
-  );
+  graphite(argv, canonical, async (context) => {
+    const branchName = argv.branch;
+    const parentBranchName =
+      argv.parent ?? context.metaCache.currentBranchPrecondition;
+    branchName
+      ? await trackBranch(
+          {
+            branchName,
+            parentBranchName,
+            force: argv.force,
+          },
+          context
+        )
+      : await trackBranchInteractive(parentBranchName, context);
+  });
