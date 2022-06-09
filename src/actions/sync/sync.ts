@@ -37,7 +37,19 @@ export async function syncAction(
       context
     );
     context.splog.tip(
-      'You can skip deleting branches with the `--no-delete` flag.'
+      [
+        'You can skip deleting branches with the `--no-delete` flag.',
+        ...(opts.force
+          ? []
+          : [
+              'Try the `--force` flag to delete merged branches without prompting for each.',
+            ]),
+        ...(opts.restack
+          ? []
+          : [
+              'Try the `--restack` flag to automatically restack the current stack as well as any stacks with deleted branches.',
+            ]),
+      ].join('\n')
     );
     if (!opts.restack) {
       return;
@@ -50,6 +62,9 @@ export async function syncAction(
       .forEach((branchName) => branchesToRestack.push(branchName));
   }
   if (!opts.restack) {
+    context.splog.tip(
+      'Try the `--restack` flag to automatically restack the current stack.'
+    );
     return;
   }
 
