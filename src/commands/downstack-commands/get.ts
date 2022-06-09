@@ -18,7 +18,7 @@ export const canonical = 'downstack get';
 export const description =
   'Get branches from trunk to the specified branch from remote, prompting the user to resolve conflicts.';
 export const builder = args;
-export const aliases = ['g', 'sync'];
+export const aliases = ['g'];
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(
     argv,

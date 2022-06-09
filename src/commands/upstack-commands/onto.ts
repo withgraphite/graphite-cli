@@ -15,6 +15,7 @@ const args = {
 
 export const command = 'onto [branch]';
 export const canonical = 'upstack onto';
+export const aliases = ['o'];
 export const description =
   'Rebase the current branch onto the latest commit of target branch and restack all of its descendants.';
 export const builder = args;

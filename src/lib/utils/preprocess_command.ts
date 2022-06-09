@@ -5,13 +5,24 @@ function splitShortcuts(command: string): string[] {
     !['ds', 'us'].includes(command) // block list two letter noun aliases
   ) {
     return [command[0], command[1]];
-  } else if (
+  }
+
+  if (
     typeof command === 'string' &&
     command.length == 3 &&
-    ['bco', 'bdl', 'btr', 'but'].includes(command) // special case two-letter shortcuts
+    ['bco', 'bdl', 'btr', 'but', 'brn'].includes(command) // special case two-letter shortcuts
   ) {
     return [command[0], command.slice(1)];
   }
+
+  if (
+    typeof command === 'string' &&
+    command.length == 3 &&
+    ['ds', 'us'].includes(command.slice(0, 2)) // special case two-letter noun aliases
+  ) {
+    return [command.slice(0, 2), command[2]];
+  }
+
   return [command];
 }
 
