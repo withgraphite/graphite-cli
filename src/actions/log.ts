@@ -5,20 +5,22 @@ import { KilledError } from '../lib/errors';
 import { getBranchInfo } from './show_branch';
 
 export function logAction(
-  opts: { style: 'SHORT' | 'FULL'; reverse: boolean },
+  opts: { style: 'SHORT' | 'FULL'; reverse: boolean; stack: boolean },
   context: TContext
 ): void {
   getStackLines(
     {
       short: opts.style === 'SHORT',
       reverse: opts.reverse,
-      branchName: context.metaCache.trunk,
+      branchName: opts.stack
+        ? context.metaCache.currentBranchPrecondition
+        : context.metaCache.trunk,
       indentLevel: 0,
     },
     context
   ).forEach((line) => context.splog.info(line));
 
-  if (opts.style === 'SHORT' && !opts.reverse) {
+  if (opts.style === 'SHORT' && !opts.reverse && !opts.stack) {
     context.splog.tip(
       'Miss the old version of log short? Try the `--classic` flag!'
     );
@@ -90,14 +92,49 @@ type TPrintStackArgs = {
 
 function getStackLines(args: TPrintStackArgs, context: TContext): string[] {
   const outputDeep = [
-    getChildrenLines(args, context),
+    getUpstackExclusiveLines(args, context),
+    getBranchLines(args, context),
+    getDownstackExclusiveLines(args, context),
+  ];
+
+  return args.reverse ? outputDeep.reverse().flat() : outputDeep.flat();
+}
+
+function getDownstackExclusiveLines(
+  args: TPrintStackArgs,
+  context: TContext
+): string[] {
+  if (context.metaCache.isTrunk(args.branchName)) {
+    return [];
+  }
+
+  const outputDeep = [
+    context.metaCache.trunk,
+    ...context.metaCache.getRelativeStack(args.branchName, {
+      recursiveParents: true,
+    }),
+  ].map((branchName) => getBranchLines({ ...args, branchName }, context));
+
+  // opposite of the rest of these because we got the list from trunk upward
+  return args.reverse ? outputDeep.flat() : outputDeep.reverse().flat();
+}
+
+function getUpstackInclusiveLines(
+  args: TPrintStackArgs,
+  context: TContext
+): string[] {
+  const outputDeep = [
+    getUpstackExclusiveLines(args, context),
     getBranchLines(args, context),
   ];
 
   return args.reverse ? outputDeep.reverse().flat() : outputDeep.flat();
 }
 
-function getChildrenLines(args: TPrintStackArgs, context: TContext): string[] {
+function getUpstackExclusiveLines(
+  args: TPrintStackArgs,
+  context: TContext
+): string[] {
   const children = context.metaCache.getChildren(args.branchName);
   return children
     .filter(
@@ -106,7 +143,7 @@ function getChildrenLines(args: TPrintStackArgs, context: TContext): string[] {
         child !== context.metaCache.currentBranchPrecondition
     )
     .flatMap((child, i) =>
-      getStackLines(
+      getUpstackInclusiveLines(
         {
           ...args,
           branchName: child,

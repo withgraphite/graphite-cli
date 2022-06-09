@@ -9,12 +9,18 @@ const args = {
     default: false,
     alias: 'c',
     describe:
-      'Use the old logging style, which runs out of screen real estate quicker.',
+      'Use the old logging style, which runs out of screen real estate quicker. Other options will not work in classic mode.',
   },
   reverse: {
     describe: `Print the log upside down. Handy when you have a lot of branches!`,
     type: 'boolean',
     alias: 'r',
+    default: false,
+  },
+  stack: {
+    describe: `Only show ancestors and descendants of the current branch.`,
+    type: 'boolean',
+    alias: 's',
     default: false,
   },
 } as const;
@@ -31,5 +37,8 @@ export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) =>
     argv.classic
       ? logShortClassic(context)
-      : logAction({ style: 'SHORT', reverse: argv.reverse }, context)
+      : logAction(
+          { style: 'SHORT', reverse: argv.reverse, stack: argv.stack },
+          context
+        )
   );
