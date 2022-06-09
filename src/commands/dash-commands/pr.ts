@@ -15,6 +15,7 @@ export const command = 'pr [pr]';
 export const description = 'Opens the PR page for the current branch.';
 export const builder = args;
 export const canonical = 'dash pr';
+export const aliases = ['p'];
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
