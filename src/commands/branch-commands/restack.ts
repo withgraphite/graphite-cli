@@ -13,7 +13,7 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) => {
-    context.splog.logTip(
+    context.splog.tip(
       [
         `You are restacking a specific branch.`,
         `In common cases, we recommend you use:`,

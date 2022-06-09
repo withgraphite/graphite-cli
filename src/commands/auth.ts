@@ -22,12 +22,12 @@ export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {
     if (argv.token) {
       context.userConfig.update((data) => (data.authToken = argv.token));
-      context.splog.logInfo(
+      context.splog.info(
         chalk.green(`🔐 Saved auth token to "${context.userConfig.path}"`)
       );
       return;
     }
-    context.splog.logInfo(
+    context.splog.info(
       context.userConfig.data.authToken ?? 'No auth token set.'
     );
   });

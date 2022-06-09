@@ -14,7 +14,7 @@ export function loadCachedBranches(
   args: { trunkName: string | undefined; ignorePersistedCache?: boolean },
   splog: TSplog
 ): Record<string, Readonly<TCachedMeta>> {
-  splog.logDebug('Reading branches and metadata...');
+  splog.debug('Reading branches and metadata...');
   const cacheKey = {
     trunkName: args.trunkName,
     gitBranchNamesAndRevisions: getBranchNamesAndRevisions(),
@@ -49,8 +49,8 @@ function getPersistedCacheIfValid(
 ): Record<string, TCachedMeta> | undefined {
   const cacheCheckSha = getSha(CACHE_CHECK_REF);
   const currentStateSha = hashCacheOrKey(cacheKey);
-  splog.logDebug(`Cache check SHA: ${cacheCheckSha}`);
-  splog.logDebug(`Current state SHA: ${currentStateSha}`);
+  splog.debug(`Cache check SHA: ${cacheCheckSha}`);
+  splog.debug(`Current state SHA: ${currentStateSha}`);
 
   return cacheCheckSha === currentStateSha ? readPersistedCache() : undefined;
 }

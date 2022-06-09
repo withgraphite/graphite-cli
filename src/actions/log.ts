@@ -16,10 +16,10 @@ export function logAction(
       indentLevel: 0,
     },
     context
-  ).forEach((line) => context.splog.logInfo(line));
+  ).forEach((line) => context.splog.info(line));
 
   if (opts.style === 'SHORT' && !opts.reverse) {
-    context.splog.logTip(
+    context.splog.tip(
       'Miss the old version of log short? Try the `--classic` flag!'
     );
   }
@@ -73,7 +73,7 @@ export async function interactiveBranchSelection(
     )
   ).branch;
 
-  context.splog.logDebug(`Selected ${chosenBranch}`);
+  context.splog.debug(`Selected ${chosenBranch}`);
   return chosenBranch;
 }
 

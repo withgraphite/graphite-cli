@@ -10,7 +10,7 @@ export function persistCache(
   cachedBranches: Record<string, TCachedMeta>,
   splog: TSplog
 ): void {
-  splog.logDebug(`Persisting cache checksum to ${CACHE_CHECK_REF}...`);
+  splog.debug(`Persisting cache checksum to ${CACHE_CHECK_REF}...`);
   gpExecSync(
     {
       command: `git update-ref ${CACHE_CHECK_REF} ${hashCacheOrKey(
@@ -26,14 +26,14 @@ export function persistCache(
       throw err;
     }
   );
-  splog.logDebug(`Persisting cache data to ${CACHE_DATA_REF}...`);
+  splog.debug(`Persisting cache data to ${CACHE_DATA_REF}...`);
   gpExecSync({
     command: `git update-ref ${CACHE_DATA_REF} ${hashCacheOrKey(
       cachedBranches,
       true
     )}`,
   });
-  splog.logDebug(`Persisted cache`);
+  splog.debug(`Persisted cache`);
 }
 
 export function hashCacheOrKey(
@@ -54,9 +54,9 @@ export function hashCacheOrKey(
 }
 
 export function clearPersistedCache(splog: TSplog): void {
-  splog.logDebug(`Deleting ${CACHE_CHECK_REF}...`);
+  splog.debug(`Deleting ${CACHE_CHECK_REF}...`);
   gpExecSync({ command: `git update-ref -d ${CACHE_CHECK_REF}` });
-  splog.logDebug(`Deleting ${CACHE_DATA_REF}...`);
+  splog.debug(`Deleting ${CACHE_DATA_REF}...`);
   gpExecSync({ command: `git update-ref -d ${CACHE_DATA_REF}` });
-  splog.logDebug(`Cleared cache`);
+  splog.debug(`Cleared cache`);
 }

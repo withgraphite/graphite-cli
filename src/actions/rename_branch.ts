@@ -9,7 +9,7 @@ export function renameCurrentBranch(
 ): void {
   const oldBranchName = context.metaCache.currentBranchPrecondition;
   if (context.metaCache.getPrInfo(oldBranchName)?.number && !args.force) {
-    context.splog.logTip(
+    context.splog.tip(
       `Renaming a branch that is already associated with a PR removes the association.`
     );
 
@@ -24,7 +24,7 @@ export function renameCurrentBranch(
   );
 
   context.metaCache.renameCurrentBranch(newBranchName);
-  context.splog.logInfo(
+  context.splog.info(
     `Successfully renamed ${chalk.blueBright(oldBranchName)} to ${chalk.green(
       newBranchName
     )}`

@@ -30,7 +30,7 @@ function getAllBranchesAndMeta(
         return false;
       }
       // Clean up refs whose branch is missing
-      splog.logDebug(`Deleting metadata for missing branch: ${branchName}`);
+      splog.debug(`Deleting metadata for missing branch: ${branchName}`);
       deleteMetadataRef(branchName);
       return false;
     })
@@ -59,7 +59,7 @@ export function parseBranchesAndMeta(
   );
   const parsedBranches: Record<string, TCachedMeta> = {};
 
-  splog.logDebug('Validating branches...');
+  splog.debug('Validating branches...');
   while (branchesToParse.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const current = branchesToParse.shift()!;
@@ -72,7 +72,7 @@ export function parseBranchesAndMeta(
     } = current;
 
     if (branchName === args.trunkName) {
-      splog.logDebug(`trunk: ${branchName}`);
+      splog.debug(`trunk: ${branchName}`);
       parsedBranches[branchName] = {
         validationResult: 'TRUNK',
         branchRevision: branchRevision,
@@ -87,7 +87,7 @@ export function parseBranchesAndMeta(
       parentBranchName === branchName ||
       !allBranchNames.has(parentBranchName)
     ) {
-      splog.logDebug(
+      splog.debug(
         `bad parent name: ${branchName}\n\t${parentBranchName ?? 'missing'}`
       );
       parsedBranches[branchName] = {
@@ -113,7 +113,7 @@ export function parseBranchesAndMeta(
         parsedBranches[parentBranchName].validationResult
       )
     ) {
-      splog.logDebug(`invalid parent: ${branchName}`);
+      splog.debug(`invalid parent: ${branchName}`);
       parsedBranches[branchName] = {
         validationResult: 'INVALID_PARENT',
         parentBranchName,
@@ -171,13 +171,13 @@ export function validateOrFixParentBranchRevision(
     parentBranchRevision &&
     getMergeBase(branchName, parentBranchRevision) === parentBranchRevision
   ) {
-    splog.logDebug(`validated: ${branchName}`);
+    splog.debug(`validated: ${branchName}`);
     return { validationResult: 'VALID', parentBranchRevision };
   }
 
   // PBR cannot be fixed because its parent is not in its history
   if (getMergeBase(branchName, parentBranchName) !== parentBranchName) {
-    splog.logDebug(
+    splog.debug(
       `bad parent rev: ${branchName}\n\t${parentBranchRevision ?? 'missing'}`
     );
     return { validationResult: 'BAD_PARENT_REVISION' };
@@ -189,7 +189,7 @@ export function validateOrFixParentBranchRevision(
     parentBranchRevision: parentBranchCurrentRevision,
     prInfo,
   });
-  splog.logDebug(
+  splog.debug(
     `validated and fixed parent rev: ${branchName}\n\t${parentBranchCurrentRevision}`
   );
   return {

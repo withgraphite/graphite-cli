@@ -9,16 +9,16 @@ export async function showBranchAction(
   opts: { patch: boolean; description: boolean },
   context: TContext
 ): Promise<void> {
-  context.splog.logInfo(getBranchInfo({ branchName }, context).join('\n'));
+  context.splog.info(getBranchInfo({ branchName }, context).join('\n'));
 
   const parentBranchName = context.metaCache.getParent(branchName);
   if (parentBranchName) {
-    context.splog.logInfo(`${chalk.cyan('Parent')}: ${parentBranchName}`);
+    context.splog.info(`${chalk.cyan('Parent')}: ${parentBranchName}`);
   }
 
   const children = context.metaCache.getChildren(branchName);
   if (children.length) {
-    context.splog.logInfo(
+    context.splog.info(
       `${chalk.cyan('Children')}:\n${children.map((c) => `▸ ${c}`).join('\n')}`
     );
   }
@@ -26,14 +26,14 @@ export async function showBranchAction(
   const description =
     opts.description && context.metaCache.getPrInfo(branchName)?.body;
   if (description) {
-    context.splog.logNewline();
-    context.splog.logInfo(description);
+    context.splog.newline();
+    context.splog.info(description);
   }
 
   if (context.metaCache.isTrunk(branchName)) {
     return;
   }
-  context.splog.logNewline();
+  context.splog.newline();
   showCommits(
     context.metaCache.getBaseRevision(branchName),
     branchName,

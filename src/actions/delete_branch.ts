@@ -16,7 +16,7 @@ export function deleteBranchAction(
   }
 
   if (!args.force && !isSafeToDelete(args.branchName, context).result) {
-    context.splog.logTip(
+    context.splog.tip(
       `By default, this command only allows deletion of merged or closed branches.`
     );
 
@@ -33,7 +33,7 @@ export function deleteBranchAction(
     SCOPE.UPSTACK_EXCLUSIVE
   );
   context.metaCache.deleteBranch(args.branchName);
-  context.splog.logInfo(`Deleted branch ${chalk.red(args.branchName)}`);
+  context.splog.info(`Deleted branch ${chalk.red(args.branchName)}`);
 
   restackBranches(branchesToRestack, context);
 }

@@ -28,12 +28,12 @@ export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {
     if (argv.enable) {
       context.userConfig.update((data) => (data.branchDate = true));
-      context.splog.logInfo(`Enabled date`);
+      context.splog.info(`Enabled date`);
     } else if (argv.disable) {
       context.userConfig.update((data) => (data.branchDate = false));
-      context.splog.logInfo(`Disabled date`);
+      context.splog.info(`Disabled date`);
     } else {
-      context.splog.logInfo(
+      context.splog.info(
         `Branch date is ${
           getBranchDateEnabled(context) ? 'enabled' : 'disabled'
         }`

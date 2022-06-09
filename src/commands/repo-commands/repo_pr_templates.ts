@@ -13,6 +13,6 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {
-    context.splog.logInfo(getPRTemplateFilepaths().join('\n'));
+    context.splog.info(getPRTemplateFilepaths().join('\n'));
   });
 };

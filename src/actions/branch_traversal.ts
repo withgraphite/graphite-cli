@@ -14,7 +14,7 @@ export async function switchBranchAction(
   context: TContext
 ): Promise<void> {
   const currentBranchName = context.metaCache.currentBranchPrecondition;
-  context.splog.logInfo(chalk.blueBright(currentBranchName));
+  context.splog.info(chalk.blueBright(currentBranchName));
   const newBranchName = await traverseBranches(
     branchNavigation,
     currentBranchName,
@@ -22,10 +22,10 @@ export async function switchBranchAction(
   );
   if (newBranchName !== currentBranchName) {
     context.metaCache.checkoutBranch(newBranchName);
-    context.splog.logInfo(`Checked out ${chalk.cyan(newBranchName)}.`);
+    context.splog.info(`Checked out ${chalk.cyan(newBranchName)}.`);
     return;
   }
-  context.splog.logInfo(
+  context.splog.info(
     `Already at the ${
       branchNavigation.direction === 'DOWN' ||
       branchNavigation.direction === 'BOTTOM'
@@ -80,7 +80,7 @@ function traverseDownward(
   ) {
     return currentBranchName;
   }
-  context.splog.logInfo('⮑  ' + parentBranchName);
+  context.splog.info('⮑  ' + parentBranchName);
   return traverseDownward(
     parentBranchName,
     context,
@@ -104,7 +104,7 @@ async function traverseUpward(
     children.length === 1
       ? children[0]
       : await handleMultipleChildren(children, context);
-  context.splog.logInfo('⮑  ' + childBranchName);
+  context.splog.info('⮑  ' + childBranchName);
   return await traverseUpward(
     childBranchName,
     context,

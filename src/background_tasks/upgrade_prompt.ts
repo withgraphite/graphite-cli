@@ -17,7 +17,7 @@ function printAndClearOldMessage(context: TContext): void {
   // double-check before showing the message if the CLI is still an old version
   // (i.e. the user hasn't updated the CLI in the meantime)."
   if (oldMessage && version == oldMessage.cliVersion) {
-    context.splog.logMessageFromGraphite(oldMessage.contents);
+    context.splog.message(oldMessage.contents);
     context.messageConfig.update((data) => (data.message = undefined));
   }
 }

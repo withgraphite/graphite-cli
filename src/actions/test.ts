@@ -32,7 +32,7 @@ export function testStack(
   const tmpDir = tmp.dirSync();
   const outputPath = `${tmpDir.name}/output.txt`;
   fs.writeFileSync(outputPath, '');
-  context.splog.logInfo(chalk.grey(`Writing results to ${outputPath}\n`));
+  context.splog.info(chalk.grey(`Writing results to ${outputPath}\n`));
 
   // Kick off the testing.
   logState(state, false, context);
@@ -98,7 +98,7 @@ function logState(state: TTestState, refresh: boolean, context: TContext) {
     process.stdout.clearLine(0);
     // Example:
     // - [success]: tr--Track_CLI_and_Graphite_user_assoicat (00:00:22)
-    context.splog.logInfo(
+    context.splog.info(
       `- ${color(state[branchName].status)}: ${branchName}${
         duration ? ` (${durationString})` : ''
       }`

@@ -14,7 +14,7 @@ export const description =
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) => {
-    context.splog.logTip(
+    context.splog.tip(
       [
         `You are restacking with downstack scope.`,
         `In common cases, we recommend you use:`,

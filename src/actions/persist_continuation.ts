@@ -8,13 +8,13 @@ export function persistContinuation(
     args.branchesToRestack ?? [],
     args.branchesToSync ?? [],
   ];
-  context.splog.logDebug(
+  context.splog.debug(
     branchesToSync.reduce(
       (acc, curr) => `${acc}\n${curr}`,
       'PERSISTING (sync):'
     )
   );
-  context.splog.logDebug(
+  context.splog.debug(
     branchesToRestack.reduce(
       (acc, curr) => `${acc}\n${curr}`,
       'PERSISTING (restack):'

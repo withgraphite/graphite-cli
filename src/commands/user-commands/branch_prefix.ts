@@ -30,16 +30,16 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {
     if (argv.reset) {
-      context.splog.logInfo(`Reset branch-prefix`);
+      context.splog.info(`Reset branch-prefix`);
       setBranchPrefix('', context);
     } else if (argv.set) {
-      context.splog.logInfo(
+      context.splog.info(
         `Set branch-prefix to "${chalk.green(
           setBranchPrefix(argv.set, context)
         )}"`
       );
     } else {
-      context.splog.logInfo(
+      context.splog.info(
         context.userConfig.data.branchPrefix ||
           'branch-prefix is not set. Try running `gt user branch-prefix --set <prefix>` to update the value.'
       );
