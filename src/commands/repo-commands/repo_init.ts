@@ -19,8 +19,7 @@ export const canonical = 'repo init';
 export const description =
   'Create or regenerate a `.graphite_repo_config` file.';
 export const builder = args;
-export const handler = async (argv: argsT): Promise<void> => {
-  return graphite(argv, canonical, async (context) => {
+export const handler = async (argv: argsT): Promise<void> =>
+  graphite(argv, canonical, async (context) => {
     await init(context, argv.trunk);
   });
-};

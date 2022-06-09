@@ -1,4 +1,4 @@
-import { TContext } from '../context';
+import { TContext, TContextLite } from '../context';
 
 // 255 minus 21 (for 'refs/branch-metadata/')
 const MAX_BRANCH_NAME_BYTE_LENGTH = 234;
@@ -6,7 +6,7 @@ const BRANCH_NAME_REPLACE_REGEX = /[^-_/.a-zA-Z0-9]+/g;
 
 export function replaceUnsupportedCharacters(
   input: string,
-  context: TContext
+  context: TContextLite
 ): string {
   return input.replace(
     BRANCH_NAME_REPLACE_REGEX,
@@ -14,7 +14,7 @@ export function replaceUnsupportedCharacters(
   );
 }
 
-export function getBranchReplacement(context: TContext): string {
+export function getBranchReplacement(context: TContextLite): string {
   return context.userConfig.data.branchReplacement ?? '_';
 }
 
@@ -51,12 +51,15 @@ export function newBranchName(
   );
 }
 
-export function setBranchPrefix(newPrefix: string, context: TContext): string {
+export function setBranchPrefix(
+  newPrefix: string,
+  context: TContextLite
+): string {
   const prefix = replaceUnsupportedCharacters(newPrefix, context);
   context.userConfig.update((data) => (data.branchPrefix = prefix));
   return prefix;
 }
 
-export function getBranchDateEnabled(context: TContext): boolean {
+export function getBranchDateEnabled(context: TContextLite): boolean {
   return context.userConfig.data.branchDate ?? true;
 }

@@ -100,11 +100,12 @@ function configAbsolutePaths(
   defaultLocations: TDefaultConfigLocation[],
   defaultPathOverride?: string
 ): string[] {
-  const repoRoot = getRepoRootPathPrecondition();
-  const home = os.homedir();
   return (defaultPathOverride ? [defaultPathOverride] : []).concat(
     defaultLocations.map((l) =>
-      path.join(l.relativeTo === 'REPO' ? repoRoot : home, l.relativePath)
+      path.join(
+        l.relativeTo === 'REPO' ? getRepoRootPathPrecondition() : os.homedir(),
+        l.relativePath
+      )
     )
   );
 }

@@ -6,12 +6,12 @@ import {
   messageConfigFactory,
   TMessageConfig,
 } from '../lib/config/message_config';
-import { TContext } from '../lib/context';
+import { TContextLite } from '../lib/context';
 import { getUserEmail } from '../lib/telemetry/context';
 import { SHOULD_REPORT_TELEMETRY } from '../lib/telemetry/post_traces';
 import { spawnDetached } from '../lib/utils/spawn';
 
-function printAndClearOldMessage(context: TContext): void {
+function printAndClearOldMessage(context: TContextLite): void {
   const oldMessage = context.messageConfig.data.message;
   // "Since we fetch the message asynchronously and display it when the user runs their next Graphite command,
   // double-check before showing the message if the CLI is still an old version
@@ -21,11 +21,7 @@ function printAndClearOldMessage(context: TContext): void {
     context.messageConfig.update((data) => (data.message = undefined));
   }
 }
-export function fetchUpgradePromptInBackground(context: TContext): void {
-  if (!context.repoConfig.graphiteInitialized()) {
-    return;
-  }
-
+export function fetchUpgradePromptInBackground(context: TContextLite): void {
   printAndClearOldMessage(context);
   spawnDetached(__filename);
 }

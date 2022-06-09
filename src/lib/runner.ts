@@ -8,7 +8,12 @@ import { init } from '../actions/init';
 import { refreshPRInfoInBackground } from '../background_tasks/fetch_pr_info';
 import { postSurveyResponsesInBackground } from '../background_tasks/post_survey';
 import { fetchUpgradePromptInBackground } from '../background_tasks/upgrade_prompt';
-import { initContext, TContext } from './context';
+import {
+  initContext,
+  initContextLite,
+  TContext,
+  TContextLite,
+} from './context';
 import { getCacheLock, TCacheLock } from './engine/cache_lock';
 import {
   BadTrunkOperationError,
@@ -32,16 +37,39 @@ export async function graphite(
   canonicalName: string,
   handler: (context: TContext) => Promise<void>
 ): Promise<void> {
+  return graphiteInternal(args, canonicalName, {
+    repo: true as const,
+    run: handler,
+  });
+}
+
+export async function graphiteLite(
+  args: yargs.Arguments & TGlobalArguments,
+  canonicalName: string,
+  handler: (context: TContextLite) => Promise<void>
+): Promise<void> {
+  return graphiteInternal(args, canonicalName, {
+    repo: false as const,
+    run: handler,
+  });
+}
+
+async function graphiteInternal(
+  args: yargs.Arguments & TGlobalArguments,
+  canonicalName: string,
+  handler: TGraphiteCommandHandler
+): Promise<void> {
   const parsedArgs = parseArgs(args);
 
   const start = Date.now();
-  const cacheLock = getCacheLock();
+  const handlerWithCacheLock: TGraphiteCommandHandlerWithCacheLock =
+    handler.repo ? { ...handler, cacheLock: getCacheLock() } : handler;
 
   registerSigintHandler({
     commandName: parsedArgs.command,
     canonicalCommandName: canonicalName,
     startTime: start,
-    cacheLock,
+    cacheLock: handlerWithCacheLock.cacheLock,
   });
 
   const err = await tracer.span(
@@ -55,7 +83,15 @@ export async function graphite(
         alias: parsedArgs.alias,
       },
     },
-    () => graphiteHelper(args, cacheLock, canonicalName, handler)
+    () => {
+      const contextLite = initContextLite(args);
+      return graphiteHelper(
+        canonicalName,
+        args,
+        contextLite,
+        handlerWithCacheLock
+      );
+    }
   );
   const end = Date.now();
   postTelemetryInBackground({
@@ -70,20 +106,24 @@ export async function graphite(
 // Then we can simplify this function and signature a lot
 // eslint-disable-next-line max-params
 async function graphiteHelper(
-  args: yargs.Arguments & TGlobalArguments,
-  cacheLock: TCacheLock,
   canonicalName: string,
-  handler: (context: TContext) => Promise<void>
+  args: TGlobalArguments,
+  contextLite: TContextLite,
+  handler: TGraphiteCommandHandlerWithCacheLock
 ): Promise<Error | undefined> {
-  const context = initContext({
-    globalArguments: args,
-  });
+  const context = handler.repo
+    ? { ...handler, ...initContext(contextLite, args) }
+    : { ...handler, ...contextLite };
 
   const err = await (async (): Promise<Error | undefined> => {
     try {
-      cacheLock.lock();
       fetchUpgradePromptInBackground(context);
       postSurveyResponsesInBackground(context);
+      if (!context.repo) {
+        await context.run(context);
+        return undefined;
+      }
+
       refreshPRInfoInBackground(context);
 
       if (
@@ -97,7 +137,7 @@ async function graphiteHelper(
         await init(context);
       }
 
-      await handler(context);
+      await context.run(context);
       return undefined;
     } catch (err) {
       handleGraphiteError(err, context);
@@ -112,6 +152,10 @@ async function graphiteHelper(
     }
   })();
 
+  if (!context.repo) {
+    return err;
+  }
+
   try {
     context.metaCache.persist();
   } catch (persistError) {
@@ -119,12 +163,12 @@ async function graphiteHelper(
     context.splog.debug(`Failed to persist Graphite cache`);
   }
 
-  cacheLock.release();
+  context.cacheLock.release();
   return err;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleGraphiteError(err: any, context: TContext): void {
+function handleGraphiteError(err: any, context: TContextLite): void {
   switch (err.constructor) {
     case KilledError:
       // pass
@@ -170,3 +214,22 @@ function handleGraphiteError(err: any, context: TContext): void {
       return;
   }
 }
+
+// typescript is fun!
+type TGraphiteCommandHandler =
+  | { repo: true; run: (context: TContext) => Promise<void> }
+  | {
+      repo: false;
+      run: (contextLite: TContextLite) => Promise<void>;
+    };
+type TGraphiteCommandHandlerWithCacheLock =
+  | {
+      repo: true;
+      run: (context: TContext) => Promise<void>;
+      cacheLock: TCacheLock;
+    }
+  | {
+      repo: false;
+      run: (contextLite: TContextLite) => Promise<void>;
+      cacheLock?: undefined;
+    };

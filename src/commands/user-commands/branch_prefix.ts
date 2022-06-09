@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { graphite } from '../../lib/runner';
+import { graphiteLite } from '../../lib/runner';
 import { setBranchPrefix } from '../../lib/utils/branch_name';
 
 const args = {
@@ -28,7 +28,7 @@ export const description =
   'The prefix which Graphite will prepend to generated branch names.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return graphite(argv, canonical, async (context) => {
+  return graphiteLite(argv, canonical, async (context) => {
     if (argv.reset) {
       context.splog.info(`Reset branch-prefix`);
       setBranchPrefix('', context);

@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { graphite } from '../../lib/runner';
+import { graphiteLite } from '../../lib/runner';
 
 const args = {
   set: {
@@ -23,7 +23,7 @@ export const description = 'The editor opened by Graphite';
 export const canonical = 'user editor';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return graphite(argv, canonical, async (context) => {
+  return graphiteLite(argv, canonical, async (context) => {
     if (argv.set) {
       context.userConfig.update((data) => (data.editor = argv.set));
       context.splog.info(`Editor set to ${chalk.cyan(argv.set)}`);
