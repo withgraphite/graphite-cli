@@ -10,11 +10,13 @@ export type TSplog = {
   tip: (msg: string) => void;
 };
 
-export function composeSplog(opts: {
-  quiet?: boolean;
-  outputDebugLogs?: boolean;
-  tips?: boolean;
-}): TSplog {
+export function composeSplog(
+  opts: {
+    quiet?: boolean;
+    outputDebugLogs?: boolean;
+    tips?: boolean;
+  } = {}
+): TSplog {
   return {
     newline: opts.quiet ? () => void 0 : () => console.log('\n'),
     info: opts.quiet ? () => void 0 : (s: string) => console.log(s),

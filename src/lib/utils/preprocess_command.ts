@@ -1,3 +1,5 @@
+import { handleDeprecatedCommandNames } from './deprecated_commands';
+
 function splitShortcuts(command: string): string[] {
   if (
     typeof command === 'string' &&
@@ -32,4 +34,5 @@ export function preprocessCommand(): void {
     ...splitShortcuts(process.argv[2]),
     ...process.argv.slice(3),
   ];
+  handleDeprecatedCommandNames(process.argv.slice(2, 4));
 }
