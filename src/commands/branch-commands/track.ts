@@ -30,6 +30,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = 'track <branch>';
 export const canonical = 'branch track';
+export const aliases = ['tr'];
 export const description = [
   'Start tracking a branch with Graphite by setting its parent to (by default) the current branch.',
   'This command can also be used to fix corrupted Graphite metadata.',

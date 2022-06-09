@@ -55,6 +55,7 @@ export type TMetaCache = {
     branchName: string,
     parentBranchName: string
   ) => 'TRACKED' | 'NEEDS_REBASE';
+  untrackBranch: (branchName: string) => void;
 
   currentBranch: string | undefined;
   currentBranchPrecondition: string;
@@ -366,6 +367,32 @@ export function composeMetaCache({
         parentBranchRevision: mergeBase,
       });
       return 'TRACKED';
+    },
+    untrackBranch: (branchName: string) => {
+      assertBranch(branchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+      deleteMetadataRef(branchName);
+      cache.branches[branchName] = {
+        ...cachedMeta,
+        validationResult: 'BAD_PARENT_NAME',
+      };
+
+      // We have to fix validation state for any recursive children
+      const childrenToUntrack = cachedMeta.children.slice();
+      while (childrenToUntrack.length) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const childBranchName = childrenToUntrack.pop()!;
+        const childCachedMeta = cache.branches[childBranchName];
+        assertCachedMetaIsNotTrunk(childCachedMeta);
+        if (childCachedMeta.validationResult !== 'BAD_PARENT_NAME') {
+          cache.branches[childBranchName] = {
+            ...childCachedMeta,
+            validationResult: 'INVALID_PARENT',
+          };
+        }
+        childrenToUntrack.concat(childCachedMeta.children);
+      }
     },
     get currentBranch() {
       return cache.currentBranch;

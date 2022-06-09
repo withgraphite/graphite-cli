@@ -19,18 +19,25 @@ function shouldCompleteBranch(current: string, argv: Arguments): boolean {
   // this handles both with and without --branch because it's the only string arg
   return (
     ((argv['_'].length <= 3 &&
-      // gt bco, bdl, bt
+      // gt bco, bdl, btr, but
       // Check membership in argv to ensure that "bco" is its own entry (and not
       // a substring of another command). Since we're dealing with a positional,
       // we also want to make sure that the current argument is the positional
       // (position 3).
-      ['bco', 'bdl', 'bt'].includes('' + argv['_'][1])) ||
+      ['bco', 'bdl', 'btr', 'but'].includes('' + argv['_'][1])) ||
       // same as above, but one position further
       (argv['_'].length <= 4 &&
         ['b', 'branch'].includes('' + argv['_'][1]) &&
-        ['co', 'checkout', 'dl', 'delete', 't', 'track'].includes(
-          '' + argv['_'][2]
-        )) ||
+        [
+          'co',
+          'checkout',
+          'dl',
+          'delete',
+          'tr',
+          'track',
+          'ut',
+          'untrack',
+        ].includes('' + argv['_'][2])) ||
       // gt upstack onto / us onto
       ((argv['_'][1] === 'upstack' || argv['_'][1] === 'us') &&
         argv['_'][2] === 'onto')) &&
