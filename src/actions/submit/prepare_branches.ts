@@ -161,7 +161,6 @@ async function getPRCreationInfo(
   draft: boolean;
 }> {
   if (context.interactive) {
-    context.splog.newline();
     context.splog.info(
       `Enter info for new pull request for ${chalk.yellow(
         args.branchName

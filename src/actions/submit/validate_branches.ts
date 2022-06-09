@@ -13,22 +13,22 @@ export async function validateBranchesToSubmit(
       `✏️  Validating that this Graphite stack is ready to submit...`
     )
   );
-
   context.splog.newline();
 
-  await syncPrInfo(branchNames, context);
-
-  validateNoMergedOrClosedBranches(branchNames, context);
-  await validateNoEmptyBranches(branchNames, context);
-  validateBaseRevisions(branchNames, context);
+  await Promise.all([
+    validateNoMergedOrClosedBranches(branchNames, context),
+    validateNoEmptyBranches(branchNames, context),
+    validateBaseRevisions(branchNames, context),
+  ]);
 
   return branchNames;
 }
 
-function validateNoMergedOrClosedBranches(
+async function validateNoMergedOrClosedBranches(
   branchNames: string[],
   context: TContext
-): void {
+): Promise<void> {
+  await syncPrInfo(branchNames, context);
   const mergedOrClosedBranches = branchNames.filter((b) =>
     ['MERGED', 'CLOSED'].includes(context.metaCache.getPrInfo(b)?.state ?? '')
   );
