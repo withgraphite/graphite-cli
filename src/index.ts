@@ -21,12 +21,7 @@ if (!semver.satisfies(process.version, requiredVersion)) {
 tmp.setGracefulCleanup();
 
 process.on('uncaughtException', (err) => {
-  postTelemetryInBackground({
-    canonicalCommandName: 'unknown',
-    commandName: 'unknown',
-    durationMiliSeconds: 0,
-    err,
-  });
+  postTelemetryInBackground();
   console.log(chalk.redBright(`UNCAUGHT EXCEPTION: ${err.message}`));
   console.log(chalk.redBright(`UNCAUGHT EXCEPTION: ${err.stack}`));
   // eslint-disable-next-line no-restricted-syntax
