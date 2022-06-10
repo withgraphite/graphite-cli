@@ -68,8 +68,10 @@ class Span {
       error: err ? 1 : 0,
       meta: err
         ? {
+            'error.msg': err.message,
+            'error.type': err.constructor.name,
+            ...(err.stack ? { 'error.stack': err.stack } : {}),
             ...this.meta,
-            err: cuteString(err),
           }
         : this.meta,
       metrics: {},

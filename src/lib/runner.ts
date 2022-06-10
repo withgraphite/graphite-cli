@@ -70,27 +70,33 @@ async function graphiteInternal(
     cacheLock: handlerWithCacheLock.cacheLock,
   });
 
-  const err = await tracer.span(
-    {
-      name: 'command',
-      resource: parsedArgs.command,
-      meta: {
-        user: getUserEmail() || 'NotFound',
-        version: version,
-        args: parsedArgs.args,
-        alias: parsedArgs.alias,
-      },
-    },
-    () => {
-      const contextLite = initContextLite(args);
-      return graphiteHelper(
-        canonicalName,
-        args,
-        contextLite,
-        handlerWithCacheLock
+  const err = await (async () => {
+    try {
+      await tracer.span(
+        {
+          name: 'command',
+          resource: parsedArgs.command,
+          meta: {
+            user: getUserEmail() || 'NotFound',
+            version: version,
+            args: parsedArgs.args,
+            alias: parsedArgs.alias,
+          },
+        },
+        () => {
+          const contextLite = initContextLite(args);
+          return graphiteHelper(
+            canonicalName,
+            args,
+            contextLite,
+            handlerWithCacheLock
+          );
+        }
       );
+    } catch (err) {
+      return err;
     }
-  );
+  })();
   const end = Date.now();
   postTelemetryInBackground({
     canonicalCommandName: canonicalName,
@@ -113,56 +119,49 @@ async function graphiteHelper(
     ? { ...handler, ...initContext(contextLite, args) }
     : { ...handler, ...contextLite };
 
-  const err = await (async (): Promise<Error | undefined> => {
-    try {
-      fetchUpgradePromptInBackground(context);
-      postSurveyResponsesInBackground(context);
-      if (!context.repo) {
-        await context.run(context);
-        return undefined;
-      }
-
-      refreshPRInfoInBackground(context);
-
-      if (
-        canonicalName !== 'repo init' &&
-        !context.repoConfig.graphiteInitialized()
-      ) {
-        context.splog.info(
-          `Graphite has not been initialized, attempting to setup now...`
-        );
-        context.splog.newline();
-        await init(context);
-      }
-
+  try {
+    fetchUpgradePromptInBackground(context);
+    postSurveyResponsesInBackground(context);
+    if (!context.repo) {
       await context.run(context);
       return undefined;
-    } catch (err) {
-      handleGraphiteError(err, context);
-      context.splog.debug(err);
-      context.splog.debug(err.stack);
-      // print errors when debugging tests
-      if (process.env.DEBUG) {
-        process.stdout.write(err.stack.toString());
-      }
-      process.exitCode = 1;
-      return err;
     }
-  })();
 
-  if (!context.repo) {
-    return err;
+    refreshPRInfoInBackground(context);
+
+    if (
+      canonicalName !== 'repo init' &&
+      !context.repoConfig.graphiteInitialized()
+    ) {
+      context.splog.info(
+        `Graphite has not been initialized, attempting to setup now...`
+      );
+      context.splog.newline();
+      await init(context);
+    }
+
+    await context.run(context);
+    return undefined;
+  } catch (err) {
+    handleGraphiteError(err, context);
+    context.splog.debug(err.stack);
+    // print errors when debugging tests
+    if (process.env.DEBUG) {
+      process.stdout.write(err.stack.toString());
+    }
+    process.exitCode = 1;
+    throw err;
+  } finally {
+    if (context.repo) {
+      try {
+        context.metaCache.persist();
+      } catch (persistError) {
+        context.metaCache.clear();
+        context.splog.debug(`Failed to persist Graphite cache`);
+      }
+      context.cacheLock.release();
+    }
   }
-
-  try {
-    context.metaCache.persist();
-  } catch (persistError) {
-    context.metaCache.clear();
-    context.splog.debug(`Failed to persist Graphite cache`);
-  }
-
-  context.cacheLock.release();
-  return err;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
