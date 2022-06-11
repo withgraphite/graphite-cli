@@ -42,27 +42,41 @@ export async function createBranchAction(
     rollbackOnError: () => context.metaCache.deleteBranch(branchName),
   });
 
-  if (opts.insert) {
-    restackSiblings(branchName, context);
-  } else {
+  // The reason we get the list of siblings here instead of having all
+  // the `--insert` logic in a separate function is so that we only
+  // show the tip if the user creates a branch with siblings.
+
+  const siblings = context.metaCache
+    .getChildren(context.metaCache.getParentPrecondition(branchName))
+    .filter((childBranchName) => childBranchName !== branchName);
+
+  if (siblings.length === 0) {
+    return;
+  }
+
+  if (!opts.insert) {
     context.splog.tip(
-      'To insert a branch into a stack, try out the `--insert` flag.'
+      [
+        'To insert a created branch into the middle of your stack, use the `--insert` flag.',
+        "If you meant to insert this branch, you can rearrange your stack's dependencies with `gt upstack onto`",
+      ].join('\n')
     );
     return;
   }
-}
 
-function restackSiblings(branchName: string, context: TContext) {
+  // Now we actually handle the `insert` case.
+
+  // Change the parent of each sibling to the new branch.
+  siblings.forEach((siblingBranchName) =>
+    context.metaCache.setParent(siblingBranchName, branchName)
+  );
+
   // If we're restacking siblings onto this branch, we need to restack
   // all of their recursive children as well. Get all the upstacks!
-  const branchesToRestack = context.metaCache
-    .getChildren(context.metaCache.getParentPrecondition(branchName))
-    .filter((childBranchName) => childBranchName !== branchName)
-    .flatMap((childBranchName) => {
-      // Here we actually set the parent of each sibling to the new branch
-      context.metaCache.setParent(childBranchName, branchName);
-      return context.metaCache.getRelativeStack(childBranchName, SCOPE.UPSTACK);
-    });
-
-  restackBranches(branchesToRestack, context);
+  restackBranches(
+    siblings.flatMap((siblingBranchName) =>
+      context.metaCache.getRelativeStack(siblingBranchName, SCOPE.UPSTACK)
+    ),
+    context
+  );
 }
