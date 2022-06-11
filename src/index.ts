@@ -4,9 +4,8 @@ import semver from 'semver';
 import tmp from 'tmp';
 import yargs from 'yargs';
 import { globalArgumentsOptions } from './lib/global_arguments';
-import { passthrough } from './lib/passthrough';
+import { getYargsInput } from './lib/pre-yargs/preprocess_command';
 import { postTelemetryInBackground } from './lib/telemetry/post_traces';
-import { preprocessCommand } from './lib/utils/preprocess_command';
 
 const requiredVersion = '>=v14';
 if (!semver.satisfies(process.version, requiredVersion)) {
@@ -28,9 +27,7 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-passthrough(process.argv);
-preprocessCommand();
-void yargs(process.argv.slice(2))
+void yargs(getYargsInput())
   .commandDir('commands')
   .help()
   .usage(
