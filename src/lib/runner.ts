@@ -27,7 +27,6 @@ import { TGlobalArguments } from './global_arguments';
 import { getUserEmail } from './telemetry/context';
 import { postTelemetryInBackground } from './telemetry/post_traces';
 import { tracer } from './telemetry/tracer';
-import { parseArgs } from './utils/parse_args';
 
 export async function graphite(
   args: yargs.Arguments & TGlobalArguments,
@@ -56,8 +55,6 @@ async function graphiteInternal(
   canonicalName: string,
   handler: TGraphiteCommandHandler
 ): Promise<void> {
-  const parsedArgs = parseArgs(args);
-
   const handlerMaybeWithCacheLock = handler.repo
     ? {
         ...handler,
@@ -79,12 +76,11 @@ async function graphiteInternal(
     await tracer.span(
       {
         name: 'command',
-        resource: parsedArgs.command,
+        resource: canonicalName,
         meta: {
           user: getUserEmail() || 'NotFound',
           version: version,
-          args: parsedArgs.args,
-          alias: parsedArgs.alias,
+          processArgv: process.argv.join(' '),
         },
       },
       async () => {
