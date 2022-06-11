@@ -1,33 +1,37 @@
+import * as t from '@withgraphite/retype';
 import { BadTrunkOperationError, UntrackedBranchError } from '../errors';
-import { TBranchPRInfo } from './metadata_ref';
+import { prInfoSchema } from './metadata_ref';
 
-export type TCachedMeta = {
-  children: string[];
-  branchRevision: string;
-} & (
-  | { validationResult: 'TRUNK' }
-  | ((
-      | {
-          validationResult: 'VALID';
-          parentBranchName: string;
-          parentBranchRevision: string;
-        }
-      | {
-          validationResult: 'INVALID_PARENT';
-          parentBranchName: string;
-          parentBranchRevision?: string;
-        }
-      | {
-          validationResult: 'BAD_PARENT_REVISION';
-          parentBranchName: string;
-        }
-      | {
-          validationResult: 'BAD_PARENT_NAME';
-        }
-    ) & {
-      prInfo?: TBranchPRInfo;
-    })
+const cachedMetaSchema = t.intersection(
+  t.shape({
+    children: t.array(t.string),
+    branchRevision: t.string,
+    prInfo: t.optional(prInfoSchema),
+  }),
+  t.taggedUnion('validationResult' as const, {
+    VALID: {
+      validationResult: t.literal('VALID' as const),
+      parentBranchName: t.string,
+      parentBranchRevision: t.string,
+    },
+    INVALID_PARENT: {
+      validationResult: t.literal('INVALID_PARENT' as const),
+      parentBranchName: t.string,
+      parentBranchRevision: t.optional(t.string),
+    },
+    BAD_PARENT_REVISION: {
+      validationResult: t.literal('BAD_PARENT_REVISION' as const),
+      parentBranchName: t.string,
+    },
+    BAD_PARENT_NAME: {
+      validationResult: t.literal('BAD_PARENT_NAME' as const),
+    },
+    TRUNK: {
+      validationResult: t.literal('TRUNK' as const),
+    },
+  })
 );
+export type TCachedMeta = t.TypeOf<typeof cachedMetaSchema>;
 
 type TValidCachedMeta = Extract<
   TCachedMeta,
