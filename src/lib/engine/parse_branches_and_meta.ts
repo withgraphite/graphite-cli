@@ -21,6 +21,7 @@ function getAllBranchesAndMeta(
   },
   splog: TSplog
 ): TBranchToParse[] {
+  splog.debug(`Building cache from disk...`);
   const branchesWithMeta = new Set(
     args.metaRefNames.filter((branchName) => {
       if (args.gitBranchNamesAndRevisions[branchName]) {

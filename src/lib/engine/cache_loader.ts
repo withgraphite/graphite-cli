@@ -6,24 +6,25 @@ import { TCachedMeta } from './cached_meta';
 import { getMetadataRefList } from './metadata_ref';
 import { parseBranchesAndMeta } from './parse_branches_and_meta';
 
-export const CACHE_CHECK_REF = 'refs/gt-metadata/GRAPHITE_CACHE_CHECK';
-export const CACHE_DATA_REF = 'refs/gt-metadata/GRAPHITE_CACHE_DATA';
+const CACHE_CHECK_REF = 'refs/gt-metadata/GRAPHITE_CACHE_CHECK';
+const CACHE_DATA_REF = 'refs/gt-metadata/GRAPHITE_CACHE_DATA';
 
 export function loadCachedBranches(
   args: { trunkName: string | undefined; ignorePersistedCache?: boolean },
   splog: TSplog
 ): Record<string, Readonly<TCachedMeta>> {
-  splog.debug('Reading branches and metadata...');
+  splog.debug('Reading cache seed data...');
   const cacheKey = {
     trunkName: args.trunkName,
     gitBranchNamesAndRevisions: getBranchNamesAndRevisions(),
     metadataRefList: getMetadataRefList(),
   };
 
+  splog.debug('Loading cache...');
   return (
-    (args.ignorePersistedCache
-      ? undefined
-      : getPersistedCacheIfValid(cacheKey, splog)) ??
+    (!args.ignorePersistedCache &&
+      getSha(CACHE_CHECK_REF) === hashCacheOrKey(cacheKey) &&
+      readPersistedCache()) ||
     parseBranchesAndMeta(
       {
         pruneMeta: true,
@@ -36,23 +37,11 @@ export function loadCachedBranches(
   );
 }
 
-export type TCacheKey = {
+type TCacheKey = {
   trunkName: string | undefined;
   gitBranchNamesAndRevisions: Record<string, string>;
   metadataRefList: Record<string, string>;
 };
-
-function getPersistedCacheIfValid(
-  cacheKey: TCacheKey,
-  splog: TSplog
-): Record<string, TCachedMeta> | undefined {
-  const cacheCheckSha = getSha(CACHE_CHECK_REF);
-  const currentStateSha = hashCacheOrKey(cacheKey);
-  splog.debug(`Cache check SHA: ${cacheCheckSha}`);
-  splog.debug(`Current state SHA: ${currentStateSha}`);
-
-  return cacheCheckSha === currentStateSha ? readPersistedCache() : undefined;
-}
 
 function readPersistedCache(): Record<string, TCachedMeta> | undefined {
   // TODO: validate with retype
