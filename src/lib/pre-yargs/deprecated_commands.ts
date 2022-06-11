@@ -15,6 +15,12 @@ const GET_WARNING = [
   'Please use `get` (aka `gt dsg`).',
 ].join('\n');
 
+const FIX_WARNING = [
+  'The `upstack` and `stack` command `fix` has been renamed.',
+  'Please use `restack` (aka `gt sr`/`gt usr`).',
+  'The `fix`/`f` alias will be removed in an upcoming version.',
+].join('\n');
+
 export function handleDeprecatedCommandNames(command: string[]): void {
   switch (command[0]) {
     case 'branch':
@@ -37,6 +43,14 @@ export function handleDeprecatedCommandNames(command: string[]): void {
         composeSplog().error(GET_WARNING);
         // eslint-disable-next-line no-restricted-syntax
         process.exit(1);
+      }
+      break;
+    case 'upstack':
+    case 'us':
+    case 'stack':
+    case 's':
+      if (['fix', 'f'].includes(command[1])) {
+        composeSplog().warn(FIX_WARNING);
       }
   }
 }

@@ -5,7 +5,7 @@ import { graphite } from '../../lib/runner';
 const args = {} as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
-export const aliases = ['r', 'fix', 'f'];
+export const aliases = ['r'];
 export const command = 'restack';
 export const canonical = 'branch restack';
 export const description =
