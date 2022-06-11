@@ -29,14 +29,17 @@ import {
   assertCachedMetaIsValidOrTrunk,
   TValidCachedMetaExceptTrunk,
 } from './cached_meta';
-import { loadCachedBranches } from './cache_loader';
+import {
+  clearPersistedCache,
+  loadCachedBranches,
+  persistCache,
+} from './cache_loader';
 import {
   deleteMetadataRef,
   TBranchPRInfo,
   writeMetadataRef,
 } from './metadata_ref';
 import { validateOrFixParentBranchRevision } from './parse_branches_and_meta';
-import { clearPersistedCache, persistCache } from './persist_cache';
 import { TScopeSpec } from './scope_spec';
 
 export type TMetaCache = {
