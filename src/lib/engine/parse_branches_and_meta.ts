@@ -14,21 +14,14 @@ type TBranchToParse = {
 } & TMeta;
 
 function getAllBranchesAndMeta(
-  args: {
-    pruneMeta?: boolean;
-    gitBranchNamesAndRevisions: Record<string, string>;
-    metaRefNames: string[];
-  },
+  args: Omit<TCacheSeed, 'trunkName'>,
   splog: TSplog
 ): TBranchToParse[] {
   splog.debug(`Building cache from disk...`);
   const branchesWithMeta = new Set(
-    args.metaRefNames.filter((branchName) => {
+    Object.keys(args.metadataRefList).filter((branchName) => {
       if (args.gitBranchNamesAndRevisions[branchName]) {
         return true;
-      }
-      if (!args.pruneMeta) {
-        return false;
       }
       // Clean up refs whose branch is missing
       splog.debug(`Deleting metadata for missing branch: ${branchName}`);
@@ -44,13 +37,14 @@ function getAllBranchesAndMeta(
   }));
 }
 
+export type TCacheSeed = {
+  trunkName: string | undefined;
+  gitBranchNamesAndRevisions: Record<string, string>;
+  metadataRefList: Record<string, string>;
+};
+
 export function parseBranchesAndMeta(
-  args: {
-    pruneMeta?: boolean;
-    gitBranchNamesAndRevisions: Record<string, string>;
-    metaRefNames: string[];
-    trunkName: string | undefined;
-  },
+  args: TCacheSeed,
   splog: TSplog
 ): Record<string, TCachedMeta> {
   const branchesToParse = getAllBranchesAndMeta(args, splog);

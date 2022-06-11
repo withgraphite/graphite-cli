@@ -4,44 +4,35 @@ import { gpExecSync } from '../utils/exec_sync';
 import { TSplog } from '../utils/splog';
 import { TCachedMeta } from './cached_meta';
 import { getMetadataRefList } from './metadata_ref';
-import { parseBranchesAndMeta } from './parse_branches_and_meta';
+import { parseBranchesAndMeta, TCacheSeed } from './parse_branches_and_meta';
 
 const CACHE_CHECK_REF = 'refs/gt-metadata/GRAPHITE_CACHE_CHECK';
 const CACHE_DATA_REF = 'refs/gt-metadata/GRAPHITE_CACHE_DATA';
 
 export function loadCachedBranches(
-  args: { trunkName: string | undefined; ignorePersistedCache?: boolean },
+  trunkName: string | undefined,
   splog: TSplog
 ): Record<string, Readonly<TCachedMeta>> {
   splog.debug('Reading cache seed data...');
   const cacheKey = {
-    trunkName: args.trunkName,
+    trunkName,
     gitBranchNamesAndRevisions: getBranchNamesAndRevisions(),
     metadataRefList: getMetadataRefList(),
   };
 
   splog.debug('Loading cache...');
   return (
-    (!args.ignorePersistedCache &&
-      getSha(CACHE_CHECK_REF) === hashCacheOrKey(cacheKey) &&
+    (getSha(CACHE_CHECK_REF) === hashCacheOrSeed(cacheKey) &&
       readPersistedCache()) ||
     parseBranchesAndMeta(
       {
-        pruneMeta: true,
-        gitBranchNamesAndRevisions: cacheKey.gitBranchNamesAndRevisions,
-        metaRefNames: Object.keys(cacheKey.metadataRefList),
-        trunkName: args.trunkName,
+        ...cacheKey,
+        trunkName,
       },
       splog
     )
   );
 }
-
-type TCacheKey = {
-  trunkName: string | undefined;
-  gitBranchNamesAndRevisions: Record<string, string>;
-  metadataRefList: Record<string, string>;
-};
 
 function readPersistedCache(): Record<string, TCachedMeta> | undefined {
   // TODO: validate with retype
@@ -64,7 +55,7 @@ export function persistCache(
   splog.debug(`Persisting cache checksum to ${CACHE_CHECK_REF}...`);
   gpExecSync(
     {
-      command: `git update-ref ${CACHE_CHECK_REF} ${hashCacheOrKey(
+      command: `git update-ref ${CACHE_CHECK_REF} ${hashCacheOrSeed(
         {
           trunkName: trunkName,
           gitBranchNamesAndRevisions: getBranchNamesAndRevisions(),
@@ -79,7 +70,7 @@ export function persistCache(
   );
   splog.debug(`Persisting cache data to ${CACHE_DATA_REF}...`);
   gpExecSync({
-    command: `git update-ref ${CACHE_DATA_REF} ${hashCacheOrKey(
+    command: `git update-ref ${CACHE_DATA_REF} ${hashCacheOrSeed(
       cachedBranches,
       true
     )}`,
@@ -87,15 +78,15 @@ export function persistCache(
   splog.debug(`Persisted cache`);
 }
 
-function hashCacheOrKey(
-  state: TCacheKey | Record<string, TCachedMeta>,
+function hashCacheOrSeed(
+  data: TCacheSeed | Record<string, TCachedMeta>,
   write?: boolean
 ): string {
   return gpExecSync(
     {
       command: `git hash-object ${write ? '-w' : ''} --stdin`,
       options: {
-        input: JSON.stringify(state),
+        input: JSON.stringify(data),
       },
     },
     (err) => {
