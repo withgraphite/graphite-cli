@@ -18,7 +18,7 @@ export function composeSplog(
   } = {}
 ): TSplog {
   return {
-    newline: opts.quiet ? () => void 0 : () => console.log('\n'),
+    newline: opts.quiet ? () => void 0 : () => console.log(),
     info: opts.quiet ? () => void 0 : (s: string) => console.log(s),
     debug: opts.outputDebugLogs
       ? (s: string) =>
