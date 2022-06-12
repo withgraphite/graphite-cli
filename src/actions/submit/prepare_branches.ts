@@ -38,10 +38,6 @@ export async function getPRInfoForBranches(
   },
   context: TContext
 ): Promise<TPRSubmissionInfo> {
-  context.splog.info(
-    chalk.blueBright('🥞 Preparing to submit PRs for the following branches...')
-  );
-
   const branchActions = args.branchNames
     .map((branchName) =>
       getPRAction(
@@ -161,6 +157,7 @@ async function getPRCreationInfo(
   draft: boolean;
 }> {
   if (context.interactive) {
+    context.splog.newline();
     context.splog.info(
       `Enter info for new pull request for ${chalk.yellow(
         args.branchName

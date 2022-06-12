@@ -8,13 +8,6 @@ export async function validateBranchesToSubmit(
   branchNames: string[],
   context: TContext
 ): Promise<string[]> {
-  context.splog.info(
-    chalk.blueBright(
-      `✏️  Validating that this Graphite stack is ready to submit...`
-    )
-  );
-  context.splog.newline();
-
   await Promise.all([
     validateNoMergedOrClosedBranches(branchNames, context),
     validateNoEmptyBranches(branchNames, context),
