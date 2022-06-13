@@ -30,7 +30,7 @@ export async function syncAction(
 
   if (opts.delete) {
     context.splog.info(
-      `Checking if any branches have been merged/closed and can be deleted...`
+      `🧹 Checking if any branches have been merged/closed and can be deleted...`
     );
     const branchesWithNewParents = await cleanBranches(
       { showDeleteProgress: opts.showDeleteProgress, force: opts.force },
@@ -85,9 +85,8 @@ export async function syncAction(
 
 export function pullTrunk(context: TContext): void {
   context.splog.info(
-    `Pulling ${chalk.cyan(context.metaCache.trunk)} from remote...`
+    `🌲 Pulling ${chalk.cyan(context.metaCache.trunk)} from remote...`
   );
-
   try {
     context.splog.info(
       context.metaCache.pullTrunk() === 'PULL_UNNEEDED'
