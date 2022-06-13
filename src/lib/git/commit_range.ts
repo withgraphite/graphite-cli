@@ -1,3 +1,4 @@
+import { q } from '../utils/escape_for_shell';
 import { gpExecSyncAndSplitLines } from '../utils/exec_sync';
 
 const FORMAT = { SHA: '%H', READABLE: '%h - %s' } as const;
@@ -9,6 +10,8 @@ export function getCommitRange(
   format: TCommitFormat
 ): string[] {
   return gpExecSyncAndSplitLines({
-    command: `git --no-pager log --pretty=format:"${FORMAT[format]}" ${base}..${head}`,
+    command: `git --no-pager log --pretty=format:"${FORMAT[format]}" ${q(
+      base
+    )}..${q(head)}`,
   });
 }

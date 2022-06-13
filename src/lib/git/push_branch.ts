@@ -1,3 +1,4 @@
+import { q } from '../utils/escape_for_shell';
 import { gpExecSync } from '../utils/exec_sync';
 
 export function pushBranch(opts: {
@@ -8,8 +9,8 @@ export function pushBranch(opts: {
   gpExecSync(
     {
       command: [
-        `git push ${opts.remote}`,
-        `--force-with-lease ${opts.branchName} 2>&1`,
+        `git push ${q(opts.remote)}`,
+        `--force-with-lease ${q(opts.branchName)} 2>&1`,
         ...[opts.noVerify ? ['--no-verify'] : []],
       ].join(' '),
     },

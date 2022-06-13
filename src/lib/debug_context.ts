@@ -17,6 +17,7 @@ import { getShaOrThrow } from './git/get_sha';
 import { getBranchNamesAndRevisions } from './git/sorted_branch_names';
 import { switchBranch } from './git/switch_branch';
 import { cuteString } from './utils/cute_string';
+import { q } from './utils/escape_for_shell';
 import { gpExecSync } from './utils/exec_sync';
 import { TSplog } from './utils/splog';
 
@@ -116,7 +117,9 @@ function createBranches(
   Object.keys(opts.branches).forEach((branch) => {
     const originalRef = opts.refMappingsOldToNew[opts.branches[branch]];
     if (branch != gpExecSync({ command: `git branch --show-current` })) {
-      gpExecSync({ command: `git branch -f ${branch} ${originalRef}` });
+      gpExecSync({
+        command: `git branch -f ${q(branch)} ${originalRef}`,
+      });
     } else {
       splog.warn(
         `Skipping creating ${branch} which matches the name of the current branch`

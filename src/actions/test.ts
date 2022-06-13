@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import tmp from 'tmp';
 import { TContext } from '../lib/context';
 import { SCOPE, TScopeSpec } from '../lib/engine/scope_spec';
+import { q } from '../lib/utils/escape_for_shell';
 import { gpExecSync } from '../lib/utils/exec_sync';
 
 type TTestStatus = '[pending]' | '[success]' | '[fail]' | '[running]';
@@ -65,7 +66,7 @@ function testBranch(
   // Execute the command.
   fs.appendFileSync(opts.outputPath, `\n\n${opts.branchName}\n`);
   const startTime = Date.now();
-  const output = gpExecSync({ command: `${opts.command} 2>&1` }, () => {
+  const output = gpExecSync({ command: `${q(opts.command)} 2>&1` }, () => {
     opts.state[opts.branchName].status = '[fail]';
   });
   opts.state[opts.branchName].duration = Date.now() - startTime;

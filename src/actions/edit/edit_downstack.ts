@@ -1,6 +1,7 @@
 import { TContext } from '../../lib/context';
 import { SCOPE } from '../../lib/engine/scope_spec';
 import { ExitFailedError } from '../../lib/errors';
+import { q } from '../../lib/utils/escape_for_shell';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { performInTmpDir } from '../../lib/utils/perform_in_tmp_dir';
 import { restackBranches } from '../restack';
@@ -49,7 +50,7 @@ async function promptForEdit(context: TContext): Promise<string[]> {
     const editFilePath = createStackEditFile({ branchNames, tmpDir }, context);
     gpExecSync(
       {
-        command: `${context.userConfig.getEditor()} "${editFilePath}"`,
+        command: `${context.userConfig.getEditor()} ${q(editFilePath)}`,
         options: { stdio: 'inherit' },
       },
       (err) => {

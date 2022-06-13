@@ -469,7 +469,6 @@ export function composeMetaCache({
       const parentCachedMeta = cache.branches[parentBranchName];
       assertCachedMetaIsValidOrTrunk(parentCachedMeta);
       switchBranch(branchName, { new: true });
-
       updateMeta(branchName, {
         validationResult: 'VALID',
         parentBranchName,

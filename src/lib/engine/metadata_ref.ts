@@ -1,4 +1,5 @@
 import { cuteString } from '../utils/cute_string';
+import { q } from '../utils/escape_for_shell';
 import { gpExecSync, gpExecSyncAndSplitLines } from '../utils/exec_sync';
 
 type TBranchPRState = 'OPEN' | 'CLOSED' | 'MERGED';
@@ -37,7 +38,7 @@ export function writeMetadataRef(
   gpExecSync({
     command: `git ${
       opts ? `-C "${opts.dir}"` : ''
-    } update-ref refs/branch-metadata/${branchName} ${metaSha}`,
+    } update-ref refs/branch-metadata/${q(branchName)} ${metaSha}`,
     options: {
       stdio: 'ignore',
     },
@@ -54,7 +55,7 @@ export function readMetadataRef(
       gpExecSync({
         command: `git ${
           opts ? `-C "${opts.dir}" ` : ''
-        }cat-file -p refs/branch-metadata/${branchName} 2> /dev/null`,
+        }cat-file -p refs/branch-metadata/${q(branchName)} 2> /dev/null`,
       })
     );
   } catch {
@@ -64,7 +65,7 @@ export function readMetadataRef(
 
 export function deleteMetadataRef(branchName: string): void {
   gpExecSync({
-    command: `git update-ref -d refs/branch-metadata/${branchName}`,
+    command: `git update-ref -d refs/branch-metadata/${q(branchName)}`,
   });
 }
 

@@ -1,5 +1,6 @@
 import * as t from '@withgraphite/retype';
 import { ExitFailedError } from '../errors';
+import { q } from '../utils/escape_for_shell';
 import { gpExecSync } from '../utils/exec_sync';
 import { composeConfig } from './compose_config';
 
@@ -78,7 +79,7 @@ function inferRepoGitHubInfo(remote: string): {
   // If a user runs into this is not true, they can manually edit the repo config
   // file to overrule what our CLI tries to intelligently infer.
   const url = gpExecSync({
-    command: `git config --get remote.${remote}.url`,
+    command: `git config --get remote.${q(remote)}.url`,
   });
 
   const inferError = new ExitFailedError(
