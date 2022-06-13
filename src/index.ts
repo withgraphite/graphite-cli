@@ -1,4 +1,7 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --no-warnings
+// --no-warnings gets rid of warnings about "experimental fetch API" for our users
+// we will still see any warnings when we run our tests because we don't execute directly
+
 import chalk from 'chalk';
 import semver from 'semver';
 import tmp from 'tmp';
