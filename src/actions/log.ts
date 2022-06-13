@@ -125,7 +125,10 @@ function getDownstackExclusiveLines(
     }),
   ]
     .slice(-(args.steps ?? 0))
-    .map((branchName) => getBranchLines({ ...args, branchName }, context));
+    .map((branchName) =>
+      // skip the branching line for downstack because we show 1 child per branch
+      getBranchLines({ ...args, branchName, skipBranchingLine: true }, context)
+    );
 
   // opposite of the rest of these because we got the list from trunk upward
   return args.reverse ? outputDeep.flat() : outputDeep.reverse().flat();
@@ -186,7 +189,10 @@ export function displayBranchName(
   }`;
 }
 
-function getBranchLines(args: TPrintStackArgs, context: TContext): string[] {
+function getBranchLines(
+  args: TPrintStackArgs & { skipBranchingLine?: boolean },
+  context: TContext
+): string[] {
   // `gt log short` case
   if (args.short) {
     return [
@@ -202,11 +208,13 @@ function getBranchLines(args: TPrintStackArgs, context: TContext): string[] {
   const numChildren = context.metaCache.getChildren(args.branchName).length;
 
   const outputDeep = [
-    getBranchingLine({
-      numChildren,
-      reverse: args.reverse,
-      indentLevel: args.indentLevel,
-    }),
+    args.skipBranchingLine
+      ? []
+      : getBranchingLine({
+          numChildren,
+          reverse: args.reverse,
+          indentLevel: args.indentLevel,
+        }),
     getInfoLines(
       { ...args, noStem: args.reverse && numChildren === 0 },
       context
