@@ -125,7 +125,7 @@ export function composeMetaCache({
 }): TMetaCache {
   const cache = {
     currentBranch: currentBranchOverride ?? getCurrentBranchName(),
-    branches: loadCachedBranches({ trunkName }, splog),
+    branches: loadCachedBranches(trunkName, splog),
   };
 
   const assertTrunk = () => {
@@ -341,10 +341,7 @@ export function composeMetaCache({
     },
     rebuild(newTrunkName?: string) {
       trunkName = newTrunkName ?? trunkName;
-      cache.branches = loadCachedBranches(
-        { trunkName, ignorePersistedCache: true },
-        splog
-      );
+      cache.branches = loadCachedBranches(trunkName, splog);
     },
     get trunk() {
       return assertTrunk();
