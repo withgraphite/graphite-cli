@@ -26,7 +26,6 @@ import {
 import { TGlobalArguments } from './global_arguments';
 import { getUserEmail } from './telemetry/context';
 import { postTelemetryInBackground } from './telemetry/post_traces';
-import { registerSigintHandler } from './telemetry/sigint_handler';
 import { tracer } from './telemetry/tracer';
 import { parseArgs } from './utils/parse_args';
 
@@ -59,74 +58,71 @@ async function graphiteInternal(
 ): Promise<void> {
   const parsedArgs = parseArgs(args);
 
-  const start = Date.now();
-  const handlerWithCacheLock: TGraphiteCommandHandlerWithCacheLock =
-    handler.repo ? { ...handler, cacheLock: getCacheLock() } : handler;
+  const handlerMaybeWithCacheLock = handler.repo
+    ? {
+        ...handler,
+        cacheLock: getCacheLock(),
+      }
+    : { ...handler, cacheLock: undefined };
 
-  registerSigintHandler({
-    commandName: parsedArgs.command,
-    canonicalCommandName: canonicalName,
-    startTime: start,
-    cacheLock: handlerWithCacheLock.cacheLock,
+  process.on('SIGINT', (): never => {
+    handlerMaybeWithCacheLock.cacheLock?.release();
+    // End all current traces abruptly.
+    tracer.allSpans.forEach((s) => s.end(new KilledError()));
+    postTelemetryInBackground();
+    // eslint-disable-next-line no-restricted-syntax
+    process.exit(1);
   });
+  const contextLite = initContextLite(args);
 
-  const err = await (async () => {
-    try {
-      await tracer.span(
-        {
-          name: 'command',
-          resource: parsedArgs.command,
-          meta: {
-            user: getUserEmail() || 'NotFound',
-            version: version,
-            args: parsedArgs.args,
-            alias: parsedArgs.alias,
-          },
+  try {
+    await tracer.span(
+      {
+        name: 'command',
+        resource: parsedArgs.command,
+        meta: {
+          user: getUserEmail() || 'NotFound',
+          version: version,
+          args: parsedArgs.args,
+          alias: parsedArgs.alias,
         },
-        () => {
-          const contextLite = initContextLite(args);
-          return graphiteHelper(
-            canonicalName,
-            args,
-            contextLite,
-            handlerWithCacheLock
-          );
+      },
+      async () => {
+        fetchUpgradePromptInBackground(contextLite);
+        postSurveyResponsesInBackground(contextLite);
+        if (!handlerMaybeWithCacheLock.repo) {
+          await handlerMaybeWithCacheLock.run(contextLite);
+          return;
         }
-      );
-    } catch (err) {
-      return err;
+
+        const context = initContext(contextLite, args);
+
+        return await graphiteHelper(
+          canonicalName,
+          handlerMaybeWithCacheLock,
+          context
+        );
+      }
+    );
+  } catch (err) {
+    handleGraphiteError(err, contextLite);
+    contextLite.splog.debug(err.stack);
+    // print errors when debugging tests
+    if (process.env.DEBUG) {
+      process.stdout.write(err.stack.toString());
     }
-  })();
-  const end = Date.now();
-  postTelemetryInBackground({
-    canonicalCommandName: canonicalName,
-    commandName: parsedArgs.command,
-    durationMiliSeconds: end - start,
-    err,
-  });
+    process.exitCode = 1;
+  }
+  postTelemetryInBackground();
 }
 
-// TODO check with Greg about whether we still need all the OldTelemetry stuff?
-// Then we can simplify this function and signature a lot
 // eslint-disable-next-line max-params
 async function graphiteHelper(
   canonicalName: string,
-  args: TGlobalArguments,
-  contextLite: TContextLite,
-  handler: TGraphiteCommandHandlerWithCacheLock
-): Promise<Error | undefined> {
-  const context = handler.repo
-    ? { ...handler, ...initContext(contextLite, args) }
-    : { ...handler, ...contextLite };
-
+  handler: TGraphiteCommandHandlerWithCacheLock,
+  context: TContext
+): Promise<void> {
   try {
-    fetchUpgradePromptInBackground(context);
-    postSurveyResponsesInBackground(context);
-    if (!context.repo) {
-      await context.run(context);
-      return undefined;
-    }
-
     refreshPRInfoInBackground(context);
 
     if (
@@ -140,27 +136,15 @@ async function graphiteHelper(
       await init(context);
     }
 
-    await context.run(context);
-    return undefined;
-  } catch (err) {
-    handleGraphiteError(err, context);
-    context.splog.debug(err.stack);
-    // print errors when debugging tests
-    if (process.env.DEBUG) {
-      process.stdout.write(err.stack.toString());
-    }
-    process.exitCode = 1;
-    throw err;
+    await handler.run(context);
   } finally {
-    if (context.repo) {
-      try {
-        context.metaCache.persist();
-      } catch (persistError) {
-        context.metaCache.clear();
-        context.splog.debug(`Failed to persist Graphite cache`);
-      }
-      context.cacheLock.release();
+    try {
+      context.metaCache.persist();
+    } catch (persistError) {
+      context.metaCache.clear();
+      context.splog.debug(`Failed to persist Graphite cache`);
     }
+    handler.cacheLock.release();
   }
 }
 
@@ -194,14 +178,7 @@ type TGraphiteCommandHandler =
       repo: false;
       run: (contextLite: TContextLite) => Promise<void>;
     };
-type TGraphiteCommandHandlerWithCacheLock =
-  | {
-      repo: true;
-      run: (context: TContext) => Promise<void>;
-      cacheLock: TCacheLock;
-    }
-  | {
-      repo: false;
-      run: (contextLite: TContextLite) => Promise<void>;
-      cacheLock?: undefined;
-    };
+type TGraphiteCommandHandlerWithCacheLock = {
+  run: (context: TContext) => Promise<void>;
+  cacheLock: TCacheLock;
+};
