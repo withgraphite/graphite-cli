@@ -1,0 +1,1 @@
+{"version":3,"file":"git_editor.js","sourceRoot":"","sources":["../../../../src/lib/git/git_editor.ts"],"names":[],"mappings":";;;AAAA,kDAAgD;AAEhD,SAAgB,YAAY;IAC1B,MAAM,MAAM,GAAG,IAAA,sBAAU,EAAC;QACxB,OAAO,EAAE,iCAAiC;KAC3C,CAAC,CAAC;IACH,OAAO,MAAM,CAAC,MAAM,GAAG,CAAC,CAAC,CAAC,CAAC,MAAM,CAAC,CAAC,CAAC,SAAS,CAAC;AAChD,CAAC;AALD,oCAKC"}

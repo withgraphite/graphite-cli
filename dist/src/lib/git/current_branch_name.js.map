@@ -1,0 +1,1 @@
+{"version":3,"file":"current_branch_name.js","sourceRoot":"","sources":["../../../../src/lib/git/current_branch_name.ts"],"names":[],"mappings":";;;AAAA,kDAAgD;AAEhD,SAAgB,oBAAoB;IAClC,MAAM,UAAU,GAAG,IAAA,sBAAU,EAAC;QAC5B,OAAO,EAAE,2BAA2B;KACrC,CAAC,CAAC;IAEH,OAAO,UAAU,CAAC,MAAM,GAAG,CAAC,CAAC,CAAC,CAAC,UAAU,CAAC,CAAC,CAAC,SAAS,CAAC;AACxD,CAAC;AAND,oDAMC"}
