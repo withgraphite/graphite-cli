@@ -120,16 +120,14 @@ function getPRAction(
       : 'NOOP';
 
   context.splog.info(
-    `▸ ${chalk.cyan(args.branchName)} (${
-      {
-        NOOP: 'No-op',
-        CREATE: 'Create',
-        RESTACK: 'Update - new parent',
-        CHANGE: 'Update - code changes/restack',
-        DRAFT: 'Mark as draft',
-        PUBLISH: 'Ready for review',
-      }[status]
-    })`
+    {
+      NOOP: `▸ ${chalk.gray(args.branchName)} (No-op)`,
+      CREATE: `▸ ${chalk.cyan(args.branchName)} (Create)`,
+      RESTACK: `▸ ${chalk.cyan(args.branchName)} (New parent)`,
+      CHANGE: `▸ ${chalk.cyan(args.branchName)} (Update)`,
+      DRAFT: `▸ ${chalk.blueBright(args.branchName)} (Mark as draft)`,
+      PUBLISH: `▸ ${chalk.blueBright(args.branchName)} (Ready for review)`,
+    }[status]
   );
 
   return args.dryRun || status === 'NOOP'
@@ -159,9 +157,11 @@ async function getPRCreationInfo(
   if (context.interactive) {
     context.splog.newline();
     context.splog.info(
-      `Enter info for new pull request for ${chalk.yellow(
+      `Enter info for new pull request for ${chalk.cyan(
         args.branchName
-      )} ▸ ${context.metaCache.getParentPrecondition(args.branchName)}:`
+      )} ▸ ${chalk.blueBright(
+        context.metaCache.getParentPrecondition(args.branchName)
+      )}:`
     );
   }
 
