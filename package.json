@@ -7,7 +7,7 @@
   "homepage": "https://github.com/withgraphite/graphite-cli",
   "dependencies": {
     "@withgraphite/graphite-cli-routes": "^0.18.0",
-    "@withgraphite/retype": "^0.3.1",
+    "@withgraphite/retype": "^0.3.3",
     "@withgraphite/retyped-routes": "^0.3.0",
     "chalk": "^4.1.2",
     "fs-extra": "^10.1.0",
