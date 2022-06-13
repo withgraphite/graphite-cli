@@ -52,8 +52,19 @@ export async function submitAction(
     args.scope
   );
 
+  context.splog.info(
+    chalk.blueBright(
+      `🥞 Validating that this Graphite stack is ready to submit...`
+    )
+  );
+  context.splog.newline();
   await validateBranchesToSubmit(branchNames, context);
 
+  context.splog.info(
+    chalk.blueBright(
+      '✏️  Preparing to submit PRs for the following branches...'
+    )
+  );
   const submissionInfos = await getPRInfoForBranches(
     {
       branchNames: branchNames,
@@ -123,7 +134,7 @@ async function shouldAbort(
   }
 
   if (!args.hasAnyPrs) {
-    context.splog.info('No PRs to submit.');
+    context.splog.info(chalk.blueBright('🆗 All PRs up to date.'));
     return true;
   }
 
