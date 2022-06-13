@@ -1,4 +1,4 @@
-import { composeSplog } from './splog';
+import { composeSplog } from '../utils/splog';
 
 const NAV_WARNING = [
   'The `branch` commands `next` and `previous` (aka `bn` and `bp`) have been renamed.',

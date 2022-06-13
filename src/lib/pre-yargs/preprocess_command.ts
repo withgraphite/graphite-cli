@@ -1,4 +1,5 @@
 import { handleDeprecatedCommandNames } from './deprecated_commands';
+import { passthrough } from './passthrough';
 
 function splitShortcuts(command: string): string[] {
   if (
@@ -28,11 +29,12 @@ function splitShortcuts(command: string): string[] {
   return [command];
 }
 
-export function preprocessCommand(): void {
-  process.argv = [
-    ...process.argv.slice(0, 2),
+export function getYargsInput(): string[] {
+  passthrough(process.argv);
+  const yargsInput = [
     ...splitShortcuts(process.argv[2]),
     ...process.argv.slice(3),
   ];
-  handleDeprecatedCommandNames(process.argv.slice(2, 4));
+  handleDeprecatedCommandNames(yargsInput.slice(0, 2));
+  return yargsInput;
 }
