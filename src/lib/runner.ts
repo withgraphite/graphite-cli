@@ -92,12 +92,7 @@ async function graphiteInternal(
         }
 
         const context = initContext(contextLite, args);
-
-        return await graphiteHelper(
-          canonicalName,
-          handlerMaybeWithCacheLock,
-          context
-        );
+        await graphiteHelper(canonicalName, handlerMaybeWithCacheLock, context);
       }
     );
   } catch (err) {

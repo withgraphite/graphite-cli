@@ -17,6 +17,8 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('a');
       scene.repo.execCliCommand(`branch rename a1`);
 
+      expect(() => scene.repo.execCliCommand(`log short`)).not.to.throw();
+
       scene.repo.checkoutBranch('b');
 
       expectCommits(scene.repo, 'b, a, 1');
