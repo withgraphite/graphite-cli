@@ -1,11 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { USER_CONFIG_OVERRIDE_ENV } from '../context';
-import {
-  readMetadataRef,
-  TMeta,
-  writeMetadataRef,
-} from '../engine/metadata_ref';
 import { ExitFailedError } from '../errors';
 import { rebaseInProgress } from '../git/rebase_in_progress';
 import { gpExecSync, gpExecSyncAndSplitLines } from './exec_sync';
@@ -165,10 +160,5 @@ export class GitRepo {
         stdio: process.env.DEBUG ? 'inherit' : 'ignore',
       },
     });
-  }
-
-  upsertMeta(name: string, partialMeta: Partial<TMeta>): void {
-    const meta = readMetadataRef(name, { dir: this.dir });
-    writeMetadataRef(name, { ...meta, ...partialMeta }, { dir: this.dir });
   }
 }
