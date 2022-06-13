@@ -8,20 +8,29 @@ export async function validateBranchesToSubmit(
   branchNames: string[],
   context: TContext
 ): Promise<string[]> {
-  await Promise.all([
-    validateNoMergedOrClosedBranches(branchNames, context),
-    validateNoEmptyBranches(branchNames, context),
-    validateBaseRevisions(branchNames, context),
-  ]);
+  const syncPrInfoPromise = syncPrInfo(branchNames, context);
 
+  try {
+    validateBaseRevisions(branchNames, context);
+    await validateNoEmptyBranches(branchNames, context);
+  } catch (err) {
+    try {
+      await syncPrInfoPromise;
+    } catch {
+      // pass
+    }
+    throw err;
+  }
+
+  await syncPrInfoPromise;
+  validateNoMergedOrClosedBranches(branchNames, context);
   return branchNames;
 }
 
-async function validateNoMergedOrClosedBranches(
+function validateNoMergedOrClosedBranches(
   branchNames: string[],
   context: TContext
-): Promise<void> {
-  await syncPrInfo(branchNames, context);
+): void {
   const mergedOrClosedBranches = branchNames.filter((b) =>
     ['MERGED', 'CLOSED'].includes(context.metaCache.getPrInfo(b)?.state ?? '')
   );
