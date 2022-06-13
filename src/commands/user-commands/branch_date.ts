@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { profile } from '../../lib/telemetry/profile';
+import { graphiteWithoutRepo } from '../../lib/runner';
 import { getBranchDateEnabled } from '../../lib/utils/branch_name';
 
 const args = {
@@ -22,18 +22,18 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const command = 'branch-date';
 export const canonical = 'user branch-date';
 export const description =
-  "Toggle prepending date to auto-generated branch names (i.e. when you don't specify a branch name when calling `gt branch create`).";
+  'Toggle prepending date to auto-generated branch names on branch creation.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphiteWithoutRepo(argv, canonical, async (context) => {
     if (argv.enable) {
       context.userConfig.update((data) => (data.branchDate = true));
-      context.splog.logInfo(`Enabled date`);
+      context.splog.info(`Enabled date`);
     } else if (argv.disable) {
       context.userConfig.update((data) => (data.branchDate = false));
-      context.splog.logInfo(`Disabled date`);
+      context.splog.info(`Disabled date`);
     } else {
-      context.splog.logInfo(
+      context.splog.info(
         `Branch date is ${
           getBranchDateEnabled(context) ? 'enabled' : 'disabled'
         }`

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es6",
+    "target": "esnext",
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
@@ -16,9 +16,10 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "rootDir": ".",
-    "declaration": true
+    "declaration": true,
+    "lib": ["esnext", "dom"],
+    "useUnknownInCatchVariables": false
   },
-  "lib": ["es2015"],
   "editor.codeActionsOnSave": {
     "source.fixAll.tslint": true
   },

@@ -8,6 +8,5 @@ export const builder = function (yargs: yargs.Argv): yargs.Argv {
     .commandDir('log-commands', {
       extensions: ['js'],
     })
-    .strict()
-    .demandCommand();
+    .strict();
 };

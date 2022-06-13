@@ -17,23 +17,19 @@ for (const scene of [new TrailingProdScene()]) {
       expect(savedConfig['trunk']).to.eq('main');
     });
 
-    it('Can ignore branches at init', () => {
+    it('Falls back to main if non-existent branch is passed in', () => {
       const repoConfigPath = `${scene.repo.dir}/.git/.graphite_repo_config`;
-      fs.removeSync(repoConfigPath);
-      const branchToIgnore = 'prod';
-      scene.repo.execCliCommand(
-        `repo init --trunk main --ignore-branches ${branchToIgnore}`
-      );
+      scene.repo.execCliCommand('repo init --trunk random --no-interactive');
       const savedConfig = JSON.parse(
         fs.readFileSync(repoConfigPath).toString()
       );
       expect(savedConfig['trunk']).to.eq('main');
-      expect(savedConfig['ignoreBranches'][0]).to.eq(branchToIgnore);
     });
 
-    it('Cannot set an invalid trunk', () => {
+    it('Cannot set an invalid trunk if trunk cannot be inferred', () => {
+      scene.repo.execGitCommand('branch -m main2');
       expect(() =>
-        scene.repo.execCliCommand('repo init --trunk random')
+        scene.repo.execCliCommand('repo init --trunk random --no-interactive')
       ).to.throw(Error);
     });
   });

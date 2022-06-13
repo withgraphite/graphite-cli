@@ -1,6 +1,6 @@
+import chalk from 'chalk';
 import yargs from 'yargs';
-import { profile } from '../../lib/telemetry/profile';
-import { setDefaultEditor } from '../../lib/utils/default_editor';
+import { graphiteWithoutRepo } from '../../lib/runner';
 
 const args = {
   set: {
@@ -18,30 +18,30 @@ const args = {
 } as const;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
-export const DEFAULT_GRAPHITE_EDITOR = 'nano';
 export const command = 'editor';
-export const description = 'Editor used when using Graphite';
+export const description = 'The editor opened by Graphite';
 export const canonical = 'user editor';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphiteWithoutRepo(argv, canonical, async (context) => {
     if (argv.set) {
       context.userConfig.update((data) => (data.editor = argv.set));
-      context.splog.logInfo(`Editor preference set to: ${argv.set}`);
+      context.splog.info(`Editor set to ${chalk.cyan(argv.set)}`);
     } else if (argv.unset) {
-      context.userConfig.update(
-        (data) => (data.editor = DEFAULT_GRAPHITE_EDITOR)
-      );
-      context.splog.logInfo(
-        `Editor preference erased. Defaulting to Graphite default: ${DEFAULT_GRAPHITE_EDITOR}`
+      context.userConfig.update((data) => (data.editor = undefined));
+      context.splog.info(
+        `Editor preference erased. Defaulting to your git editor (currently ${chalk.cyan(
+          context.userConfig.getEditor()
+        )})`
       );
     } else {
-      if (!context.userConfig.data.editor) {
-        setDefaultEditor(context);
-      }
-      context.splog.logInfo(
-        `Current editor preference is set to : ${context.userConfig.data.editor}`
-      );
+      context.userConfig.data.editor
+        ? context.splog.info(chalk.cyan(context.userConfig.data.editor))
+        : context.splog.info(
+            `Editor is not set. Graphite will use your git editor (currently ${chalk.cyan(
+              context.userConfig.getEditor()
+            )})`
+          );
     }
   });
 };

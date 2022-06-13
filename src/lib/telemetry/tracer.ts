@@ -2,7 +2,8 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import { version } from '../../../package.json';
-import { API_SERVER } from '../api';
+import { API_SERVER } from '../api/server';
+import { cuteString } from '../utils/cute_string';
 
 type spanNameT = 'function' | 'execSync' | 'command';
 
@@ -38,7 +39,7 @@ function currentNanoSeconds(): number {
   return hrTime[0] * 1000000000 + hrTime[1];
 }
 
-export class Span {
+class Span {
   name: spanNameT;
   parentId?: number;
   resource: string;
@@ -168,7 +169,7 @@ class Tracer {
 
     const traces = [trace];
     this.allSpans = this.allSpans.filter((s) => !s.endedSpan);
-    return JSON.stringify(traces);
+    return cuteString(traces);
   }
 
   public async flush(): Promise<void> {

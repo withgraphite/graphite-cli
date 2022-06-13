@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { unstagedChanges } from '../../../../src/lib/git/git_status_utils';
-import { Branch } from '../../../../src/wrapper-classes/branch';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
+import { expectCommits } from '../../../lib/utils/expect_commits';
 
 for (const scene of allScenes) {
   describe(`(${scene}): branch create`, function () {
@@ -13,7 +13,7 @@ for (const scene of allScenes) {
       expect(scene.repo.currentBranchName()).to.equal('a');
       scene.repo.createChangeAndCommit('2', '2');
 
-      scene.repo.execCliCommand('branch prev --no-interactive');
+      scene.repo.execCliCommand('branch down');
       expect(scene.repo.currentBranchName()).to.equal('main');
     });
 
@@ -41,34 +41,19 @@ for (const scene of allScenes) {
       expect(unstagedChanges()).to.be.false;
     });
 
-    it('Cant create a branch off an ignored branch', () => {
-      scene.repo.createAndCheckoutBranch('a');
-      scene.repo.execCliCommand('repo init --trunk main --ignore-branches a');
-      expect(() => scene.repo.execCliCommand(`branch create test -q`)).to.throw(
-        Error
-      );
-    });
+    it('Can restack its parents children', () => {
+      scene.repo.createChange('a', 'a');
+      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
-    it('Create a branch clears any old, stale metadata', async () => {
-      scene.repo.createChange('2');
-      scene.repo.execCliCommand("branch create a -m 'a'");
+      scene.repo.createChange('b', 'b');
+      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+      scene.repo.execCliCommand('branch down');
 
-      const branch = Branch.branchWithName('a');
-      branch.upsertPRInfo({
-        number: 1,
-        base: 'main',
-      });
+      scene.repo.createChange('c', 'c');
+      scene.repo.execCliCommand(`branch create "c" -m "c" -q --insert`);
+      expect(() => scene.repo.execCliCommand('branch up')).not.to.throw();
 
-      expect(Branch.branchWithName('a').getPRInfo() !== undefined).to.be.true;
-
-      scene.repo.checkoutBranch('main');
-      scene.repo.deleteBranch('a');
-
-      scene.repo.createChange('2');
-      scene.repo.execCliCommand("branch create a -m 'a'");
-
-      // Upon recreating the branch, the old PR info should be gone.
-      expect(Branch.branchWithName('a').getPRInfo() === undefined).to.be.true;
+      expectCommits(scene.repo, 'b, c, a');
     });
   });
 }

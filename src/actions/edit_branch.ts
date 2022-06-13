@@ -1,28 +1,49 @@
+import chalk from 'chalk';
 import { TContext } from '../lib/context';
-import { PreconditionsFailedError } from '../lib/errors';
-import { rebaseInteractive } from '../lib/git/rebase';
-import { currentBranchPrecondition } from '../lib/preconditions';
-import { rebaseUpstack } from './fix';
+import { SCOPE } from '../lib/engine/scope_spec';
+import { ExitFailedError, RebaseConflictError } from '../lib/errors';
+import { persistContinuation } from './persist_continuation';
+import { printConflictStatus } from './print_conflict_status';
+import { restackBranches } from './restack';
 
-export async function editBranchAction(context: TContext): Promise<void> {
-  const currentBranch = currentBranchPrecondition(context);
-
-  const base = currentBranch.getParentBranchSha();
-  if (!base) {
-    throw new PreconditionsFailedError(
-      `Graphite does not have a base revision for this branch; it might have been created with an older version of Graphite.  Please run a 'fix' or 'validate' command in order to backfill this information.`
+export function editBranchAction(context: TContext): void {
+  const currentBranchName = context.metaCache.currentBranchPrecondition;
+  // TODO fix the bug that breaks interactive rebase on non-restacked branches
+  // (bug is that restack continue sets parent revision to the wrong thing; the
+  // solution will be persisting new parent revision in continuation which also
+  // fixes ds sync rebasing)
+  if (!context.metaCache.isBranchFixed(currentBranchName)) {
+    throw new ExitFailedError(
+      'Can only edit restacked branches in this version, will be fixed soon!'
     );
   }
 
-  // TODO we will kill this once we cut over to relying on parentRevision for fix
-  // If we're checked out on a branch, we're going to perform a stack fix later.
-  // In order to allow the stack fix to cut out the old commit, we need to set
-  // the prev ref here.
-  if (currentBranch !== null) {
-    currentBranch.savePrevRef();
+  if (
+    context.metaCache.rebaseInteractive(currentBranchName) === 'REBASE_CONFLICT'
+  ) {
+    persistContinuation(
+      {
+        branchesToRestack: context.metaCache.getRelativeStack(
+          currentBranchName,
+          SCOPE.UPSTACK_EXCLUSIVE
+        ),
+      },
+      context
+    );
+    printConflictStatus(
+      `Hit conflict during interactive rebase of ${chalk.yellow(
+        currentBranchName
+      )}.`,
+      context
+    );
+    throw new RebaseConflictError();
   }
 
-  rebaseInteractive({ base, currentBranchName: currentBranch.name }, context);
-
-  await rebaseUpstack(context);
+  restackBranches(
+    context.metaCache.getRelativeStack(
+      context.metaCache.currentBranchPrecondition,
+      SCOPE.UPSTACK_EXCLUSIVE
+    ),
+    context
+  );
 }

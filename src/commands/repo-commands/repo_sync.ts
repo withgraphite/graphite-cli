@@ -1,8 +1,15 @@
 import yargs from 'yargs';
 import { syncAction } from '../../actions/sync/sync';
-import { profile } from '../../lib/telemetry/profile';
+import { graphite } from '../../lib/runner';
 
 const args = {
+  pull: {
+    describe: `Pull the trunk branch from remote.`,
+    demandOption: false,
+    default: true,
+    type: 'boolean',
+    alias: 'p',
+  },
   delete: {
     describe: `Delete branches which have been merged.`,
     demandOption: false,
@@ -16,33 +23,19 @@ const args = {
     default: false,
     type: 'boolean',
   },
-  resubmit: {
-    describe: `Re-submit branches whose merge bases have changed locally and now differ from their PRs.`,
-    demandOption: false,
-    default: true,
-    type: 'boolean',
-    alias: 'r',
-  },
   force: {
-    describe: `Don't prompt you to confirm when a branch will be deleted or re-submitted.`,
+    describe: `Don't prompt for confirmation before deleting a branch.`,
     demandOption: false,
     default: false,
     type: 'boolean',
     alias: 'f',
   },
-  pull: {
-    describe: `Pull the trunk branch from remote before searching for stale branches.`,
+  restack: {
+    describe: `Restack the current stack and any stacks with deleted branches.`,
     demandOption: false,
-    default: true,
+    default: false,
     type: 'boolean',
-    alias: 'p',
-  },
-  'show-dangling': {
-    describe: `Show prompts to fix dangling branches (branches for whose parent is unknown to Graphite).`,
-    demandOption: false,
-    default: true,
-    type: 'boolean',
-    alias: 's',
+    alias: 'r',
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -51,18 +44,17 @@ export const command = 'sync';
 export const canonical = 'repo sync';
 export const aliases = ['s'];
 export const description =
-  'Delete any branches that have been merged or squashed into the trunk branch, and recursively check for stack states against main.';
+  'Pull the trunk branch from remote and delete any branches that have been merged.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     await syncAction(
       {
         pull: argv.pull,
         force: argv.force,
-        resubmit: argv.resubmit,
         delete: argv.delete,
         showDeleteProgress: argv['show-delete-progress'],
-        fixDanglingBranches: argv['show-dangling'],
+        restack: argv.restack,
       },
       context
     );

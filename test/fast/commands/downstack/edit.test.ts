@@ -6,14 +6,11 @@ import { BasicScene } from '../../../lib/scenes/basic_scene';
 import { configureTest } from '../../../lib/utils/configure_test';
 import { expectCommits } from '../../../lib/utils/expect_commits';
 
-const EXEC_OUTPUT = 'output.txt';
 function createStackEditsInput(opts: {
   dirPath: string;
   orderedBranches: string[];
 }): string {
-  const contents = opts.orderedBranches
-    .map((b) => `exec echo ${b} >> ${opts.dirPath}/${EXEC_OUTPUT}\npick ${b}`)
-    .join('\n');
+  const contents = opts.orderedBranches.join('\n');
   const filePath = path.join(opts.dirPath, 'edits.txt');
   fs.writeFileSync(filePath, contents);
   return filePath;
@@ -38,9 +35,6 @@ for (const scene of [new BasicScene()]) {
           scene.repo.execCliCommand(`downstack edit --input "${inputPath}"`)
         ).to.not.throw(Error);
         expect(scene.repo.rebaseInProgress()).to.be.false;
-        expect(
-          fs.readFileSync(`${dirPath}/${EXEC_OUTPUT}`).toString().trim()
-        ).to.equal(['a', 'b'].join('\n'));
       });
     });
 
@@ -57,17 +51,19 @@ for (const scene of [new BasicScene()]) {
         });
         expect(() =>
           scene.repo.execCliCommand(`downstack edit --input "${inputPath}"`)
-        ).to.not.throw(Error);
+        ).to.throw(Error);
+        expect(scene.repo.rebaseInProgress()).to.be.true;
 
-        while (scene.repo.rebaseInProgress()) {
-          scene.repo.resolveMergeConflicts();
-          scene.repo.markMergeConflictsAsResolved();
-          scene.repo.execCliCommand('continue --no-edit');
-        }
+        scene.repo.resolveMergeConflicts();
+        scene.repo.markMergeConflictsAsResolved();
+
+        expect(() => scene.repo.execCliCommand('continue')).to.throw();
+        expect(scene.repo.rebaseInProgress()).to.eq(true);
+
+        scene.repo.resolveMergeConflicts();
+        scene.repo.markMergeConflictsAsResolved();
+        scene.repo.execCliCommand('continue');
         expectCommits(scene.repo, '2, 3, 1');
-        expect(
-          fs.readFileSync(`${dirPath}/${EXEC_OUTPUT}`).toString().trim()
-        ).to.equal(['b', 'a'].join('\n'));
       });
     });
   });

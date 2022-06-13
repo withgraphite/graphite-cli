@@ -1,6 +1,6 @@
 import tmp from 'tmp';
 import yargs from 'yargs';
-import { profile } from '../lib/telemetry/profile';
+import { graphiteWithoutRepo } from '../lib/runner';
 import { gpExecSync } from '../lib/utils/exec_sync';
 import { GitRepo } from '../lib/utils/git_repo';
 import { makeId } from '../lib/utils/make_id';
@@ -14,9 +14,9 @@ export const builder = args;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async () => {
+  return graphiteWithoutRepo(argv, canonical, async (context) => {
     const tmpDir = tmp.dirSync();
-    console.log(tmpDir.name);
+    context.splog.info(tmpDir.name);
     const repo = new GitRepo(tmpDir.name);
 
     const id = makeId(4);

@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { profile } from '../../lib/telemetry/profile';
+import { graphiteWithoutRepo } from '../../lib/runner';
 
 const args = {
   enable: {
@@ -23,17 +23,17 @@ export const description = 'Show tips while using Graphite';
 export const canonical = 'user tips';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphiteWithoutRepo(argv, canonical, async (context) => {
     if (argv.enable) {
       context.userConfig.update((data) => (data.tips = true));
-      context.splog.logInfo(`tips enabled`);
+      context.splog.info(`tips enabled`);
     } else if (argv.disable) {
       context.userConfig.update((data) => (data.tips = false));
-      context.splog.logInfo(`tips disabled`);
+      context.splog.info(`tips disabled`);
     } else {
       context.userConfig.data.tips
-        ? context.splog.logInfo(`tips enabled`)
-        : context.splog.logInfo(`tips disabled`);
+        ? context.splog.info(`tips enabled`)
+        : context.splog.info(`tips disabled`);
     }
   });
 };

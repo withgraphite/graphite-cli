@@ -3,33 +3,31 @@ import prompts from 'prompts';
 import tmp from 'tmp';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
-import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
+import { getCommitMessage } from '../../lib/git/commit_message';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { getPRTemplate } from '../../lib/utils/pr_templates';
-import { getSingleCommitOnBranch } from '../../lib/utils/single_commit';
-import { Branch } from '../../wrapper-classes/branch';
 
 export async function getPRBody(
   args: {
-    branch: Branch;
+    branchName: string;
     editPRFieldsInline: boolean;
   },
   context: TContext
 ): Promise<string> {
   const body =
-    inferPRBody(args.branch, context) ?? (await getPRTemplate()) ?? '';
+    inferPRBody(args.branchName, context) ?? (await getPRTemplate()) ?? '';
   if (!args.editPRFieldsInline) {
     return body;
   }
 
-  const defaultEditor = await getDefaultEditorOrPrompt(context);
+  const editor = context.userConfig.getEditor();
   const response = await prompts(
     {
       type: 'select',
       name: 'body',
       message: 'Body',
       choices: [
-        { title: `Edit Body (using ${defaultEditor})`, value: 'edit' },
+        { title: `Edit Body (using ${editor})`, value: 'edit' },
         {
           title: `Skip${body ? ` (just paste template)` : ''}`,
           value: 'skip',
@@ -48,7 +46,7 @@ export async function getPRBody(
 
   return await editPRBody({
     initial: body,
-    editor: defaultEditor,
+    editor,
   });
 }
 
@@ -68,21 +66,18 @@ async function editPRBody(args: {
 }
 
 export function inferPRBody(
-  branch: Branch,
+  branchName: string,
   context: TContext
 ): string | undefined {
-  const priorSubmitBody = branch.getPRInfo()?.body;
+  const priorSubmitBody = context.metaCache.getPrInfo(branchName)?.body;
   if (priorSubmitBody !== undefined) {
     return priorSubmitBody;
   }
 
   // Only infer the title from the commit if the branch has just 1 commit.
-  const singleCommitBody = getSingleCommitOnBranch(branch, context)
-    ?.messageBody()
-    .trim();
+  const commits = context.metaCache.getAllCommits(branchName, 'SHA');
+  const singleCommitBody =
+    commits.length === 1 ? getCommitMessage(commits[0], 'BODY') : undefined;
 
-  if (singleCommitBody?.length) {
-    return singleCommitBody;
-  }
-  return undefined;
+  return singleCommitBody?.length ? singleCommitBody : undefined;
 }

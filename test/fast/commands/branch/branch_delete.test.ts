@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { MetadataRef } from '../../../../src/wrapper-classes/metadata_ref';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
 import { expectBranches } from '../../../lib/utils/expect_branches';
@@ -21,30 +20,6 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch delete "${branchName}" -f -q`);
 
       expectBranches(scene.repo, 'main');
-
-      expect(
-        MetadataRef.allMetadataRefs().find(
-          (ref) => ref._branchName === branchName
-        )
-      ).to.be.undefined;
-    });
-
-    it('Can run branch delete on a branch not created/tracked by Graphite', () => {
-      const branchName = 'a';
-
-      scene.repo.createAndCheckoutBranch(branchName);
-      scene.repo.createChangeAndCommit('2', '2');
-
-      scene.repo.checkoutBranch('main');
-      scene.repo.execCliCommandAndGetOutput(`bdl "${branchName}" -f -q`);
-
-      expectBranches(scene.repo, 'main');
-
-      expect(
-        MetadataRef.allMetadataRefs().find(
-          (ref) => ref._branchName === branchName
-        )
-      ).to.be.undefined;
     });
   });
 }

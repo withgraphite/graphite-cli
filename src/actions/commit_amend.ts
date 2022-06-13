@@ -1,20 +1,17 @@
 import { TContext } from '../lib/context';
+import { SCOPE } from '../lib/engine/scope_spec';
 import { addAll } from '../lib/git/add_all';
-import { commit } from '../lib/git/commit';
-import {
-  currentBranchPrecondition,
-  ensureSomeStagedChangesPrecondition,
-} from '../lib/preconditions';
-import { rebaseUpstack } from './fix';
+import { ensureSomeStagedChangesPrecondition } from '../lib/preconditions';
+import { restackBranches } from './restack';
 
-export async function commitAmendAction(
+export function commitAmendAction(
   opts: {
     addAll: boolean;
     message?: string;
     noEdit: boolean;
   },
   context: TContext
-): Promise<void> {
+): void {
   if (opts.addAll) {
     addAll();
   }
@@ -23,18 +20,23 @@ export async function commitAmendAction(
     ensureSomeStagedChangesPrecondition(context);
   }
 
-  // TODO we will kill this once we cut over to relying on parentRevision for fix
-  // If we're checked out on a branch, we're going to perform a stack fix later.
-  // In order to allow the stack fix to cut out the old commit, we need to set
-  // the prev ref here.
-  currentBranchPrecondition(context).savePrevRef();
-
-  commit({
+  context.metaCache.commit({
     amend: true,
     noEdit: opts.noEdit,
     message: opts.message,
-    noVerify: context.noVerify,
   });
 
-  await rebaseUpstack(context);
+  if (!opts.noEdit) {
+    context.splog.tip(
+      'In the future, you can skip editing the commit message with the `--no-edit` flag.'
+    );
+  }
+
+  restackBranches(
+    context.metaCache.getRelativeStack(
+      context.metaCache.currentBranchPrecondition,
+      SCOPE.UPSTACK_EXCLUSIVE
+    ),
+    context
+  );
 }

@@ -1,58 +1,46 @@
 import yargs, { Arguments } from 'yargs';
-import { initContext } from '../lib/context';
-import { Branch } from '../wrapper-classes/branch';
+import { getBranchNamesAndRevisions } from '../lib/git/sorted_branch_names';
 
-yargs.completion('completion', (current, argv) => {
-  const context = initContext();
-  const branchArg = getBranchArg(current, argv);
-  if (branchArg === null) {
-    return;
+yargs.completion(
+  'completion',
+  'Append the output of this command to your shell startup script.',
+  //@ts-expect-error types/yargs is out of date with yargs
+  // eslint-disable-next-line max-params
+  (current, argv, defaultCompletion, done) => {
+    return shouldCompleteBranch(current, argv)
+      ? // we don't want to load a full context here, so we'll just use the git call directly
+        // once we persist the meta cache to disk, we can consider using a context here
+        done(Object.keys(getBranchNamesAndRevisions()))
+      : defaultCompletion();
   }
+);
 
-  return Branch.allBranches(context, {
-    filter: (b) => b.name.startsWith(branchArg),
-  })
-    .map((b) => b.name)
-    .sort();
-});
-
-/**
- * If the user is entering a branch argument, returns the current entered
- * value. Else, returns null.
- *
- * e.g.
- *
- * gt branch checkout --branch ny--xyz => 'ny--xyz'
- * gt branch checkout --branch => ''
- *
- * gt repo sync => null
- * gt log => null
- */
-function getBranchArg(current: string, argv: Arguments): string | null {
-  if (
-    // gt bco
-    // Check membership in argv to ensure that "bco" is its own entry (and not
-    // a substring of another command). Since we're dealing with a positional,
-    // we also want to make sure that the current argument is the positional
-    // (position 3).
+function shouldCompleteBranch(current: string, argv: Arguments): boolean {
+  // this handles both with and without --branch because it's the only string arg
+  return (
     ((argv['_'].length <= 3 &&
-      (argv['_'][1] === 'bco' || argv['_'][1] === 'bdl')) ||
-      // gt branch checkout/delete (and permutations)
+      // gt bco, bdl, btr, but
+      // Check membership in argv to ensure that "bco" is its own entry (and not
+      // a substring of another command). Since we're dealing with a positional,
+      // we also want to make sure that the current argument is the positional
+      // (position 3).
+      ['bco', 'bdl', 'btr', 'but', 'dpr'].includes('' + argv['_'][1])) ||
       // same as above, but one position further
       (argv['_'].length <= 4 &&
-        (argv['_'][1] === 'b' || argv['_'][1] === 'branch') &&
-        (argv['_'][2] === 'co' ||
-          argv['_'][2] === 'checkout' ||
-          argv['_'][2] === 'dl' ||
-          argv['_'][2] === 'delete')) ||
+        ['b', 'branch'].includes('' + argv['_'][1]) &&
+        [
+          'co',
+          'checkout',
+          'dl',
+          'delete',
+          'tr',
+          'track',
+          'ut',
+          'untrack',
+        ].includes('' + argv['_'][2])) ||
       // gt upstack onto / us onto
       ((argv['_'][1] === 'upstack' || argv['_'][1] === 'us') &&
         argv['_'][2] === 'onto')) &&
     typeof current === 'string'
-  ) {
-    // this handles both with and without --branch because it's the only string arg
-    return current;
-  }
-
-  return null;
+  );
 }

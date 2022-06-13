@@ -1,9 +1,6 @@
 import yargs from 'yargs';
-import {
-  switchBranchAction,
-  TraversalDirection,
-} from '../../actions/branch_traversal';
-import { profile } from '../../lib/telemetry/profile';
+import { switchBranchAction } from '../../actions/branch_traversal';
+import { graphite } from '../../lib/runner';
 
 const args = {} as const;
 
@@ -13,16 +10,17 @@ export const command = 'bottom';
 export const canonical = 'branch bottom';
 export const aliases = ['b'];
 export const description =
-  "If you're in a stack: Branch A → Branch B → Branch C (you are here), checkout the branch at the bottom of the stack (Branch A).";
+  'Switch to the first branch from trunk in the current stack.';
 export const builder = args;
-export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
-    await switchBranchAction(
-      TraversalDirection.Bottom,
-      {
-        interactive: context.interactive,
-      },
-      context
-    );
-  });
-};
+export const handler = async (argv: argsT): Promise<void> =>
+  graphite(
+    argv,
+    canonical,
+    async (context) =>
+      await switchBranchAction(
+        {
+          direction: 'BOTTOM',
+        },
+        context
+      )
+  );

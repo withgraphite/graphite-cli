@@ -1,23 +1,24 @@
-import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import tmp from 'tmp';
-import { initContext, TContext } from '../../../src/lib/context';
+import {
+  initContext,
+  initContextLite,
+  TContext,
+} from '../../../src/lib/context';
+import { cuteString } from '../../../src/lib/utils/cute_string';
 import { GitRepo } from '../../../src/lib/utils/git_repo';
 
 export abstract class AbstractScene {
   tmpDir: tmp.DirResult;
   repo: GitRepo;
   dir: string;
-  oldDir = execSync('pwd').toString().trim();
-  context: TContext;
+  oldDir: string;
 
   constructor() {
     this.tmpDir = tmp.dirSync();
     this.dir = this.tmpDir.name;
     this.repo = new GitRepo(this.dir);
-    this.context = initContext({
-      userConfigOverride: `${this.dir}/.git/.graphite_user_config`,
-    });
+    this.oldDir = process.cwd();
   }
 
   abstract toString(): string;
@@ -28,16 +29,13 @@ export abstract class AbstractScene {
     this.repo = new GitRepo(this.dir);
     fs.writeFileSync(
       `${this.dir}/.git/.graphite_repo_config`,
-      JSON.stringify({ trunk: 'main' }, null, 2)
+      cuteString({ trunk: 'main' })
     );
-    fs.writeFileSync(
-      `${this.dir}/.git/.graphite_user_config`,
-      JSON.stringify({}, null, 2)
-    );
+    const userConfigPath = `${this.dir}/.git/.graphite_user_config`;
+    fs.writeFileSync(userConfigPath, cuteString({ tips: false }));
+    process.env.GRAPHITE_USER_CONFIG_PATH = userConfigPath;
+    this.oldDir = process.cwd();
     process.chdir(this.dir);
-    this.context = initContext({
-      userConfigOverride: `${this.dir}/.git/.graphite_user_config`,
-    });
   }
 
   public cleanup(): void {
@@ -46,5 +44,22 @@ export abstract class AbstractScene {
       fs.emptyDirSync(this.dir);
       this.tmpDir.removeCallback();
     }
+  }
+
+  public getContext(): TContext {
+    const oldDir = process.cwd();
+    process.chdir(this.tmpDir.name);
+    const context = initContext(
+      initContextLite({
+        interactive: false,
+        quiet: !!process.env.DEBUG,
+        debug: !!process.env.DEBUG,
+      }),
+      {
+        verify: false,
+      }
+    );
+    process.chdir(oldDir);
+    return context;
   }
 }

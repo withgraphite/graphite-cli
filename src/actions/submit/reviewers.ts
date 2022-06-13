@@ -3,9 +3,9 @@ import { KilledError } from '../../lib/errors';
 
 export async function getReviewers(args: {
   fetchReviewers: boolean;
-}): Promise<undefined | string[]> {
+}): Promise<string[]> {
   if (!args.fetchReviewers) {
-    return undefined;
+    return [];
   }
   const response = await prompts(
     {

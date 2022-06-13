@@ -11,14 +11,14 @@ const EMPTY_COMMIT_MESSAGE_INFO = [
   '# If you wish to avoid empty commits in the future, stage changes before running \\`gt bc -m \\"feat(new_feat): added xyz...\\"\\`',
 ].join('\n');
 
-export function commit(opts: {
+export type TCommitOpts = {
   amend?: boolean;
   allowEmpty?: boolean;
   message?: string;
   noEdit?: boolean;
-  noVerify: boolean;
   rollbackOnError?: () => void;
-}): void {
+};
+export function commit(opts: TCommitOpts & { noVerify: boolean }): void {
   // We must escape all backticks in the string
   const message = opts.message?.replace(/`/g, '\\`');
 

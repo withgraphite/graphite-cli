@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { DEFAULT_GRAPHITE_EDITOR } from '../../../../src/commands/user-commands/editor';
 import { BasicScene } from '../../../lib/scenes/basic_scene';
 import { configureTest } from '../../../lib/utils/configure_test';
 
@@ -7,50 +6,28 @@ for (const scene of [new BasicScene()]) {
   describe(`(${scene}): user editor`, function () {
     configureTest(this, scene);
 
-    /**
-     * If users run this test locally, we don't want it to mangle their editor settings
-     * As a result, before we run our tests, we save their editor preference
-     * and after finishing our tests, we reset their editor preference.
-     */
-    let editorPref: string | undefined;
-    before(function () {
-      editorPref = scene.context.userConfig.data.editor;
-    });
-
     it('Sanity check - can check editor', () => {
-      scene.repo.execCliCommand(`user editor --unset`);
       expect(() => scene.repo.execCliCommand(`user editor`)).to.not.throw(
         Error
-      );
-      expect(scene.repo.execCliCommandAndGetOutput(`user editor`)).to.equal(
-        'Current editor preference is set to : nano'
       );
     });
 
     it('Sanity check - can set editor', () => {
       expect(
         scene.repo.execCliCommandAndGetOutput(`user editor --set vim`)
-      ).to.equal('Editor preference set to: vim');
+      ).to.equal('Editor set to vim');
       expect(scene.repo.execCliCommandAndGetOutput(`user editor`)).to.equal(
-        'Current editor preference is set to : vim'
+        'vim'
       );
     });
 
     it('Sanity check - can unset editor', () => {
+      process.env.GIT_EDITOR = 'vi';
       expect(
         scene.repo.execCliCommandAndGetOutput(`user editor --unset`)
       ).to.equal(
-        `Editor preference erased. Defaulting to Graphite default: ${DEFAULT_GRAPHITE_EDITOR}`
+        'Editor preference erased. Defaulting to your git editor (currently vi)'
       );
-      expect(scene.repo.execCliCommandAndGetOutput(`user editor`)).to.equal(
-        `Current editor preference is set to : ${DEFAULT_GRAPHITE_EDITOR}`
-      );
-    });
-
-    after(function () {
-      if (editorPref !== undefined) {
-        scene.context.userConfig.update((data) => (data.editor = editorPref));
-      }
     });
   });
 }

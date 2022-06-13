@@ -2,19 +2,17 @@ import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import * as t from '@withgraphite/retype';
 import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
-import { API_SERVER } from '../../lib/api';
+import { API_SERVER } from '../../lib/api/server';
 import { TContext } from '../../lib/context';
 import { ExitFailedError, PreconditionsFailedError } from '../../lib/errors';
+import { cuteString } from '../../lib/utils/cute_string';
 import { Unpacked } from '../../lib/utils/ts_helpers';
-import { Branch } from '../../wrapper-classes/branch';
-import {
-  TPRSubmissionInfoWithBranch,
-  TSubmittedPRRequest,
-} from './submit_action';
 
-type TPRSubmissionInfo = t.UnwrapSchemaMap<
+export type TPRSubmissionInfo = t.UnwrapSchemaMap<
   typeof graphiteCLIRoutes.submitPullRequests.params
 >['prs'];
+
+type TSubmittedPRRequest = Unpacked<TPRSubmissionInfo>;
 
 type TSubmittedPRResponse = Unpacked<
   t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.response>['prs']
@@ -27,7 +25,7 @@ type TSubmittedPR = {
 
 export async function submitPullRequest(
   args: {
-    submissionInfoWithBranch: TPRSubmissionInfoWithBranch;
+    submissionInfo: TPRSubmissionInfo;
     cliAuthToken: string;
   },
   context: TContext
@@ -36,7 +34,7 @@ export async function submitPullRequest(
     (
       await requestServerToSubmitPRs(
         args.cliAuthToken,
-        [args.submissionInfoWithBranch],
+        args.submissionInfo,
         context
       )
     )[0],
@@ -52,7 +50,7 @@ const UNAUTHORIZED_RESPONSE_CODE = 401;
 
 // This endpoint is plural for legacy reasons.
 // Leaving the function plural in case we want to revert.
-export async function requestServerToSubmitPRs(
+async function requestServerToSubmitPRs(
   cliAuthToken: string,
   submissionInfo: TPRSubmissionInfo,
   context: TContext
@@ -92,7 +90,7 @@ export async function requestServerToSubmitPRs(
       throw new ExitFailedError(
         `unexpected server response (${
           response._response.status
-        }).\n\nResponse: ${JSON.stringify(response)}`
+        }).\n\nResponse: ${cuteString(response)}`
       );
     }
   } catch (error) {
@@ -103,7 +101,7 @@ export async function requestServerToSubmitPRs(
   }
 }
 
-export function handlePRReponse(
+function handlePRReponse(
   pr: TSubmittedPR,
   context: TContext
 ): { errorMessage?: string } {
@@ -113,7 +111,7 @@ export function handlePRReponse(
     };
   }
 
-  Branch.branchWithName(pr.response.head).upsertPRInfo({
+  context.metaCache.upsertPrInfo(pr.response.head, {
     number: pr.response.prNumber,
     url: pr.response.prURL,
     base: pr.request.base,
@@ -127,7 +125,7 @@ export function handlePRReponse(
       : {}),
     ...(pr.request.draft !== undefined ? { draft: pr.request.draft } : {}),
   });
-  context.splog.logInfo(
+  context.splog.info(
     `${chalk.green(pr.response.head)}: ${pr.response.prURL} (${{
       updated: chalk.yellow,
       created: chalk.green,

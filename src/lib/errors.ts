@@ -1,19 +1,6 @@
-import { Branch } from '../wrapper-classes/branch';
-import {
-  persistMergeConflictCallstack,
-  TMergeConflictCallstack,
-} from './config/merge_conflict_callstack_config';
-import { TContext } from './context';
-
 class ExitError extends Error {}
-class ExitCancelledError extends ExitError {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ExitCancelled';
-  }
-}
 
-class ExitFailedError extends ExitError {
+export class ExitFailedError extends ExitError {
   constructor(message: string, err?: Error) {
     err
       ? super(
@@ -32,83 +19,44 @@ class ExitFailedError extends ExitError {
   }
 }
 
-class RebaseConflictError extends ExitError {
-  constructor(
-    message: string,
-    callstack: TMergeConflictCallstack,
-    context: TContext
-  ) {
-    super(message);
+export class RebaseConflictError extends ExitError {
+  constructor() {
+    super(`Hit a conflict during rebase.`);
     this.name = 'RebaseConflict';
-    persistMergeConflictCallstack(callstack, context);
   }
 }
 
-class ValidationFailedError extends ExitError {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ValidationFailed';
-  }
-}
-
-class PreconditionsFailedError extends ExitError {
+export class PreconditionsFailedError extends ExitError {
   constructor(message: string) {
     super(message);
     this.name = 'PreconditionsFailed';
   }
 }
 
-class ConfigError extends ExitError {
-  constructor(message: string) {
-    super(message);
-    this.name = 'Config';
+export class ConcurrentExecutionError extends ExitError {
+  constructor() {
+    super(`Cannot run more than one Graphite process at once.`);
+    this.name = 'ConcurrentExecutionError';
   }
 }
 
-class KilledError extends ExitError {
+export class UntrackedBranchError extends ExitError {
   constructor() {
-    super(`User killed Graphite early`);
+    super(`Cannot perform this operation on an untracked branch.`);
+    this.name = 'UntrackedBranchError';
+  }
+}
+
+export class BadTrunkOperationError extends ExitError {
+  constructor() {
+    super(`Cannot perform this operation on the trunk branch.`);
+    this.name = 'BadTrunkOperationError';
+  }
+}
+
+export class KilledError extends ExitError {
+  constructor() {
+    super(`Killed Graphite early.`);
     this.name = 'Killed';
   }
 }
-
-class SiblingBranchError extends ExitError {
-  constructor(branches: Branch[], context: TContext) {
-    super(
-      [
-        `Multiple branches pointing to commit ${branches[0].ref(context)}.`,
-        `Graphite cannot infer parent-child relationships between identical branches.`,
-        `Please add a commit to one, or delete one to continue:`,
-        ...branches.map((b) => `-> (${b.name})`),
-      ].join('\n')
-    );
-    this.name = `SiblingBranchError`;
-  }
-}
-
-class MultiParentError extends ExitError {
-  constructor(branch: Branch, parents: Branch[]) {
-    super(
-      [
-        `Multiple git commit parents detected for ${branch.name}.`,
-        `Graphite does not support multi-parent branches in stacks.`,
-        `Please adjust the git commit tree or delete one of the parents:`,
-        ...parents.map((b) => `-> (${b.name})`),
-      ].join('\n')
-    );
-    this.name = `ParentBranchError`;
-  }
-}
-
-export {
-  ExitError,
-  ExitFailedError,
-  PreconditionsFailedError,
-  RebaseConflictError,
-  ValidationFailedError,
-  ConfigError,
-  ExitCancelledError,
-  SiblingBranchError,
-  MultiParentError,
-  KilledError,
-};

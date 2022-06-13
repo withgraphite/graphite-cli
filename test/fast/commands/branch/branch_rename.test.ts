@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
+import { expectCommits } from '../../../lib/utils/expect_commits';
 
 for (const scene of allScenes) {
   describe(`(${scene}): rename`, function () {
@@ -16,16 +17,17 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('a');
       scene.repo.execCliCommand(`branch rename a1`);
 
+      expect(() => scene.repo.execCliCommand(`log short`)).not.to.throw();
+
       scene.repo.checkoutBranch('b');
 
-      scene.repo.execCliCommand(`branch prev --no-interactive`);
+      expectCommits(scene.repo, 'b, a, 1');
+
+      scene.repo.execCliCommand(`branch down --no-interactive`);
       expect(scene.repo.currentBranchName()).to.equal('a1');
 
-      scene.repo.execCliCommand(`branch prev --no-interactive`);
+      scene.repo.execCliCommand(`branch down --no-interactive`);
       expect(scene.repo.currentBranchName()).to.equal('main');
-      expect(() => scene.repo.execCliCommand(`stack validate`)).to.not.throw(
-        Error
-      );
     });
   });
 }

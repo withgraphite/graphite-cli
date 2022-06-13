@@ -1,105 +1,47 @@
-import chalk from 'chalk';
 import yargs from 'yargs';
-import { printStack } from '../../actions/print_stack';
-import { TContext } from '../../lib/context';
-import { currentBranchName } from '../../lib/git/current_branch_name';
-import { profile } from '../../lib/telemetry/profile';
-import { getTrunk } from '../../lib/utils/trunk';
-import { Branch } from '../../wrapper-classes/branch';
+import { logAction } from '../../actions/log';
+import { graphite } from '../../lib/runner';
 
 const args = {
-  'on-trunk': {
-    describe: `Only show commits on trunk`,
-    demandOption: false,
-    default: false,
+  reverse: {
+    describe: `Print the log upside down. Handy when you have a lot of branches!`,
     type: 'boolean',
-    alias: 't',
+    alias: 'r',
+    default: false,
   },
-  'behind-trunk': {
-    describe: `Only show commits behind trunk`,
-    demandOption: false,
-    default: false,
+  stack: {
+    describe: `Only show ancestors and descendants of the current branch.`,
     type: 'boolean',
-    alias: 'b',
+    alias: 's',
+    default: false,
+  },
+  steps: {
+    describe: `Only show this many levels upstack and downstack. Implies --stack.`,
+    type: 'number',
+    alias: 'n',
+    default: undefined,
   },
 } as const;
 
 export const command = '*';
-export const description = 'Log all stacks tracked by Graphite.';
+export const description =
+  'Log all branches tracked by Graphite, showing dependencies and info for each.';
 export const builder = args;
 export const canonical = 'log';
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
-export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
-    // Use our custom logging of branches and stacks:
-    if (argv['on-trunk']) {
-      printTrunkLog(context);
-    } else if (argv['behind-trunk']) {
-      await printStacksBehindTrunk(context);
-    } else {
-      printTrunkLog(context);
-      await printStacksBehindTrunk(context);
-    }
-  });
-};
-
-function printTrunkLog(context: TContext): void {
-  const trunk = getTrunk(context);
-  printStack(
-    {
-      baseBranch: trunk.useMemoizedResults(),
-      indentLevel: 0,
-      config: {
-        currentBranchName: currentBranchName(),
-        offTrunk: true,
-        visited: [],
-      },
-    },
-    context
-  );
-}
-
-async function printStacksBehindTrunk(context: TContext): Promise<void> {
-  const trunk = getTrunk(context);
-  const branchesWithoutParents = Branch.allBranches(context, {
-    useMemoizedResults: true,
-    maxDaysBehindTrunk: context.repoConfig.getMaxDaysShownBehindTrunk(),
-    maxBranches: context.repoConfig.getMaxStacksShownBehindTrunk(),
-    filter: (branch) => {
-      if (branch.name === getTrunk(context).name) {
-        return false;
-      }
-      return branch.getParentsFromGit(context).length === 0;
-    },
-  });
-  if (branchesWithoutParents.length === 0) {
-    return;
-  }
-
-  console.log('․');
-  console.log('․');
-  console.log(`․  ${chalk.bold(`Stack(s) below trail ${trunk.name}.`)}`);
-  console.log(
-    `․  To fix a stack, check out the stack and run \`gt stack fix\`.`
-  );
-  console.log('․');
-
-  branchesWithoutParents.forEach((branch) => {
-    console.log('․');
-    printStack(
+export const handler = async (argv: argsT): Promise<void> =>
+  graphite(argv, canonical, async (context) =>
+    logAction(
       {
-        baseBranch: branch.useMemoizedResults(),
-        indentLevel: 1,
-        config: {
-          currentBranchName: currentBranchName(),
-          offTrunk: false,
-          visited: [],
-        },
+        style: 'FULL',
+        reverse: argv.reverse,
+        branchName:
+          argv.steps || argv.stack
+            ? context.metaCache.currentBranchPrecondition
+            : context.metaCache.trunk,
+        steps: argv.steps,
       },
       context
-    );
-    console.log(`◌──┘`);
-    console.log('․');
-  });
-}
+    )
+  );

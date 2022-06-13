@@ -2,27 +2,133 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
-import { checkoutBranch } from '../lib/git/checkout_branch';
-import { currentBranchPrecondition } from '../lib/preconditions';
-import { Branch } from '../wrapper-classes/branch';
 
-export enum TraversalDirection {
-  Top = 'TOP',
-  Bottom = 'BOTTOM',
-  Up = 'UP',
-  Down = 'DOWN',
+type TBranchNavigation =
+  | {
+      direction: 'UP' | 'DOWN';
+      numSteps: number;
+    }
+  | { direction: 'TOP' | 'BOTTOM' };
+export async function switchBranchAction(
+  branchNavigation: TBranchNavigation,
+  context: TContext
+): Promise<void> {
+  const currentBranchName = context.metaCache.currentBranchPrecondition;
+  context.splog.info(chalk.blueBright(currentBranchName));
+  const newBranchName = await traverseBranches(
+    branchNavigation,
+    currentBranchName,
+    context
+  );
+  if (newBranchName !== currentBranchName) {
+    context.metaCache.checkoutBranch(newBranchName);
+    context.splog.info(`Checked out ${chalk.cyan(newBranchName)}.`);
+    return;
+  }
+  context.splog.info(
+    `Already at the ${
+      branchNavigation.direction === 'DOWN' ||
+      branchNavigation.direction === 'BOTTOM'
+        ? 'bottom most'
+        : 'top most'
+    } branch in the stack.`
+  );
 }
 
-async function getStackBranch(candidates: Branch[]): Promise<string> {
+async function traverseBranches(
+  branchNavigation: TBranchNavigation,
+  fromBranchName: string,
+  context: TContext
+): Promise<string> {
+  switch (branchNavigation.direction) {
+    case 'BOTTOM': {
+      return traverseDownward(fromBranchName, context);
+    }
+    case 'DOWN': {
+      return traverseDownward(
+        fromBranchName,
+        context,
+        branchNavigation.numSteps > 1 ? branchNavigation.numSteps : 1
+      );
+    }
+    case 'TOP': {
+      return await traverseUpward(fromBranchName, context);
+    }
+    case 'UP': {
+      return await traverseUpward(
+        fromBranchName,
+        context,
+        branchNavigation.numSteps > 1 ? branchNavigation.numSteps : 1
+      );
+    }
+  }
+}
+
+function traverseDownward(
+  currentBranchName: string,
+  context: TContext,
+  stepsRemaining: number | 'bottom' = 'bottom'
+): string {
+  if (stepsRemaining === 0 || context.metaCache.isTrunk(currentBranchName)) {
+    return currentBranchName;
+  }
+  const parentBranchName =
+    context.metaCache.getParentPrecondition(currentBranchName);
+  if (
+    stepsRemaining === 'bottom' &&
+    context.metaCache.isTrunk(parentBranchName)
+  ) {
+    return currentBranchName;
+  }
+  context.splog.info('⮑  ' + parentBranchName);
+  return traverseDownward(
+    parentBranchName,
+    context,
+    stepsRemaining === 'bottom' ? 'bottom' : stepsRemaining - 1
+  );
+}
+
+async function traverseUpward(
+  currentBranchName: string,
+  context: TContext,
+  stepsRemaining: number | 'top' = 'top'
+): Promise<string> {
+  if (stepsRemaining === 0) {
+    return currentBranchName;
+  }
+  const children = context.metaCache.getChildren(currentBranchName);
+  if (children.length === 0) {
+    return currentBranchName;
+  }
+  const childBranchName =
+    children.length === 1
+      ? children[0]
+      : await handleMultipleChildren(children, context);
+  context.splog.info('⮑  ' + childBranchName);
+  return await traverseUpward(
+    childBranchName,
+    context,
+    stepsRemaining === 'top' ? 'top' : stepsRemaining - 1
+  );
+}
+
+async function handleMultipleChildren(children: string[], context: TContext) {
+  if (!context.interactive) {
+    throw new ExitFailedError(
+      `Cannot get upstack branch in non-interactive mode; multiple choices available:\n${children.join(
+        '\n'
+      )}`
+    );
+  }
   return (
     await prompts(
       {
         type: 'select',
-        name: 'branch',
+        name: 'value',
         message:
           'Multiple branches found at the same level. Select a branch to guide the navigation',
-        choices: candidates.map((b) => {
-          return { title: b.name, value: b.name, branch: b };
+        choices: children.map((b) => {
+          return { title: b, value: b };
         }),
       },
       {
@@ -31,142 +137,5 @@ async function getStackBranch(candidates: Branch[]): Promise<string> {
         },
       }
     )
-  ).branch;
-}
-
-function getDownstackBranch(
-  currentBranch: Branch,
-  direction: TraversalDirection.Down | TraversalDirection.Bottom,
-  context: TContext,
-  numSteps?: number
-): string | undefined {
-  let branch = currentBranch;
-  let prevBranch = branch.getParentFromMeta(context);
-  let indent = 0;
-
-  // Bottom goes to the bottom of the stack but down can go up to trunk
-  if (direction === TraversalDirection.Down && prevBranch?.isTrunk(context)) {
-    branch = prevBranch;
-    indent++;
-  }
-  while (prevBranch && !prevBranch.isTrunk(context)) {
-    context.splog.logInfo(`${'  '.repeat(indent)}↳(${branch})`);
-    branch = prevBranch;
-    prevBranch = branch.getParentFromMeta(context);
-    indent++;
-    if (direction === TraversalDirection.Down && indent === numSteps) {
-      break;
-    }
-  }
-  context.splog.logInfo(`${'  '.repeat(indent)}↳(${chalk.cyan(branch)})`);
-  return branch?.name;
-}
-
-async function getUpstackBranch(
-  currentBranch: Branch,
-  interactive: boolean,
-  direction: TraversalDirection.Up | TraversalDirection.Top,
-  context: TContext,
-  numSteps?: number
-): Promise<string | undefined> {
-  let branch = currentBranch;
-  let candidates = branch.getChildrenFromMeta(context);
-  let indent = 0;
-
-  while (branch && candidates.length) {
-    if (candidates.length === 1) {
-      context.splog.logInfo(`${'  '.repeat(indent)}↳(${branch})`);
-      branch = candidates[0];
-    } else {
-      if (interactive) {
-        const stack_base_branch = await getStackBranch(candidates);
-        branch = Branch.branchWithName(stack_base_branch);
-      } else {
-        throw new ExitFailedError(
-          `Cannot get upstack branch, multiple choices available: [${candidates.join(
-            ', '
-          )}]`
-        );
-      }
-    }
-    indent++;
-    if (direction === TraversalDirection.Up && indent === numSteps) {
-      break;
-    }
-    candidates = branch.getChildrenFromMeta(context);
-  }
-
-  context.splog.logInfo(`${'  '.repeat(indent)}↳(${chalk.cyan(branch)})`);
-  return branch?.name;
-}
-
-export async function switchBranchAction(
-  direction: TraversalDirection,
-  opts: {
-    numSteps?: number;
-    interactive: boolean;
-  },
-  context: TContext
-): Promise<void> {
-  const currentBranch = currentBranchPrecondition(context);
-  const nextBranch = await getNextBranch(
-    direction,
-    currentBranch,
-    context,
-    opts
-  );
-  if (nextBranch && nextBranch != currentBranch.name) {
-    checkoutBranch(nextBranch);
-  } else {
-    context.splog.logInfo(
-      `Already at the ${
-        direction === TraversalDirection.Down ||
-        direction === TraversalDirection.Bottom
-          ? 'bottom most'
-          : 'top most'
-      } branch in the stack. Exiting.`
-    );
-  }
-}
-
-async function getNextBranch(
-  direction: TraversalDirection,
-  currentBranch: Branch,
-  context: TContext,
-  opts: { numSteps?: number | undefined; interactive: boolean }
-) {
-  switch (direction) {
-    case TraversalDirection.Bottom: {
-      return getDownstackBranch(
-        currentBranch,
-        TraversalDirection.Bottom,
-        context
-      );
-    }
-    case TraversalDirection.Down: {
-      return getDownstackBranch(
-        currentBranch,
-        TraversalDirection.Down,
-        context,
-        opts.numSteps
-      );
-    }
-    case TraversalDirection.Top: {
-      return await getUpstackBranch(
-        currentBranch,
-        opts.interactive,
-        TraversalDirection.Top,
-        context
-      );
-    }
-    case TraversalDirection.Up: {
-      return await getUpstackBranch(
-        currentBranch,
-        opts.interactive,
-        TraversalDirection.Up,
-        context,
-        opts.numSteps
-      );
-    }
-  }
+  ).value;
 }

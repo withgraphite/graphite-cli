@@ -1,17 +1,16 @@
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
-import { getSingleCommitOnBranch } from '../../lib/utils/single_commit';
-import { Branch } from '../../wrapper-classes/branch';
+import { getCommitMessage } from '../../lib/git/commit_message';
 
 export async function getPRTitle(
   args: {
-    branch: Branch;
+    branchName: string;
     editPRFieldsInline: boolean;
   },
   context: TContext
 ): Promise<string> {
-  const title = inferPRTitle(args.branch, context);
+  const title = inferPRTitle(args.branchName, context);
   if (!args.editPRFieldsInline) {
     return title;
   }
@@ -32,19 +31,20 @@ export async function getPRTitle(
   return response.title ?? title;
 }
 
-export function inferPRTitle(branch: Branch, context: TContext): string {
-  const priorSubmitTitle = branch.getPRInfo()?.title;
+export function inferPRTitle(branchName: string, context: TContext): string {
+  const priorSubmitTitle = context.metaCache.getPrInfo(branchName)?.title;
   if (priorSubmitTitle !== undefined) {
     return priorSubmitTitle;
   }
 
   // Only infer the title from the commit if the branch has just 1 commit.
-  const singleCommitSubject = getSingleCommitOnBranch(branch, context)
-    ?.messageSubject()
-    .trim();
+  const commits = context.metaCache.getAllCommits(branchName, 'SHA');
+  const singleCommitSubject =
+    commits.length === 1 ? getCommitMessage(commits[0], 'SUBJECT') : undefined;
 
-  if (singleCommitSubject?.length) {
-    return singleCommitSubject;
-  }
-  return `Merge ${branch.name} into ${branch.getParentFromMeta(context)?.name}`;
+  return singleCommitSubject?.length
+    ? singleCommitSubject
+    : `Merge ${branchName} into ${context.metaCache.getParentPrecondition(
+        branchName
+      )}`;
 }

@@ -1,10 +1,13 @@
-import { gpExecSync } from '../utils/exec_sync';
+import { gpExecSync, gpExecSyncAndSplitLines } from '../utils/exec_sync';
 
-export function printStatus(): void {
-  gpExecSync({
-    command: `git status`,
-    options: {
-      printStdout: (out) => out.replace('git rebase --continue', 'gt continue'),
-    },
+export function getUnmergedFiles(): string[] {
+  return gpExecSyncAndSplitLines({
+    command: `git --no-pager diff --no-ext-diff --name-only --diff-filter=U`,
   });
+}
+
+export function getRebaseHead(): string {
+  return gpExecSync({
+    command: `cat $(git rev-parse --git-dir)/rebase-merge/head-name`,
+  }).slice('refs/heads/'.length);
 }

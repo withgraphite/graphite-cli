@@ -1,9 +1,12 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { expect } from 'chai';
-import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import nock from 'nock';
-import { API_SERVER } from '../../../../src/lib/api';
+import { API_SERVER } from '../../../../src/lib/api/server';
+import {
+  readMetadataRef,
+  writeMetadataRef,
+} from '../../../../src/lib/engine/metadata_ref';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
 import { expectBranches } from '../../../lib/utils/expect_branches';
@@ -41,7 +44,7 @@ for (const scene of allScenes) {
 
       fakeGitSquashAndMerge(scene.repo, 'a', 'squash');
       scene.repo.execCliCommand(`repo owner`);
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
 
       expectBranches(scene.repo, 'main');
     });
@@ -52,10 +55,14 @@ for (const scene of allScenes) {
 
       expectBranches(scene.repo, 'a, main');
 
-      scene.repo.upsertMeta('a', { prInfo: { state: 'MERGED' } });
+      writeMetadataRef(
+        'a',
+        { ...readMetadataRef('a', scene.dir), prInfo: { state: 'MERGED' } },
+        scene.dir
+      );
 
       scene.repo.execCliCommand(`repo owner`);
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
 
       expectBranches(scene.repo, 'main');
     });
@@ -65,21 +72,25 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
       expectBranches(scene.repo, 'a, main');
-      scene.repo.upsertMeta('a', { prInfo: { state: 'CLOSED' } });
+      writeMetadataRef(
+        'a',
+        { ...readMetadataRef('a', scene.dir), prInfo: { state: 'CLOSED' } },
+        scene.dir
+      );
 
       scene.repo.execCliCommand(`repo owner`);
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
 
       expectBranches(scene.repo, 'main');
     });
 
     it('Can noop sync if there are no stacks', () => {
       expect(() =>
-        scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`)
+        scene.repo.execCliCommand(`repo sync -qf --no-pull`)
       ).to.not.throw(Error);
     });
 
-    it('Can delete the foundation of a double stack', async () => {
+    it('Can delete the foundation of a double stack and restack it', async () => {
       scene.repo.createChange('2', 'a');
       scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
 
@@ -89,7 +100,7 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, 'a, b, main');
 
       fakeGitSquashAndMerge(scene.repo, 'a', 'squash');
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull --restack`);
 
       expectBranches(scene.repo, 'b, main');
       expectCommits(scene.repo, 'squash, 1');
@@ -112,7 +123,7 @@ for (const scene of allScenes) {
 
       fakeGitSquashAndMerge(scene.repo, 'a', 'squash_a');
       fakeGitSquashAndMerge(scene.repo, 'b', 'squash_b');
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
 
       expectBranches(scene.repo, 'c, main');
       expectCommits(scene.repo, 'squash_b, squash_a, 1');
@@ -131,9 +142,9 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, 'a, b, c, main');
 
       fakeGitSquashAndMerge(scene.repo, 'a', 'squash_a');
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
       fakeGitSquashAndMerge(scene.repo, 'b', 'squash_b');
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
+      scene.repo.execCliCommand(`repo sync -qf --no-pull`);
 
       expectBranches(scene.repo, 'c, main');
       expectCommits(scene.repo, 'squash_b, squash_a, 1');
@@ -145,97 +156,6 @@ for (const scene of allScenes) {
       expect(metadata.includes('a')).to.be.false;
       expect(metadata.includes('b')).to.be.false;
       expect(metadata.includes('c')).to.be.true;
-    });
-
-    /**
-     * Removed this functionality for now - users are reporting issues where
-     * this was incorrectly deleting metadata for still-existing branches.
-     *
-     * https://graphite-community.slack.com/archives/C02DRNRA9RA/p1632897956089100
-     * https://graphite-community.slack.com/archives/C02DRNRA9RA/p1634168133170500"
-     */
-    xit('Deletes dangling metadata refs', async () => {
-      scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
-
-      scene.repo.createChange('b', 'b');
-      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
-
-      scene.repo.checkoutBranch('main');
-      execSync(`git -C "${scene.repo.dir}" branch -D a`);
-
-      let metadata = fs.readdirSync(
-        `${scene.repo.dir}/.git/refs/branch-metadata`
-      );
-      expect(metadata.includes('a')).to.be.true;
-      expect(metadata.includes('b')).to.be.true;
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
-
-      metadata = fs.readdirSync(`${scene.repo.dir}/.git/refs/branch-metadata`);
-      expect(metadata.includes('a')).to.be.false;
-      expect(metadata.includes('b')).to.be.true;
-    });
-
-    xit('Can detect dead branches off multiple stacks', async () => {
-      scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
-
-      scene.repo.createChange('b', 'b');
-      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
-
-      scene.repo.createChange('c', 'c');
-      scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
-
-      expectBranches(scene.repo, 'a, b, c, main');
-
-      scene.repo.checkoutBranch('main');
-
-      scene.repo.createChange('d', 'd');
-      scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
-
-      scene.repo.createChange('e', 'e');
-      scene.repo.execCliCommand(`branch create "e" -m "e" -q`);
-
-      fakeGitSquashAndMerge(scene.repo, 'a', 'squash_a');
-      fakeGitSquashAndMerge(scene.repo, 'b', 'squash_b');
-      fakeGitSquashAndMerge(scene.repo, 'd', 'squash_d');
-
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
-
-      expectBranches(scene.repo, 'c, e, main');
-      scene.repo.checkoutBranch('main');
-      expectCommits(scene.repo, 'squash_d, squash_b, squash_a');
-      scene.repo.checkoutBranch('c');
-      expectCommits(scene.repo, 'c, squash_d, squash_b, squash_a');
-      scene.repo.checkoutBranch('e');
-      expectCommits(scene.repo, 'e, squash_d, squash_b, squash_a');
-    });
-
-    it('Deletes merged, dangling branches that trail trunk', async () => {
-      // We'll come back to this - for now we're just saving a place behind
-      // main.
-      scene.repo.createAndCheckoutBranch('dangling');
-
-      scene.repo.checkoutBranch('main');
-      scene.repo.createChangeAndCommit('2', '2');
-      scene.repo.createChangeAndCommit('3', '3');
-      scene.repo.createChangeAndCommit('4', '4');
-
-      // Now create the dangling branch that trails main.
-      scene.repo.checkoutBranch('dangling');
-      scene.repo.createChangeAndCommit('a', 'a');
-
-      scene.repo.checkoutBranch('main');
-
-      expectBranches(scene.repo, 'dangling, main');
-
-      fakeGitSquashAndMerge(scene.repo, 'dangling', 'squash_dangling');
-
-      // The idea here is that repo sync fixes dangling branch back onto main,
-      // which then gets deleted as the deletion logic makes a pass through
-      // all of trunk's children.
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
-      expectBranches(scene.repo, 'main');
     });
   });
 }

@@ -1,83 +1,56 @@
 import { TContext } from '../../lib/context';
+import { SCOPE } from '../../lib/engine/scope_spec';
 import { ExitFailedError } from '../../lib/errors';
-import { checkoutBranch } from '../../lib/git/checkout_branch';
-import { currentBranchPrecondition } from '../../lib/preconditions';
-import { assertUnreachable } from '../../lib/utils/assert_unreachable';
-import { getDefaultEditorOrPrompt } from '../../lib/utils/default_editor';
+import { q } from '../../lib/utils/escape_for_shell';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { performInTmpDir } from '../../lib/utils/perform_in_tmp_dir';
-import { getTrunk } from '../../lib/utils/trunk';
-import { MetaStackBuilder } from '../../wrapper-classes/meta_stack_builder';
-import { Stack } from '../../wrapper-classes/stack';
-import { validate } from '../validate';
-import { applyStackEditExec, applyStackEditPick } from './apply_stack_edit';
-import { createStackEditFile } from './create_stack_edit_file';
-import { parseEditFile } from './parse_stack_edit_file';
-import { TStackEdit } from './stack_edits';
+import { restackBranches } from '../restack';
+import { createStackEditFile, parseEditFile } from './stack_edit_file';
 
 export async function editDownstack(
-  context: TContext,
-  opts?: {
-    inputPath?: string;
-  }
+  inputPath: string | undefined,
+  context: TContext
 ): Promise<void> {
-  // We're about to do some complex re-arrangements - ensure state is consistant before beginning.
-  validate('DOWNSTACK', context);
+  // First, reorder the parent pointers of the branches
+  const branchNames = inputPath
+    ? parseEditFile(inputPath) // allow users to pass a pre-written file, mostly for unit tests.
+    : await promptForEdit(context);
+  reorderBranches(context.metaCache.trunk, branchNames, context);
 
-  const currentBranch = currentBranchPrecondition(context);
-  const stack = new MetaStackBuilder().downstackFromBranch(
-    currentBranch,
-    context
+  // Restack starting from the bottom of the new stack upwards
+  const branchesToRestack = context.metaCache.getRelativeStack(
+    branchNames[0],
+    SCOPE.UPSTACK
   );
-  const stackEdits = opts?.inputPath
-    ? parseEditFile({ filePath: opts.inputPath }, context) // allow users to pass a pre-written file, mostly for unit tests.
-    : await promptForEdit(stack, context);
-  applyStackEdits(getTrunk(context).name, stackEdits, context);
+
+  // We to check out the top of the new stack BEFORE we restack in case of conflicts.
+  context.metaCache.checkoutBranch(branchNames.reverse()[0]);
+  restackBranches(branchesToRestack, context);
 }
 
-export function applyStackEdits(
-  fromBranchName: string,
-  stackEdits: TStackEdit[],
+function reorderBranches(
+  parentBranchName: string,
+  branchNames: string[],
   context: TContext
 ): void {
-  checkoutBranch(fromBranchName, { quiet: true });
-  stackEdits.forEach((stackEdit, index) => {
-    switch (stackEdit.type) {
-      case 'pick':
-        applyStackEditPick(
-          {
-            branchName: stackEdit.branchName,
-            remainingEdits: stackEdits.slice(index),
-          },
-          context
-        );
-        break;
-      case 'exec':
-        applyStackEditExec(
-          {
-            command: stackEdit.command,
-            remainingEdits: stackEdits.slice(index),
-          },
-          context
-        );
-        break;
-      default:
-        assertUnreachable(stackEdit);
-        break;
-    }
-  });
+  if (branchNames.length === 0) {
+    return;
+  }
+  context.metaCache.setParent(branchNames[0], parentBranchName);
+  context.splog.debug(`Set parent of ${branchNames[0]} to ${parentBranchName}`);
+  reorderBranches(branchNames[0], branchNames.slice(1), context);
 }
 
-async function promptForEdit(
-  stack: Stack,
-  context: TContext
-): Promise<TStackEdit[]> {
-  const defaultEditor = await getDefaultEditorOrPrompt(context);
+async function promptForEdit(context: TContext): Promise<string[]> {
+  const branchNames = context.metaCache.getRelativeStack(
+    context.metaCache.currentBranchPrecondition,
+    SCOPE.DOWNSTACK
+  );
   return performInTmpDir((tmpDir) => {
-    const editFilePath = createStackEditFile({ stack, tmpDir }, context);
+    const editFilePath = createStackEditFile({ branchNames, tmpDir }, context);
     gpExecSync(
       {
-        command: `${defaultEditor} "${editFilePath}"`,
+        command: `${context.userConfig.getEditor()} ${q(editFilePath)}`,
         options: { stdio: 'inherit' },
       },
       (err) => {
@@ -87,6 +60,6 @@ async function promptForEdit(
         );
       }
     );
-    return parseEditFile({ filePath: editFilePath }, context);
+    return parseEditFile(editFilePath);
   });
 }

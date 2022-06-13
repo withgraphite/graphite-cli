@@ -8,28 +8,32 @@ for (const scene of allScenes) {
     configureTest(this, scene);
 
     it('Can create a commit', () => {
+      scene.repo.execCliCommand(`branch create 1 -m "1" -q`);
       scene.repo.createChange('2');
       scene.repo.execCliCommand(`commit create -m "2" -q`);
 
-      expect(scene.repo.currentBranchName()).to.equal('main');
+      expect(scene.repo.currentBranchName()).to.equal('1');
       expectCommits(scene.repo, '2, 1');
     });
 
     it('Can create a commit with a multi-word commit message', () => {
+      scene.repo.execCliCommand(`branch create 1 -m "1" -q`);
       scene.repo.createChange('2');
       scene.repo.execCliCommand(`commit create -m "a b c" -q`);
 
-      expect(scene.repo.currentBranchName()).to.equal('main');
+      expect(scene.repo.currentBranchName()).to.equal('1');
       expectCommits(scene.repo, 'a b c');
     });
 
     it('Fails to create a commit if there are no staged changes', () => {
+      scene.repo.execCliCommand(`branch create 1 -m "1" -q`);
+
       expect(() =>
         scene.repo.execCliCommand(`commit create -m "a" -q`)
       ).to.throw(Error);
     });
 
-    it('Automatically fixes upwards', () => {
+    it('Automatically restacks upwards', () => {
       scene.repo.createChange('2', '2');
       scene.repo.execCliCommand(`branch create a -m "2" -q`);
 

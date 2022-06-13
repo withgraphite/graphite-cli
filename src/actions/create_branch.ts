@@ -1,43 +1,32 @@
 import { TContext } from '../lib/context';
+import { SCOPE } from '../lib/engine/scope_spec';
 import { ExitFailedError } from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
-import { checkoutBranch } from '../lib/git/checkout_branch';
-import { commit } from '../lib/git/commit';
-import { deleteBranch } from '../lib/git/deleteBranch';
-import { detectStagedChanges } from '../lib/git/detect_staged_changes';
-import { currentBranchPrecondition } from '../lib/preconditions';
+import { detectStagedChanges } from '../lib/git/diff';
 import { newBranchName } from '../lib/utils/branch_name';
-import { Branch } from '../wrapper-classes/branch';
-import { MetaStackBuilder } from '../wrapper-classes/meta_stack_builder';
-import { currentBranchOntoAction } from './onto/current_branch_onto';
+import { restackBranches } from './restack';
 
 export async function createBranchAction(
   opts: {
     branchName?: string;
-    commitMessage?: string;
-    addAll?: boolean;
-    restack?: boolean;
+    message?: string;
+    all?: boolean;
+    insert?: boolean;
   },
   context: TContext
 ): Promise<void> {
-  const parentBranch = currentBranchPrecondition(context);
-
-  const branchName = newBranchName(
-    opts.branchName,
-    opts.commitMessage,
-    context
-  );
+  const branchName = newBranchName(opts.branchName, opts.message, context);
   if (!branchName) {
     throw new ExitFailedError(
       `Must specify either a branch name or commit message`
     );
   }
 
-  if (opts.addAll) {
+  if (opts.all) {
     addAll();
   }
 
-  checkoutBranch(branchName, { new: true });
+  context.metaCache.checkoutNewBranch(branchName);
 
   const isAddingEmptyCommit = !detectStagedChanges();
 
@@ -47,43 +36,47 @@ export async function createBranchAction(
    * and check out the new branch and these types of error point to
    * larger failure outside of our control.
    */
-  commit({
+  context.metaCache.commit({
     allowEmpty: isAddingEmptyCommit,
-    message: opts.commitMessage,
-    noVerify: context.noVerify,
-    rollbackOnError: () => {
-      // Commit failed, usually due to precommit hooks. Rollback the branch.
-      checkoutBranch(parentBranch.name, { quiet: true });
-      deleteBranch(branchName);
-    },
+    message: opts.message,
+    rollbackOnError: () => context.metaCache.deleteBranch(branchName),
   });
 
-  // If the branch previously existed and the stale metadata is still around,
-  // make sure that we wipe that stale metadata.
-  Branch.create(branchName, parentBranch.name, parentBranch.getCurrentRef());
+  // The reason we get the list of siblings here instead of having all
+  // the `--insert` logic in a separate function is so that we only
+  // show the tip if the user creates a branch with siblings.
 
-  if (isAddingEmptyCommit) {
-    context.splog.logInfo(
-      'Since no changes were staged, an empty commit was added to track Graphite stack dependencies. If you wish to get rid of the empty commit you can amend, or squash when merging.'
+  const siblings = context.metaCache
+    .getChildren(context.metaCache.getParentPrecondition(branchName))
+    .filter((childBranchName) => childBranchName !== branchName);
+
+  if (siblings.length === 0) {
+    return;
+  }
+
+  if (!opts.insert) {
+    context.splog.tip(
+      [
+        'To insert a created branch into the middle of your stack, use the `--insert` flag.',
+        "If you meant to insert this branch, you can rearrange your stack's dependencies with `gt upstack onto`",
+      ].join('\n')
     );
+    return;
   }
 
-  if (opts.restack) {
-    new MetaStackBuilder()
-      .upstackInclusiveFromBranchWithoutParents(parentBranch, context)
-      .source.children.map((node) => node.branch)
-      .filter((b) => b.name != branchName)
-      .forEach((b) => {
-        checkoutBranch(b.name, { quiet: true });
-        context.splog.logInfo(`Stacking (${b.name}) onto (${branchName})...`);
-        currentBranchOntoAction(
-          {
-            onto: branchName,
-            mergeConflictCallstack: [],
-          },
-          context
-        );
-      });
-    checkoutBranch(branchName, { quiet: true });
-  }
+  // Now we actually handle the `insert` case.
+
+  // Change the parent of each sibling to the new branch.
+  siblings.forEach((siblingBranchName) =>
+    context.metaCache.setParent(siblingBranchName, branchName)
+  );
+
+  // If we're restacking siblings onto this branch, we need to restack
+  // all of their recursive children as well. Get all the upstacks!
+  restackBranches(
+    siblings.flatMap((siblingBranchName) =>
+      context.metaCache.getRelativeStack(siblingBranchName, SCOPE.UPSTACK)
+    ),
+    context
+  );
 }

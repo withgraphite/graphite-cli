@@ -1,5 +1,6 @@
 import { submitAction } from '../../actions/submit/submit_action';
-import { profile } from '../../lib/telemetry/profile';
+import { SCOPE } from '../../lib/engine/scope_spec';
+import { graphite } from '../../lib/runner';
 import type { argsT } from '../shared-commands/submit';
 
 export { aliases, args, builder, command } from '../shared-commands/submit';
@@ -8,10 +9,20 @@ export const description =
 export const canonical = 'branch submit';
 
 export const handler = async (argv: argsT): Promise<void> => {
-  await profile(argv, canonical, async (context) => {
+  await graphite(argv, canonical, async (context) => {
+    context.splog.tip(
+      [
+        `You are submitting a pull request for a specific branch.`,
+        `In common cases, we recommend you use:`,
+        `▸ gt stack submit`,
+        `▸ gt downstack submit`,
+        `because these will ensure any downstack changes will be synced to existing PRs.`,
+        `This submit will fail if the branch's remote parent doesn't match its local base.`,
+      ].join('\n')
+    );
     await submitAction(
       {
-        scope: 'BRANCH',
+        scope: SCOPE.BRANCH,
         editPRFieldsInline: argv.edit,
         draftToggle: argv.draft,
         dryRun: argv['dry-run'],
@@ -20,15 +31,6 @@ export const handler = async (argv: argsT): Promise<void> => {
         confirm: argv.confirm,
       },
       context
-    );
-    context.splog.logTip(
-      [
-        `You submitted a pull request for a specific branch.`,
-        `In common cases, we recommend you use:`,
-        `* 'gt stack submit'`,
-        `* 'gt downstack submit'`,
-        `because these will ensure any downstack changes will be synced to existing PRs.`,
-      ].join('\n')
     );
   });
 };

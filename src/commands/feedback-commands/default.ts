@@ -2,11 +2,11 @@ import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { API_SERVER } from '../../lib/api';
-import { captureState } from '../../lib/debugContext';
+import { API_SERVER } from '../../lib/api/server';
+import { captureState } from '../../lib/debug_context';
 import { ExitFailedError } from '../../lib/errors';
+import { graphite } from '../../lib/runner';
 import { getUserEmail } from '../../lib/telemetry/context';
-import { profile } from '../../lib/telemetry/profile';
 
 const args = {
   message: {
@@ -32,7 +32,7 @@ export const description =
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     const user = getUserEmail();
     if (!argv.message) {
       return;
@@ -49,7 +49,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       }
     );
     if (response._response.status == 200) {
-      console.log(
+      context.splog.info(
         chalk.green(
           `Feedback received loud and clear (in a team Slack channel) :)`
         )

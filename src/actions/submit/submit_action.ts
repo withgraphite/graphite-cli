@@ -1,38 +1,21 @@
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
-import * as t from '@withgraphite/retype';
 import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
-import { KilledError } from '../../lib/errors';
+import { TScopeSpec } from '../../lib/engine/scope_spec';
+import { ExitFailedError, KilledError } from '../../lib/errors';
 import { cliAuthPrecondition } from '../../lib/preconditions';
-import { getSurvey, showSurvey } from '../../lib/telemetry/survey/survey';
-import { Unpacked } from '../../lib/utils/ts_helpers';
-import { Branch } from '../../wrapper-classes/branch';
-import { TScope } from '../scope';
+import { getSurvey, showSurvey } from '../survey';
 import { getPRInfoForBranches } from './prepare_branches';
-import { push } from './push_branch';
 import { submitPullRequest } from './submit_prs';
-import { getValidBranchesToSubmit } from './validate_branches';
-
-export type TSubmitScope = TScope | 'BRANCH';
-
-export type TSubmittedPRRequest = Unpacked<
-  t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.params>['prs']
->;
-export type TPRSubmissionInfoWithBranch = TSubmittedPRRequest & {
-  branch: Branch;
-};
-
-export type TPRSubmissionInfoWithBranches = TPRSubmissionInfoWithBranch[];
+import { validateBranchesToSubmit } from './validate_branches';
 
 export async function submitAction(
   args: {
-    scope: TSubmitScope;
+    scope: TScopeSpec;
     editPRFieldsInline: boolean;
     draftToggle: boolean | undefined;
     dryRun: boolean;
     updateOnly: boolean;
-    branchesToSubmit?: Branch[];
     reviewers: boolean;
     confirm: boolean;
   },
@@ -41,12 +24,12 @@ export async function submitAction(
   // Check CLI pre-condition to warn early
   const cliAuthToken = cliAuthPrecondition(context);
   if (args.dryRun) {
-    context.splog.logInfo(
+    context.splog.info(
       chalk.yellow(
         `Running submit in 'dry-run' mode. No branches will be pushed and no PRs will be opened or updated.`
       )
     );
-    context.splog.logNewline();
+    context.splog.newline();
     args.editPRFieldsInline = false;
   }
 
@@ -54,28 +37,37 @@ export async function submitAction(
     args.editPRFieldsInline = false;
     args.reviewers = false;
 
-    context.splog.logInfo(
+    context.splog.info(
       `Running in non-interactive mode. Inline prompts to fill PR fields will be skipped${
         args.draftToggle === undefined
           ? ' and new PRs will be created in draft mode'
           : ''
       }.`
     );
-    context.splog.logNewline();
+    context.splog.newline();
   }
 
-  // args.branchesToSubmit is for the sync flow. Skips validation.
-  const branchesToSubmit =
-    args.branchesToSubmit ??
-    (await getValidBranchesToSubmit(args.scope, context));
+  const branchNames = context.metaCache.getRelativeStack(
+    context.metaCache.currentBranchPrecondition,
+    args.scope
+  );
 
-  if (!branchesToSubmit) {
-    return;
-  }
+  context.splog.info(
+    chalk.blueBright(
+      `🥞 Validating that this Graphite stack is ready to submit...`
+    )
+  );
+  context.splog.newline();
+  await validateBranchesToSubmit(branchNames, context);
 
-  const submissionInfoWithBranches = await getPRInfoForBranches(
+  context.splog.info(
+    chalk.blueBright(
+      '✏️  Preparing to submit PRs for the following branches...'
+    )
+  );
+  const submissionInfos = await getPRInfoForBranches(
     {
-      branches: branchesToSubmit,
+      branchNames: branchNames,
       editPRFieldsInline: args.editPRFieldsInline,
       draftToggle: args.draftToggle,
       updateOnly: args.updateOnly,
@@ -85,20 +77,45 @@ export async function submitAction(
     context
   );
 
-  if (await shouldAbort(args, context)) {
+  if (
+    await shouldAbort(
+      { ...args, hasAnyPrs: submissionInfos.length > 0 },
+      context
+    )
+  ) {
     return;
   }
 
-  context.splog.logInfo(
+  context.splog.info(
     chalk.blueBright('📂 Pushing to remote and creating/updating PRs...')
   );
 
-  for (const submissionInfoWithBranch of submissionInfoWithBranches) {
-    push(submissionInfoWithBranch.branch, context);
+  for (const submissionInfo of submissionInfos) {
+    try {
+      context.metaCache.pushBranch(submissionInfo.head);
+    } catch (err) {
+      context.splog.error(
+        `Failed to push changes for ${submissionInfo.head} to remote.`
+      );
+
+      context.splog.tip(
+        [
+          `This push may have failed due to external changes to the remote branch.`,
+          'If you are collaborating on this stack, try `gt downstack sync`  to pull in changes.',
+        ].join('\n')
+      );
+
+      throw new ExitFailedError(err.stdout.toString());
+    }
+
     await submitPullRequest(
-      { submissionInfoWithBranch, cliAuthToken },
+      { submissionInfo: [submissionInfo], cliAuthToken },
       context
     );
+  }
+
+  if (!context.interactive) {
+    return;
   }
 
   const survey = await getSurvey(context);
@@ -108,11 +125,16 @@ export async function submitAction(
 }
 
 async function shouldAbort(
-  args: { dryRun: boolean; confirm: boolean },
+  args: { dryRun: boolean; confirm: boolean; hasAnyPrs: boolean },
   context: TContext
 ): Promise<boolean> {
   if (args.dryRun) {
-    context.splog.logInfo(chalk.blueBright('✅ Dry run complete.'));
+    context.splog.info(chalk.blueBright('✅ Dry run complete.'));
+    return true;
+  }
+
+  if (!args.hasAnyPrs) {
+    context.splog.info(chalk.blueBright('🆗 All PRs up to date.'));
     return true;
   }
 
@@ -135,8 +157,8 @@ async function shouldAbort(
       )
     ).value
   ) {
-    context.splog.logInfo(chalk.blueBright('🛑 Aborted submit.'));
-    return true;
+    context.splog.info(chalk.blueBright('🛑 Aborted submit.'));
+    throw new KilledError();
   }
 
   return false;

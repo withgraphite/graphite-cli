@@ -1,11 +1,25 @@
 import { execSync, ExecSyncOptions, SpawnSyncReturns } from 'child_process';
 import { tracer } from '../telemetry/tracer';
+import { cuteString } from './cute_string';
+import { TSplog } from './splog';
 
-export type GPExecSyncOptions = {
+type GPExecSyncOptions = {
   // Output is always returned (like normal execSync).  This option lets us
   // print it.  A lambda allows us to mutate the displayed output.
-  printStdout?: boolean | ((out: string) => string);
+  printStdout?: {
+    splog: TSplog;
+    transform?: (out: string) => string;
+  };
 } & Omit<ExecSyncOptions, 'encoding'>;
+
+export function gpExecSyncAndSplitLines(command: {
+  command: string;
+  options?: ExecSyncOptions & GPExecSyncOptions;
+}): string[] {
+  return gpExecSync(command)
+    .split('\n')
+    .filter((l) => l.length > 0);
+}
 
 export function gpExecSync(
   command: {
@@ -21,7 +35,7 @@ export function gpExecSync(
         {
           name: 'execSync',
           resource: 'gpExecSync',
-          meta: { command: command.command },
+          meta: { command: cuteString(command) },
         },
         () => {
           return gpExecSyncImpl(command);
@@ -45,10 +59,12 @@ function gpExecSyncImpl(command: {
       ...command.options,
       encoding: 'utf-8',
     }) ?? ''; // this can return null, which is dumb
-  if (command.options?.printStdout === true) {
-    console.log(output);
-  } else if (command.options?.printStdout) {
-    console.log(command.options?.printStdout(output));
+  if (command.options?.printStdout) {
+    command.options.printStdout.splog.info(
+      command.options.printStdout.transform
+        ? command.options.printStdout.transform(output)
+        : output
+    );
   }
   return output.trim();
 }

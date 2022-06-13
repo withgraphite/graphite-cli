@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import yargs from 'yargs';
-import { captureState, recreateState } from '../../lib/debugContext';
-import { profile } from '../../lib/telemetry/profile';
+import { captureState, recreateState } from '../../lib/debug_context';
+import { graphite } from '../../lib/runner';
 
 const args = {
   recreate: {
@@ -29,18 +29,18 @@ export const description =
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> => {
-  return profile(argv, canonical, async (context) => {
+  return graphite(argv, canonical, async (context) => {
     if (argv['recreate-from-file']) {
       const dir = recreateState(
         fs.readFileSync(argv['recreate-from-file']).toString(),
-        context
+        context.splog
       );
-      context.splog.logInfo(`${chalk.green(dir)}`);
+      context.splog.info(`${chalk.green(dir)}`);
     } else if (argv.recreate) {
-      const dir = recreateState(argv.recreate, context);
-      context.splog.logInfo(`${chalk.green(dir)}`);
+      const dir = recreateState(argv.recreate, context.splog);
+      context.splog.info(`${chalk.green(dir)}`);
     } else {
-      context.splog.logInfo(captureState(context));
+      context.splog.info(captureState(context));
     }
   });
 };

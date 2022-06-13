@@ -1,10 +1,9 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { MetadataRef, TMeta } from '../../wrapper-classes/metadata_ref';
 import { USER_CONFIG_OVERRIDE_ENV } from '../context';
 import { ExitFailedError } from '../errors';
 import { rebaseInProgress } from '../git/rebase_in_progress';
-import { gpExecSync } from './exec_sync';
+import { gpExecSync, gpExecSyncAndSplitLines } from './exec_sync';
 
 const TEXT_FILE_NAME = 'test.txt';
 export class GitRepo {
@@ -123,7 +122,10 @@ export class GitRepo {
   }
 
   resolveMergeConflicts(): void {
-    gpExecSync({ command: `git -C "${this.dir}" checkout --theirs .` });
+    gpExecSync({
+      command: `git -C "${this.dir}" checkout --theirs .`,
+      options: { stdio: process.env.DEBUG ? 'inherit' : 'ignore' },
+    });
   }
 
   markMergeConflictsAsResolved(): void {
@@ -131,21 +133,6 @@ export class GitRepo {
       command: `git -C "${this.dir}" add .`,
       options: { stdio: process.env.DEBUG ? 'inherit' : 'ignore' },
     });
-  }
-
-  finishInteractiveRebase(opts?: { resolveMergeConflicts?: boolean }): void {
-    while (this.rebaseInProgress()) {
-      if (opts?.resolveMergeConflicts) {
-        this.resolveMergeConflicts();
-      }
-      this.markMergeConflictsAsResolved();
-      gpExecSync({
-        command: `GIT_EDITOR="touch $1" git -C ${this.dir} rebase --continue`,
-        options: {
-          stdio: process.env.DEBUG ? 'inherit' : 'ignore',
-        },
-      });
-    }
   }
 
   currentBranchName(): string {
@@ -161,11 +148,9 @@ export class GitRepo {
   }
 
   listCurrentBranchCommitMessages(): string[] {
-    return gpExecSync({
+    return gpExecSyncAndSplitLines({
       command: `git -C "${this.dir}" log --oneline  --format=%B`,
-    })
-      .split('\n')
-      .filter((line) => line.length > 0);
+    });
   }
 
   mergeBranch(args: { branch: string; mergeIn: string }): void {
@@ -175,14 +160,5 @@ export class GitRepo {
         stdio: process.env.DEBUG ? 'inherit' : 'ignore',
       },
     });
-  }
-
-  upsertMeta(name: string, partialMeta: Partial<TMeta>): void {
-    const meta = new MetadataRef(name).read({ dir: this.dir }) ?? {};
-    MetadataRef.updateOrCreate(
-      name,
-      { ...meta, ...partialMeta },
-      { dir: this.dir }
-    );
   }
 }

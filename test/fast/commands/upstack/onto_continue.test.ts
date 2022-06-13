@@ -4,7 +4,6 @@ import { configureTest } from '../../../lib/utils/configure_test';
 import { expectCommits } from '../../../lib/utils/expect_commits';
 
 for (const scene of allScenes) {
-  // eslint-disable-next-line max-lines-per-function
   describe(`(${scene}): continue upstack onto`, function () {
     configureTest(this, scene);
 
@@ -17,13 +16,12 @@ for (const scene of allScenes) {
       scene.repo.createChange('b');
       scene.repo.execCliCommand("branch create 'b' -m 'b' -q");
 
-      scene.repo.execCliCommand('upstack onto a');
-
+      expect(() => scene.repo.execCliCommand('upstack onto a')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      const output =
-        scene.repo.execCliCommandAndGetOutput('continue --no-edit');
+      const output = scene.repo.execCliCommandAndGetOutput('continue');
 
       // Continue should finish the work that stack fix started, not only
       // completing the rebase but also re-checking out the original
@@ -48,17 +46,19 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand("branch create 'c' -m 'c' -q");
 
       scene.repo.checkoutBranch('b');
-      scene.repo.execCliCommand('upstack onto a');
 
+      expect(() => scene.repo.execCliCommand('upstack onto a')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
 
+      expect(() => scene.repo.execCliCommand('continue')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
+      scene.repo.execCliCommand('continue');
 
       // Continue should finish the work that stack fix started, not only
       // completing the rebase but also re-checking out the original

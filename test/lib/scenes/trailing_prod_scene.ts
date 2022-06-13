@@ -1,4 +1,6 @@
 import { execSync } from 'child_process';
+import { writeMetadataRef } from '../../../src/lib/engine/metadata_ref';
+import { getShaOrThrow } from '../../../src/lib/git/get_sha';
 import { AbstractScene } from './abstract_scene';
 
 export class TrailingProdScene extends AbstractScene {
@@ -20,15 +22,20 @@ export class TrailingProdScene extends AbstractScene {
     this.repo.createChangeAndCommit('x1', 'x1');
     this.repo.createAndCheckoutBranch('x2');
     this.repo.createChangeAndCommit('x2', 'x2');
-    this.repo.execCliCommand(`branch parent --set x1`);
+    writeMetadataRef(
+      'x2',
+      {
+        parentBranchName: 'x1',
+        parentBranchRevision: getShaOrThrow('x1'),
+      },
+      this.repo.dir
+    );
     this.repo.deleteBranch('x1');
 
     execSync(`git -C "${this.dir}" merge prod`);
 
     this.repo.checkoutBranch('main');
     this.repo.createChangeAndCommit('1', '1');
-    this.repo.execCliCommand(
-      'repo init --trunk main --ignore-branches prod x2'
-    );
+    this.repo.execCliCommand('repo init --trunk main --no-interactive');
   }
 }

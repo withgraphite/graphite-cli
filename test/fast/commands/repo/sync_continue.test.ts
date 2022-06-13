@@ -1,14 +1,13 @@
 import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { expect } from 'chai';
 import nock from 'nock';
-import { API_SERVER } from '../../../../src/lib/api';
+import { API_SERVER } from '../../../../src/lib/api/server';
 import { allScenes } from '../../../lib/scenes/all_scenes';
 import { configureTest } from '../../../lib/utils/configure_test';
 import { expectBranches } from '../../../lib/utils/expect_branches';
 import { fakeGitSquashAndMerge } from '../../../lib/utils/fake_squash_and_merge';
 
 for (const scene of allScenes) {
-  // eslint-disable-next-line max-lines-per-function
   describe(`(${scene}): repo sync continue`, function () {
     configureTest(this, scene);
 
@@ -60,13 +59,15 @@ for (const scene of allScenes) {
       fakeGitSquashAndMerge(scene.repo, 'b', 'squash');
       fakeGitSquashAndMerge(scene.repo, 'd', 'squash');
       fakeGitSquashAndMerge(scene.repo, 'e', 'squash');
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
 
+      expect(() =>
+        scene.repo.execCliCommand(`repo sync -qf --no-pull --restack`)
+      ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
+      scene.repo.execCliCommand('continue');
 
       expectBranches(scene.repo, 'c, main');
     });
@@ -100,17 +101,21 @@ for (const scene of allScenes) {
       fakeGitSquashAndMerge(scene.repo, 'b', 'squash');
       fakeGitSquashAndMerge(scene.repo, 'e', 'squash');
       fakeGitSquashAndMerge(scene.repo, 'f', 'squash');
-      scene.repo.execCliCommand(`repo sync -qf --no-pull --no-resubmit`);
 
+      expect(() =>
+        scene.repo.execCliCommand(`repo sync -qf --no-pull --restack`)
+      ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
 
+      expect(() => scene.repo.execCliCommand('continue')).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
+
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue --no-edit');
+      scene.repo.execCliCommand('continue');
 
       expectBranches(scene.repo, 'c, d, main');
     });
