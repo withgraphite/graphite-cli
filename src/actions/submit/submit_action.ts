@@ -87,7 +87,7 @@ export async function submitAction(
   }
 
   context.splog.info(
-    chalk.blueBright('📂 Pushing to remote and creating/updating PRs...')
+    chalk.blueBright('📨 Pushing to remote and creating/updating PRs...')
   );
 
   for (const submissionInfo of submissionInfos) {
