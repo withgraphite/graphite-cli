@@ -147,8 +147,10 @@ async function handleSameParent(
             )}?`,
             choices: [
               {
-                title: 'Rebase your changes on top of the remote version',
+                title:
+                  'Rebase your changes on top of the remote version (not yet implemented)',
                 value: 'REBASE',
+                ['disabled' as 'disable']: true,
               },
               {
                 title: 'Overwrite the local copy with the remote version',

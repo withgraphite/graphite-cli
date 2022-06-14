@@ -268,6 +268,9 @@ export function composeMetaCache({
       if (oldParentBranchName && oldParentBranchName in cache.branches) {
         removeChild(oldParentBranchName, branchName);
       }
+    }
+
+    if (!cache.branches[newParentBranchName].children.includes(branchName)) {
       cache.branches[newParentBranchName].children.push(branchName);
     }
 
