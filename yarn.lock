@@ -921,7 +921,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^5.27.1
     "@typescript-eslint/parser": ^5.27.1
     "@withgraphite/graphite-cli-routes": ^0.18.0
-    "@withgraphite/retype": ^0.3.3
+    "@withgraphite/retype": ^0.3.4
     "@withgraphite/retyped-routes": ^0.3.0
     chai: ^4.3.6
     chai-as-promised: ^7.1.1
@@ -956,10 +956,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@withgraphite/retype@npm:^0.3.3":
-  version: 0.3.3
-  resolution: "@withgraphite/retype@npm:0.3.3"
-  checksum: 527f5d2dfe2a9b2cb5c4e521a945475f6baec4b85422dc86198113e739297906d0c76be7893dbe75e3a9100e06d96c4f74f34cd2e0ab0fe0f4180f26d900be98
+"@withgraphite/retype@npm:^0.3.4":
+  version: 0.3.4
+  resolution: "@withgraphite/retype@npm:0.3.4"
+  checksum: 42c5e0f394b262003d5f527b99ef064e441dfe8c3869cbdf1c1d1dc63e1d2195e109943cfed5418a25d2ccdc644f9957998db077f919131a2e2a58a0e8a24f33
   languageName: node
   linkType: hard
 
