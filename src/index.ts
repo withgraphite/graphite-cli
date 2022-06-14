@@ -1,6 +1,4 @@
-#!/usr/bin/env node --no-warnings
-// --no-warnings gets rid of warnings about "experimental fetch API" for our users
-// we will still see any warnings when we run our tests because we don't execute directly
+#!/usr/bin/env node
 
 import chalk from 'chalk';
 import semver from 'semver';
@@ -10,6 +8,11 @@ import { globalArgumentsOptions } from './lib/global_arguments';
 import { getYargsInput } from './lib/pre-yargs/preprocess_command';
 import { postTelemetryInBackground } from './lib/telemetry/post_traces';
 
+// this line gets rid of warnings about "experimental fetch API" for our users
+// while still showing us warnings when we test with DEBUG=1
+if (!process.env.DEBUG) {
+  process.removeAllListeners('warning');
+}
 const requiredVersion = '>=v14';
 if (!semver.satisfies(process.version, requiredVersion)) {
   console.error(
