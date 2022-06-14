@@ -17,12 +17,19 @@ export function restack(args: {
   return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
 }
 
-export function restackContinue(): TRebaseResult {
+export function rebaseContinue(): TRebaseResult {
   gpExecSync({
     command: `GIT_EDITOR=true git rebase --continue`,
     options: { stdio: 'ignore' },
   });
   return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
+}
+
+export function rebaseAbort(): void {
+  gpExecSync({
+    command: `git rebase --abort`,
+    options: { stdio: 'ignore' },
+  });
 }
 
 export function rebaseInteractive(args: {

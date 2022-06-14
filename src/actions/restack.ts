@@ -1,6 +1,10 @@
 import chalk from 'chalk';
 import { TContext } from '../lib/context';
-import { PreconditionsFailedError, RebaseConflictError } from '../lib/errors';
+import {
+  ExitFailedError,
+  PreconditionsFailedError,
+  RebaseConflictError,
+} from '../lib/errors';
 import { addAll } from '../lib/git/add_all';
 import { rebaseInProgress } from '../lib/git/rebase_in_progress';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
@@ -26,7 +30,7 @@ export function restackBranches(
 
     const result = context.metaCache.restackBranch(branchName);
     context.splog.debug(`${result}: ${branchName}`);
-    switch (result) {
+    switch (result.result) {
       case 'REBASE_DONE':
         context.splog.info(
           `Restacked ${chalk.green(branchName)} on ${chalk.cyan(
@@ -36,7 +40,13 @@ export function restackBranches(
         continue;
 
       case 'REBASE_CONFLICT':
-        persistContinuation({ branchesToRestack: branchNames }, context);
+        persistContinuation(
+          {
+            branchesToRestack: branchNames,
+            rebasedBranchBase: result.rebasedBranchBase,
+          },
+          context
+        );
         printConflictStatus(
           `Hit conflict restacking ${chalk.yellow(branchName)} on ${chalk.cyan(
             context.metaCache.getParentPrecondition(branchName)
@@ -74,10 +84,18 @@ export function continueRestack(
     addAll();
   }
   const branchesToRestack = context.continueConfig.data?.branchesToRestack;
+  const rebasedBranchBase = context.continueConfig.data.rebasedBranchBase;
+  if (!rebasedBranchBase) {
+    clearContinuation(context);
+    throw new ExitFailedError('Invalid continue state, cancelling.');
+  }
 
-  const cont = context.metaCache.continueRebase();
+  const cont = context.metaCache.continueRebase(rebasedBranchBase);
   if (cont.result === 'REBASE_CONFLICT') {
-    persistContinuation({ branchesToRestack: branchesToRestack }, context);
+    persistContinuation(
+      { branchesToRestack: branchesToRestack, rebasedBranchBase },
+      context
+    );
     printConflictStatus(`Rebase conflict is not yet resolved.`, context);
     throw new RebaseConflictError();
   }

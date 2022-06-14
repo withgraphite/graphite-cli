@@ -17,7 +17,12 @@ import { getMergeBase } from '../git/merge_base';
 import { pruneRemote } from '../git/prune_remote';
 import { pullBranch } from '../git/pull_branch';
 import { pushBranch } from '../git/push_branch';
-import { rebaseInteractive, restack, restackContinue } from '../git/rebase';
+import {
+  rebaseAbort,
+  rebaseContinue,
+  rebaseInteractive,
+  restack,
+} from '../git/rebase';
 import { setRemoteTracking } from '../git/set_remote_tracking';
 import { switchBranch } from '../git/switch_branch';
 import { forceCreateBranch } from '../git/write_branch';
@@ -82,16 +87,26 @@ export type TMetaCache = {
   deleteBranch: (branchName: string) => void;
   commit: (opts: TCommitOpts) => void;
 
-  restackBranch: (
-    branchName: string
-  ) => 'REBASE_CONFLICT' | 'REBASE_DONE' | 'REBASE_UNNEEDED';
-  rebaseInteractive: (branchName: string) => 'REBASE_CONFLICT' | 'REBASE_DONE';
-  continueRebase: () =>
+  restackBranch: (branchName: string) =>
+    | {
+        result: 'REBASE_CONFLICT';
+        rebasedBranchBase: string;
+      }
+    | { result: 'REBASE_DONE' | 'REBASE_UNNEEDED' };
+
+  rebaseInteractive: (branchName: string) =>
+    | {
+        result: 'REBASE_CONFLICT';
+        rebasedBranchBase: string;
+      }
+    | { result: 'REBASE_DONE' };
+  continueRebase: (parentBranchRevision: string) =>
     | {
         result: 'REBASE_DONE';
         branchName: string;
       }
     | { result: 'REBASE_CONFLICT' };
+  abortRebase: () => void;
 
   isMergedIntoTrunk: (branchName: string) => boolean;
   isBranchFixed: (branchName: string) => boolean;
@@ -316,15 +331,17 @@ export function composeMetaCache({
     });
   };
 
-  const handleRebase = (branchName: string) => {
+  const handleSuccessfulRebase = (
+    branchName: string,
+    parentBranchRevision: string
+  ) => {
     const cachedMeta = cache.branches[branchName];
     assertCachedMetaIsValidAndNotTrunk(cachedMeta);
 
     updateMeta(branchName, {
       ...cachedMeta,
       branchRevision: getShaOrThrow(branchName),
-      parentBranchRevision:
-        cache.branches[cachedMeta.parentBranchName].branchRevision,
+      parentBranchRevision,
     });
 
     if (cache.currentBranch && cache.currentBranch in cache.branches) {
@@ -531,9 +548,12 @@ export function composeMetaCache({
       const cachedMeta = cache.branches[branchName];
       assertCachedMetaIsValidOrTrunk(cachedMeta);
       if (isBranchFixed(branchName)) {
-        return 'REBASE_UNNEEDED';
+        return { result: 'REBASE_UNNEEDED' };
       }
       assertCachedMetaIsNotTrunk(cachedMeta);
+      assertBranch(cachedMeta.parentBranchName);
+      const newBase =
+        cache.branches[cachedMeta.parentBranchName].branchRevision;
 
       if (
         restack({
@@ -542,11 +562,13 @@ export function composeMetaCache({
           parentBranchRevision: cachedMeta.parentBranchRevision,
         }) === 'REBASE_CONFLICT'
       ) {
-        return 'REBASE_CONFLICT';
+        return {
+          result: 'REBASE_CONFLICT',
+          rebasedBranchBase: newBase,
+        };
       }
-
-      handleRebase(branchName);
-      return 'REBASE_DONE';
+      handleSuccessfulRebase(branchName, newBase);
+      return { result: 'REBASE_DONE' };
     },
     rebaseInteractive: (branchName: string) => {
       assertBranch(branchName);
@@ -559,14 +581,17 @@ export function composeMetaCache({
           parentBranchRevision: cachedMeta.parentBranchRevision,
         }) === 'REBASE_CONFLICT'
       ) {
-        return 'REBASE_CONFLICT';
+        return {
+          result: 'REBASE_CONFLICT',
+          rebasedBranchBase: cachedMeta.parentBranchRevision,
+        };
       }
 
-      handleRebase(branchName);
-      return 'REBASE_DONE';
+      handleSuccessfulRebase(branchName, cachedMeta.parentBranchRevision);
+      return { result: 'REBASE_DONE' };
     },
-    continueRebase: () => {
-      const result = restackContinue();
+    continueRebase: (parentBranchRevision: string) => {
+      const result = rebaseContinue();
       if (result === 'REBASE_CONFLICT') {
         return { result };
       }
@@ -574,8 +599,11 @@ export function composeMetaCache({
       assertBranch(branchName);
       const cachedMeta = cache.branches[branchName];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
-      handleRebase(branchName);
+      handleSuccessfulRebase(branchName, parentBranchRevision);
       return { result, branchName };
+    },
+    abortRebase: () => {
+      rebaseAbort();
     },
     isMergedIntoTrunk: (branchName: string) => {
       assertBranch(branchName);
