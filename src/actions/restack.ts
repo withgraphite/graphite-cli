@@ -1,14 +1,8 @@
 import chalk from 'chalk';
 import { TContext } from '../lib/context';
-import {
-  ExitFailedError,
-  PreconditionsFailedError,
-  RebaseConflictError,
-} from '../lib/errors';
-import { addAll } from '../lib/git/add_all';
-import { rebaseInProgress } from '../lib/git/rebase_in_progress';
+import { RebaseConflictError } from '../lib/errors';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
-import { clearContinuation, persistContinuation } from './persist_continuation';
+import { persistContinuation } from './persist_continuation';
 import { printConflictStatus } from './print_conflict_status';
 
 export function restackBranches(
@@ -69,43 +63,4 @@ export function restackBranches(
         assertUnreachable(result);
     }
   }
-}
-
-export function continueRestack(
-  opts: { addAll: boolean },
-  context: TContext
-): void {
-  if (!rebaseInProgress()) {
-    clearContinuation(context);
-    throw new PreconditionsFailedError(`No Graphite command to continue.`);
-  }
-
-  if (opts.addAll) {
-    addAll();
-  }
-  const branchesToRestack = context.continueConfig.data?.branchesToRestack;
-  const rebasedBranchBase = context.continueConfig.data.rebasedBranchBase;
-  if (!rebasedBranchBase) {
-    clearContinuation(context);
-    throw new ExitFailedError('Invalid continue state, cancelling.');
-  }
-
-  const cont = context.metaCache.continueRebase(rebasedBranchBase);
-  if (cont.result === 'REBASE_CONFLICT') {
-    persistContinuation(
-      { branchesToRestack: branchesToRestack, rebasedBranchBase },
-      context
-    );
-    printConflictStatus(`Rebase conflict is not yet resolved.`, context);
-    throw new RebaseConflictError();
-  }
-
-  context.splog.info(
-    `Resolved rebase conflict for ${chalk.green(cont.branchName)}.`
-  );
-
-  if (branchesToRestack) {
-    restackBranches(branchesToRestack, context);
-  }
-  clearContinuation(context);
 }
