@@ -140,7 +140,7 @@ export async function validateNoEmptyBranches(
       },
     }
   );
-  if (response.empty_branches_options.abort) {
+  if (response.empty_branches_options === 'abort') {
     throw new KilledError();
   }
   context.splog.newline();
