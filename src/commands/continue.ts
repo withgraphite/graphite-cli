@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { continueRestack } from '../actions/restack';
+import { continueAction } from '../actions/continue';
 import { graphite } from '../lib/runner';
 
 const args = {
@@ -21,6 +21,8 @@ export const description =
   'Continues the most recent Graphite command halted by a merge conflict.';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
-  graphite(argv, canonical, async (context) =>
-    continueRestack({ addAll: argv.all }, context)
+  graphite(
+    argv,
+    canonical,
+    async (context) => await continueAction({ addAll: argv.all }, context)
   );

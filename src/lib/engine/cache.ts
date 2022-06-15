@@ -18,10 +18,10 @@ import { pruneRemote } from '../git/prune_remote';
 import { pullBranch } from '../git/pull_branch';
 import { pushBranch } from '../git/push_branch';
 import {
+  rebase,
   rebaseAbort,
   rebaseContinue,
   rebaseInteractive,
-  restack,
 } from '../git/rebase';
 import { setRemoteTracking } from '../git/set_remote_tracking';
 import { switchBranch } from '../git/switch_branch';
@@ -122,6 +122,15 @@ export type TMetaCache = {
     branchName: string,
     parentBranchName: string
   ) => void;
+  rebaseBranchOntoFetched: (
+    branchName: string,
+    parentBranchName: string
+  ) =>
+    | {
+        result: 'REBASE_CONFLICT';
+        rebasedBranchBase: string;
+      }
+    | { result: 'REBASE_DONE' };
 };
 
 // eslint-disable-next-line max-lines-per-function
@@ -556,10 +565,10 @@ export function composeMetaCache({
         cache.branches[cachedMeta.parentBranchName].branchRevision;
 
       if (
-        restack({
+        rebase({
           branchName,
-          parentBranchName: cachedMeta.parentBranchName,
-          parentBranchRevision: cachedMeta.parentBranchRevision,
+          onto: cachedMeta.parentBranchName,
+          from: cachedMeta.parentBranchRevision,
         }) === 'REBASE_CONFLICT'
       ) {
         return {
@@ -681,6 +690,7 @@ export function composeMetaCache({
       branchName: string,
       parentBranchName: string
     ) => {
+      assertBranch(parentBranchName);
       const { head, base } = { head: readFetchHead(), base: readFetchBase() };
       forceCreateBranch(branchName, head);
       setRemoteTracking({ remote, branchName, sha: head });
@@ -693,6 +703,34 @@ export function composeMetaCache({
         children: [],
       });
       cache.currentBranch = branchName;
+    },
+    rebaseBranchOntoFetched: (branchName: string, parentBranchName: string) => {
+      assertBranch(branchName);
+      assertBranch(parentBranchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+
+      const { head, base } = { head: readFetchHead(), base: readFetchBase() };
+      setRemoteTracking({ remote, branchName, sha: head });
+
+      // setting the current branch to this branch is correct in either case
+      // failure case, we want it so that currentBranchOverride will be set
+      // success case, it ends up as HEAD after the rebase.
+      cache.currentBranch = branchName;
+      if (
+        rebase({
+          onto: head,
+          from: cachedMeta.parentBranchRevision,
+          branchName,
+        }) === 'REBASE_CONFLICT'
+      ) {
+        return {
+          result: 'REBASE_CONFLICT',
+          rebasedBranchBase: base,
+        };
+      }
+      handleSuccessfulRebase(branchName, base);
+      return { result: 'REBASE_DONE' };
     },
   };
 }

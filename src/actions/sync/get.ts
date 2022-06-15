@@ -2,12 +2,18 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { getDownstackDependencies } from '../../lib/api/get_downstack_dependencies';
 import { TContext } from '../../lib/context';
-import { ExitFailedError, KilledError } from '../../lib/errors';
+import {
+  ExitFailedError,
+  KilledError,
+  RebaseConflictError,
+} from '../../lib/errors';
 import {
   cliAuthPrecondition,
   uncommittedTrackedChangesPrecondition,
 } from '../../lib/preconditions';
 import { assertUnreachable } from '../../lib/utils/assert_unreachable';
+import { persistContinuation } from '../persist_continuation';
+import { printConflictStatus } from '../print_conflict_status';
 import { syncPrInfo } from '../sync_pr_info';
 
 export async function getAction(
@@ -53,13 +59,13 @@ export async function getAction(
   await syncPrInfo(context.metaCache.allBranchNames, context);
 }
 
-async function getBranchesFromRemote(
+export async function getBranchesFromRemote(
   downstack: string[],
   base: string,
   context: TContext
 ): Promise<void> {
   let parentBranchName = base;
-  for (const branchName of downstack) {
+  for (const [index, branchName] of downstack.entries()) {
     context.metaCache.fetchBranch(branchName, parentBranchName);
     if (!context.metaCache.branchExists(branchName)) {
       // If the branch doesn't already exists, no conflict to resolve
@@ -72,7 +78,11 @@ async function getBranchesFromRemote(
     } else if (context.metaCache.branchMatchesFetched(branchName)) {
       context.splog.info(`${chalk.cyan(branchName)} is up to date.`);
     } else {
-      await handleSameParent(branchName, parentBranchName, context);
+      const remainingBranchesToSync = downstack.slice(index + 1);
+      await handleSameParent(
+        { branchName, parentBranchName, remainingBranchesToSync },
+        context
+      );
     }
     parentBranchName = branchName;
   }
@@ -121,14 +131,17 @@ async function handleDifferentParents(
 }
 
 async function handleSameParent(
-  branchName: string,
-  parentBranchName: string,
+  args: {
+    branchName: string;
+    parentBranchName: string;
+    remainingBranchesToSync: string[];
+  },
   context: TContext
 ): Promise<void> {
   context.splog.info(
     [
       `${chalk.yellow(
-        branchName
+        args.branchName
       )} shares a name with a local branch, and they have the same parent.`,
       `You can either overwrite your copy of the branch, or rebase your local changes onto the remote version.`,
       `You can also abort the command entirely and keep your local state as is.`,
@@ -143,14 +156,12 @@ async function handleSameParent(
             type: 'select',
             name: 'value',
             message: `How would you like to handle ${chalk.yellow(
-              branchName
+              args.branchName
             )}?`,
             choices: [
               {
-                title:
-                  'Rebase your changes on top of the remote version (not yet implemented)',
+                title: 'Rebase your changes on top of the remote version',
                 value: 'REBASE',
-                ['disabled' as 'disable']: true,
               },
               {
                 title: 'Overwrite the local copy with the remote version',
@@ -168,11 +179,43 @@ async function handleSameParent(
       ).value;
 
   switch (fetchChoice) {
-    case 'REBASE':
-      throw new ExitFailedError(`Rebasing is not yet implemented.`);
+    case 'REBASE': {
+      const result = context.metaCache.rebaseBranchOntoFetched(
+        args.branchName,
+        args.parentBranchName
+      );
+      if (result.result === 'REBASE_CONFLICT') {
+        persistContinuation(
+          {
+            branchesToSync: args.remainingBranchesToSync,
+            rebasedBranchBase: result.rebasedBranchBase,
+          },
+          context
+        );
+        printConflictStatus(
+          `Hit conflict rebasing ${chalk.yellow(
+            args.branchName
+          )} onto remote source of truth.`,
+          context
+        );
+        throw new RebaseConflictError();
+      }
+      context.splog.info(
+        `Rebased local changes to ${chalk.cyan(
+          args.branchName
+        )} onto remote source of truth.`
+      );
+      context.splog.tip(
+        `If this branch has local children, they likely need to be restacked.`
+      );
+      break;
+    }
     case 'OVERWRITE':
-      context.metaCache.checkoutBranchFromFetched(branchName, parentBranchName);
-      context.splog.info(`Synced ${chalk.cyan(branchName)} from remote.`);
+      context.metaCache.checkoutBranchFromFetched(
+        args.branchName,
+        args.parentBranchName
+      );
+      context.splog.info(`Synced ${chalk.cyan(args.branchName)} from remote.`);
       break;
     case 'ABORT':
       throw new KilledError();
