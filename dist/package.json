@@ -1,0 +1,72 @@
+{
+    "name": "@withgraphite/graphite-cli",
+    "version": "0.19.2",
+    "license": "None",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "homepage": "https://github.com/withgraphite/graphite-cli",
+    "dependencies": {
+        "@withgraphite/graphite-cli-routes": "^0.18.0",
+        "@withgraphite/retype": "^0.3.4",
+        "@withgraphite/retyped-routes": "^0.3.0",
+        "chalk": "^4.1.2",
+        "fs-extra": "^10.1.0",
+        "open": "^8.4.0",
+        "prompts": "^2.4.2",
+        "semver": "^7.3.7",
+        "tmp": "^0.2.1",
+        "yargs": "^17.5.1"
+    },
+    "scripts": {
+        "prepublishOnly": "yarn build",
+        "lint": "eslint src --quiet --ext .ts --cache",
+        "check": "tsc --noEmit",
+        "build": "rm -rf dist/ && yarn lint && tsc",
+        "dev": "./scripts/installation/develop.sh",
+        "cli": "node ./dist/src/index.js",
+        "test": "tsc && yarn mocha \"dist/test/**/*.test.js\"  --parallel --jobs 8",
+        "test-fast": "tsc && yarn mocha \"dist/test/fast/**/*.test.js\"  --parallel --jobs 8",
+        "test-ci": "tsc && nyc --reporter=lcovonly yarn mocha \"dist/test/fast/**/*.test.js\"  --parallel --jobs 8",
+        "test-slow": "tsc && yarn mocha \"dist/test/slow/**/*.test.js\"",
+        "test-one": "tsc && yarn mocha --parallel --jobs 8",
+        "test-grep": "tsc && yarn mocha \"dist/test/**/*.test.js\" -g",
+        "deploy": "ts-node ./scripts/deploy/deploy.ts",
+        "deploy-test": "ts-node ./scripts/deploy/deploy-test.ts",
+        "regen-demo": "ts-node ./scripts/demo/index.ts"
+    },
+    "nyc": {
+        "exclude": ".yarn/**/*"
+    },
+    "files": [
+        "dist"
+    ],
+    "bin": {
+        "graphite": "dist/src/index.js",
+        "gt": "dist/src/index.js"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.3.1",
+        "@types/chai-as-promised": "^7.1.5",
+        "@types/fs-extra": "^9.0.13",
+        "@types/mocha": "^9.1.1",
+        "@types/node": "^17.0.40",
+        "@types/prompts": "^2.4.0",
+        "@types/semver": "^7",
+        "@types/tmp": "^0.2.3",
+        "@types/yargs": "^17.0.10",
+        "@typescript-eslint/eslint-plugin": "^5.27.1",
+        "@typescript-eslint/parser": "^5.27.1",
+        "chai": "^4.3.6",
+        "chai-as-promised": "^7.1.1",
+        "eslint": "^8.17.0",
+        "eslint-import-resolver-typescript": "^2.7.1",
+        "eslint-plugin-import": "^2.26.0",
+        "mocha": "^10.0.0",
+        "nock": "^13.2.6",
+        "nyc": "^15.1.0",
+        "pinst": "^3.0.0",
+        "prettier": "2.6.2",
+        "ts-node": "^10.8.1",
+        "typescript": "^4.7.3"
+    }
+}
