@@ -1,7 +1,11 @@
 import { TContext } from '../lib/context';
 
 export function persistContinuation(
-  args: { branchesToRestack?: string[]; branchesToSync?: string[] },
+  args: {
+    branchesToRestack?: string[];
+    branchesToSync?: string[];
+    rebasedBranchBase: string;
+  },
   context: TContext
 ): void {
   const [branchesToRestack, branchesToSync] = [
@@ -24,6 +28,7 @@ export function persistContinuation(
     data.branchesToSync = branchesToSync;
     data.branchesToRestack = branchesToRestack;
     data.currentBranchOverride = context.metaCache.currentBranch;
+    data.rebasedBranchBase = args.rebasedBranchBase;
   });
 }
 
@@ -32,5 +37,6 @@ export function clearContinuation(context: TContext): void {
     data.branchesToSync = [];
     data.branchesToRestack = [];
     data.currentBranchOverride = undefined;
+    data.rebasedBranchBase = undefined;
   });
 }

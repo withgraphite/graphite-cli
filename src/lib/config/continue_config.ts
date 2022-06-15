@@ -11,11 +11,14 @@ import { composeConfig } from './compose_config';
  *
  * The below object persists the queue of branches to be restacked.
  * We also store the Graphite current branch, so that we can switch back to it.
+ * We need to keep track of the new parentBranchRevision for the branch that
+ * hit a merge conflict, as we cannot pull this information from Git.
  */
 const ContinueSchema = t.shape({
   branchesToSync: t.array(t.string),
   branchesToRestack: t.array(t.string),
   currentBranchOverride: t.optional(t.string),
+  rebasedBranchBase: t.optional(t.string),
 });
 
 export const continueConfigFactory = composeConfig({
