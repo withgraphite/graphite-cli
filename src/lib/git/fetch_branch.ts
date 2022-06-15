@@ -7,7 +7,7 @@ const FETCH_BASE = 'refs/gt-metadata/FETCH_BASE';
 export function fetchBranch(remote: string, branchName: string): void {
   gpExecSync(
     {
-      command: `git fetch --no-write-fetch-head -q  ${q(branchName)} +${q(
+      command: `git fetch --no-write-fetch-head -fq  ${q(remote)} ${q(
         branchName
       )}:${FETCH_HEAD}`,
     },
