@@ -5,8 +5,8 @@ import yargs from 'yargs';
 import { API_SERVER } from '../../lib/api/server';
 import { captureState } from '../../lib/debug_context';
 import { ExitFailedError } from '../../lib/errors';
+import { getUserEmail } from '../../lib/git/get_email';
 import { graphite } from '../../lib/runner';
-import { getUserEmail } from '../../lib/telemetry/context';
 
 const args = {
   message: {

@@ -4,9 +4,9 @@ import chalk from 'chalk';
 import semver from 'semver';
 import tmp from 'tmp';
 import yargs from 'yargs';
+import { postTelemetryInBackground } from './background_tasks/post_traces';
 import { globalArgumentsOptions } from './lib/global_arguments';
 import { getYargsInput } from './lib/pre-yargs/preprocess_command';
-import { postTelemetryInBackground } from './lib/telemetry/post_traces';
 
 // this line gets rid of warnings about "experimental fetch API" for our users
 // while still showing us warnings when we test with DEBUG=1

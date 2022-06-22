@@ -3,7 +3,7 @@ import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import { version } from '../../../package.json';
 import { API_SERVER } from '../api/server';
-import { cuteString } from '../utils/cute_string';
+import { cuteString } from './cute_string';
 
 type spanNameT = 'function' | 'execSync' | 'command';
 
