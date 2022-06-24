@@ -7,9 +7,9 @@ import {
   TMessageConfig,
 } from '../lib/config/message_config';
 import { TContextLite } from '../lib/context';
-import { getUserEmail } from '../lib/telemetry/context';
-import { SHOULD_REPORT_TELEMETRY } from '../lib/telemetry/post_traces';
+import { getUserEmail } from '../lib/git/get_email';
 import { spawnDetached } from '../lib/utils/spawn';
+import { SHOULD_REPORT_TELEMETRY } from './post_traces';
 
 function printAndClearOldMessage(context: TContextLite): void {
   const oldMessage = context.messageConfig.data.message;

@@ -1,7 +1,7 @@
 import { execSync, ExecSyncOptions, SpawnSyncReturns } from 'child_process';
-import { tracer } from '../telemetry/tracer';
 import { cuteString } from './cute_string';
 import { TSplog } from './splog';
+import { tracer } from './tracer';
 
 type GPExecSyncOptions = {
   // Output is always returned (like normal execSync).  This option lets us

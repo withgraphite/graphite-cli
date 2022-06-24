@@ -6,6 +6,7 @@ import { version } from '../../package.json';
 import { init } from '../actions/init';
 import { refreshPRInfoInBackground } from '../background_tasks/fetch_pr_info';
 import { postSurveyResponsesInBackground } from '../background_tasks/post_survey';
+import { postTelemetryInBackground } from '../background_tasks/post_traces';
 import { fetchUpgradePromptInBackground } from '../background_tasks/upgrade_prompt';
 import {
   initContext,
@@ -23,10 +24,9 @@ import {
   RebaseConflictError,
   UntrackedBranchError,
 } from './errors';
+import { getUserEmail } from './git/get_email';
 import { TGlobalArguments } from './global_arguments';
-import { getUserEmail } from './telemetry/context';
-import { postTelemetryInBackground } from './telemetry/post_traces';
-import { tracer } from './telemetry/tracer';
+import { tracer } from './utils/tracer';
 
 export async function graphite(
   args: yargs.Arguments & TGlobalArguments,

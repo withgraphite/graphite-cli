@@ -3,10 +3,10 @@ import { request } from '@withgraphite/retyped-routes';
 import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
-import { version } from '../../../package.json';
-import { API_SERVER } from '../api/server';
-import { tracer } from '../telemetry/tracer';
-import { spawnDetached } from '../utils/spawn';
+import { version } from '../../package.json';
+import { API_SERVER } from '../lib/api/server';
+import { spawnDetached } from '../lib/utils/spawn';
+import { tracer } from '../lib/utils/tracer';
 
 export const SHOULD_REPORT_TELEMETRY = process.env.NODE_ENV != 'development';
 
