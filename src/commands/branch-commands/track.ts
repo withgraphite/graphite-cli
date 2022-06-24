@@ -1,3 +1,4 @@
+import { TContext } from 'src/lib/context';
 import yargs from 'yargs';
 import {
   trackBranch,
@@ -41,9 +42,8 @@ export const description = [
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) => {
-    const branchName = argv.branch;
-    const parentBranchName =
-      argv.parent ?? context.metaCache.currentBranchPrecondition;
+    const { branchName, parentBranchName } = parseBranchNames(argv, context);
+
     branchName
       ? await trackBranch(
           {
@@ -55,3 +55,26 @@ export const handler = async (argv: argsT): Promise<void> =>
         )
       : await trackBranchInteractive(parentBranchName, context);
   });
+
+const parseBranchNames = (
+  argv: argsT,
+  context: TContext
+): { branchName: string | undefined; parentBranchName: string } => {
+  const branchName = argv.branch;
+
+  if (!branchName) {
+    return {
+      branchName: context.metaCache.currentBranch,
+      parentBranchName: context.metaCache.trunk,
+    };
+  }
+
+  if (argv.parent) {
+    return { branchName, parentBranchName: argv.parent };
+  }
+
+  return {
+    branchName,
+    parentBranchName: context.metaCache.currentBranchPrecondition,
+  };
+};
