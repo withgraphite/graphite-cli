@@ -1,0 +1,8 @@
+version: "3"
+services:
+  test:
+    build: .
+    # environment:
+    #   - DEBUG=1
+    command:
+      ["yarn", "run", "test-fast"]
