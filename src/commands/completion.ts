@@ -3,7 +3,7 @@ import { getBranchNamesAndRevisions } from '../lib/git/sorted_branch_names';
 
 yargs.completion(
   'completion',
-  'Append the output of this command to your shell startup script.',
+  'Set up bash or zsh tab completion.',
   //@ts-expect-error types/yargs is out of date with yargs
   // eslint-disable-next-line max-params
   (current, argv, defaultCompletion, done) => {
