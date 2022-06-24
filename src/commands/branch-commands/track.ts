@@ -37,6 +37,7 @@ export const canonical = 'branch track';
 export const aliases = ['tr'];
 export const description = [
   'Start tracking a branch with Graphite by setting its parent to (by default) the current branch.',
+  'When used without arguments, tracks the current branch by setting its parent to trunk.',
   'This command can also be used to fix corrupted Graphite metadata.',
 ].join(' ');
 export const builder = args;
