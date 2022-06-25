@@ -8,13 +8,13 @@ import { graphite } from '../../lib/runner';
 
 const args = {
   branch: {
-    describe: `Branch to begin tracking.`,
+    describe: `Branch to begin tracking. Defaults to the current branch.`,
     demandOption: false,
     positional: true,
     type: 'string',
   },
   parent: {
-    describe: `The tracked branch's parent. Defaults to the current branch.`,
+    describe: `The tracked branch's parent. Defaults to trunk if targeting the current branch. Defaults to the current branch if targeting any other branch.`,
     demandOption: false,
     positional: false,
     type: 'string',
@@ -36,8 +36,7 @@ export const command = 'track [branch]';
 export const canonical = 'branch track';
 export const aliases = ['tr'];
 export const description = [
-  'Start tracking a branch with Graphite by setting its parent to (by default) the current branch.',
-  'When used without arguments, tracks the current branch by setting its parent to trunk.',
+  'Start tracking the current branch (by default) with Graphite by setting its parent to trunk (by default).',
   'This command can also be used to fix corrupted Graphite metadata.',
 ].join(' ');
 export const builder = args;
