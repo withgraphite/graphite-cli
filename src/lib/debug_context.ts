@@ -54,6 +54,8 @@ export function recreateState(stateJson: string, splog: TSplog): string {
   splog.info(`Creating repo`);
   const tmpTrunk = `initial-debug-context-head-${Date.now()}`;
   const tmpDir = tmp.dirSync().name;
+
+  const oldDir = process.cwd();
   process.chdir(tmpDir);
   gpExecSync({
     command: [
@@ -104,6 +106,7 @@ export function recreateState(stateJson: string, splog: TSplog): string {
     switchBranch(tmpTrunk);
   }
 
+  process.chdir(oldDir);
   return tmpDir;
 }
 
