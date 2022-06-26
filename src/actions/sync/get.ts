@@ -71,6 +71,8 @@ export async function getBranchesFromRemote(
       // If the branch doesn't already exists, no conflict to resolve
       context.metaCache.checkoutBranchFromFetched(branchName, parentBranchName);
       context.splog.info(`Synced ${chalk.cyan(branchName)} from remote.`);
+    } else if (!context.metaCache.isBranchTracked(branchName)) {
+      await handleUntrackedLocally(branchName, parentBranchName, context);
     } else if (
       context.metaCache.getParentPrecondition(branchName) !== parentBranchName
     ) {
@@ -88,6 +90,23 @@ export async function getBranchesFromRemote(
   }
 }
 
+async function handleUntrackedLocally(
+  branchName: string,
+  parentBranchName: string,
+  context: TContext
+): Promise<void> {
+  context.splog.info(
+    [
+      `${chalk.yellow(
+        branchName
+      )} shares a name with a local branch that not tracked by Graphite.`,
+      `In order to sync it, you must overwrite your local copy of the branch.`,
+      `If you do not wish to overwrite your copy, the command will be aborted.`,
+    ].join('\n')
+  );
+  await maybeOverwriteBranch(branchName, parentBranchName, context);
+}
+
 async function handleDifferentParents(
   branchName: string,
   parentBranchName: string,
@@ -102,7 +121,15 @@ async function handleDifferentParents(
       `If you do not wish to overwrite your copy, the command will be aborted.`,
     ].join('\n')
   );
+  await maybeOverwriteBranch(branchName, parentBranchName, context);
+}
 
+// Helper function for cases where we can either overwrite local or abort
+async function maybeOverwriteBranch(
+  branchName: string,
+  parentBranchName: string,
+  context: TContext
+) {
   if (
     !context.interactive ||
     !(
@@ -130,6 +157,9 @@ async function handleDifferentParents(
   context.splog.info(`Synced ${chalk.cyan(branchName)} from remote.`);
 }
 
+// This is the most complex case - if the branch's parent matches meta,
+// we need to not only allow for overwrite and abort, but also rebasing
+// local changes onto the changes from remote.
 async function handleSameParent(
   args: {
     branchName: string;
