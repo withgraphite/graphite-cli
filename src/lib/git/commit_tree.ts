@@ -2,7 +2,7 @@ import { q } from '../utils/escape_for_shell';
 import { gpExecSyncAndSplitLines } from '../utils/exec_sync';
 
 export function getCommitTree(branchNames: string[]): Record<string, string[]> {
-  const allBranches = q(branchNames.join(' '));
+  const allBranches = branchNames.map((b) => q(b)).join(' ');
   const ret: Record<string, string[]> = {};
   gpExecSyncAndSplitLines({
     command:
