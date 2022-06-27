@@ -166,13 +166,34 @@ export function validateOrFixParentBranchRevision(
     parentBranchRevision &&
     getMergeBase(branchName, parentBranchRevision) === parentBranchRevision
   ) {
+    if (
+      parentBranchRevision !== parentBranchCurrentRevision &&
+      getMergeBase(branchName, parentBranchCurrentRevision) ===
+        parentBranchCurrentRevision
+    ) {
+      // If the parent is ahead of where the metadata has it, we update
+      // it to the current value, as long as it is still in our history
+      writeMetadataRef(branchName, {
+        parentBranchName,
+        parentBranchRevision: parentBranchCurrentRevision,
+        prInfo,
+      });
+      splog.debug(
+        `validated and updated parent rev: ${branchName}\n\t${parentBranchCurrentRevision}`
+      );
+      return {
+        validationResult: 'VALID',
+        parentBranchRevision: parentBranchCurrentRevision,
+      };
+    }
     splog.debug(`validated: ${branchName}`);
     return { validationResult: 'VALID', parentBranchRevision };
   }
 
   // PBR cannot be fixed because its parent is not in its history
   if (
-    getMergeBase(branchName, parentBranchName) !== parentBranchCurrentRevision
+    getMergeBase(branchName, parentBranchCurrentRevision) !==
+    parentBranchCurrentRevision
   ) {
     splog.debug(
       `bad parent rev: ${branchName}\n\t${parentBranchRevision ?? 'missing'}`
