@@ -56,10 +56,10 @@ export type TMetaCache = {
   trunk: string;
   isTrunk: (branchName: string) => boolean;
 
-  branchExists: (branchName: string | undefined) => boolean;
+  branchExists(branchName: string | undefined): branchName is string;
   allBranchNames: string[];
   isBranchTracked: (branchName: string) => boolean;
-  canTrackBranch: (branchName: string, parentBranchName: string) => boolean;
+  isViableParent: (branchName: string, parentBranchName: string) => boolean;
   trackBranch: (branchName: string, parentBranchName: string) => void;
   untrackBranch: (branchName: string) => void;
 
@@ -159,7 +159,7 @@ export function composeMetaCache({
     return trunkName;
   };
 
-  const branchExists = (branchName: string | undefined) =>
+  const branchExists = (branchName: string | undefined): branchName is string =>
     branchName !== undefined && branchName in cache.branches;
 
   const assertBranch: (
@@ -172,7 +172,7 @@ export function composeMetaCache({
     }
   };
 
-  const canTrackBranch = (branchName: string, parentBranchName: string) => {
+  const isViableParent = (branchName: string, parentBranchName: string) => {
     assertBranch(branchName);
     assertBranch(parentBranchName);
 
@@ -182,8 +182,10 @@ export function composeMetaCache({
     // We allow children of trunk to be tracked even if they are behind.
     // So only fail if the parent is not trunk AND the branch is behind
     return (
-      parentMeta.validationResult === 'TRUNK' ||
-      getMergeBase(branchName, parentBranchName) === parentMeta.branchRevision
+      branchName !== parentBranchName &&
+      (parentMeta.validationResult === 'TRUNK' ||
+        getMergeBase(branchName, parentBranchName) ===
+          parentMeta.branchRevision)
     );
   };
 
@@ -384,9 +386,9 @@ export function composeMetaCache({
       assertBranch(branchName);
       return cache.branches[branchName].validationResult === 'VALID';
     },
-    canTrackBranch,
+    isViableParent: isViableParent,
     trackBranch: (branchName: string, parentBranchName: string) => {
-      if (!canTrackBranch(branchName, parentBranchName)) {
+      if (!isViableParent(branchName, parentBranchName)) {
         // escape hatch
         return;
       }
