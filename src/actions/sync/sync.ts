@@ -69,6 +69,19 @@ export async function syncAction(
   }
 
   const currentBranch = context.metaCache.currentBranch;
+
+  // The below conditional doesn't handle the trunk case because
+  // isBranchTracked returns false for trunk.  Also, in this case
+  // we don't want to append to our existing branchesToRestack
+  // because trunk's stack will include everything anyway.
+  if (currentBranch && context.metaCache.isTrunk(currentBranch)) {
+    restackBranches(
+      context.metaCache.getRelativeStack(currentBranch, SCOPE.STACK),
+      context
+    );
+    return;
+  }
+
   if (
     currentBranch &&
     context.metaCache.branchExists(currentBranch) &&
