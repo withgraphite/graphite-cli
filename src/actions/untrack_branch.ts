@@ -13,6 +13,10 @@ export async function untrackBranch(
     );
   }
 
+  if (context.metaCache.isTrunk(branchName)) {
+    throw new ExitFailedError(`Can't untrack trunk!`);
+  }
+
   if (!context.metaCache.isBranchTracked(branchName)) {
     context.splog.info(
       `Branch ${chalk.yellow(branchName)} is not tracked by Graphite.`
