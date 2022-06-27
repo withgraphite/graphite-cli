@@ -153,25 +153,26 @@ function getUpstackExclusiveLines(
   if (args.steps === 0) {
     return [];
   }
-  const children = context.metaCache.getChildren(args.branchName);
-  return children
+  const children = context.metaCache
+    .getChildren(args.branchName)
     .filter(
       (child) =>
         !args.omitCurrentBranch ||
         child !== context.metaCache.currentBranchPrecondition
-    )
-    .flatMap((child, i) =>
-      getUpstackInclusiveLines(
-        {
-          ...args,
-          steps: args.steps ? args.steps - 1 : undefined,
-          branchName: child,
-          indentLevel:
-            args.indentLevel + (args.reverse ? children.length - i - 1 : i),
-        },
-        context
-      )
     );
+  const numChildren = children.length;
+  return children.flatMap((child, i) =>
+    getUpstackInclusiveLines(
+      {
+        ...args,
+        steps: args.steps ? args.steps - 1 : undefined,
+        branchName: child,
+        indentLevel:
+          args.indentLevel + (args.reverse ? numChildren - i - 1 : i),
+      },
+      context
+    )
+  );
 }
 
 export function displayBranchName(
