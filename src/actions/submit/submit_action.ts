@@ -47,10 +47,9 @@ export async function submitAction(
     context.splog.newline();
   }
 
-  const branchNames = context.metaCache.getRelativeStack(
-    context.metaCache.currentBranchPrecondition,
-    args.scope
-  );
+  const branchNames = context.metaCache
+    .getRelativeStack(context.metaCache.currentBranchPrecondition, args.scope)
+    .filter((branchName) => !context.metaCache.isTrunk(branchName));
 
   context.splog.info(
     chalk.blueBright(
