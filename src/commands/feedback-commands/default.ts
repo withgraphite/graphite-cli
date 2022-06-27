@@ -35,7 +35,7 @@ export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {
     const user = getUserEmail();
     if (!argv.message) {
-      return;
+      throw new ExitFailedError(`No message provided`);
     }
     const response = await request.requestWithArgs(
       API_SERVER,
@@ -48,10 +48,10 @@ export const handler = async (argv: argsT): Promise<void> => {
           : undefined,
       }
     );
-    if (response._response.status == 200) {
+    if (response._response.status === 200) {
       context.splog.info(
         chalk.green(
-          `Feedback received loud and clear (in a team Slack channel) :)`
+          `Feedback received loud and clear (in a team Slack channel) 😊`
         )
       );
     } else {
