@@ -171,7 +171,9 @@ export function validateOrFixParentBranchRevision(
   }
 
   // PBR cannot be fixed because its parent is not in its history
-  if (getMergeBase(branchName, parentBranchName) !== parentBranchName) {
+  if (
+    getMergeBase(branchName, parentBranchName) !== parentBranchCurrentRevision
+  ) {
     splog.debug(
       `bad parent rev: ${branchName}\n\t${parentBranchRevision ?? 'missing'}`
     );
