@@ -1,5 +1,5 @@
+import chalk from 'chalk';
 import { TContext } from '../lib/context';
-import { displayBranchName } from './log';
 
 function displayBranchesInternal(
   opts: {
@@ -12,10 +12,11 @@ function displayBranchesInternal(
 ): { display: string; branchName: string }[] {
   const currentBranchName = context.metaCache.currentBranch;
   const currentChoice = {
-    display: `${'  '.repeat(opts.indent ?? 0)}↱ ${displayBranchName(
-      opts.branchName,
-      context
-    )}`,
+    display: `${'  '.repeat(opts.indent ?? 0)}↱ $ ${opts.branchName}${
+      context.metaCache.isBranchFixed(opts.branchName)
+        ? ''
+        : chalk.yellowBright(` (needs restack)`)
+    }`,
     branchName: opts.branchName,
   };
   return (

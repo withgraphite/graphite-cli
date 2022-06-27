@@ -50,7 +50,14 @@ export async function interactiveBranchSelection(
       noStyleBranchName: true,
     },
     context
-  ).map((stackLine) => ({ title: stackLine, value: stackLine.trim() }));
+  ).map((stackLine) => ({
+    title: stackLine,
+    value: ((stackLine) => {
+      const maybeIndex = stackLine.indexOf('◯');
+      const index = maybeIndex > -1 ? maybeIndex : stackLine.indexOf('◉');
+      return stackLine.substring(index + 2).split(' ')[0];
+    })(stackLine),
+  }));
 
   const indexOfCurrentIfPresent = choices.findIndex(
     (choice) =>
@@ -135,7 +142,7 @@ function getDownstackExclusiveLines(
 }
 
 function getUpstackInclusiveLines(
-  args: TPrintStackArgs,
+  args: TPrintStackArgs & { siblingBranchLines: number },
   context: TContext
 ): string[] {
   const outputDeep = [
@@ -169,38 +176,46 @@ function getUpstackExclusiveLines(
         branchName: child,
         indentLevel:
           args.indentLevel + (args.reverse ? numChildren - i - 1 : i),
+        siblingBranchLines:
+          numChildren > 1 &&
+          // we only want branch lines for short if this is the first child
+          ((args.reverse && i === 0) ||
+            (!args.reverse && i === numChildren - 1))
+            ? numChildren - 1
+            : 0,
       },
       context
     )
   );
 }
 
-export function displayBranchName(
-  branchName: string,
-  context: TContext
-): string {
-  return `${
-    branchName === context.metaCache.currentBranch
-      ? chalk.cyan(branchName)
-      : branchName
-  } ${
-    context.metaCache.isBranchFixed(branchName)
-      ? ''
-      : chalk.yellowBright(`(needs restack)`)
-  }`;
-}
-
 function getBranchLines(
-  args: TPrintStackArgs & { skipBranchingLine?: boolean },
+  args: TPrintStackArgs & {
+    siblingBranchLines?: number; // for short
+    skipBranchingLine?: boolean; // for standard
+  },
   context: TContext
 ): string[] {
   // `gt log short` case
   if (args.short) {
+    const siblingBranchLines = args.siblingBranchLines ?? 0;
     return [
-      `${'  '.repeat(args.indentLevel)}${
-        args.noStyleBranchName
-          ? args.branchName
-          : displayBranchName(args.branchName, context)
+      `${'│ '.repeat(args.indentLevel - siblingBranchLines)}${
+        siblingBranchLines > 0 ? '├─' : ''
+      }${
+        siblingBranchLines > 1
+          ? (args.reverse ? '┬─' : '┴─').repeat(siblingBranchLines - 1)
+          : ''
+      }${
+        args.noStyleBranchName ||
+        args.branchName !== context.metaCache.currentBranch
+          ? '◯'
+          : chalk.cyan('◉')
+      } ${args.branchName}${
+        args.noStyleBranchName ||
+        context.metaCache.isBranchFixed(args.branchName)
+          ? ''
+          : chalk.yellowBright(` (needs restack)`)
       }`,
     ];
   }
