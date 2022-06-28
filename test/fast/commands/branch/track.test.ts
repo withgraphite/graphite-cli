@@ -4,6 +4,7 @@ import { configureTest } from '../../../lib/utils/configure_test';
 import { expectCommits } from '../../../lib/utils/expect_commits';
 
 for (const scene of allScenes) {
+  // eslint-disable-next-line max-lines-per-function
   describe(`(${scene}): branch track`, function () {
     configureTest(this, scene);
     it('Can track and restack the current branch if previously untracked', () => {
@@ -71,6 +72,41 @@ for (const scene of allScenes) {
       expectCommits(scene.repo, 'b, a, 1');
 
       // Prove that meta is correctly updated.
+      scene.repo.execCliCommand('branch down');
+      expect(scene.repo.currentBranchName()).to.eq('a');
+    });
+    it('Needs a rebase to track a branch that is created and whose parent is amended', () => {
+      // Create our branch
+      scene.repo.createAndCheckoutBranch('a');
+      scene.repo.createChangeAndCommit('a', 'a');
+      scene.repo.createAndCheckoutBranch('b');
+      scene.repo.createChangeAndCommit('b', 'b');
+      expectCommits(scene.repo, 'b, a, 1');
+
+      scene.repo.checkoutBranch('a');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p main');
+      }).not.to.throw();
+
+      scene.repo.createChange('a1', 'a1');
+      scene.repo.execGitCommand('commit --amend --no-edit');
+
+      scene.repo.checkoutBranch('b');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p a');
+      }).to.throw();
+
+      scene.repo.execGitCommand('rebase a');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p a');
+      }).to.not.throw();
+
+      expectCommits(scene.repo, 'b, a, 1');
+
+      // Prove that we have meta now.
       scene.repo.execCliCommand('branch down');
       expect(scene.repo.currentBranchName()).to.eq('a');
     });

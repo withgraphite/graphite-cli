@@ -179,13 +179,16 @@ export function composeMetaCache({
     const parentMeta = cache.branches[parentBranchName];
     assertCachedMetaIsValidOrTrunk(parentMeta);
 
-    // We allow children of trunk to be tracked even if they are behind.
-    // So only fail if the parent is not trunk AND the branch is behind
+    const mergeBase = getMergeBase(branchName, parentBranchName);
     return (
+      // A branch cannot be its own parent
       branchName !== parentBranchName &&
+      // There is a rare failure mode where no merge base exists at all
+      mergeBase !== '' &&
+      // We allow children of trunk to be tracked even if they are behind.
+      // So only fail if the parent is not trunk AND the branch is behind
       (parentMeta.validationResult === 'TRUNK' ||
-        getMergeBase(branchName, parentBranchName) ===
-          parentMeta.branchRevision)
+        mergeBase === parentMeta.branchRevision)
     );
   };
 
@@ -389,8 +392,9 @@ export function composeMetaCache({
     isViableParent: isViableParent,
     trackBranch: (branchName: string, parentBranchName: string) => {
       if (!isViableParent(branchName, parentBranchName)) {
-        // escape hatch
-        return;
+        throw new PreconditionsFailedError(
+          `Can't track ${branchName} with parent ${parentBranchName}`
+        );
       }
 
       updateMeta(branchName, {
