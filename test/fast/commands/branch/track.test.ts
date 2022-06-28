@@ -33,5 +33,46 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand('branch down');
       expect(scene.repo.currentBranchName()).to.eq('main');
     });
+    it('Can track a branch, and then insert a branch before and track both as a stack', () => {
+      // Create our branch
+      scene.repo.createAndCheckoutBranch('b');
+      scene.repo.createChangeAndCommit('a', 'a');
+      scene.repo.createChangeAndCommit('b', 'b');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p main');
+      }).to.not.throw();
+
+      expectCommits(scene.repo, 'b, a, 1');
+
+      // Prove that we have meta now.
+      scene.repo.execCliCommand('branch down');
+      expect(scene.repo.currentBranchName()).to.eq('main');
+
+      scene.repo.execGitCommand('branch a b~');
+      scene.repo.checkoutBranch('a');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p main');
+      }).to.not.throw();
+
+      expectCommits(scene.repo, 'a, 1');
+
+      // Prove that we have meta now.
+      scene.repo.execCliCommand('branch down');
+      expect(scene.repo.currentBranchName()).to.eq('main');
+
+      scene.repo.checkoutBranch('b');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p a');
+      }).to.not.throw();
+
+      expectCommits(scene.repo, 'b, a, 1');
+
+      // Prove that meta is correctly updated.
+      scene.repo.execCliCommand('branch down');
+      expect(scene.repo.currentBranchName()).to.eq('a');
+    });
   });
 }
