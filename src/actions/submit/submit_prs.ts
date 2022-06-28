@@ -1,4 +1,4 @@
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import * as t from '@withgraphite/retype';
 import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
@@ -9,13 +9,13 @@ import { cuteString } from '../../lib/utils/cute_string';
 import { Unpacked } from '../../lib/utils/ts_helpers';
 
 export type TPRSubmissionInfo = t.UnwrapSchemaMap<
-  typeof graphiteCLIRoutes.submitPullRequests.params
+  typeof API_ROUTES.submitPullRequests.params
 >['prs'];
 
 type TSubmittedPRRequest = Unpacked<TPRSubmissionInfo>;
 
 type TSubmittedPRResponse = Unpacked<
-  t.UnwrapSchemaMap<typeof graphiteCLIRoutes.submitPullRequests.response>['prs']
+  t.UnwrapSchemaMap<typeof API_ROUTES.submitPullRequests.response>['prs']
 >;
 
 type TSubmittedPR = {
@@ -58,7 +58,7 @@ async function requestServerToSubmitPRs(
   try {
     const response = await request.requestWithArgs(
       API_SERVER,
-      graphiteCLIRoutes.submitPullRequests,
+      API_ROUTES.submitPullRequests,
       {
         authToken: cliAuthToken,
         repoOwner: context.repoConfig.getRepoOwner(),

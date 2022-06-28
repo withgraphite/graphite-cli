@@ -1,4 +1,4 @@
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import { ExitFailedError } from '../errors';
 import { TRepoParams } from './common_params';
@@ -10,7 +10,7 @@ export async function getDownstackDependencies(
 ): Promise<string[]> {
   const response = await request.requestWithArgs(
     API_SERVER,
-    graphiteCLIRoutes.downstackDependencies,
+    API_ROUTES.downstackDependencies,
     {},
     {
       authToken: params.authToken,
