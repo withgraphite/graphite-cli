@@ -2,17 +2,12 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
+import { checkoutBranch } from './checkout_branch';
 
 export async function trackBranchInteractive(
-  parentBranchName: string,
   context: TContext
 ): Promise<boolean> {
-  if (!context.interactive) {
-    throw new ExitFailedError(
-      'Must provide a branch to track in non-interactive mode.'
-    );
-  }
-
+  const parentBranchName = context.metaCache.currentBranchPrecondition;
   const choices = context.metaCache.allBranchNames
     .filter(
       (branchName) =>
@@ -53,8 +48,10 @@ export async function trackBranchInteractive(
   }
 
   trackHelper({ branchName, parentBranchName }, context);
+  await checkoutBranch(branchName, context);
   return true;
 }
+
 export async function trackBranch(
   args: {
     branchName: string | undefined;

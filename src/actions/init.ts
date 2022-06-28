@@ -97,6 +97,7 @@ function findCommonlyNamedTrunk(context: TContext): string | undefined {
   }
   return undefined;
 }
+
 async function branchOnboardingFlow(context: TContext) {
   context.splog.tip(
     [
@@ -126,11 +127,5 @@ async function branchOnboardingFlow(context: TContext) {
   }
 
   await checkoutBranch(context.metaCache.trunk, context);
-
-  while (
-    await trackBranchInteractive(
-      context.metaCache.currentBranchPrecondition,
-      context
-    )
-  );
+  while (await trackBranchInteractive(context));
 }
