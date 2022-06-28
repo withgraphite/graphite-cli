@@ -1,4 +1,4 @@
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import { version } from '../../package.json';
 import { API_SERVER } from '../lib/api/server';
@@ -36,7 +36,7 @@ async function fetchUpgradePrompt(
     const user = getUserEmail();
     const response = await request.requestWithArgs(
       API_SERVER,
-      graphiteCLIRoutes.upgradePrompt,
+      API_ROUTES.upgradePrompt,
       {},
       {
         user: user || 'NotFound',

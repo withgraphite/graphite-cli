@@ -1,10 +1,10 @@
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import * as t from '@withgraphite/retype';
 import { composeConfig } from './compose_config';
 
 export const prInfoConfigFactory = composeConfig({
   schema: t.shape({
-    prInfoToUpsert: graphiteCLIRoutes.pullRequestInfo.response.prs,
+    prInfoToUpsert: API_ROUTES.pullRequestInfo.response.prs,
   }),
   defaultLocations: [
     {

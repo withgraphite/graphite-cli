@@ -1,10 +1,11 @@
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
 import { version } from '../../package.json';
 import { API_SERVER } from '../lib/api/server';
+import { userConfigFactory } from '../lib/config/user_config';
 import { spawnDetached } from '../lib/utils/spawn';
 import { tracer } from '../lib/utils/tracer';
 
@@ -31,7 +32,8 @@ async function postTelemetry(): Promise<void> {
   if (tracesPath && fs.existsSync(tracesPath)) {
     // Failed to find traces file, exit
     try {
-      await request.requestWithArgs(API_SERVER, graphiteCLIRoutes.traces, {
+      await request.requestWithArgs(API_SERVER, API_ROUTES.traces, {
+        auth: userConfigFactory.loadIfExists()?.data.authToken,
         jsonTraces: fs.readFileSync(tracesPath).toString(),
         cliVersion: version,
       });

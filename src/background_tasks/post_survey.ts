@@ -1,4 +1,4 @@
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import { API_SERVER } from '../lib/api/server';
 import { surveyConfigFactory } from '../lib/config/survey_config';
@@ -28,7 +28,7 @@ export async function postSurveyResponse(): Promise<void> {
 
     const response = await request.requestWithArgs(
       API_SERVER,
-      graphiteCLIRoutes.surveyResponse,
+      API_ROUTES.surveyResponse,
       {
         authToken: authToken,
         responses: {

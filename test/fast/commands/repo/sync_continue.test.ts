@@ -1,4 +1,4 @@
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import { expect } from 'chai';
 import nock from 'nock';
 import { API_SERVER } from '../../../../src/lib/api/server';
@@ -14,7 +14,7 @@ for (const scene of allScenes) {
     beforeEach(() => {
       // We need to stub out the endpoint that sends back information on
       // the GitHub PRs associated with each branch.
-      nock(API_SERVER).post(graphiteCLIRoutes.pullRequestInfo.url).reply(200, {
+      nock(API_SERVER).post(API_ROUTES.pullRequestInfo.url).reply(200, {
         prs: [],
       });
 

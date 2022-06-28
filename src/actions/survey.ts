@@ -1,4 +1,4 @@
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import { default as t } from '@withgraphite/retype';
 import { request } from '@withgraphite/retyped-routes';
 import prompts from 'prompts';
@@ -10,7 +10,7 @@ import { cliAuthPrecondition } from '../lib/preconditions';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 
 type SurveyT = t.UnwrapSchemaMap<
-  typeof graphiteCLIRoutes.cliSurvey.response
+  typeof API_ROUTES.cliSurvey.response
 >['survey'];
 
 export async function getSurvey(
@@ -20,7 +20,7 @@ export async function getSurvey(
     const authToken = cliAuthPrecondition(context);
     const response = await request.requestWithArgs(
       API_SERVER,
-      graphiteCLIRoutes.cliSurvey,
+      API_ROUTES.cliSurvey,
       {},
       { authToken: authToken }
     );

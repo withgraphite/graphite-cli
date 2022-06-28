@@ -1,4 +1,4 @@
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
+import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import chalk from 'chalk';
 import yargs from 'yargs';
@@ -39,7 +39,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     }
     const response = await request.requestWithArgs(
       API_SERVER,
-      graphiteCLIRoutes.feedback,
+      API_ROUTES.feedback,
       {
         user: user || 'NotFound',
         message: argv.message,

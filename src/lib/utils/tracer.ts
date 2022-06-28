@@ -1,8 +1,4 @@
 // https://docs.datadoghq.com/api/latest/tracing/
-import graphiteCLIRoutes from '@withgraphite/graphite-cli-routes';
-import { request } from '@withgraphite/retyped-routes';
-import { version } from '../../../package.json';
-import { API_SERVER } from '../api/server';
 import { cuteString } from './cute_string';
 
 type spanNameT = 'function' | 'execSync' | 'command';
@@ -170,15 +166,6 @@ class Tracer {
     const traces = [trace];
     this.allSpans = this.allSpans.filter((s) => !s.endedSpan);
     return cuteString(traces);
-  }
-
-  public async flush(): Promise<void> {
-    if (process.env.NODE_ENV !== 'development') {
-      await request.requestWithArgs(API_SERVER, graphiteCLIRoutes.traces, {
-        cliVersion: version,
-        jsonTraces: this.flushJson(),
-      });
-    }
   }
 }
 
