@@ -4,10 +4,10 @@ import { configureTest } from '../../../lib/utils/configure_test';
 import { expectCommits } from '../../../lib/utils/expect_commits';
 
 for (const scene of allScenes) {
+  // eslint-disable-next-line max-lines-per-function
   describe(`(${scene}): branch track`, function () {
     configureTest(this, scene);
-
-    it('Can track and restack a dangling untracked branch', () => {
+    it('Can track and restack the current branch if previously untracked', () => {
       // Create our dangling branch
       scene.repo.createAndCheckoutBranch('a');
       scene.repo.createChangeAndCommit('a1', 'a1');
@@ -18,9 +18,10 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('main');
       scene.repo.createChangeAndCommit('b', 'b');
 
-      // branch a is dangling now, but we should still be able to track it with main as parent
+      // we should be able to track the dangling branch 'a' while it's checked out
+      scene.repo.checkoutBranch('a');
       expect(() => {
-        scene.repo.execCliCommand('branch track a');
+        scene.repo.execCliCommand('branch track -p main');
       }).to.not.throw();
 
       expectCommits(scene.repo, 'a3, a2, a1, 1');
@@ -32,6 +33,82 @@ for (const scene of allScenes) {
       // Prove that we have meta now.
       scene.repo.execCliCommand('branch down');
       expect(scene.repo.currentBranchName()).to.eq('main');
+    });
+    it('Can track a branch, and then insert a branch before and track both as a stack', () => {
+      // Create our branch
+      scene.repo.createAndCheckoutBranch('b');
+      scene.repo.createChangeAndCommit('a', 'a');
+      scene.repo.createChangeAndCommit('b', 'b');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p main');
+      }).to.not.throw();
+
+      expectCommits(scene.repo, 'b, a, 1');
+
+      // Prove that we have meta now.
+      scene.repo.execCliCommand('branch down');
+      expect(scene.repo.currentBranchName()).to.eq('main');
+
+      scene.repo.execGitCommand('branch a b~');
+      scene.repo.checkoutBranch('a');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p main');
+      }).to.not.throw();
+
+      expectCommits(scene.repo, 'a, 1');
+
+      // Prove that we have meta now.
+      scene.repo.execCliCommand('branch down');
+      expect(scene.repo.currentBranchName()).to.eq('main');
+
+      scene.repo.checkoutBranch('b');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p a');
+      }).to.not.throw();
+
+      expectCommits(scene.repo, 'b, a, 1');
+
+      // Prove that meta is correctly updated.
+      scene.repo.execCliCommand('branch down');
+      expect(scene.repo.currentBranchName()).to.eq('a');
+    });
+    it('Needs a rebase to track a branch that is created and whose parent is amended', () => {
+      // Create our branch
+      scene.repo.createAndCheckoutBranch('a');
+      scene.repo.createChangeAndCommit('a', 'a');
+      scene.repo.createAndCheckoutBranch('b');
+      scene.repo.createChangeAndCommit('b', 'b');
+      expectCommits(scene.repo, 'b, a, 1');
+
+      scene.repo.checkoutBranch('a');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p main');
+      }).not.to.throw();
+
+      scene.repo.createChange('a1', 'a1');
+      scene.repo.execGitCommand('commit --amend --no-edit');
+
+      scene.repo.checkoutBranch('b');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p a');
+      }).to.throw();
+
+      scene.repo.execGitCommand('rebase a');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -p a');
+      }).to.not.throw();
+
+      expectCommits(scene.repo, 'b, a, 1');
+
+      // Prove that we have meta now.
+      scene.repo.execCliCommand('branch down');
+      expect(scene.repo.currentBranchName()).to.eq('a');
     });
   });
 }

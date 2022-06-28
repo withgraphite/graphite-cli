@@ -2,22 +2,17 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
+import { checkoutBranch } from './checkout_branch';
 
 export async function trackBranchInteractive(
-  parentBranchName: string,
   context: TContext
 ): Promise<boolean> {
-  if (!context.interactive) {
-    throw new ExitFailedError(
-      'Must provide a branch to track in non-interactive mode.'
-    );
-  }
-
+  const parentBranchName = context.metaCache.currentBranchPrecondition;
   const choices = context.metaCache.allBranchNames
     .filter(
       (branchName) =>
         !context.metaCache.isBranchTracked(branchName) &&
-        context.metaCache.canTrackBranch(branchName, parentBranchName)
+        context.metaCache.isViableParent(branchName, parentBranchName)
     )
     .map((branchName) => ({ title: branchName, value: branchName }));
 
@@ -52,31 +47,93 @@ export async function trackBranchInteractive(
     throw new KilledError();
   }
 
-  trackBranchInternal({ branchName, parentBranchName }, context);
+  trackHelper({ branchName, parentBranchName }, context);
+  await checkoutBranch(branchName, context);
   return true;
 }
+
 export async function trackBranch(
-  {
-    branchName,
-    parentBranchName,
-    force,
-  }: {
-    branchName: string;
-    parentBranchName: string;
-    force?: boolean;
+  args: {
+    branchName: string | undefined;
+    parentBranchName: string | undefined;
   },
   context: TContext
 ): Promise<void> {
-  if (
-    branchName &&
-    !(await shouldTrackBranch({ branchName, parentBranchName, force }, context))
-  ) {
+  const branchName = args.branchName ?? context.metaCache.currentBranch;
+  if (!context.metaCache.branchExists(branchName)) {
+    throw new ExitFailedError(`No branch found.`);
+  }
+
+  if (!args.parentBranchName) {
+    const choices = context.metaCache.allBranchNames
+      .filter(
+        (b) =>
+          (context.metaCache.isTrunk(b) ||
+            context.metaCache.isBranchTracked(b)) &&
+          context.metaCache.isViableParent(branchName, b)
+      )
+      .map((b) => {
+        return { title: b, value: b };
+      });
+
+    if (choices.length === 0) {
+      throw new ExitFailedError(
+        `No possible parents for this branch. Try running \`git rebase ${context.metaCache.trunk} ${branchName}\``
+      );
+    }
+
+    if (choices.length === 1) {
+      trackHelper({ branchName, parentBranchName: choices[0].value }, context);
+      return;
+    }
+
+    if (!context.interactive) {
+      throw new ExitFailedError(
+        `Multiple possible parents; cannot prompt in non-interactive mode.`
+      );
+    }
+
+    trackHelper(
+      {
+        branchName,
+        parentBranchName: (
+          await prompts({
+            type: 'autocomplete',
+            name: 'branch',
+            message: `Select a parent for ${branchName} (autocomplete or arrow keys)`,
+            choices,
+            suggest: (input, choices) =>
+              choices.filter((c: { value: string }) => c.value.includes(input)),
+          })
+        ).branch,
+      },
+      context
+    );
     return;
   }
-  trackBranchInternal({ branchName, parentBranchName }, context);
+
+  if (!context.metaCache.isViableParent(branchName, args.parentBranchName)) {
+    context.splog.tip(
+      `Are you sure that ${chalk.cyan(
+        args.parentBranchName
+      )} is the right parent for ${chalk.cyan(
+        branchName
+      )}?  If so, you can fix its history with ${chalk.cyan(
+        `git rebase ${args.parentBranchName} ${branchName}`
+      )} and then try again.`
+    );
+
+    throw new ExitFailedError(
+      `${chalk.yellow(
+        args.parentBranchName
+      )} is not in the history of ${chalk.yellow(branchName)}.`
+    );
+  }
+
+  trackHelper({ branchName, parentBranchName: args.parentBranchName }, context);
 }
 
-function trackBranchInternal(
+function trackHelper(
   {
     branchName,
     parentBranchName,
@@ -87,116 +144,9 @@ function trackBranchInternal(
   context: TContext
 ) {
   context.metaCache.trackBranch(branchName, parentBranchName);
-  context.metaCache.checkoutBranch(branchName);
   context.splog.info(
-    `Checked out newly tracked branch ${chalk.green(
-      branchName
-    )} with parent ${chalk.cyan(parentBranchName)}.`
-  );
-  return true;
-}
-
-async function shouldTrackBranch(
-  {
-    branchName,
-    parentBranchName,
-    force,
-  }: {
-    branchName: string;
-    parentBranchName: string;
-    force?: boolean;
-  },
-  context: TContext
-): Promise<boolean> {
-  if (!context.metaCache.branchExists(branchName)) {
-    throw new ExitFailedError(
-      `Branch ${chalk.yellow(branchName)} does not exist.`
-    );
-  }
-
-  if (context.metaCache.isTrunk(branchName)) {
-    throw new ExitFailedError(
-      `${chalk.yellow(
-        branchName
-      )} is designated as trunk. To change your configured trunk branch, use ${chalk.cyan(
-        `gt repo init`
-      )}.`
-    );
-  }
-
-  if (
-    context.metaCache.isBranchTracked(branchName) &&
-    !(await shouldRetrackBranch(
-      { branchName, parentBranchName, force },
-      context
-    ))
-  ) {
-    return false;
-  }
-
-  if (!context.metaCache.canTrackBranch(branchName, parentBranchName)) {
-    context.splog.tip(
-      `Are you sure that ${chalk.cyan(
-        parentBranchName
-      )} is the right parent for ${chalk.cyan(
-        branchName
-      )}?  If so, you can fix its history with ${chalk.cyan(
-        `git rebase ${parentBranchName} ${branchName}`
-      )} and then try again.`
-    );
-
-    throw new ExitFailedError(
-      `${chalk.yellow(
-        parentBranchName
-      )} is not in the history of ${chalk.yellow(branchName)}.`
-    );
-  }
-
-  return true;
-}
-
-async function shouldRetrackBranch(
-  {
-    branchName,
-    parentBranchName,
-    force,
-  }: { branchName: string; parentBranchName: string; force?: boolean },
-  context: TContext
-): Promise<boolean> {
-  context.splog.info(`Already tracking ${chalk.yellow(branchName)}.`);
-  if (
-    parentBranchName === context.metaCache.getParentPrecondition(branchName)
-  ) {
-    context.splog.info(
-      `Parent is already set to ${chalk.cyan(parentBranchName)}.`
-    );
-    return false;
-  }
-
-  context.splog.warn(
-    `This operation may result in a duplicated commit history.`
-  );
-  context.splog.tip('Did you mean to use `gt upstack onto`?');
-
-  return (
-    force ||
-    (context.interactive &&
-      (
-        await prompts(
-          {
-            type: 'confirm',
-            name: 'value',
-            message: `Are you sure that you'd like to change its parent to ${chalk.yellow(
-              parentBranchName
-            )}?`,
-            initial: false,
-          },
-          {
-            onCancel: () => {
-              throw new KilledError();
-            },
-          }
-        )
-      ).value)
+    `Tracked branch ${chalk.green(branchName)} with parent ${chalk.cyan(
+      parentBranchName
+    )}.`
   );
 }
