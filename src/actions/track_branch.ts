@@ -68,9 +68,31 @@ export async function trackBranch(
   }
 
   if (!args.parentBranchName) {
+    const choices = context.metaCache.allBranchNames
+      .filter(
+        (b) =>
+          (context.metaCache.isTrunk(b) ||
+            context.metaCache.isBranchTracked(b)) &&
+          context.metaCache.isViableParent(branchName, b)
+      )
+      .map((b) => {
+        return { title: b, value: b };
+      });
+
+    if (choices.length === 0) {
+      throw new ExitFailedError(
+        `No possible parents for this branch. Try running \`git rebase ${context.metaCache.trunk} ${branchName}\``
+      );
+    }
+
+    if (choices.length === 1) {
+      trackHelper({ branchName, parentBranchName: choices[0].value }, context);
+      return;
+    }
+
     if (!context.interactive) {
       throw new ExitFailedError(
-        `Must provide a parent in non-interactive mode.`
+        `Multiple possible parents; cannot prompt in non-interactive mode.`
       );
     }
 
@@ -82,16 +104,7 @@ export async function trackBranch(
             type: 'autocomplete',
             name: 'branch',
             message: `Select a parent for ${branchName} (autocomplete or arrow keys)`,
-            choices: context.metaCache.allBranchNames
-              .filter(
-                (b) =>
-                  (context.metaCache.isTrunk(b) ||
-                    context.metaCache.isBranchTracked(b)) &&
-                  context.metaCache.isViableParent(branchName, b)
-              )
-              .map((b) => {
-                return { title: b, value: b };
-              }),
+            choices,
             suggest: (input, choices) =>
               choices.filter((c: { value: string }) => c.value.includes(input)),
           })
