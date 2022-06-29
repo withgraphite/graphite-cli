@@ -41,7 +41,7 @@ async function postTelemetry(): Promise<void> {
       return;
     }
     // Cleanup despite it being a temp file.
-    fs.readFileSync(tracesPath);
+    fs.removeSync(tracesPath);
   }
 }
 
