@@ -3,7 +3,6 @@ import prompts from 'prompts';
 import tmp from 'tmp';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
-import { getCommitMessage } from '../../lib/git/commit_message';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { getPRTemplate } from '../../lib/utils/pr_templates';
 
@@ -14,8 +13,10 @@ export async function getPRBody(
   },
   context: TContext
 ): Promise<string> {
-  const body =
-    inferPRBody(args.branchName, context) ?? (await getPRTemplate()) ?? '';
+  const { body, skipDescription } = inferPRBody(
+    { branchName: args.branchName, template: await getPRTemplate() },
+    context
+  );
   if (!args.editPRFieldsInline) {
     return body;
   }
@@ -29,7 +30,7 @@ export async function getPRBody(
       choices: [
         { title: `Edit Body (using ${editor})`, value: 'edit' },
         {
-          title: `Skip${body ? ` (just paste template)` : ''}`,
+          title: `Skip (${skipDescription})`,
           value: 'skip',
         },
       ],
@@ -66,18 +67,32 @@ async function editPRBody(args: {
 }
 
 export function inferPRBody(
-  branchName: string,
+  { branchName, template = '' }: { branchName: string; template?: string },
   context: TContext
-): string | undefined {
+): { body: string; skipDescription: string } {
   const priorSubmitBody = context.metaCache.getPrInfo(branchName)?.body;
   if (priorSubmitBody !== undefined) {
-    return priorSubmitBody;
+    return {
+      body: priorSubmitBody,
+      skipDescription: 'use body from aborted submit',
+    };
   }
 
-  // Only infer the title from the commit if the branch has just 1 commit.
-  const commits = context.metaCache.getAllCommits(branchName, 'SHA');
-  const singleCommitBody =
-    commits.length === 1 ? getCommitMessage(commits[0], 'BODY') : undefined;
+  const messages = context.metaCache
+    .getAllCommits(branchName, 'MESSAGE')
+    .reverse();
+  const isSingleCommit = messages.length === 1;
+  const commitMessages = isSingleCommit
+    ? messages[0].split('\n').slice(1).join('\n').trim()
+    : messages.join('\n\n');
 
-  return singleCommitBody?.length ? singleCommitBody : undefined;
+  return {
+    body: `${commitMessages}${
+      commitMessages && template ? '\n\n' : ''
+    }${template}`,
+
+    skipDescription: `paste commit message${isSingleCommit ? '' : 's'}${
+      template ? ' and template' : ''
+    }`,
+  };
 }
