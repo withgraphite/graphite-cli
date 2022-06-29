@@ -1,7 +1,7 @@
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { inferPRBody } from '../../../src/actions/submit/pr_body';
-import { inferPRTitle } from '../../../src/actions/submit/pr_title';
+import { getPRTitle } from '../../../src/actions/submit/pr_title';
 import { validateNoEmptyBranches } from '../../../src/actions/submit/validate_branches';
 import { BasicScene } from '../../lib/scenes/basic_scene';
 import { configureTest } from '../../lib/utils/configure_test';
@@ -12,37 +12,42 @@ for (const scene of [new BasicScene()]) {
   describe(`(${scene}): correctly infers submit info from commits`, function () {
     configureTest(this, scene);
 
-    it('can infer title/body from single commit', () => {
+    it('can infer title/body from single commit', async () => {
       const title = 'Test Title';
       const body = ['Test body line 1.', 'Test body line 2.'].join('\n');
       const message = `${title}\n\n${body}`;
 
       scene.repo.execCliCommand(`branch create "a" -m "${message}" -q`);
 
-      expect(inferPRTitle('a', scene.getContext())).to.equals(title);
+      expect(
+        await getPRTitle({ branchName: 'a' }, scene.getContext())
+      ).to.equals(title);
       expect(inferPRBody('a', scene.getContext())).to.equals(body);
     });
 
-    it('can infer just title with no body', () => {
+    it('can infer just title with no body', async () => {
       const title = 'Test Title';
       const commitMessage = title;
 
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "${commitMessage}" -q`);
 
-      expect(inferPRTitle('a', scene.getContext())).to.equals(title);
+      expect(
+        await getPRTitle({ branchName: 'a' }, scene.getContext())
+      ).to.equals(title);
       expect(inferPRBody('a', scene.getContext())).to.be.undefined;
     });
 
-    it('does not infer title/body for multiple commits', async () => {
+    it('can infer title/body from multiple commits', async () => {
       const title = 'Test Title';
-      const commitMessage = title;
 
       scene.repo.createChange('a');
-      scene.repo.execCliCommand(`branch create "a" -m "${commitMessage}" -q`);
-      scene.repo.createChangeAndCommit(commitMessage);
+      scene.repo.execCliCommand(`branch create "a" -m "${title}" -q`);
+      scene.repo.createChangeAndCommit('Second commit subject');
 
-      expect(inferPRTitle('a', scene.getContext())).to.not.equals(title);
+      expect(
+        await getPRTitle({ branchName: 'a' }, scene.getContext())
+      ).to.equals(title);
       expect(inferPRBody('a', scene.getContext())).to.be.undefined;
     });
 
