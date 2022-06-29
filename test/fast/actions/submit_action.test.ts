@@ -22,7 +22,12 @@ for (const scene of [new BasicScene()]) {
       expect(
         await getPRTitle({ branchName: 'a' }, scene.getContext())
       ).to.equals(title);
-      expect(inferPRBody('a', scene.getContext())).to.equals(body);
+      expect(
+        inferPRBody(
+          { branchName: 'a', template: 'template' },
+          scene.getContext()
+        ).body
+      ).to.equals(`${body}\n\ntemplate`);
     });
 
     it('can infer just title with no body', async () => {
@@ -35,20 +40,28 @@ for (const scene of [new BasicScene()]) {
       expect(
         await getPRTitle({ branchName: 'a' }, scene.getContext())
       ).to.equals(title);
-      expect(inferPRBody('a', scene.getContext())).to.be.undefined;
+      expect(
+        inferPRBody(
+          { branchName: 'a', template: 'template' },
+          scene.getContext()
+        ).body
+      ).to.equal('template');
     });
 
     it('can infer title/body from multiple commits', async () => {
       const title = 'Test Title';
+      const secondSubj = 'Second commit subject';
 
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "${title}" -q`);
-      scene.repo.createChangeAndCommit('Second commit subject');
+      scene.repo.createChangeAndCommit(secondSubj);
 
       expect(
         await getPRTitle({ branchName: 'a' }, scene.getContext())
       ).to.equals(title);
-      expect(inferPRBody('a', scene.getContext())).to.be.undefined;
+      expect(
+        inferPRBody({ branchName: 'a' }, scene.getContext()).body
+      ).to.equal(`## ${title}\n\n## ${secondSubj}`);
     });
 
     it('aborts if the branch is empty', async () => {
