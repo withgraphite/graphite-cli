@@ -454,10 +454,13 @@ export function composeMetaCache({
     getAllCommits: (branchName: string, format: TCommitFormat) => {
       assertBranch(branchName);
       const meta = cache.branches[branchName];
-      assertCachedMetaIsValidAndNotTrunk(meta);
+      assertCachedMetaIsValidOrTrunk(meta);
 
       return getCommitRange(
-        meta.parentBranchRevision,
+        // for trunk, commit range is just one commit
+        meta.validationResult === 'TRUNK'
+          ? `${meta.branchRevision}~`
+          : meta.parentBranchRevision,
         meta.branchRevision,
         format
       );
