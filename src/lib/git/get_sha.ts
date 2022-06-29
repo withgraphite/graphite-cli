@@ -19,9 +19,8 @@ export function getSha(ref: string): string | undefined {
 }
 
 export function getRemoteSha(ref: string, remote: string): string | undefined {
-  return (
-    gpExecSync({
-      command: `git ls-remote ${q(remote)} ${q(ref)} | cut -f1 -w`,
-    }) || undefined
-  );
+  const output = gpExecSync({
+    command: `git ls-remote ${q(remote)} ${q(ref)}`,
+  });
+  return output.slice(0, output.search(/\s/)) || undefined;
 }
