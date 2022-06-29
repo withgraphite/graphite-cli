@@ -1,7 +1,7 @@
 import { q } from '../utils/escape_for_shell';
 import { gpExecSyncAndSplitLines } from '../utils/exec_sync';
 
-const FORMAT = { SHA: '%H', READABLE: '%h - %s' } as const;
+const FORMAT = { SHA: '%H', READABLE: '%h - %s', SUBJECT: '%s' } as const;
 export type TCommitFormat = keyof typeof FORMAT;
 
 export function getCommitRange(

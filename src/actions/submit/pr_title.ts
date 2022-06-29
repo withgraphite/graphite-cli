@@ -1,16 +1,20 @@
 import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
-import { getCommitMessage } from '../../lib/git/commit_message';
 
 export async function getPRTitle(
   args: {
     branchName: string;
-    editPRFieldsInline: boolean;
+    editPRFieldsInline?: boolean;
   },
   context: TContext
 ): Promise<string> {
-  const title = inferPRTitle(args.branchName, context);
+  // First check if we have a saved title from a failed submit;
+  // otherwise, use the subject of the oldest commit on the branch.
+  const title =
+    context.metaCache.getPrInfo(args.branchName)?.title ??
+    context.metaCache.getAllCommits(args.branchName, 'SUBJECT').reverse()[0];
+
   if (!args.editPRFieldsInline) {
     return title;
   }
@@ -29,22 +33,4 @@ export async function getPRTitle(
     }
   );
   return response.title ?? title;
-}
-
-export function inferPRTitle(branchName: string, context: TContext): string {
-  const priorSubmitTitle = context.metaCache.getPrInfo(branchName)?.title;
-  if (priorSubmitTitle !== undefined) {
-    return priorSubmitTitle;
-  }
-
-  // Only infer the title from the commit if the branch has just 1 commit.
-  const commits = context.metaCache.getAllCommits(branchName, 'SHA');
-  const singleCommitSubject =
-    commits.length === 1 ? getCommitMessage(commits[0], 'SUBJECT') : undefined;
-
-  return singleCommitSubject?.length
-    ? singleCommitSubject
-    : `Merge ${branchName} into ${context.metaCache.getParentPrecondition(
-        branchName
-      )}`;
 }
