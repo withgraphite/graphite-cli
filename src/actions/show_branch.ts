@@ -1,7 +1,6 @@
 import chalk from 'chalk';
 import { TContext } from '../lib/context';
 import { TBranchPRInfo } from '../lib/engine/metadata_ref';
-import { getCommitterDate } from '../lib/git/committer_date';
 import { showCommits } from '../lib/git/show_commits';
 
 export async function showBranchAction(
@@ -65,10 +64,7 @@ export function getBranchInfo(
         : chalk.yellow(`(needs restack)`)
     }`,
     `${chalk.dim(
-      getCommitterDate({
-        revision: args.branchName,
-        timeFormat: 'RELATIVE_READABLE',
-      })
+      context.metaCache.getAllCommits(args.branchName, 'COMMITTER_DATE')[0]
     )}`,
     ...(prTitleLine ? ['', prTitleLine] : []),
     ...(prInfo?.url ? [chalk.magenta(prInfo.url)] : []),

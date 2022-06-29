@@ -5,6 +5,7 @@ const FORMAT = {
   READABLE: '%h - %s',
   SUBJECT: '%s',
   MESSAGE: '## %B%n',
+  COMMITTER_DATE: '%cr',
 } as const;
 export type TCommitFormat = keyof typeof FORMAT;
 
