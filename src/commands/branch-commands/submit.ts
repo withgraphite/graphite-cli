@@ -24,7 +24,8 @@ export const handler = async (argv: argsT): Promise<void> => {
       {
         scope: SCOPE.BRANCH,
         editPRFieldsInline: argv.edit,
-        draftToggle: argv.draft,
+        draft: argv.draft,
+        publish: argv.publish,
         dryRun: argv['dry-run'],
         updateOnly: argv['update-only'],
         reviewers: argv.reviewers,
