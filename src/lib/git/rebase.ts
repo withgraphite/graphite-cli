@@ -7,11 +7,14 @@ export function rebase(args: {
   onto: string;
   from: string;
   branchName: string;
+  restackCommitterDateIsAuthorDate?: boolean;
 }): TRebaseResult {
   gpExecSync({
-    command: `git rebase --onto ${q(args.onto)} ${q(args.from)} ${q(
-      args.branchName
-    )}`,
+    command: `git rebase ${
+      args.restackCommitterDateIsAuthorDate
+        ? `--committer-date-is-author-date`
+        : ''
+    }--onto ${q(args.onto)} ${q(args.from)} ${q(args.branchName)}`,
     options: { stdio: 'ignore' },
   });
   return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';

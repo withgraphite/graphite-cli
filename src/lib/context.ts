@@ -66,6 +66,8 @@ export function initContext(
     splog: contextLite.splog,
     noVerify: !(opts?.verify ?? true),
     remote: repoConfig.getRemote(),
+    restackCommitterDateIsAuthorDate:
+      contextLite.userConfig.data.restackCommitterDateIsAuthorDate,
   });
   continueConfig?.update((data) => (data.currentBranchOverride = undefined));
   const prInfoConfig = prInfoConfigFactory.loadIfExists();

@@ -142,12 +142,14 @@ export function composeMetaCache({
   splog,
   noVerify,
   remote,
+  restackCommitterDateIsAuthorDate,
 }: {
   trunkName?: string;
   currentBranchOverride?: string;
   splog: TSplog;
   noVerify: boolean;
   remote: string;
+  restackCommitterDateIsAuthorDate?: boolean;
 }): TMetaCache {
   const cache = {
     currentBranch: currentBranchOverride ?? getCurrentBranchName(),
@@ -587,6 +589,7 @@ export function composeMetaCache({
           branchName,
           onto: cachedMeta.parentBranchName,
           from: cachedMeta.parentBranchRevision,
+          restackCommitterDateIsAuthorDate,
         }) === 'REBASE_CONFLICT'
       ) {
         return {
@@ -740,6 +743,7 @@ export function composeMetaCache({
           onto: head,
           from: cachedMeta.parentBranchRevision,
           branchName,
+          restackCommitterDateIsAuthorDate,
         }) === 'REBASE_CONFLICT'
       ) {
         return {
