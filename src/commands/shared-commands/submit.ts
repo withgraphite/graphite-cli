@@ -11,8 +11,11 @@ export const command = 'submit';
  * # skips editing PR fields inline, submits stack as a draft
  * gt stack submit --no-edit
  *
+ * # allows user to edit PR fields inline, then opens as draft
+ * gt stack submit --draft
+ *
  * # allows user to edit PR fields inline, then publishes
- * gt stack submit --no-draft
+ * gt stack submit --publish
  *
  * # same as gt stack submit --no-edit
  * gt stack submit --no-interactive
@@ -21,9 +24,17 @@ export const command = 'submit';
 export const args = {
   draft: {
     describe:
-      'If set, update draft status. If --no-interactive is true, new PRs will be created in draft mode.',
+      'If set, marks PR as draft. If --no-interactive is true, new PRs will be created in draft mode.',
     type: 'boolean',
+    default: false,
     alias: 'd',
+  },
+  publish: {
+    describe:
+      'If set, publishes PR. If --no-interactive is true, new PRs will be created in draft mode.',
+    type: 'boolean',
+    default: false,
+    alias: 'p',
   },
   edit: {
     describe:

@@ -13,7 +13,8 @@ export async function submitAction(
   args: {
     scope: TScopeSpec;
     editPRFieldsInline: boolean;
-    draftToggle: boolean | undefined;
+    draft: boolean;
+    publish: boolean;
     dryRun: boolean;
     updateOnly: boolean;
     reviewers: boolean;
@@ -22,6 +23,12 @@ export async function submitAction(
   context: TContext
 ): Promise<void> {
   // Check CLI pre-condition to warn early
+  if (args.draft && args.publish) {
+    throw new ExitFailedError(
+      `Can't use both --publish and --draft flags in one command`
+    );
+  }
+
   const cliAuthToken = cliAuthPrecondition(context);
   if (args.dryRun) {
     context.splog.info(
@@ -39,7 +46,7 @@ export async function submitAction(
 
     context.splog.info(
       `Running in non-interactive mode. Inline prompts to fill PR fields will be skipped${
-        args.draftToggle === undefined
+        !(args.draft || args.publish)
           ? ' and new PRs will be created in draft mode'
           : ''
       }.`
@@ -68,7 +75,8 @@ export async function submitAction(
     {
       branchNames: branchNames,
       editPRFieldsInline: args.editPRFieldsInline,
-      draftToggle: args.draftToggle,
+      draft: args.draft,
+      publish: args.publish,
       updateOnly: args.updateOnly,
       reviewers: args.reviewers,
       dryRun: args.dryRun,
@@ -103,7 +111,6 @@ export async function submitAction(
           'If you are collaborating on this stack, try `gt downstack sync`  to pull in changes.',
         ].join('\n')
       );
-
       throw new ExitFailedError(err.stdout.toString());
     }
 

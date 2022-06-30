@@ -31,7 +31,8 @@ export async function getPRInfoForBranches(
   args: {
     branchNames: string[];
     editPRFieldsInline: boolean;
-    draftToggle: boolean | undefined;
+    draft: boolean;
+    publish: boolean;
     updateOnly: boolean;
     dryRun: boolean;
     reviewers: boolean;
@@ -44,7 +45,8 @@ export async function getPRInfoForBranches(
         {
           branchName,
           updateOnly: args.updateOnly,
-          draftToggle: args.draftToggle,
+          draft: args.draft,
+          publish: args.publish,
           dryRun: args.dryRun,
         },
         context
@@ -66,7 +68,8 @@ export async function getPRInfoForBranches(
         ? {
             action: 'update' as const,
             prNumber: action.prNumber,
-            draft: args.draftToggle,
+            draft: args.draft,
+            publish: args.draft,
           }
         : {
             action: 'create' as const,
@@ -74,7 +77,8 @@ export async function getPRInfoForBranches(
               {
                 branchName: action.branchName,
                 editPRFieldsInline: args.editPRFieldsInline,
-                draftToggle: args.draftToggle,
+                draft: args.draft,
+                publish: args.publish,
                 reviewers: args.reviewers,
               },
               context
@@ -90,7 +94,8 @@ function getPRAction(
   args: {
     branchName: string;
     updateOnly: boolean;
-    draftToggle: boolean | undefined;
+    draft: boolean;
+    publish: boolean;
     dryRun: boolean;
   },
   context: TContext
@@ -113,9 +118,9 @@ function getPRAction(
       ? 'RESTACK'
       : detectUnsubmittedChanges(args.branchName)
       ? 'CHANGE'
-      : args.draftToggle === true && prInfo.isDraft !== true
+      : args.draft === true && prInfo.isDraft !== true
       ? 'DRAFT'
-      : args.draftToggle === false && prInfo.isDraft !== false
+      : args.publish === true && prInfo.isDraft !== false
       ? 'PUBLISH'
       : 'NOOP';
 
@@ -144,7 +149,8 @@ async function getPRCreationInfo(
   args: {
     branchName: string;
     editPRFieldsInline: boolean;
-    draftToggle: boolean | undefined;
+    draft: boolean;
+    publish: boolean;
     reviewers: boolean;
   },
   context: TContext
@@ -192,7 +198,8 @@ async function getPRCreationInfo(
     fetchReviewers: args.reviewers,
   });
 
-  const createAsDraft = args.draftToggle ?? (await getPRDraftStatus(context));
+  const createAsDraft =
+    (args.draft && !args.publish) ?? (await getPRDraftStatus(context));
 
   return {
     title: submitInfo.title,
