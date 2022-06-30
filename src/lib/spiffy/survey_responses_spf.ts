@@ -1,5 +1,5 @@
 import * as t from '@withgraphite/retype';
-import { composeConfig } from './compose_config';
+import { spiffy } from './spiffy';
 
 const surveyConfigSchema = t.shape({
   responses: t.optional(
@@ -16,7 +16,7 @@ export type TSurveyResponse = NonNullable<
   t.TypeOf<typeof surveyConfigSchema>['responses']
 >;
 
-export const surveyConfigFactory = composeConfig({
+export const surveyConfigFactory = spiffy({
   schema: surveyConfigSchema,
   defaultLocations: [
     {

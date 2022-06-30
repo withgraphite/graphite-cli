@@ -4,9 +4,9 @@ import { request } from '@withgraphite/retyped-routes';
 import prompts from 'prompts';
 import { postSurveyResponse } from '../background_tasks/post_survey';
 import { API_SERVER } from '../lib/api/server';
-import { TSurveyResponse } from '../lib/config/survey_config';
 import { TContext } from '../lib/context';
 import { cliAuthPrecondition } from '../lib/preconditions';
+import { TSurveyResponse } from '../lib/spiffy/survey_responses_spf';
 import { assertUnreachable } from '../lib/utils/assert_unreachable';
 
 type SurveyT = t.UnwrapSchemaMap<

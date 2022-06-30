@@ -1,12 +1,12 @@
 import { getPrInfoForBranches } from '../lib/api/pr_info';
-import { prInfoConfigFactory } from '../lib/config/pr_info_config';
-import { repoConfigFactory } from '../lib/config/repo_config';
-import { userConfigFactory } from '../lib/config/user_config';
 import { TContext } from '../lib/context';
 import {
   getMetadataRefList,
   readMetadataRef,
 } from '../lib/engine/metadata_ref';
+import { prInfoConfigFactory } from '../lib/spiffy/pr_info_spf';
+import { repoConfigFactory } from '../lib/spiffy/repo_config_spf';
+import { userConfigFactory } from '../lib/spiffy/user_config_spf';
 import { spawnDetached } from '../lib/utils/spawn';
 
 export function refreshPRInfoInBackground(context: TContext): void {

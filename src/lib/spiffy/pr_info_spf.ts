@@ -1,8 +1,8 @@
 import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import * as t from '@withgraphite/retype';
-import { composeConfig } from './compose_config';
+import { spiffy } from './spiffy';
 
-export const prInfoConfigFactory = composeConfig({
+export const prInfoConfigFactory = spiffy({
   schema: t.shape({
     prInfoToUpsert: API_ROUTES.pullRequestInfo.response.prs,
   }),

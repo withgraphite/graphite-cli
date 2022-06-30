@@ -1,6 +1,6 @@
 import * as t from '@withgraphite/retype';
 import { getGitEditor } from '../git/git_editor';
-import { composeConfig } from './compose_config';
+import { spiffy } from './spiffy';
 
 const schema = t.shape({
   branchPrefix: t.optional(t.string),
@@ -14,7 +14,7 @@ const schema = t.shape({
   restackCommitterDateIsAuthorDate: t.optional(t.boolean),
 });
 
-export const userConfigFactory = composeConfig({
+export const userConfigFactory = spiffy({
   schema,
   defaultLocations: [
     {

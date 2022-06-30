@@ -1,5 +1,5 @@
-import { cacheLockConfigFactory } from '../config/cache_lock_config';
 import { ConcurrentExecutionError } from '../errors';
+import { cacheLockConfigFactory } from '../spiffy/cache_lock_spf';
 
 export type TCacheLock = {
   lock: () => void;

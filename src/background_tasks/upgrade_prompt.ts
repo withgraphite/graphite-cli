@@ -2,12 +2,12 @@ import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import { version } from '../../package.json';
 import { API_SERVER } from '../lib/api/server';
+import { TContextLite } from '../lib/context';
+import { getUserEmail } from '../lib/git/get_email';
 import {
   messageConfigFactory,
   TMessageConfig,
-} from '../lib/config/message_config';
-import { TContextLite } from '../lib/context';
-import { getUserEmail } from '../lib/git/get_email';
+} from '../lib/spiffy/upgrade_message_spf';
 import { spawnDetached } from '../lib/utils/spawn';
 import { SHOULD_REPORT_TELEMETRY } from './post_traces';
 

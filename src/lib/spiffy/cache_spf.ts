@@ -1,7 +1,7 @@
 import * as t from '@withgraphite/retype';
-import { composeConfig } from './compose_config';
+import { spiffy } from './spiffy';
 
-export const cachePersistenceFactory = composeConfig({
+export const cachePersistenceFactory = spiffy({
   schema: t.array(t.string),
   defaultLocations: [
     {

@@ -5,7 +5,7 @@ import path from 'path';
 import tmp from 'tmp';
 import { version } from '../../package.json';
 import { API_SERVER } from '../lib/api/server';
-import { userConfigFactory } from '../lib/config/user_config';
+import { userConfigFactory } from '../lib/spiffy/user_config_spf';
 import { spawnDetached } from '../lib/utils/spawn';
 import { tracer } from '../lib/utils/tracer';
 

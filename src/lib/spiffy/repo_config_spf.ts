@@ -2,7 +2,7 @@ import * as t from '@withgraphite/retype';
 import { ExitFailedError } from '../errors';
 import { q } from '../utils/escape_for_shell';
 import { gpExecSync } from '../utils/exec_sync';
-import { composeConfig } from './compose_config';
+import { spiffy } from './spiffy';
 
 const schema = t.shape({
   owner: t.optional(t.string),
@@ -12,7 +12,7 @@ const schema = t.shape({
   lastFetchedPRInfoMs: t.optional(t.number),
 });
 
-export const repoConfigFactory = composeConfig({
+export const repoConfigFactory = spiffy({
   schema,
   defaultLocations: [
     {
