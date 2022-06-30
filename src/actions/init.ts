@@ -10,7 +10,13 @@ import { findRemoteBranch } from '../lib/git/find_remote_branch';
 import { checkoutBranch } from './checkout_branch';
 import { trackBranchInteractive } from './track_branch';
 
-export async function init(context: TContext, trunk?: string): Promise<void> {
+export async function init(
+  args: {
+    trunk?: string;
+    reset?: boolean;
+  },
+  context: TContext
+): Promise<void> {
   const allBranchNames = context.metaCache.allBranchNames;
 
   logWelcomeMessage(context);
@@ -27,15 +33,21 @@ export async function init(context: TContext, trunk?: string): Promise<void> {
   }
 
   const newTrunkName: string =
-    (trunk ? allBranchNames.find((b) => b === trunk) : undefined) ??
+    (args.trunk ? allBranchNames.find((b) => b === args.trunk) : undefined) ??
     (await selectTrunkBranch(allBranchNames, context));
 
   context.repoConfig.setTrunk(newTrunkName);
-  context.metaCache.rebuild(newTrunkName);
-
   context.splog.info(`Trunk set to ${chalk.green(newTrunkName)}`);
+
+  if (args.reset) {
+    context.metaCache.reset(newTrunkName);
+    context.splog.info(`All branches have been untracked`);
+  } else {
+    context.metaCache.rebuild(newTrunkName);
+  }
+
   context.splog.info(
-    `Graphite repo config saved at "${context.repoConfig.path}"`
+    `Graphite repo config saved at ${chalk.blueBright(context.repoConfig.path)}`
   );
 
   if (context.interactive) {
@@ -47,9 +59,7 @@ function logWelcomeMessage(context: TContext): void {
   if (!context.repoConfig.graphiteInitialized()) {
     context.splog.info('Welcome to Graphite!');
   } else {
-    context.splog.info(
-      `Regenerating Graphite repo config (${context.repoConfig.path})`
-    );
+    context.splog.info(`Regenerating Graphite repo config...`);
   }
 }
 

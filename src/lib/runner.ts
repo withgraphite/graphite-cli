@@ -124,7 +124,7 @@ async function graphiteHelper(
         `Graphite has not been initialized, attempting to setup now...`
       );
       context.splog.newline();
-      await init(context);
+      await init({}, context);
     }
 
     await handler.run(context);
