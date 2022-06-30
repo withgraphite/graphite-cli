@@ -11,6 +11,7 @@ const schema = t.shape({
   authToken: t.optional(t.string),
   tips: t.optional(t.boolean),
   editor: t.optional(t.string),
+  restackCommitterDateIsAuthorDate: t.optional(t.boolean),
 });
 
 export const userConfigFactory = composeConfig({
