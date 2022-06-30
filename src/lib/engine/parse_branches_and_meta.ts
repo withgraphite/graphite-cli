@@ -14,7 +14,7 @@ type TBranchToParse = {
 } & TMeta;
 
 function getAllBranchesAndMeta(
-  args: Omit<TCacheSeed, 'trunkName'>,
+  args: Omit<TCacheSeed, 'version' | 'trunkName'>,
   splog: TSplog
 ): TBranchToParse[] {
   splog.debug(`Building cache from disk...`);
@@ -38,6 +38,7 @@ function getAllBranchesAndMeta(
 }
 
 export type TCacheSeed = {
+  version: string;
   trunkName: string | undefined;
   gitBranchNamesAndRevisions: Record<string, string>;
   metadataRefList: Record<string, string>;

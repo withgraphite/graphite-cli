@@ -1,3 +1,4 @@
+import { version } from '../../../package.json';
 import { getSha } from '../git/get_sha';
 import { getBranchNamesAndRevisions } from '../git/sorted_branch_names';
 import { gpExecSync } from '../utils/exec_sync';
@@ -14,19 +15,15 @@ export function loadCachedBranches(
   splog: TSplog
 ): Record<string, Readonly<TCachedMeta>> {
   splog.debug('Reading cache seed data...');
-  const cacheKey = {
-    trunkName,
-    gitBranchNamesAndRevisions: getBranchNamesAndRevisions(),
-    metadataRefList: getMetadataRefList(),
-  };
+  const cacheSeed = getCacheSeed(trunkName);
 
   splog.debug('Loading cache...');
   return (
-    (getSha(CACHE_CHECK_REF) === hashCacheOrSeed(cacheKey) &&
+    (getSha(CACHE_CHECK_REF) === hashCacheOrSeed(cacheSeed) &&
       readPersistedCache()) ||
     parseBranchesAndMeta(
       {
-        ...cacheKey,
+        ...cacheSeed,
         trunkName,
       },
       splog
@@ -56,11 +53,7 @@ export function persistCache(
   gpExecSync(
     {
       command: `git update-ref ${CACHE_CHECK_REF} ${hashCacheOrSeed(
-        {
-          trunkName: trunkName,
-          gitBranchNamesAndRevisions: getBranchNamesAndRevisions(),
-          metadataRefList: getMetadataRefList(),
-        },
+        getCacheSeed(trunkName),
         true
       )}`,
     },
@@ -76,6 +69,15 @@ export function persistCache(
     )}`,
   });
   splog.debug(`Persisted cache`);
+}
+
+function getCacheSeed(trunkName: string | undefined): TCacheSeed {
+  return {
+    version,
+    trunkName,
+    gitBranchNamesAndRevisions: getBranchNamesAndRevisions(),
+    metadataRefList: getMetadataRefList(),
+  };
 }
 
 function hashCacheOrSeed(
