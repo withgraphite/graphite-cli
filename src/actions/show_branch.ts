@@ -29,12 +29,11 @@ export async function showBranchAction(
     context.splog.info(description);
   }
 
-  if (context.metaCache.isTrunk(branchName)) {
-    return;
-  }
   context.splog.newline();
   showCommits(
-    context.metaCache.getBaseRevision(branchName),
+    context.metaCache.isTrunk(branchName)
+      ? `${branchName}~`
+      : context.metaCache.getBaseRevision(branchName),
     branchName,
     opts.patch
   );
