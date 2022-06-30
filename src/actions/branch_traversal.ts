@@ -123,13 +123,15 @@ async function handleMultipleChildren(children: string[], context: TContext) {
   return (
     await prompts(
       {
-        type: 'select',
+        type: 'autocomplete',
         name: 'value',
         message:
-          'Multiple branches found at the same level. Select a branch to guide the navigation',
+          'Multiple branches found at the same level. Select a branch to guide the navigation (autocomplete or arrow keys)',
         choices: children.map((b) => {
           return { title: b, value: b };
         }),
+        suggest: (input, choices) =>
+          choices.filter((c: { value: string }) => c.value.includes(input)),
       },
       {
         onCancel: () => {
