@@ -56,9 +56,8 @@ export function writeMetadataRef(
 }
 
 export function readMetadataRef(branchName: string, cwd?: string): TMeta {
-  // TODO: Better account for malformed desc; possibly validate with retype
   try {
-    return JSON.parse(
+    const meta = JSON.parse(
       gpExecSync({
         command: `git cat-file -p refs/branch-metadata/${q(
           branchName
@@ -68,6 +67,8 @@ export function readMetadataRef(branchName: string, cwd?: string): TMeta {
         },
       })
     );
+
+    return metaSchema(meta) ? meta : {};
   } catch {
     return {};
   }
