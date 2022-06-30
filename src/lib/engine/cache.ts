@@ -41,6 +41,7 @@ import {
 } from './cache_loader';
 import {
   deleteMetadataRef,
+  getMetadataRefList,
   TBranchPRInfo,
   writeMetadataRef,
 } from './metadata_ref';
@@ -52,6 +53,7 @@ export type TMetaCache = {
   persist: () => void;
   clear: () => void;
 
+  reset: (newTrunkName?: string) => void;
   rebuild: (newTrunkName?: string) => void;
   trunk: string;
   isTrunk: (branchName: string) => boolean;
@@ -372,6 +374,13 @@ export function composeMetaCache({
     },
     clear() {
       clearPersistedCache(splog);
+    },
+    reset(newTrunkName?: string) {
+      trunkName = newTrunkName ?? trunkName;
+      Object.keys(getMetadataRefList()).forEach((branchName) =>
+        deleteMetadataRef(branchName)
+      );
+      cache.branches = loadCachedBranches(trunkName, splog);
     },
     rebuild(newTrunkName?: string) {
       trunkName = newTrunkName ?? trunkName;
