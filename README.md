@@ -45,4 +45,16 @@ Running one test
 DEBUG=1 yarn test-one "<path to .js test file in dist folder>"
 ```
 
+Running the CLI locally (after build)
+```
+yarn cli <command> (to run `gt <command>`)
+```
+
+Linking `gt` to a locally built version (includes a build)
+```
+yarn develop
+# then, 
+gt <command>
+```
+
 By contributing to the Graphite CLI, you agree to the terms of the Graphite Individual Contributor License Agreement as defined in CLA.md
