@@ -68,7 +68,7 @@ export function getBranchInfo(
     ...(prTitleLine ? ['', prTitleLine] : []),
     ...(prInfo?.url ? [chalk.magenta(prInfo.url)] : []),
     '',
-    ...(args.showCommitNames && !context.metaCache.isTrunk(args.branchName)
+    ...(args.showCommitNames
       ? getCommitLines(
           args.branchName,
           args.showCommitNames === 'REVERSE',
