@@ -1,28 +1,38 @@
+import * as t from '@withgraphite/retype';
 import { cuteString } from '../utils/cute_string';
 import { q } from '../utils/escape_for_shell';
 import { gpExecSync, gpExecSyncAndSplitLines } from '../utils/exec_sync';
 
-type TBranchPRState = 'OPEN' | 'CLOSED' | 'MERGED';
-type TBranchPRReviewDecision =
-  | 'APPROVED'
-  | 'REVIEW_REQUIRED'
-  | 'CHANGES_REQUESTED';
-export type TBranchPRInfo = {
-  number?: number;
-  base?: string;
-  url?: string;
-  title?: string;
-  body?: string;
-  state?: TBranchPRState;
-  reviewDecision?: TBranchPRReviewDecision;
-  isDraft?: boolean;
-};
+export const prInfoSchema = t.shape({
+  number: t.optional(t.number),
+  base: t.optional(t.string),
+  url: t.optional(t.string),
+  title: t.optional(t.string),
+  body: t.optional(t.string),
+  state: t.optional(
+    t.unionMany([
+      t.literal('OPEN' as const),
+      t.literal('CLOSED' as const),
+      t.literal('MERGED' as const),
+    ])
+  ),
+  reviewDecision: t.optional(
+    t.unionMany([
+      t.literal('APPROVED' as const),
+      t.literal('REVIEW_REQUIRED' as const),
+      t.literal('CHANGES_REQUESTED' as const),
+    ])
+  ),
+  isDraft: t.optional(t.boolean),
+});
+export type TBranchPRInfo = t.TypeOf<typeof prInfoSchema>;
 
-export type TMeta = {
-  parentBranchName?: string;
-  parentBranchRevision?: string;
-  prInfo?: TBranchPRInfo;
-};
+export const metaSchema = t.shape({
+  parentBranchName: t.optional(t.string),
+  parentBranchRevision: t.optional(t.string),
+  prInfo: t.optional(prInfoSchema),
+});
+export type TMeta = t.TypeOf<typeof metaSchema>;
 
 export function writeMetadataRef(
   branchName: string,
