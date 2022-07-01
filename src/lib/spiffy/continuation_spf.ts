@@ -1,5 +1,5 @@
 import * as t from '@withgraphite/retype';
-import { composeConfig } from './compose_config';
+import { spiffy } from './spiffy';
 
 /**
  * After Graphite is interrupted by a merge conflict, upon continuing, there
@@ -21,7 +21,7 @@ const ContinueSchema = t.shape({
   rebasedBranchBase: t.optional(t.string),
 });
 
-export const continueConfigFactory = composeConfig({
+export const continueConfigFactory = spiffy({
   schema: ContinueSchema,
   defaultLocations: [
     {

@@ -1,8 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
-import { TRepoConfig } from './config/repo_config';
-import { TUserConfig } from './config/user_config';
 import { TContext } from './context';
 import {
   getMetadataRefList,
@@ -16,6 +14,8 @@ import { deleteBranch } from './git/delete_branch';
 import { getShaOrThrow } from './git/get_sha';
 import { getBranchNamesAndRevisions } from './git/sorted_branch_names';
 import { switchBranch } from './git/switch_branch';
+import { TRepoConfig } from './spiffy/repo_config_spf';
+import { TUserConfig } from './spiffy/user_config_spf';
 import { cuteString } from './utils/cute_string';
 import { q } from './utils/escape_for_shell';
 import { gpExecSync } from './utils/exec_sync';

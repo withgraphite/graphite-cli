@@ -1,9 +1,9 @@
 import { API_ROUTES } from '@withgraphite/graphite-cli-routes';
 import { request } from '@withgraphite/retyped-routes';
 import { API_SERVER } from '../lib/api/server';
-import { surveyConfigFactory } from '../lib/config/survey_config';
-import { userConfigFactory } from '../lib/config/user_config';
 import { TContextLite } from '../lib/context';
+import { surveyConfigFactory } from '../lib/spiffy/survey_responses_spf';
+import { userConfigFactory } from '../lib/spiffy/user_config_spf';
 import { spawnDetached } from '../lib/utils/spawn';
 
 // We try to post the survey response right after the user takes it, but in

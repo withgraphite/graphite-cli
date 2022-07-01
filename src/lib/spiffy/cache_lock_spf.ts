@@ -1,7 +1,7 @@
 import * as t from '@withgraphite/retype';
-import { composeConfig } from './compose_config';
+import { spiffy } from './spiffy';
 
-export const cacheLockConfigFactory = composeConfig({
+export const cacheLockConfigFactory = spiffy({
   schema: t.shape({
     timestamp: t.optional(t.number),
     pid: t.optional(t.number),

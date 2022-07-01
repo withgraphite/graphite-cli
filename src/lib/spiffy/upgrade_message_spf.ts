@@ -1,5 +1,5 @@
 import * as t from '@withgraphite/retype';
-import { composeConfig } from './compose_config';
+import { spiffy } from './spiffy';
 
 const schema = t.shape({
   message: t.optional(
@@ -10,7 +10,7 @@ const schema = t.shape({
   ),
 });
 
-export const messageConfigFactory = composeConfig({
+export const messageConfigFactory = spiffy({
   schema,
   defaultLocations: [
     {
