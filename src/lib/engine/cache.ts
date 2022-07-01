@@ -34,11 +34,7 @@ import {
   assertCachedMetaIsValidOrTrunk,
   TValidCachedMetaExceptTrunk,
 } from './cached_meta';
-import {
-  clearPersistedCache,
-  loadCachedBranches,
-  persistCache,
-} from './cache_loader';
+import { composeCacheLoader } from './cache_loader';
 import {
   deleteMetadataRef,
   getMetadataRefList,
@@ -151,9 +147,11 @@ export function composeMetaCache({
   remote: string;
   restackCommitterDateIsAuthorDate?: boolean;
 }): TMetaCache {
+  const cacheLoader = composeCacheLoader(splog);
+  void cacheLoader;
   const cache = {
     currentBranch: currentBranchOverride ?? getCurrentBranchName(),
-    branches: loadCachedBranches(trunkName, splog),
+    branches: cacheLoader.loadCachedBranches(trunkName),
   };
 
   const assertTrunk = () => {
@@ -372,21 +370,21 @@ export function composeMetaCache({
       splog.debug(cuteString(cache));
     },
     persist() {
-      persistCache(trunkName, cache.branches, splog);
+      cacheLoader.persistCache(trunkName, cache.branches);
     },
     clear() {
-      clearPersistedCache(splog);
+      cacheLoader.clearPersistedCache();
     },
     reset(newTrunkName?: string) {
       trunkName = newTrunkName ?? trunkName;
       Object.keys(getMetadataRefList()).forEach((branchName) =>
         deleteMetadataRef(branchName)
       );
-      cache.branches = loadCachedBranches(trunkName, splog);
+      cache.branches = cacheLoader.loadCachedBranches(trunkName);
     },
     rebuild(newTrunkName?: string) {
       trunkName = newTrunkName ?? trunkName;
-      cache.branches = loadCachedBranches(trunkName, splog);
+      cache.branches = cacheLoader.loadCachedBranches(trunkName);
     },
     get trunk() {
       return assertTrunk();

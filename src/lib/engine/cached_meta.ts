@@ -2,7 +2,7 @@ import * as t from '@withgraphite/retype';
 import { BadTrunkOperationError, UntrackedBranchError } from '../errors';
 import { prInfoSchema } from './metadata_ref';
 
-const cachedMetaSchema = t.intersection(
+export const cachedMetaSchema = t.intersection(
   t.shape({
     children: t.array(t.string),
     branchRevision: t.string,

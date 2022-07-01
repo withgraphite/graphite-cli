@@ -10,14 +10,6 @@ export function getShaOrThrow(ref: string): string {
   );
 }
 
-export function getSha(ref: string): string | undefined {
-  return (
-    gpExecSync({
-      command: `git rev-parse ${q(ref)} 2>/dev/null`,
-    }) || undefined
-  );
-}
-
 export function getRemoteSha(ref: string, remote: string): string | undefined {
   const output = gpExecSync({
     command: `git ls-remote ${q(remote)} ${q(ref)}`,

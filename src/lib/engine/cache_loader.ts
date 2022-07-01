@@ -1,74 +1,56 @@
 import { version } from '../../../package.json';
-import { getSha } from '../git/get_sha';
 import { getBranchNamesAndRevisions } from '../git/sorted_branch_names';
+import { cachePersistenceFactory } from '../spiffy/cache_spf';
 import { gpExecSync } from '../utils/exec_sync';
 import { TSplog } from '../utils/splog';
 import { TCachedMeta } from './cached_meta';
 import { getMetadataRefList } from './metadata_ref';
 import { parseBranchesAndMeta, TCacheSeed } from './parse_branches_and_meta';
 
-const CACHE_CHECK_REF = 'refs/gt-metadata/GRAPHITE_CACHE_CHECK';
-const CACHE_DATA_REF = 'refs/gt-metadata/GRAPHITE_CACHE_DATA';
-
-export function loadCachedBranches(
-  trunkName: string | undefined,
-  splog: TSplog
-): Record<string, Readonly<TCachedMeta>> {
-  splog.debug('Reading cache seed data...');
-  const cacheSeed = getCacheSeed(trunkName);
-
-  splog.debug('Loading cache...');
-  return (
-    (getSha(CACHE_CHECK_REF) === hashCacheOrSeed(cacheSeed) &&
-      readPersistedCache()) ||
-    parseBranchesAndMeta(
-      {
-        ...cacheSeed,
-        trunkName,
-      },
-      splog
-    )
-  );
-}
-
-function readPersistedCache(): Record<string, TCachedMeta> | undefined {
-  // TODO: validate with retype
-  try {
-    return JSON.parse(
-      gpExecSync({
-        command: `git cat-file -p ${CACHE_DATA_REF}`,
-      })
-    );
-  } catch {
-    return undefined;
-  }
-}
-
-export function persistCache(
-  trunkName: string | undefined,
-  cachedBranches: Record<string, TCachedMeta>,
-  splog: TSplog
-): void {
-  splog.debug(`Persisting cache checksum to ${CACHE_CHECK_REF}...`);
-  gpExecSync(
-    {
-      command: `git update-ref ${CACHE_CHECK_REF} ${hashCacheOrSeed(
-        getCacheSeed(trunkName),
-        true
-      )}`,
+type TCacheLoader = {
+  loadCachedBranches(
+    trunkName: string | undefined
+  ): Record<string, Readonly<TCachedMeta>>;
+  persistCache(
+    trunkName: string | undefined,
+    cachedBranches: Record<string, TCachedMeta>
+  ): void;
+  clearPersistedCache(): void;
+};
+export function composeCacheLoader(splog: TSplog): TCacheLoader {
+  const persistedCache = cachePersistenceFactory.load();
+  return {
+    loadCachedBranches: (trunkName: string | undefined) => {
+      splog.debug('Reading cache seed data...');
+      const cacheSeed = getCacheSeed(trunkName);
+      splog.debug('Loading cache...');
+      return (
+        (persistedCache.data.sha === hashSeed(cacheSeed) &&
+          Object.fromEntries(persistedCache.data.branches)) ||
+        parseBranchesAndMeta(
+          {
+            ...cacheSeed,
+            trunkName,
+          },
+          splog
+        )
+      );
     },
-    (err) => {
-      throw err;
-    }
-  );
-  splog.debug(`Persisting cache data to ${CACHE_DATA_REF}...`);
-  gpExecSync({
-    command: `git update-ref ${CACHE_DATA_REF} ${hashCacheOrSeed(
-      cachedBranches,
-      true
-    )}`,
-  });
-  splog.debug(`Persisted cache`);
+    persistCache: (
+      trunkName: string | undefined,
+      cachedBranches: Record<string, TCachedMeta>
+    ) => {
+      splog.debug(`Persisting cache...`);
+      persistedCache.update((data) => {
+        data.sha = hashSeed(getCacheSeed(trunkName));
+        data.branches = Object.entries(cachedBranches);
+      });
+    },
+    clearPersistedCache: () => {
+      splog.debug(`Clearing persisted cache...`);
+      persistedCache.delete();
+    },
+  };
 }
 
 function getCacheSeed(trunkName: string | undefined): TCacheSeed {
@@ -80,13 +62,10 @@ function getCacheSeed(trunkName: string | undefined): TCacheSeed {
   };
 }
 
-function hashCacheOrSeed(
-  data: TCacheSeed | Record<string, TCachedMeta>,
-  write?: boolean
-): string {
+function hashSeed(data: TCacheSeed): string {
   return gpExecSync(
     {
-      command: `git hash-object ${write ? '-w' : ''} --stdin`,
+      command: `git hash-object --stdin`,
       options: {
         input: JSON.stringify(data),
       },
@@ -95,12 +74,4 @@ function hashCacheOrSeed(
       throw err;
     }
   );
-}
-
-export function clearPersistedCache(splog: TSplog): void {
-  splog.debug(`Deleting ${CACHE_CHECK_REF}...`);
-  gpExecSync({ command: `git update-ref -d ${CACHE_CHECK_REF}` });
-  splog.debug(`Deleting ${CACHE_DATA_REF}...`);
-  gpExecSync({ command: `git update-ref -d ${CACHE_DATA_REF}` });
-  splog.debug(`Cleared cache`);
 }
