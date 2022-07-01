@@ -27,7 +27,7 @@ export const prInfoSchema = t.shape({
 });
 export type TBranchPRInfo = t.TypeOf<typeof prInfoSchema>;
 
-export const metaSchema = t.shape({
+const metaSchema = t.shape({
   parentBranchName: t.optional(t.string),
   parentBranchRevision: t.optional(t.string),
   prInfo: t.optional(prInfoSchema),

@@ -1,8 +1,12 @@
 import * as t from '@withgraphite/retype';
+import { cachedMetaSchema } from '../engine/cached_meta';
 import { spiffy } from './spiffy';
 
 export const cachePersistenceFactory = spiffy({
-  schema: t.array(t.string),
+  schema: t.shape({
+    sha: (sha: unknown): sha is string => t.string(sha) && sha.length === 40,
+    branches: t.array(t.tuple([t.string, cachedMetaSchema])),
+  }),
   defaultLocations: [
     {
       relativePath: '.graphite_cache_persist',
@@ -10,10 +14,10 @@ export const cachePersistenceFactory = spiffy({
     },
   ],
   initialize: () => {
-    return [];
+    return {};
   },
   helperFunctions: () => {
     return {};
   },
-  options: { removeIfEmpty: true },
+  options: { removeIfEmpty: true, removeIfInvalid: true },
 });
