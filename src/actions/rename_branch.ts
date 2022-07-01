@@ -1,13 +1,47 @@
 import chalk from 'chalk';
+import prompts from 'prompts';
 import { TContext } from '../lib/context';
-import { ExitFailedError } from '../lib/errors';
+import { ExitFailedError, KilledError } from '../lib/errors';
 import { replaceUnsupportedCharacters } from '../lib/utils/branch_name';
 
-export function renameCurrentBranch(
-  args: { newBranchName: string; force?: boolean },
+async function getNewBranchName(
+  context: TContext,
+  oldBranchName: string
+): Promise<string> {
+  context.splog.newline();
+  context.splog.info(
+    `Enter new name for branch
+    )} ▸ ${chalk.blueBright(oldBranchName)}:`
+  );
+
+  const response = await prompts(
+    {
+      type: 'text',
+      name: 'branchName',
+      message: 'Branch Name',
+      initial: oldBranchName,
+    },
+    {
+      onCancel: () => {
+        throw new KilledError();
+      },
+    }
+  );
+
+  return response.branchName;
+}
+
+export async function renameCurrentBranch(
+  args: { newBranchName?: string; force?: boolean },
   context: TContext
-): void {
+): Promise<void> {
   const oldBranchName = context.metaCache.currentBranchPrecondition;
+
+  const branchName =
+    context.interactive && args.newBranchName
+      ? args.newBranchName
+      : await getNewBranchName(context, oldBranchName);
+
   if (context.metaCache.getPrInfo(oldBranchName)?.number && !args.force) {
     context.splog.tip(
       `Renaming a branch that is already associated with a PR removes the association.`
@@ -18,10 +52,7 @@ export function renameCurrentBranch(
     );
   }
 
-  const newBranchName = replaceUnsupportedCharacters(
-    args.newBranchName,
-    context
-  );
+  const newBranchName = replaceUnsupportedCharacters(branchName, context);
 
   context.metaCache.renameCurrentBranch(newBranchName);
   context.splog.info(
