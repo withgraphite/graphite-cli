@@ -10,7 +10,7 @@ export function pushBranch(opts: {
     {
       command: [
         `git push ${q(opts.remote)}`,
-        `--force-with-lease ${q(opts.branchName)} 2>&1`,
+        `--force ${q(opts.branchName)} 2>&1`,
         ...[opts.noVerify ? ['--no-verify'] : []],
       ].join(' '),
     },
