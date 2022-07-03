@@ -1,5 +1,5 @@
 import * as t from '@withgraphite/retype';
-import { getGitEditor } from '../git/git_editor';
+import { getGitEditor, getGitPager } from '../git/git_config';
 import { spiffy } from './spiffy';
 
 const schema = t.shape({
@@ -11,6 +11,7 @@ const schema = t.shape({
   authToken: t.optional(t.string),
   tips: t.optional(t.boolean),
   editor: t.optional(t.string),
+  pager: t.optional(t.string),
   restackCommitterDateIsAuthorDate: t.optional(t.boolean),
 });
 
@@ -35,6 +36,16 @@ export const userConfigFactory = spiffy({
           process.env.GIT_EDITOR ??
           process.env.EDITOR ??
           'vi'
+        );
+      },
+      getPager: () => {
+        // If we don't have a pager set, do what git would do
+        return (
+          data.pager ??
+          getGitPager() ??
+          process.env.GIT_PAGER ??
+          process.env.PAGER ??
+          'less'
         );
       },
     };

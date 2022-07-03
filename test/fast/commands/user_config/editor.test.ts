@@ -13,21 +13,13 @@ for (const scene of [new BasicScene()]) {
     });
 
     it('Sanity check - can set editor', () => {
-      expect(
-        scene.repo.execCliCommandAndGetOutput(`user editor --set vim`)
-      ).to.equal('Editor set to vim');
-      expect(scene.repo.execCliCommandAndGetOutput(`user editor`)).to.equal(
-        'vim'
-      );
+      scene.repo.execCliCommandAndGetOutput(`user editor --set vim`);
+      expect(scene.getContext().userConfig.getEditor()).to.equal('vim');
     });
 
     it('Sanity check - can unset editor', () => {
-      process.env.GIT_EDITOR = 'vi';
-      expect(
-        scene.repo.execCliCommandAndGetOutput(`user editor --unset`)
-      ).to.equal(
-        'Editor preference erased. Defaulting to your git editor (currently vi)'
-      );
+      scene.repo.execCliCommandAndGetOutput(`user editor --unset`);
+      expect(scene.getContext().userConfig.data.editor).to.equal(undefined);
     });
   });
 }
