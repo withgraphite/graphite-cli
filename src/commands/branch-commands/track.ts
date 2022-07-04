@@ -16,6 +16,13 @@ const args = {
     type: 'string',
     alias: 'p',
   },
+  force: {
+    describe: `Sets the parent to the most recent tracked ancestor of the branch being tracked. Takes precedence over \`--parent\``,
+    demandOption: false,
+    default: false,
+    type: 'boolean',
+    alias: 'f',
+  },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
@@ -33,7 +40,11 @@ export const handler = async (argv: argsT): Promise<void> =>
     canonical,
     async (context) =>
       await trackBranch(
-        { branchName: argv.branch, parentBranchName: argv.parent },
+        {
+          branchName: argv.branch,
+          parentBranchName: argv.parent,
+          force: argv.force,
+        },
         context
       )
   );

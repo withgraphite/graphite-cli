@@ -110,5 +110,37 @@ for (const scene of allScenes) {
       scene.repo.execCliCommand('branch down');
       expect(scene.repo.currentBranchName()).to.eq('a');
     });
+
+    it('Tracks the most recent ancestor when `--force` is passed in', () => {
+      // Create our branch
+      scene.repo.createAndCheckoutBranch('a');
+      scene.repo.createChangeAndCommit('a', 'a');
+      scene.repo.createAndCheckoutBranch('b');
+      scene.repo.createChangeAndCommit('b', 'b');
+      expectCommits(scene.repo, 'b, a, 1');
+
+      scene.repo.checkoutBranch('a');
+
+      expect(() => {
+        scene.repo.execCliCommand('branch track -f');
+      }).not.to.throw();
+
+      expect(() => {
+        scene.repo.execCliCommand('branch down');
+      }).not.to.throw();
+      expect(scene.repo.currentBranchName()).to.eq('main');
+
+      scene.repo.checkoutBranch('b');
+      expect(() => {
+        scene.repo.execCliCommand('branch track -f');
+      }).not.to.throw();
+
+      expect(() => {
+        scene.repo.execCliCommand('branch down');
+      }).not.to.throw();
+      expect(scene.repo.currentBranchName()).to.eq('a');
+
+      scene.repo.checkoutBranch('b');
+    });
   });
 }
