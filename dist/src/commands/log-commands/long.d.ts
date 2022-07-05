@@ -1,0 +1,10 @@
+import yargs from 'yargs';
+declare const args: {};
+export declare const command = "long";
+export declare const description = "Display a graph of the commit ancestry of all branches.";
+export declare const builder: {};
+export declare const aliases: string[];
+export declare const canonical = "log long";
+declare type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
+export declare const handler: (argv: argsT) => Promise<void>;
+export {};
