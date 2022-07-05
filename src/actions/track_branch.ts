@@ -56,6 +56,7 @@ export async function trackBranch(
   args: {
     branchName: string | undefined;
     parentBranchName: string | undefined;
+    force: boolean;
   },
   context: TContext
 ): Promise<void> {
@@ -64,7 +65,7 @@ export async function trackBranch(
     throw new ExitFailedError(`No branch found.`);
   }
 
-  if (!args.parentBranchName) {
+  if (args.force || !args.parentBranchName) {
     const choices = context.metaCache.allBranchNames
       .filter(
         (b) =>
@@ -82,7 +83,7 @@ export async function trackBranch(
       );
     }
 
-    if (choices.length === 1) {
+    if (args.force || choices.length === 1) {
       trackHelper({ branchName, parentBranchName: choices[0].value }, context);
       return;
     }
