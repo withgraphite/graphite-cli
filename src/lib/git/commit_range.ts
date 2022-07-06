@@ -6,6 +6,7 @@ const FORMAT = {
   SUBJECT: '%s',
   MESSAGE: '## %B%n',
   COMMITTER_DATE: '%cr',
+  SHA: '%H',
 } as const;
 export type TCommitFormat = keyof typeof FORMAT;
 

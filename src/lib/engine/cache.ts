@@ -23,6 +23,7 @@ import {
   rebaseContinue,
   rebaseInteractive,
 } from '../git/rebase';
+import { softReset } from '../git/reset_branch';
 import { setRemoteTracking } from '../git/set_remote_tracking';
 import { switchBranch } from '../git/switch_branch';
 import { forceCreateBranch } from '../git/write_branch';
@@ -85,6 +86,7 @@ export type TMetaCache = {
   foldCurrentBranch: (keep: boolean) => void;
   deleteBranch: (branchName: string) => void;
   commit: (opts: TCommitOpts) => void;
+  squashCurrentBranch: (opts: { message?: string; noEdit?: boolean }) => void;
 
   restackBranch: (branchName: string) =>
     | {
@@ -597,6 +599,30 @@ export function composeMetaCache({
       const cachedMeta = cache.branches[cache.currentBranch];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
       commit({ ...opts, noVerify });
+      cache.branches[cache.currentBranch] = {
+        ...cachedMeta,
+        branchRevision: getShaOrThrow(cache.currentBranch),
+      };
+    },
+    squashCurrentBranch: (opts: Pick<TCommitOpts, 'message' | 'noEdit'>) => {
+      assertBranch(cache.currentBranch);
+      const cachedMeta = cache.branches[cache.currentBranch];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+      softReset(
+        getCommitRange(
+          cachedMeta.parentBranchRevision,
+          cachedMeta.branchRevision,
+          'SHA'
+        ).reverse()[0]
+      );
+      commit({
+        ...opts,
+        amend: true,
+        noVerify,
+        rollbackOnError: () => {
+          softReset(cachedMeta.branchRevision);
+        },
+      });
       cache.branches[cache.currentBranch] = {
         ...cachedMeta,
         branchRevision: getShaOrThrow(cache.currentBranch),
