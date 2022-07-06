@@ -8,11 +8,7 @@ async function getNewBranchName(
   context: TContext,
   oldBranchName: string
 ): Promise<string> {
-  context.splog.newline();
-  context.splog.info(
-    `Enter new name for branch
-    )} ▸ ${chalk.blueBright(oldBranchName)}:`
-  );
+  context.splog.info(`Enter new name for ${chalk.blueBright(oldBranchName)}:`);
 
   const response = await prompts(
     {
