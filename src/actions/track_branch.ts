@@ -12,7 +12,8 @@ export async function trackBranchInteractive(
     .filter(
       (branchName) =>
         !context.metaCache.isBranchTracked(branchName) &&
-        context.metaCache.isViableParent(branchName, parentBranchName)
+        (context.metaCache.isTrunk(parentBranchName) ||
+          context.metaCache.isDescendantOf(branchName, parentBranchName))
     )
     .map((branchName) => ({ title: branchName, value: branchName }));
 
@@ -68,17 +69,21 @@ export async function trackBranch(
   if (args.force || !args.parentBranchName) {
     const choices = context.metaCache.allBranchNames
       .filter(
-        (b) =>
-          (context.metaCache.isTrunk(b) ||
-            context.metaCache.isBranchTracked(b)) &&
-          context.metaCache.isViableParent(branchName, b)
+        (potentialParentBranchName) =>
+          context.metaCache.isTrunk(potentialParentBranchName) ||
+          (context.metaCache.isBranchTracked(potentialParentBranchName) &&
+            context.metaCache.isDescendantOf(
+              branchName,
+              potentialParentBranchName
+            ))
       )
       .sort((left, right) => {
         return left === right
           ? 0
-          : context.metaCache.isViableParent(left, right)
-          ? -1 // right is an ancestor of left
-          : 1; // right is not an ancestor of left
+          : context.metaCache.isTrunk(right) ||
+            context.metaCache.isDescendantOf(left, right)
+          ? -1 // left is a descendant of right
+          : 1; // left is not a descendant of right
       })
       .map((b) => {
         return { title: b, value: b };
@@ -129,7 +134,10 @@ export async function trackBranch(
     return;
   }
 
-  if (!context.metaCache.isViableParent(branchName, args.parentBranchName)) {
+  if (
+    !context.metaCache.isTrunk(args.parentBranchName) &&
+    !context.metaCache.isDescendantOf(branchName, args.parentBranchName)
+  ) {
     context.splog.tip(
       `Are you sure that ${chalk.cyan(
         args.parentBranchName
