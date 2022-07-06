@@ -28,6 +28,9 @@ function splitShortcuts(command: string): string[] {
 
 export function getYargsInput(): string[] {
   passthrough(process.argv);
+  if (process.argv.length < 3) {
+    return [];
+  }
   const yargsInput = [
     ...splitShortcuts(process.argv[2]),
     ...process.argv.slice(3),
