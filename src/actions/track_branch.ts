@@ -53,6 +53,98 @@ export async function trackBranchInteractive(
   return true;
 }
 
+function getPotentialParents(
+  args: {
+    branchName: string;
+    onlyTrackedParents: boolean;
+  },
+  context: TContext
+): { title: string; value: string }[] {
+  return context.metaCache.allBranchNames
+    .filter(
+      (potentialParentBranchName) =>
+        context.metaCache.isTrunk(potentialParentBranchName) ||
+        ((!args.onlyTrackedParents ||
+          context.metaCache.isBranchTracked(potentialParentBranchName)) &&
+          context.metaCache.isDescendantOf(
+            args.branchName,
+            potentialParentBranchName
+          ))
+    )
+    .sort((left, right) => {
+      return left === right
+        ? 0
+        : context.metaCache.isTrunk(right) ||
+          context.metaCache.isDescendantOf(left, right)
+        ? -1 // left is a descendant of right
+        : 1; // left is not a descendant of right
+    })
+    .map((b) => {
+      return { title: b, value: b };
+    });
+}
+
+export async function trackStack(
+  args: {
+    branchName?: string;
+    force: boolean;
+  },
+  context: TContext
+): Promise<void> {
+  const force = args.force || !context.interactive;
+  const branchName = args.branchName ?? context.metaCache.currentBranch;
+
+  if (!context.metaCache.branchExists(branchName)) {
+    throw new ExitFailedError(`No branch found.`);
+  }
+
+  if (
+    context.metaCache.isTrunk(branchName) ||
+    context.metaCache.isBranchTracked(branchName)
+  ) {
+    context.splog.info(`${chalk.cyan(branchName)} is already tracked!`);
+    return;
+  }
+  context.splog.debug(`Tracking ${branchName}`);
+
+  const choices = getPotentialParents(
+    { branchName, onlyTrackedParents: false },
+    context
+  );
+
+  if (choices.length === 0) {
+    throw new ExitFailedError(
+      `No possible parents for this branch. Try running \`git rebase ${context.metaCache.trunk} ${branchName}\``
+    );
+  }
+
+  const parentBranchName =
+    choices.length === 1 || force
+      ? choices[0].value
+      : (
+          await prompts(
+            {
+              type: 'autocomplete',
+              name: 'branch',
+              message: `Select a parent for ${branchName} (autocomplete or arrow keys)`,
+              choices,
+              suggest: (input, choices) =>
+                choices.filter((c: { value: string }) =>
+                  c.value.includes(input)
+                ),
+            },
+            {
+              onCancel: () => {
+                throw new KilledError();
+              },
+            }
+          )
+        ).branch;
+
+  await trackStack({ branchName: parentBranchName, force }, context);
+  trackHelper({ branchName, parentBranchName }, context);
+}
+
 export async function trackBranch(
   args: {
     branchName: string | undefined;
@@ -67,27 +159,10 @@ export async function trackBranch(
   }
 
   if (args.force || !args.parentBranchName) {
-    const choices = context.metaCache.allBranchNames
-      .filter(
-        (potentialParentBranchName) =>
-          context.metaCache.isTrunk(potentialParentBranchName) ||
-          (context.metaCache.isBranchTracked(potentialParentBranchName) &&
-            context.metaCache.isDescendantOf(
-              branchName,
-              potentialParentBranchName
-            ))
-      )
-      .sort((left, right) => {
-        return left === right
-          ? 0
-          : context.metaCache.isTrunk(right) ||
-            context.metaCache.isDescendantOf(left, right)
-          ? -1 // left is a descendant of right
-          : 1; // left is not a descendant of right
-      })
-      .map((b) => {
-        return { title: b, value: b };
-      });
+    const choices = getPotentialParents(
+      { branchName, onlyTrackedParents: true },
+      context
+    );
 
     if (choices.length === 0) {
       throw new ExitFailedError(
