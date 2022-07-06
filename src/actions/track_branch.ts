@@ -73,6 +73,13 @@ export async function trackBranch(
             context.metaCache.isBranchTracked(b)) &&
           context.metaCache.isViableParent(branchName, b)
       )
+      .sort((left, right) => {
+        return left === right
+          ? 0
+          : context.metaCache.isViableParent(left, right)
+          ? -1 // right is an ancestor of left
+          : 1; // right is not an ancestor of left
+      })
       .map((b) => {
         return { title: b, value: b };
       });
