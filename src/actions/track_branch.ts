@@ -98,14 +98,23 @@ export async function trackBranch(
       {
         branchName,
         parentBranchName: (
-          await prompts({
-            type: 'autocomplete',
-            name: 'branch',
-            message: `Select a parent for ${branchName} (autocomplete or arrow keys)`,
-            choices,
-            suggest: (input, choices) =>
-              choices.filter((c: { value: string }) => c.value.includes(input)),
-          })
+          await prompts(
+            {
+              type: 'autocomplete',
+              name: 'branch',
+              message: `Select a parent for ${branchName} (autocomplete or arrow keys)`,
+              choices,
+              suggest: (input, choices) =>
+                choices.filter((c: { value: string }) =>
+                  c.value.includes(input)
+                ),
+            },
+            {
+              onCancel: () => {
+                throw new KilledError();
+              },
+            }
+          )
         ).branch,
       },
       context

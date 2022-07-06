@@ -82,19 +82,26 @@ async function selectTrunkBranch(
   }
 
   return (
-    await prompts({
-      type: 'autocomplete',
-      name: 'branch',
-      message: `Select a trunk branch, which you open pull requests against${
-        inferredTrunk ? ` - inferred trunk ${chalk.green(inferredTrunk)}` : ''
-      } (autocomplete or arrow keys)`,
-      choices: allBranchNames.map((b) => {
-        return { title: b, value: b };
-      }),
-      ...(inferredTrunk ? { initial: inferredTrunk } : {}),
-      suggest: (input, choices) =>
-        choices.filter((c: { value: string }) => c.value.includes(input)),
-    })
+    await prompts(
+      {
+        type: 'autocomplete',
+        name: 'branch',
+        message: `Select a trunk branch, which you open pull requests against${
+          inferredTrunk ? ` - inferred trunk ${chalk.green(inferredTrunk)}` : ''
+        } (autocomplete or arrow keys)`,
+        choices: allBranchNames.map((b) => {
+          return { title: b, value: b };
+        }),
+        ...(inferredTrunk ? { initial: inferredTrunk } : {}),
+        suggest: (input, choices) =>
+          choices.filter((c: { value: string }) => c.value.includes(input)),
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    )
   ).branch;
 }
 
