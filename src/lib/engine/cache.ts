@@ -526,6 +526,7 @@ export function composeMetaCache({
         setParent(childBranchName, branchName)
       );
 
+      removeChild(cachedMeta.parentBranchName, cache.currentBranch);
       delete cache.branches[cache.currentBranch];
       deleteMetadataRef(cache.currentBranch);
       cache.currentBranch = branchName;
