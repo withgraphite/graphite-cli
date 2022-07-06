@@ -82,6 +82,7 @@ export type TMetaCache = {
   checkoutNewBranch: (branchName: string) => void;
   checkoutBranch: (branchName: string) => void;
   renameCurrentBranch: (branchName: string) => void;
+  foldCurrentBranch: (keep: boolean) => void;
   deleteBranch: (branchName: string) => void;
   commit: (opts: TCommitOpts) => void;
 
@@ -337,6 +338,17 @@ export function composeMetaCache({
     });
   };
 
+  const deleteAllBranchData = (branchName: string) => {
+    assertBranch(branchName);
+    const cachedMeta = cache.branches[branchName];
+    assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+
+    removeChild(cachedMeta.parentBranchName, branchName);
+    delete cache.branches[branchName];
+    deleteBranch(branchName);
+    deleteMetadataRef(branchName);
+  };
+
   const handleSuccessfulRebase = (
     branchName: string,
     parentBranchRevision: string
@@ -531,6 +543,40 @@ export function composeMetaCache({
       deleteMetadataRef(cache.currentBranch);
       cache.currentBranch = branchName;
     },
+    foldCurrentBranch: (keep: boolean) => {
+      const currentBranchName = cache.currentBranch;
+      assertBranch(currentBranchName);
+      const cachedMeta = cache.branches[currentBranchName];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+      const parentBranchName = cachedMeta.parentBranchName;
+      const parentCachedMeta = cache.branches[parentBranchName];
+      assertCachedMetaIsValidAndNotTrunk(parentCachedMeta);
+
+      if (keep) {
+        updateMeta(currentBranchName, {
+          ...cachedMeta,
+          parentBranchName: parentCachedMeta.parentBranchName,
+          parentBranchRevision: parentCachedMeta.parentBranchRevision,
+        });
+        parentCachedMeta.children
+          .filter((childBranchName) => childBranchName !== currentBranchName)
+          .forEach((childBranchName) =>
+            setParent(childBranchName, currentBranchName)
+          );
+        deleteAllBranchData(parentBranchName);
+      } else {
+        forceCreateBranch(parentBranchName, cachedMeta.branchRevision);
+        updateMeta(parentBranchName, {
+          ...parentCachedMeta,
+          branchRevision: cachedMeta.branchRevision,
+        });
+        cachedMeta.children.forEach((childBranchName) =>
+          setParent(childBranchName, parentBranchName)
+        );
+        checkoutBranch(cachedMeta.parentBranchName);
+        deleteAllBranchData(currentBranchName);
+      }
+    },
     deleteBranch: (branchName: string) => {
       assertBranch(branchName);
       const cachedMeta = cache.branches[branchName];
@@ -543,11 +589,8 @@ export function composeMetaCache({
       cachedMeta.children.forEach((childBranchName) =>
         setParent(childBranchName, cachedMeta.parentBranchName)
       );
-      removeChild(cachedMeta.parentBranchName, branchName);
 
-      delete cache.branches[branchName];
-      deleteBranch(branchName);
-      deleteMetadataRef(branchName);
+      deleteAllBranchData(branchName);
     },
     commit: (opts: TCommitOpts) => {
       assertBranch(cache.currentBranch);
