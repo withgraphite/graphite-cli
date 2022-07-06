@@ -57,4 +57,6 @@ yarn develop
 gt <command>
 ```
 
+Running into difficulties getting the CLI repo set up on your system? Check out [this PR](https://github.com/withgraphite/graphite-cli/pull/1066?no-redirect=1)
+
 By contributing to the Graphite CLI, you agree to the terms of the Graphite Individual Contributor License Agreement as defined in CLA.md
