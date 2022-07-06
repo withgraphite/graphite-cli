@@ -115,9 +115,7 @@ for (const scene of allScenes) {
       // Create our branch
       scene.repo.createAndCheckoutBranch('a');
       scene.repo.createChangeAndCommit('a', 'a');
-      scene.repo.createAndCheckoutBranch('b');
-      scene.repo.createChangeAndCommit('b', 'b');
-      expectCommits(scene.repo, 'b, a, 1');
+      expectCommits(scene.repo, 'a, 1');
 
       scene.repo.checkoutBranch('a');
 
@@ -130,7 +128,11 @@ for (const scene of allScenes) {
       }).not.to.throw();
       expect(scene.repo.currentBranchName()).to.eq('main');
 
-      scene.repo.checkoutBranch('b');
+      scene.repo.execCliCommand('branch up');
+      scene.repo.createAndCheckoutBranch('b');
+      scene.repo.createChangeAndCommit('b', 'b');
+      expectCommits(scene.repo, 'b, a, 1');
+
       expect(() => {
         scene.repo.execCliCommand('branch track -f');
       }).not.to.throw();
@@ -139,8 +141,6 @@ for (const scene of allScenes) {
         scene.repo.execCliCommand('branch down');
       }).not.to.throw();
       expect(scene.repo.currentBranchName()).to.eq('a');
-
-      scene.repo.checkoutBranch('b');
     });
   });
 }
