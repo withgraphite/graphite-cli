@@ -68,8 +68,7 @@ export async function getPRInfoForBranches(
         ? {
             action: 'update' as const,
             prNumber: action.prNumber,
-            draft: args.draft,
-            publish: args.draft,
+            draft: args.draft ? true : args.publish ? false : undefined,
           }
         : {
             action: 'create' as const,
@@ -198,8 +197,11 @@ async function getPRCreationInfo(
     fetchReviewers: args.reviewers,
   });
 
-  const createAsDraft =
-    (args.draft && !args.publish) ?? (await getPRDraftStatus(context));
+  const createAsDraft = args.draft
+    ? true
+    : args.publish
+    ? false
+    : await getPRDraftStatus(context);
 
   return {
     title: submitInfo.title,
