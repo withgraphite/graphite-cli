@@ -1,0 +1,1 @@
+{"version":3,"file":"write_branch.js","sourceRoot":"","sources":["../../../../src/lib/git/write_branch.ts"],"names":[],"mappings":";;;AAAA,gEAA8C;AAC9C,kDAAgD;AAEhD,SAAgB,iBAAiB,CAAC,UAAkB,EAAE,GAAW;IAC/D,IAAA,sBAAU,EAAC;QACT,OAAO,EAAE,iBAAiB,IAAA,oBAAC,EAAC,UAAU,CAAC,IAAI,IAAA,oBAAC,EAAC,GAAG,CAAC,EAAE;KACpD,CAAC,CAAC;AACL,CAAC;AAJD,8CAIC"}

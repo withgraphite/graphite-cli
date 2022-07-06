@@ -1,0 +1,1 @@
+{"version":3,"file":"delete_branch.js","sourceRoot":"","sources":["../../../../src/lib/git/delete_branch.ts"],"names":[],"mappings":";;;AAAA,gEAA8C;AAC9C,kDAAgD;AAEhD,SAAgB,YAAY,CAAC,UAAkB;IAC7C,IAAA,sBAAU,EAAC;QACT,OAAO,EAAE,kBAAkB,IAAA,oBAAC,EAAC,UAAU,CAAC,EAAE;KAC3C,CAAC,CAAC;AACL,CAAC;AAJD,oCAIC"}
