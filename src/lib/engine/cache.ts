@@ -57,7 +57,7 @@ export type TMetaCache = {
   branchExists(branchName: string | undefined): branchName is string;
   allBranchNames: string[];
   isBranchTracked: (branchName: string) => boolean;
-  isViableParent: (branchName: string, parentBranchName: string) => boolean;
+  isDescendantOf: (branchName: string, parentBranchName: string) => boolean;
   trackBranch: (branchName: string, parentBranchName: string) => void;
   untrackBranch: (branchName: string) => void;
 
@@ -174,23 +174,13 @@ export function composeMetaCache({
     }
   };
 
-  const isViableParent = (branchName: string, parentBranchName: string) => {
+  const isDescendantOf = (branchName: string, parentBranchName: string) => {
     assertBranch(branchName);
     assertBranch(parentBranchName);
-
-    const parentMeta = cache.branches[parentBranchName];
-    assertCachedMetaIsValidOrTrunk(parentMeta);
-
-    const mergeBase = getMergeBase(branchName, parentBranchName);
     return (
-      // A branch cannot be its own parent
       branchName !== parentBranchName &&
-      // There is a rare failure mode where no merge base exists at all
-      mergeBase !== '' &&
-      // We allow children of trunk to be tracked even if they are behind.
-      // So only fail if the parent is not trunk AND the branch is behind
-      (parentMeta.validationResult === 'TRUNK' ||
-        mergeBase === parentMeta.branchRevision)
+      getMergeBase(branchName, parentBranchName) ===
+        cache.branches[parentBranchName].branchRevision
     );
   };
 
@@ -398,13 +388,11 @@ export function composeMetaCache({
       assertBranch(branchName);
       return cache.branches[branchName].validationResult === 'VALID';
     },
-    isViableParent: isViableParent,
+    isDescendantOf: isDescendantOf,
     trackBranch: (branchName: string, parentBranchName: string) => {
-      if (!isViableParent(branchName, parentBranchName)) {
-        throw new PreconditionsFailedError(
-          `Can't track ${branchName} with parent ${parentBranchName}`
-        );
-      }
+      assertBranch(branchName);
+      assertBranch(parentBranchName);
+      assertCachedMetaIsValidOrTrunk(cache.branches[parentBranchName]);
 
       updateMeta(branchName, {
         ...cache.branches[branchName],
