@@ -24,6 +24,10 @@ for (const scene of allScenes) {
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
+
+      // ensure that continue state is not affected by running another command
+      scene.repo.execCliCommand('log');
+
       scene.repo.execCliCommand('continue');
 
       // Continue should finish the work that stack fix started, not only

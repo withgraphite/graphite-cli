@@ -1,5 +1,6 @@
 import { upsertPrInfoForBranches } from '../actions/sync_pr_info';
 import { composeMetaCache, TMetaCache } from './engine/cache';
+import { rebaseInProgress } from './git/rebase_in_progress';
 import {
   continueConfigFactory,
   TContinueConfig,
@@ -66,6 +67,9 @@ export function initContext(
 ): TContext {
   const repoConfig = repoConfigFactory.load();
   const continueConfig = continueConfigFactory.load();
+  if (!rebaseInProgress()) {
+    continueConfig.delete();
+  }
   const metaCache = composeMetaCache({
     trunkName: repoConfig.data.trunk,
     currentBranchOverride: continueConfig?.data.currentBranchOverride,
@@ -75,7 +79,6 @@ export function initContext(
     restackCommitterDateIsAuthorDate:
       contextLite.userConfig.data.restackCommitterDateIsAuthorDate,
   });
-  continueConfig?.update((data) => (data.currentBranchOverride = undefined));
   const prInfoConfig = prInfoConfigFactory.loadIfExists();
   if (prInfoConfig) {
     upsertPrInfoForBranches(prInfoConfig.data.prInfoToUpsert ?? [], metaCache);
