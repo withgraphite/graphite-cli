@@ -36,6 +36,23 @@ export function logAction(
   }
 }
 
+export function logForConflictStatus(
+  rebaseHead: string,
+  context: TContext
+): void {
+  getStackLines(
+    {
+      short: true,
+      reverse: false,
+      branchName: rebaseHead,
+      indentLevel: 0,
+      steps: 1,
+      noStyleBranchName: true,
+    },
+    context
+  ).forEach((line) => context.splog.info(line));
+}
+
 export async function interactiveBranchSelection(
   opts: { message: string; omitCurrentBranch?: boolean },
   context: TContext

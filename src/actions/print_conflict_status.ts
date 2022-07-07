@@ -4,7 +4,7 @@ import {
   getRebaseHead,
   getUnmergedFiles,
 } from '../lib/git/merge_conflict_help';
-import { logAction } from './log';
+import { logForConflictStatus } from './log';
 
 export function printConflictStatus(
   errMessage: string,
@@ -21,12 +21,12 @@ export function printConflictStatus(
   );
   context.splog.newline();
 
-  context.splog.info(chalk.yellow(`You are here:`));
   try {
-    logAction(
-      { style: 'SHORT', reverse: false, branchName: getRebaseHead(), steps: 3 },
-      context
+    const rebaseHead = getRebaseHead();
+    context.splog.info(
+      chalk.yellow(`You are here (resolving ${chalk.yellow(rebaseHead)}):`)
     );
+    logForConflictStatus(rebaseHead, context);
     context.splog.newline();
   } catch {
     // Silently fail if there is an issue getting the rebase head.
@@ -34,7 +34,9 @@ export function printConflictStatus(
     // to get the info we need.  There is likely a way for metaCache to do this.
   }
 
-  context.splog.info(`To fix and continue your previous Graphite command:`);
+  context.splog.info(
+    chalk.yellow(`To fix and continue your previous Graphite command:`)
+  );
   context.splog.info(`(1) resolve the listed merge conflicts`);
   context.splog.info(`(2) mark them as resolved with ${chalk.cyan(`gt add`)}`);
   context.splog.info(
