@@ -30,7 +30,7 @@ export const continueConfigFactory = spiffy({
     },
   ],
   initialize: () => {
-    return { branchNames: [] };
+    return {};
   },
   helperFunctions: () => {
     return {} as const;
