@@ -235,6 +235,10 @@ export function composeMetaCache({
       return;
     }
 
+    assertBranch(parentBranchName);
+    const parentCachedMeta = cache.branches[parentBranchName];
+    assertCachedMetaIsValidOrTrunk(parentCachedMeta);
+
     updateMeta(branchName, { ...cachedMeta, parentBranchName });
   };
 
