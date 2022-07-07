@@ -22,7 +22,7 @@ const args = {
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = 'test <command>';
-export const canonical = 'upstack test';
+export const canonical = 'downstack test';
 export const aliases = ['t'];
 export const description =
   'From trunk to the current branch, run the provided command on each branch and aggregate the results.';

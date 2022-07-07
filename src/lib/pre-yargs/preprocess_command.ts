@@ -23,6 +23,13 @@ function splitShortcuts(command: string): string[] {
     return [command.slice(0, 2), command[2]];
   }
 
+  if (
+    command.length === 4 &&
+    ['dstr'].includes(command) // special case four-letter shortcuts
+  ) {
+    return [command.slice(0, 2), command.slice(2)];
+  }
+
   return [command];
 }
 
