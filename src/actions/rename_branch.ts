@@ -38,6 +38,13 @@ export async function renameCurrentBranch(
       ? args.newBranchName
       : await getNewBranchName(context, oldBranchName);
 
+  if (oldBranchName === branchName) {
+    context.splog.info(
+      `Current branch is already named ${chalk.cyan(oldBranchName)}`
+    );
+    return;
+  }
+
   if (context.metaCache.getPrInfo(oldBranchName)?.number && !args.force) {
     context.splog.tip(
       `Renaming a branch that is already associated with a PR removes the association.`

@@ -530,6 +530,9 @@ export function composeMetaCache({
     checkoutBranch,
     renameCurrentBranch: (branchName: string) => {
       assertBranch(cache.currentBranch);
+      if (branchName === cache.currentBranch) {
+        return;
+      }
       const cachedMeta = cache.branches[cache.currentBranch];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
 
