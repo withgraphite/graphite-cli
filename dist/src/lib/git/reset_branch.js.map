@@ -1,0 +1,1 @@
+{"version":3,"file":"reset_branch.js","sourceRoot":"","sources":["../../../../src/lib/git/reset_branch.ts"],"names":[],"mappings":";;;AAAA,gEAA8C;AAC9C,kDAAgD;AAEhD,SAAgB,SAAS,CAAC,GAAW;IACnC,IAAA,sBAAU,EAAC;QACT,OAAO,EAAE,oBAAoB,IAAA,oBAAC,EAAC,GAAG,CAAC,EAAE;KACtC,CAAC,CAAC;AACL,CAAC;AAJD,8BAIC"}
