@@ -1,4 +1,5 @@
 import { ExitFailedError } from '../errors';
+import { q } from '../utils/escape_for_shell';
 import { gpExecSync } from '../utils/exec_sync';
 
 export type TCommitOpts = {
@@ -8,21 +9,17 @@ export type TCommitOpts = {
   rollbackOnError?: () => void;
 };
 export function commit(opts: TCommitOpts & { noVerify: boolean }): void {
-  // We must escape all backticks in the string
-  const message = opts.message?.replace(/`/g, '\\`');
-
   gpExecSync(
     {
       command: [
         'git commit',
         opts.amend ? `--amend` : '',
-        message ? `-m "${message}"` : '',
+        opts.message ? `-m ${q(opts.message)}` : '',
         opts.noEdit ? `--no-edit` : '',
         opts.noVerify ? '-n' : '',
       ].join(' '),
       options: {
         stdio: 'inherit',
-        shell: '/bin/bash',
       },
     },
     (err) => {
