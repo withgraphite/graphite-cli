@@ -63,7 +63,8 @@ export function getBranchInfo(
         : chalk.yellow(`(needs restack)`)
     }`,
     `${chalk.dim(
-      context.metaCache.getAllCommits(args.branchName, 'COMMITTER_DATE')[0]
+      context.metaCache.getAllCommits(args.branchName, 'COMMITTER_DATE')[0] ??
+        ''
     )}`,
     ...(prTitleLine ? ['', prTitleLine] : []),
     ...(prInfo?.url ? [chalk.magenta(prInfo.url)] : []),
