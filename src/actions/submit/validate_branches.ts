@@ -63,12 +63,18 @@ function validateBaseRevisions(branchNames: string[], context: TContext): void {
     const parentBranchName =
       context.metaCache.getParentPrecondition(branchName);
     if (context.metaCache.isTrunk(parentBranchName)) {
-      // valid
+      if (!context.metaCache.isBranchFixed(branchName)) {
+        context.splog.info(
+          `Note that ${chalk.yellow(
+            branchName
+          )} is not restacked on trunk. You may encounter conflicts if you attempt to merge it.`
+        );
+      }
     } else if (validatedBranches.has(parentBranchName)) {
       if (!context.metaCache.isBranchFixed(branchName)) {
         throw new ExitFailedError(
           [
-            `You are trying to submit at least one branch that has not been restacked.`,
+            `You are trying to submit at least one branch that has not been restacked on its parent.`,
             `Please restack upstack from ${chalk.yellow(
               branchName
             )} and try again.`,
