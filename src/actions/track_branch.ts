@@ -11,6 +11,7 @@ export async function trackBranchInteractive(
   const choices = context.metaCache.allBranchNames
     .filter(
       (branchName) =>
+        !context.metaCache.isTrunk(branchName) &&
         !context.metaCache.isBranchTracked(branchName) &&
         (context.metaCache.isTrunk(parentBranchName) ||
           context.metaCache.isDescendantOf(branchName, parentBranchName))
