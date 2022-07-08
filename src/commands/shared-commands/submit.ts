@@ -43,6 +43,13 @@ export const args = {
     default: true,
     alias: 'e',
   },
+  'no-edit': {
+    type: 'boolean',
+    describe: "Don't edit PR fields inline. Takes precedence over --edit",
+    demandOption: false,
+    default: false,
+    alias: 'n',
+  },
   reviewers: {
     describe: 'Prompt to manually set reviewers if true',
     type: 'boolean',
