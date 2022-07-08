@@ -28,19 +28,14 @@ export async function createBranchAction(
 
   context.metaCache.checkoutNewBranch(branchName);
 
-  const isAddingEmptyCommit = !detectStagedChanges();
-
-  /**
-   * Here, we silence errors and ignore them. This
-   * isn't great but our main concern is that we're able to create
-   * and check out the new branch and these types of error point to
-   * larger failure outside of our control.
-   */
-  context.metaCache.commit({
-    allowEmpty: isAddingEmptyCommit,
-    message: opts.message,
-    rollbackOnError: () => context.metaCache.deleteBranch(branchName),
-  });
+  if (detectStagedChanges()) {
+    context.metaCache.commit({
+      message: opts.message,
+      rollbackOnError: () => context.metaCache.deleteBranch(branchName),
+    });
+  } else {
+    context.splog.info(`No staged changes; created a branch with no commit.`);
+  }
 
   // The reason we get the list of siblings here instead of having all
   // the `--insert` logic in a separate function is so that we only

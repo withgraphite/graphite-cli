@@ -17,6 +17,7 @@ for (const scene of [new BasicScene()]) {
       const body = ['Test body line 1.', 'Test body line 2.'].join('\n');
       const message = `${title}\n\n${body}`;
 
+      scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "${message}" -q`);
 
       expect(
