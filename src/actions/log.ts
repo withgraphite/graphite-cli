@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
+import { suggest } from '../lib/utils/prompts_helpers';
 import { getBranchInfo } from './show_branch';
 
 export function logAction(
@@ -99,8 +100,7 @@ export async function interactiveBranchSelection(
         message: opts.message,
         choices,
         initial,
-        suggest: (input, choices) =>
-          choices.filter((c: { value: string }) => c.value.includes(input)),
+        suggest,
       },
       {
         onCancel: () => {

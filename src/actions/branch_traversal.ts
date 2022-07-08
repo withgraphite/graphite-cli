@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
+import { suggest } from '../lib/utils/prompts_helpers';
 
 type TBranchNavigation =
   | {
@@ -130,8 +131,7 @@ async function handleMultipleChildren(children: string[], context: TContext) {
         choices: children.map((b) => {
           return { title: b, value: b };
         }),
-        suggest: (input, choices) =>
-          choices.filter((c: { value: string }) => c.value.includes(input)),
+        suggest,
       },
       {
         onCancel: () => {

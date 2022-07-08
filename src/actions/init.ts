@@ -7,6 +7,7 @@ import {
   PreconditionsFailedError,
 } from '../lib/errors';
 import { findRemoteBranch } from '../lib/git/find_remote_branch';
+import { suggest } from '../lib/utils/prompts_helpers';
 import { checkoutBranch } from './checkout_branch';
 import { trackBranchInteractive } from './track_branch';
 
@@ -93,8 +94,7 @@ async function selectTrunkBranch(
           return { title: b, value: b };
         }),
         ...(inferredTrunk ? { initial: inferredTrunk } : {}),
-        suggest: (input, choices) =>
-          choices.filter((c: { value: string }) => c.value.includes(input)),
+        suggest,
       },
       {
         onCancel: () => {

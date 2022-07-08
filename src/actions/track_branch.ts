@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
+import { suggest } from '../lib/utils/prompts_helpers';
 import { checkoutBranch } from './checkout_branch';
 
 export async function trackBranchInteractive(
@@ -34,8 +35,7 @@ export async function trackBranchInteractive(
         name: 'value',
         message: `Enter a branch to track as a child of ${parentBranchName} (autocomplete or arrow keys)`,
         choices,
-        suggest: (input, choices) =>
-          choices.filter((c: { value: string }) => c.value.includes(input)),
+        suggest,
       },
       {
         onCancel: () => {
@@ -129,10 +129,7 @@ export async function trackStack(
               name: 'branch',
               message: `Select a parent for ${branchName} (autocomplete or arrow keys)`,
               choices,
-              suggest: (input, choices) =>
-                choices.filter((c: { value: string }) =>
-                  c.value.includes(input)
-                ),
+              suggest,
             },
             {
               onCancel: () => {
@@ -192,10 +189,7 @@ export async function trackBranch(
               name: 'branch',
               message: `Select a parent for ${branchName} (autocomplete or arrow keys)`,
               choices,
-              suggest: (input, choices) =>
-                choices.filter((c: { value: string }) =>
-                  c.value.includes(input)
-                ),
+              suggest,
             },
             {
               onCancel: () => {
