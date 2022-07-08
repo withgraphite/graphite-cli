@@ -11,7 +11,7 @@ function splitShortcuts(command: string): string[] {
 
   if (
     command.length === 3 &&
-    ['bco', 'bdl', 'btr', 'but', 'brn', 'bsq', 'dpr'].includes(command) // special case three-letter shortcuts
+    ['bco', 'bdl', 'btr', 'but', 'brn', 'bsq', 'bsp', 'dpr'].includes(command) // special case three-letter shortcuts
   ) {
     return [command[0], command.slice(1)];
   }
