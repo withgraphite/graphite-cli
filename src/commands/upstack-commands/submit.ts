@@ -23,7 +23,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     await submitAction(
       {
         scope: SCOPE.UPSTACK,
-        editPRFieldsInline: argv.edit,
+        editPRFieldsInline: !argv['no-edit'] && argv.edit,
         draft: argv.draft,
         publish: argv.publish,
         dryRun: argv['dry-run'],
