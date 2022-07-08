@@ -159,7 +159,7 @@ async function getPRCreationInfo(
   reviewers: string[];
   draft: boolean;
 }> {
-  if (context.interactive) {
+  if (context.interactive && args.editPRFieldsInline) {
     context.splog.newline();
     context.splog.info(
       `Enter info for new pull request for ${chalk.cyan(
