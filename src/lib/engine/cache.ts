@@ -28,7 +28,7 @@ import {
   rebaseContinue,
   rebaseInteractive,
 } from '../git/rebase';
-import { softReset } from '../git/reset_branch';
+import { softReset, trackedReset } from '../git/reset_branch';
 import { setRemoteTracking } from '../git/set_remote_tracking';
 import { cuteString } from '../utils/cute_string';
 import { TSplog } from '../utils/splog';
@@ -90,6 +90,8 @@ export type TMetaCache = {
   deleteBranch: (branchName: string) => void;
   commit: (opts: TCommitOpts) => void;
   squashCurrentBranch: (opts: { message?: string; noEdit?: boolean }) => void;
+
+  startSplit: () => void;
 
   restackBranch: (branchName: string) =>
     | {
@@ -659,6 +661,14 @@ export function composeMetaCache({
         ...cachedMeta,
         branchRevision: getShaOrThrow(cache.currentBranch),
       };
+    },
+    startSplit() {
+      const branchName = cache.currentBranch;
+      assertBranch(branchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+      switchBranch(cachedMeta.branchRevision, { detach: true });
+      trackedReset(cachedMeta.parentBranchRevision);
     },
     restackBranch: (branchName: string) => {
       assertBranch(branchName);
