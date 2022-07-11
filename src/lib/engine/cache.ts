@@ -474,7 +474,7 @@ export function composeMetaCache({
       return getCommitRange(
         // for trunk, commit range is just one commit
         meta.validationResult === 'TRUNK'
-          ? `${meta.branchRevision}~`
+          ? undefined
           : meta.parentBranchRevision,
         meta.branchRevision,
         format
