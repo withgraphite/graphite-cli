@@ -19,6 +19,7 @@
   },
   "scripts": {
     "prepublishOnly": "yarn build",
+    "preinstall": "node scripts/node_version.js",
     "lint": "eslint src --quiet --ext .ts --cache",
     "check": "tsc --noEmit",
     "build": "rm -rf dist/ && yarn lint && tsc",
