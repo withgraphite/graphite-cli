@@ -11,17 +11,27 @@ const FORMAT = {
 export type TCommitFormat = keyof typeof FORMAT;
 
 export function getCommitRange(
-  base: string,
+  base: string | undefined,
   head: string,
   format: TCommitFormat
 ): string[] {
-  return gpExecSyncAndSplitLines({
-    command: `git --no-pager log --pretty=format:"%H" ${q(base)}..${q(head)}`,
-  }).map((sha) =>
-    gpExecSync({
-      command: `git --no-pager log -1 --pretty=format:"${FORMAT[format]}" ${q(
-        sha
-      )}`,
-    })
-  );
+  return base // if no base is passed in, just get one commit (e.g. trunk)
+    ? gpExecSyncAndSplitLines({
+        command: `git --no-pager log --pretty=format:"%H" ${q(base)}..${q(
+          head
+        )}`,
+      }).map((sha) =>
+        gpExecSync({
+          command: `git --no-pager log -1 --pretty=format:"${
+            FORMAT[format]
+          }" ${q(sha)}`,
+        })
+      )
+    : [
+        gpExecSync({
+          command: `git --no-pager log -1 --pretty=format:"${
+            FORMAT[format]
+          }" ${q(head)}`,
+        }),
+      ];
 }
