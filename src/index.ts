@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import chalk from 'chalk';
-import semver from 'semver';
 import tmp from 'tmp';
 import yargs from 'yargs';
 import { postTelemetryInBackground } from './background_tasks/post_traces';
@@ -12,14 +11,6 @@ import { getYargsInput } from './lib/pre-yargs/preprocess_command';
 // while still showing us warnings when we test with DEBUG=1
 if (!process.env.DEBUG) {
   process.removeAllListeners('warning');
-}
-const requiredVersion = '>=v14';
-if (!semver.satisfies(process.version, requiredVersion)) {
-  console.error(
-    `Required node version ${requiredVersion} not satisfied with current version ${process.version}.`
-  );
-  // eslint-disable-next-line no-restricted-syntax
-  process.exit(1);
 }
 
 // https://www.npmjs.com/package/tmp#graceful-cleanup
