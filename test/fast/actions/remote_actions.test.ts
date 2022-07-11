@@ -14,7 +14,12 @@ for (const scene of [new CloneScene()]) {
       scene.repo.execCliCommand(`branch create 1 -am "1"`);
       expect(scene.repo.currentBranchName()).to.equal('1');
 
-      pushBranch({ remote: 'origin', branchName: '1', noVerify: false });
+      pushBranch({
+        remote: 'origin',
+        branchName: '1',
+        noVerify: false,
+        forcePush: false,
+      });
 
       expect(scene.repo.getRef('refs/heads/1')).to.equal(
         scene.originRepo.getRef('refs/heads/1')
@@ -33,7 +38,12 @@ for (const scene of [new CloneScene()]) {
       );
 
       expect(() =>
-        pushBranch({ remote: 'origin', branchName: '1', noVerify: false })
+        pushBranch({
+          remote: 'origin',
+          branchName: '1',
+          noVerify: false,
+          forcePush: false,
+        })
       ).to.throw();
     });
 

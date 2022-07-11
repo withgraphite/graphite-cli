@@ -5,12 +5,15 @@ export function pushBranch(opts: {
   remote: string;
   branchName: string;
   noVerify: boolean;
+  forcePush: boolean;
 }): void {
+  const forceOption = opts.forcePush ? '--force' : '--force-with-lease';
+
   gpExecSync(
     {
       command: [
         `git push ${q(opts.remote)}`,
-        `--force-with-lease ${q(opts.branchName)} 2>&1`,
+        `${forceOption} ${q(opts.branchName)} 2>&1`,
         ...[opts.noVerify ? ['--no-verify'] : []],
       ].join(' '),
     },

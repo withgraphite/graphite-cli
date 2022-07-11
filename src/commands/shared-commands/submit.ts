@@ -75,6 +75,12 @@ export const args = {
     default: false,
     alias: 'u',
   },
+  force: {
+    describe:
+      'Force push: overwrites the remote branch with your local branch. Otherwise defaults to --force-with-lease.',
+    type: 'boolean',
+    default: false,
+  },
 } as const;
 
 export const builder = args;

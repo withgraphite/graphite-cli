@@ -114,7 +114,7 @@ export type TMetaCache = {
   isBranchEmpty: (branchName: string) => boolean;
   baseMatchesRemoteParent: (branchName: string) => boolean;
 
-  pushBranch: (branchName: string) => void;
+  pushBranch: (branchName: string, forcePush: boolean) => void;
   pullTrunk: () => 'PULL_DONE' | 'PULL_UNNEEDED';
 
   fetchBranch: (branchName: string, parentBranchName: string) => void;
@@ -724,11 +724,11 @@ export function composeMetaCache({
 
       return cachedMeta.parentBranchRevision === remoteParentRevision;
     },
-    pushBranch: (branchName: string) => {
+    pushBranch: (branchName: string, forcePush: boolean) => {
       assertBranch(branchName);
       const cachedMeta = cache.branches[branchName];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
-      pushBranch({ remote, branchName, noVerify });
+      pushBranch({ remote, branchName, noVerify, forcePush });
     },
     pullTrunk: () => {
       pruneRemote(remote);

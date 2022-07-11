@@ -20,6 +20,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         updateOnly: argv['update-only'],
         reviewers: argv.reviewers,
         confirm: argv.confirm,
+        forcePush: argv.force,
       },
       context
     );

@@ -9,6 +9,7 @@ import { getPRInfoForBranches } from './prepare_branches';
 import { submitPullRequest } from './submit_prs';
 import { validateBranchesToSubmit } from './validate_branches';
 
+// eslint-disable-next-line max-lines-per-function
 export async function submitAction(
   args: {
     scope: TScopeSpec;
@@ -19,6 +20,7 @@ export async function submitAction(
     updateOnly: boolean;
     reviewers: boolean;
     confirm: boolean;
+    forcePush: boolean;
   },
   context: TContext
 ): Promise<void> {
@@ -99,7 +101,7 @@ export async function submitAction(
 
   for (const submissionInfo of submissionInfos) {
     try {
-      context.metaCache.pushBranch(submissionInfo.head);
+      context.metaCache.pushBranch(submissionInfo.head, args.forcePush);
     } catch (err) {
       context.splog.error(
         `Failed to push changes for ${submissionInfo.head} to remote.`
