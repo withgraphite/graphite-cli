@@ -22,6 +22,7 @@ export async function getPRBody(
   }
 
   const editor = context.userConfig.getEditor();
+  const prDescriptionFileName = context.userConfig.getPRDescriptionFileName();
   const response = await prompts(
     {
       type: 'select',
@@ -48,14 +49,16 @@ export async function getPRBody(
   return await editPRBody({
     initial: body,
     editor,
+    prDescriptionFileName
   });
 }
 
 async function editPRBody(args: {
   initial: string;
   editor: string;
+  prDescriptionFileName: {name?: string};
 }): Promise<string> {
-  const file = tmp.fileSync();
+  const file = tmp.fileSync(args.prDescriptionFileName);
   fs.writeFileSync(file.name, args.initial);
   gpExecSync({
     command: `${args.editor} ${file.name}`,

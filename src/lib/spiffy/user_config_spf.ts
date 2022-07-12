@@ -11,6 +11,7 @@ const schema = t.shape({
   authToken: t.optional(t.string),
   tips: t.optional(t.boolean),
   editor: t.optional(t.string),
+  prDescriptionFileName: t.optional(t.string),
   restackCommitterDateIsAuthorDate: t.optional(t.boolean),
 });
 
@@ -37,6 +38,16 @@ export const userConfigFactory = spiffy({
           'vi'
         );
       },
+      getPRDescriptionFileName: () => {
+        // If we don't have a name set, just return an empty options object
+        if (data.prDescriptionFileName === null || data.prDescriptionFileName === undefined) {
+          return {};
+        } else {
+          return {
+            name: data.prDescriptionFileName
+          }
+        }
+      }
     };
   },
 });
