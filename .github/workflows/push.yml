@@ -32,7 +32,7 @@ jobs:
       - name: Git Version
         run: git --version
       - name: Test
-        run: yarn test-fast
+        run: yarn test
 
   superlinter:
     name: 'Run superlinter'
