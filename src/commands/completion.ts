@@ -24,7 +24,7 @@ function shouldCompleteBranch(current: string, argv: Arguments): boolean {
       // a substring of another command). Since we're dealing with a positional,
       // we also want to make sure that the current argument is the positional
       // (position 3).
-      ['bco', 'bdl', 'btr', 'but', 'dpr'].includes('' + argv['_'][1])) ||
+      ['bco', 'bdl', 'btr', 'but', 'dpr', 'uso'].includes('' + argv['_'][1])) ||
       // same as above, but one position further
       (argv['_'].length <= 4 &&
         ['b', 'branch'].includes('' + argv['_'][1]) &&
@@ -38,9 +38,8 @@ function shouldCompleteBranch(current: string, argv: Arguments): boolean {
           'ut',
           'untrack',
         ].includes('' + argv['_'][2])) ||
-      // gt upstack onto / us onto
-      ((argv['_'][1] === 'upstack' || argv['_'][1] === 'us') &&
-        argv['_'][2] === 'onto')) &&
+      (['us', 'upstack'].includes('' + argv['_'][1]) &&
+        ['o', 'onto'].includes('' + argv['_'][2]))) &&
     typeof current === 'string'
   );
 }
