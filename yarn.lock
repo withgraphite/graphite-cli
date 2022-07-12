@@ -1917,15 +1917,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@withgraphite/graphite-cli-routes@npm:^0.20.0":
-  version: 0.20.0
-  resolution: "@withgraphite/graphite-cli-routes@npm:0.20.0"
+"@withgraphite/graphite-cli-routes@npm:^0.21.0":
+  version: 0.21.0
+  resolution: "@withgraphite/graphite-cli-routes@npm:0.21.0"
   dependencies:
-    "@withgraphite/retype": ^0.3.1
-    "@withgraphite/retyped-routes": ^0.3.0
+    "@withgraphite/retype": ^0.3.11
+    "@withgraphite/retyped-routes": ^0.3.1
     eslint-config-react-app: ^7.0.1
     react-refresh: ^0.13.0
-  checksum: 3ff1e4754323ed38ee9c35136b2bb95db1eb902dfd1a3760a81c96788761bd74b5fe2d107d1e478f778d922b50474ae7dbf01e6ba987fafcc7a05de309d16def
+  checksum: 5d9d632f01580c0f60cef038b6fc3afa6bfe110baa645f671536bc956387bb5e27f13cc036276c6a433bcb5698409c786a5d7f478cdc1f83ac0fe5270b0b1326
   languageName: node
   linkType: hard
 
@@ -1944,9 +1944,9 @@ __metadata:
     "@types/yargs": ^17.0.10
     "@typescript-eslint/eslint-plugin": ^5.27.1
     "@typescript-eslint/parser": ^5.27.1
-    "@withgraphite/graphite-cli-routes": ^0.20.0
-    "@withgraphite/retype": ^0.3.4
-    "@withgraphite/retyped-routes": ^0.3.0
+    "@withgraphite/graphite-cli-routes": ^0.21.0
+    "@withgraphite/retype": ^0.3.11
+    "@withgraphite/retyped-routes": ^0.3.1
     chai: ^4.3.6
     chai-as-promised: ^7.1.1
     chalk: ^4.1.2
@@ -1972,23 +1972,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@withgraphite/retype@npm:^0.3.1, @withgraphite/retype@npm:^0.3.4":
-  version: 0.3.4
-  resolution: "@withgraphite/retype@npm:0.3.4"
-  checksum: 42c5e0f394b262003d5f527b99ef064e441dfe8c3869cbdf1c1d1dc63e1d2195e109943cfed5418a25d2ccdc644f9957998db077f919131a2e2a58a0e8a24f33
+"@withgraphite/retype@npm:^0.3.11":
+  version: 0.3.11
+  resolution: "@withgraphite/retype@npm:0.3.11"
+  checksum: c8c1123bc90576a0ca0940bfef8a9efb43149ccab0668a3621fc894f3afaf558aa13dd05f447722db35d8fda0d14adf8fa7224d262ec712d6db51553b893e3f4
   languageName: node
   linkType: hard
 
-"@withgraphite/retyped-routes@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "@withgraphite/retyped-routes@npm:0.3.0"
+"@withgraphite/retyped-routes@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "@withgraphite/retyped-routes@npm:0.3.1"
   dependencies:
     "@types/isomorphic-fetch": ^0.0.35
     "@types/node": ^14.14.37
-    "@withgraphite/retype": ^0.3.1
+    "@withgraphite/retype": ^0.3.11
     isomorphic-fetch: ^3.0.0
     path-to-regexp: ^6.1.0
-  checksum: bfeb99b938ed151c1853b51b732e022e7056ab51143c077c8e9a081ee541352ad055486d50692892a0fdd43bf9a7b8f0f02c4051173107c1dfd11fe78c611936
+  checksum: 9ae24ab1f4752718c83d8c568abc919e929586f8fe2810b8be1db1d34c73ef0ec797b6e955b13f4375292ca0e7b4cba5466679612eb7f48b725d357e677e9e62
   languageName: node
   linkType: hard
 

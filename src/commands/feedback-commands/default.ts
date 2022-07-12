@@ -41,6 +41,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       API_SERVER,
       API_ROUTES.feedback,
       {
+        auth: context.userConfig.data.authToken,
         user: user || 'NotFound',
         message: argv.message,
         debugContext: argv['with-debug-context']
