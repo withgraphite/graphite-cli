@@ -30,8 +30,7 @@
     "test-one": "tsc && yarn mocha --parallel --jobs 8",
     "test-grep": "tsc && yarn mocha \"dist/test/**/*.test.js\" -g",
     "deploy": "ts-node ./scripts/deploy/deploy.ts",
-    "deploy-test": "ts-node ./scripts/deploy/deploy-test.ts",
-    "regen-demo": "ts-node ./scripts/demo/index.ts"
+    "deploy-test": "ts-node ./scripts/deploy/deploy-test.ts"
   },
   "nyc": {
     "exclude": ".yarn/**/*"
