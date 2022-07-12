@@ -80,6 +80,7 @@ export const args = {
       'Force push: overwrites the remote branch with your local branch. Otherwise defaults to --force-with-lease.',
     type: 'boolean',
     default: false,
+    alias: 'f',
   },
 } as const;
 
