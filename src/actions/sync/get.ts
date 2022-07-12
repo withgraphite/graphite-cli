@@ -17,7 +17,7 @@ import { printConflictStatus } from '../print_conflict_status';
 import { syncPrInfo } from '../sync_pr_info';
 
 export async function getAction(
-  branchName: string | undefined,
+  args: { branchName: string | undefined; force: boolean },
   context: TContext
 ): Promise<void> {
   uncommittedTrackedChangesPrecondition();
@@ -43,7 +43,8 @@ export async function getAction(
   const authToken = cliAuthPrecondition(context);
   const downstackToSync = await getDownstackDependencies(
     {
-      branchName: branchName ?? context.metaCache.currentBranchPrecondition,
+      branchName:
+        args.branchName ?? context.metaCache.currentBranchPrecondition,
       trunkName: context.metaCache.trunk,
     },
     {
@@ -54,8 +55,11 @@ export async function getAction(
   );
 
   await getBranchesFromRemote(
-    downstackToSync,
-    context.metaCache.trunk,
+    {
+      downstack: downstackToSync,
+      base: context.metaCache.trunk,
+      force: args.force,
+    },
     context
   );
 
@@ -63,15 +67,13 @@ export async function getAction(
 }
 
 export async function getBranchesFromRemote(
-  downstack: string[],
-  base: string,
+  args: { downstack: string[]; base: string; force: boolean },
   context: TContext
 ): Promise<void> {
-  let parentBranchName = base;
-  for (const [index, branchName] of downstack.entries()) {
+  let parentBranchName = args.base;
+  for (const [index, branchName] of args.downstack.entries()) {
     context.metaCache.fetchBranch(branchName, parentBranchName);
-    if (!context.metaCache.branchExists(branchName)) {
-      // If the branch doesn't already exists, no conflict to resolve
+    if (args.force || !context.metaCache.branchExists(branchName)) {
       context.metaCache.checkoutBranchFromFetched(branchName, parentBranchName);
       context.splog.info(`Synced ${chalk.cyan(branchName)} from remote.`);
     } else if (!context.metaCache.isBranchTracked(branchName)) {
@@ -83,7 +85,7 @@ export async function getBranchesFromRemote(
     } else if (context.metaCache.branchMatchesFetched(branchName)) {
       context.splog.info(`${chalk.cyan(branchName)} is up to date.`);
     } else {
-      const remainingBranchesToSync = downstack.slice(index + 1);
+      const remainingBranchesToSync = args.downstack.slice(index + 1);
       await handleSameParent(
         { branchName, parentBranchName, remainingBranchesToSync },
         context

@@ -50,8 +50,11 @@ export async function continueAction(
 
   if (branchesToSync) {
     await getBranchesFromRemote(
-      branchesToSync,
-      context.metaCache.currentBranchPrecondition,
+      {
+        downstack: branchesToSync,
+        base: context.metaCache.currentBranchPrecondition,
+        force: false,
+      },
       context
     );
   }

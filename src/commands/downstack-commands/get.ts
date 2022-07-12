@@ -9,6 +9,13 @@ const args = {
     type: 'string',
     positional: true,
   },
+  force: {
+    describe: 'Overwrite all fetched branches with remote source of truth',
+    demandOption: false,
+    type: 'boolean',
+    default: false,
+    alias: 'f',
+  },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
@@ -22,5 +29,6 @@ export const handler = async (argv: argsT): Promise<void> =>
   graphite(
     argv,
     canonical,
-    async (context) => await getAction(argv.branch, context)
+    async (context) =>
+      await getAction({ branchName: argv.branch, force: argv.force }, context)
   );
