@@ -28,9 +28,7 @@
     "test": "tsc && yarn mocha \"dist/test/**/*.test.js\"  --parallel --jobs 8",
     "test-ci": "tsc && nyc --reporter=lcovonly yarn mocha \"dist/test/**/*.test.js\"  --parallel --jobs 8",
     "test-one": "tsc && yarn mocha --parallel --jobs 8",
-    "test-grep": "tsc && yarn mocha \"dist/test/**/*.test.js\" -g",
-    "deploy": "ts-node ./scripts/deploy/deploy.ts",
-    "deploy-test": "ts-node ./scripts/deploy/deploy-test.ts"
+    "test-grep": "tsc && yarn mocha \"dist/test/**/*.test.js\" -g"
   },
   "nyc": {
     "exclude": ".yarn/**/*"
