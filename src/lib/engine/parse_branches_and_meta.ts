@@ -1,3 +1,4 @@
+import { PreconditionsFailedError } from '../errors';
 import { getMergeBase } from '../git/merge_base';
 import { TSplog } from '../utils/splog';
 import { TCachedMeta } from './cached_meta';
@@ -56,7 +57,16 @@ export function parseBranchesAndMeta(
   const parsedBranches: Record<string, TCachedMeta> = {};
 
   splog.debug('Validating branches...');
+
+  // If we have n branches, it takes at most n(n+1)/2 iterations
+  // to parse all of them (worst case is reverse sorted order)
+  let cycleDetector =
+    (branchesToParse.length * (branchesToParse.length + 1)) / 2;
   while (branchesToParse.length > 0) {
+    if (cycleDetector-- <= 0) {
+      throw new PreconditionsFailedError('Cycle detected in Graphite metadata');
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const current = branchesToParse.shift()!;
     const {
