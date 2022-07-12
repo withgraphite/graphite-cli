@@ -39,7 +39,7 @@ export async function getDownstackDependencies(
     bottomReturnedBranch !== args.trunkName
   ) {
     throw new ExitFailedError(
-      `Received invalid dependency response: ${response.downstackBranchNames}`
+      `Received invalid dependency response ${response.downstackBranchNames}`
     );
   }
 

@@ -17,7 +17,7 @@ import { printConflictStatus } from '../print_conflict_status';
 import { syncPrInfo } from '../sync_pr_info';
 
 export async function getAction(
-  branchName: string,
+  branchName: string | undefined,
   context: TContext
 ): Promise<void> {
   uncommittedTrackedChangesPrecondition();
@@ -42,7 +42,10 @@ export async function getAction(
 
   const authToken = cliAuthPrecondition(context);
   const downstackToSync = await getDownstackDependencies(
-    { branchName, trunkName: context.metaCache.trunk },
+    {
+      branchName: branchName ?? context.metaCache.currentBranchPrecondition,
+      trunkName: context.metaCache.trunk,
+    },
     {
       authToken,
       repoName: context.repoConfig.getRepoName(),

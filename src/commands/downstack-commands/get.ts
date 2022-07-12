@@ -5,8 +5,7 @@ import { graphite } from '../../lib/runner';
 const args = {
   branch: {
     describe: `Branch to get from remote`,
-    // TODO implement a picker that allows selection of legal remote branches (open PRs)
-    demandOption: true,
+    demandOption: false,
     type: 'string',
     positional: true,
   },
