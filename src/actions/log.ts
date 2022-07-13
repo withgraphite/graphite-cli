@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
+import stripAnsi from 'strip-ansi';
 import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
 import { suggest } from '../lib/utils/prompts_helpers';
@@ -70,11 +71,10 @@ export async function interactiveBranchSelection(
     context
   ).map((stackLine) => ({
     title: stackLine,
-    value: ((stackLine) => {
-      const maybeIndex = stackLine.indexOf('◯');
-      const index = maybeIndex > -1 ? maybeIndex : stackLine.indexOf('◉');
-      return stackLine.substring(index + 2).split(' ')[0];
-    })(stackLine),
+    value: ((stackLine) =>
+      stackLine.substring(stackLine.lastIndexOf('  ') + 2))(
+      stripAnsi(stackLine)
+    ),
   }));
 
   const indexOfCurrentIfPresent = choices.findIndex(
@@ -124,14 +124,57 @@ type TPrintStackArgs = {
   steps?: number;
 };
 
+const LOG_SHORT_COLORS: Parameters<typeof chalk.rgb>[] = [
+  [76, 203, 241],
+  [77, 202, 125],
+  [110, 173, 38],
+  [245, 200, 0],
+  [248, 144, 72],
+  [244, 98, 81],
+  [235, 130, 188],
+  [159, 131, 228],
+  [80, 132, 243],
+];
+
+function getLogShortColor(toColor: string, index: number): string {
+  return chalk.rgb(
+    ...LOG_SHORT_COLORS[Math.floor(index / 2) % LOG_SHORT_COLORS.length]
+  )(toColor);
+}
+
 function getStackLines(args: TPrintStackArgs, context: TContext): string[] {
+  const overallIndent = { value: 0 };
   const outputDeep = [
-    getUpstackExclusiveLines(args, context),
+    getUpstackExclusiveLines({ ...args, overallIndent }, context),
     getBranchLines(args, context),
     getDownstackExclusiveLines(args, context),
   ];
 
-  return args.reverse ? outputDeep.reverse().flat() : outputDeep.flat();
+  return (args.reverse ? outputDeep.reverse().flat() : outputDeep.flat()).map(
+    (line) => {
+      if (!args.short) {
+        return line;
+      }
+      // This lambda is for finalizing log short formatting
+      const circleIndex = line.indexOf('◯');
+      const arrowIndex = line.indexOf('▸');
+      const branchNameAndDetails = line.slice(arrowIndex + 1);
+
+      const replaceCircle =
+        !args.noStyleBranchName &&
+        context.metaCache.currentBranch &&
+        branchNameAndDetails.split(' ')[0] === context.metaCache.currentBranch;
+
+      return `${line
+        .slice(0, arrowIndex)
+        .split('')
+        .map(getLogShortColor)
+        .map((c) => (replaceCircle ? c.replace('◯', '◉') : c))
+        .join('')}${' '.repeat(
+        overallIndent.value * 2 + 3 - arrowIndex
+      )}${getLogShortColor(line.slice(arrowIndex + 1), circleIndex)}`;
+    }
+  );
 }
 
 function getDownstackExclusiveLines(
@@ -159,7 +202,7 @@ function getDownstackExclusiveLines(
 }
 
 function getUpstackInclusiveLines(
-  args: TPrintStackArgs & { siblingBranchLines: number },
+  args: TPrintStackArgs & { overallIndent: { value: number } },
   context: TContext
 ): string[] {
   const outputDeep = [
@@ -171,7 +214,7 @@ function getUpstackInclusiveLines(
 }
 
 function getUpstackExclusiveLines(
-  args: TPrintStackArgs,
+  args: TPrintStackArgs & { overallIndent: { value: number } },
   context: TContext
 ): string[] {
   if (args.steps === 0) {
@@ -193,13 +236,6 @@ function getUpstackExclusiveLines(
         branchName: child,
         indentLevel:
           args.indentLevel + (args.reverse ? numChildren - i - 1 : i),
-        siblingBranchLines:
-          numChildren > 1 &&
-          // we only want branch lines for short if this is the first child
-          ((args.reverse && i === 0) ||
-            (!args.reverse && i === numChildren - 1))
-            ? numChildren - 1
-            : 0,
       },
       context
     )
@@ -208,27 +244,36 @@ function getUpstackExclusiveLines(
 
 function getBranchLines(
   args: TPrintStackArgs & {
-    siblingBranchLines?: number; // for short
+    overallIndent?: { value: number };
     skipBranchingLine?: boolean; // for standard
   },
   context: TContext
 ): string[] {
+  const children = context.metaCache.getChildren(args.branchName);
+  const numChildren =
+    children.length -
+    (args.omitCurrentBranch &&
+    children.includes(context.metaCache.currentBranchPrecondition)
+      ? 1
+      : 0);
+
+  if (args.overallIndent) {
+    args.overallIndent.value = Math.max(
+      args.overallIndent.value,
+      args.indentLevel
+    );
+  }
+
   // `gt log short` case
   if (args.short) {
-    const siblingBranchLines = args.siblingBranchLines ?? 0;
     return [
-      `${'│ '.repeat(args.indentLevel - siblingBranchLines)}${
-        siblingBranchLines > 0 ? '├─' : ''
+      `${'│ '.repeat(args.indentLevel)}${'◯'}${
+        numChildren <= 2
+          ? ''
+          : (args.reverse ? '─┬' : '─┴').repeat(numChildren - 2)
+      }${numChildren <= 1 ? '' : args.reverse ? '─┐' : '─┘'}▸${
+        args.branchName
       }${
-        siblingBranchLines > 1
-          ? (args.reverse ? '┬─' : '┴─').repeat(siblingBranchLines - 1)
-          : ''
-      }${
-        args.noStyleBranchName ||
-        args.branchName !== context.metaCache.currentBranch
-          ? '◯'
-          : chalk.cyan('◉')
-      } ${args.branchName}${
         args.noStyleBranchName ||
         context.metaCache.isBranchFixed(args.branchName)
           ? ''
@@ -238,8 +283,6 @@ function getBranchLines(
   }
 
   // `gt log` case
-  const numChildren = context.metaCache.getChildren(args.branchName).length;
-
   const outputDeep = [
     args.skipBranchingLine
       ? []
