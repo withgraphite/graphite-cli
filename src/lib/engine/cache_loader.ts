@@ -1,7 +1,7 @@
+import { createHash } from 'crypto';
 import { version } from '../../../package.json';
 import { getBranchNamesAndRevisions } from '../git/sorted_branch_names';
 import { cachePersistenceFactory } from '../spiffy/cache_spf';
-import { gpExecSync } from '../utils/exec_sync';
 import { TSplog } from '../utils/splog';
 import { TCachedMeta } from './cached_meta';
 import { getMetadataRefList } from './metadata_ref';
@@ -63,15 +63,8 @@ function getCacheSeed(trunkName: string | undefined): TCacheSeed {
 }
 
 function hashSeed(data: TCacheSeed): string {
-  return gpExecSync(
-    {
-      command: `git hash-object --stdin`,
-      options: {
-        input: JSON.stringify(data),
-      },
-    },
-    (err) => {
-      throw err;
-    }
-  );
+  return createHash('sha1')
+    .update(JSON.stringify(data))
+    .digest('hex')
+    .toString();
 }
