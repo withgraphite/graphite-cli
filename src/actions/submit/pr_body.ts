@@ -55,7 +55,7 @@ async function editPRBody(args: {
   initial: string;
   editor: string;
 }): Promise<string> {
-  const file = tmp.fileSync();
+  const file = tmp.fileSync({ name: 'EDIT_DESCRIPTION' });
   fs.writeFileSync(file.name, args.initial);
   gpExecSync({
     command: `${args.editor} ${file.name}`,
