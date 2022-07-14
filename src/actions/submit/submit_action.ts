@@ -76,7 +76,7 @@ export async function submitAction(
   const submissionInfos = await getPRInfoForBranches(
     {
       branchNames: branchNames,
-      editPRFieldsInline: args.editPRFieldsInline,
+      editPRFieldsInline: args.editPRFieldsInline && context.interactive,
       draft: args.draft,
       publish: args.publish,
       updateOnly: args.updateOnly,

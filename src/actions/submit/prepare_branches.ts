@@ -159,7 +159,7 @@ async function getPRCreationInfo(
   reviewers: string[];
   draft: boolean;
 }> {
-  if (context.interactive && args.editPRFieldsInline) {
+  if (args.editPRFieldsInline) {
     context.splog.newline();
     context.splog.info(
       `Enter info for new pull request for ${chalk.cyan(
@@ -197,10 +197,10 @@ async function getPRCreationInfo(
     fetchReviewers: args.reviewers,
   });
 
-  const createAsDraft = args.draft
-    ? true
-    : args.publish
+  const createAsDraft = args.publish
     ? false
+    : args.draft || !args.editPRFieldsInline
+    ? true
     : await getPRDraftStatus(context);
 
   return {
