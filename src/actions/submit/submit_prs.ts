@@ -30,19 +30,40 @@ export async function submitPullRequest(
   },
   context: TContext
 ): Promise<void> {
-  const { errorMessage } = handlePRReponse(
-    (
-      await requestServerToSubmitPRs(
-        args.cliAuthToken,
-        args.submissionInfo,
-        context
-      )
-    )[0],
-    context
-  );
-  if (errorMessage) {
-    throw new ExitFailedError(errorMessage);
+  const pr = (
+    await requestServerToSubmitPRs(
+      args.cliAuthToken,
+      args.submissionInfo,
+      context
+    )
+  )[0];
+
+  if (pr.response.status === 'error') {
+    throw new ExitFailedError(
+      `Error in submitting ${pr.response.head}: ${pr.response.error}`
+    );
   }
+
+  context.metaCache.upsertPrInfo(pr.response.head, {
+    number: pr.response.prNumber,
+    url: pr.response.prURL,
+    base: pr.request.base,
+    state: 'OPEN', // We know this is not closed or merged because submit succeeded
+    ...(pr.request.action === 'create'
+      ? {
+          title: pr.request.title,
+          body: pr.request.body,
+          reviewDecision: 'REVIEW_REQUIRED', // Because we just opened this PR
+        }
+      : {}),
+    ...(pr.request.draft !== undefined ? { draft: pr.request.draft } : {}),
+  });
+  context.splog.info(
+    `${chalk.green(pr.response.head)}: ${pr.response.prURL} (${{
+      updated: chalk.yellow,
+      created: chalk.green,
+    }[pr.response.status](pr.response.status)})`
+  );
 }
 
 const SUCCESS_RESPONSE_CODE = 200;
@@ -99,37 +120,4 @@ async function requestServerToSubmitPRs(
       error
     );
   }
-}
-
-function handlePRReponse(
-  pr: TSubmittedPR,
-  context: TContext
-): { errorMessage?: string } {
-  if (pr.response.status === 'error') {
-    return {
-      errorMessage: `Error in submitting ${pr.response.head}: ${pr.response.error}`,
-    };
-  }
-
-  context.metaCache.upsertPrInfo(pr.response.head, {
-    number: pr.response.prNumber,
-    url: pr.response.prURL,
-    base: pr.request.base,
-    state: 'OPEN', // We know this is not closed or merged because submit succeeded
-    ...(pr.request.action === 'create'
-      ? {
-          title: pr.request.title,
-          body: pr.request.body,
-          reviewDecision: 'REVIEW_REQUIRED', // Because we just opened this PR
-        }
-      : {}),
-    ...(pr.request.draft !== undefined ? { draft: pr.request.draft } : {}),
-  });
-  context.splog.info(
-    `${chalk.green(pr.response.head)}: ${pr.response.prURL} (${{
-      updated: chalk.yellow,
-      created: chalk.green,
-    }[pr.response.status](pr.response.status)})`
-  );
-  return {};
 }
