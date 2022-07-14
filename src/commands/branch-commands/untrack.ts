@@ -8,6 +8,7 @@ const args = {
     demandOption: true,
     positional: true,
     type: 'string',
+    hidden: true,
   },
   force: {
     describe:

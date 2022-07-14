@@ -8,6 +8,7 @@ const args = {
     demandOption: false,
     type: 'string',
     positional: true,
+    hidden: true,
   },
   force: {
     describe: 'Overwrite all fetched branches with remote source of truth',
@@ -22,7 +23,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const command = 'get [branch]';
 export const canonical = 'downstack get';
 export const description =
-  'Get branches from trunk to the specified branch from remote, prompting the user to resolve conflicts.';
+  'Get branches from trunk to the specified branch from remote, prompting the user to resolve conflicts. If no branch is provided, get downstack from the current branch.';
 export const builder = args;
 export const aliases = ['g'];
 export const handler = async (argv: argsT): Promise<void> =>

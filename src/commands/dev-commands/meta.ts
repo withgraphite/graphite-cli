@@ -16,6 +16,7 @@ const args = {
     demandOption: true,
     type: 'string',
     positional: true,
+    hidden: true,
   },
   edit: {
     type: 'boolean',

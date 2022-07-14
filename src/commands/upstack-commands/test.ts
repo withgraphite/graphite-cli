@@ -10,6 +10,7 @@ const args = {
     type: 'string',
     alias: 'c',
     positional: true,
+    hidden: true,
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;

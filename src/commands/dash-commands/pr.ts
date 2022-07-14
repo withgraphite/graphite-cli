@@ -8,11 +8,13 @@ const args = {
     demandOption: false,
     positional: true,
     type: 'string',
+    hidden: true,
   },
 } as const;
 
 export const command = 'pr [pr]';
-export const description = 'Opens the PR page for the current branch.';
+export const description =
+  'Opens the PR page for the current (or provided) branch (or pr number).';
 export const builder = args;
 export const canonical = 'dash pr';
 export const aliases = ['p'];

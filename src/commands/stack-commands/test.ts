@@ -10,6 +10,7 @@ const args = {
     type: 'string',
     alias: 'c',
     positional: true,
+    hidden: true,
   },
   trunk: {
     describe: `Run the command on the trunk branch in addition to the rest of the stack.`,

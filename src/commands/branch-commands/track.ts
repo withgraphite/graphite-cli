@@ -8,6 +8,7 @@ const args = {
     demandOption: false,
     positional: true,
     type: 'string',
+    hidden: true,
   },
   parent: {
     describe: `The tracked branch's parent. If unset, prompts for a parent branch`,
@@ -30,7 +31,7 @@ export const command = 'track [branch]';
 export const canonical = 'branch track';
 export const aliases = ['tr'];
 export const description = [
-  'Start tracking the current branch (by default) with Graphite by selecting its parent.',
+  'Start tracking the current (or provided) branch with Graphite by selecting its parent.',
   'This command can also be used to fix corrupted Graphite metadata.',
 ].join(' ');
 export const builder = args;

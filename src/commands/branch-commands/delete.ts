@@ -9,6 +9,7 @@ const args = {
     demandOption: true,
     optional: false,
     describe: 'The name of the branch to delete.',
+    hidden: true,
   },
   force: {
     describe: `Delete the branch even if it is not merged or closed.`,
