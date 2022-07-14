@@ -9,6 +9,7 @@ const args = {
     demandOption: false,
     optional: true,
     describe: 'The name of the new branch.',
+    hidden: true,
   },
   message: {
     describe: `Commit staged changes on the new branch with this message.`,

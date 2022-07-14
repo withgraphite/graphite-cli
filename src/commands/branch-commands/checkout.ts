@@ -8,13 +8,15 @@ const args = {
     demandOption: false,
     type: 'string',
     positional: true,
+    hidden: true,
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 
 export const command = 'checkout [branch]';
 export const canonical = 'branch checkout';
-export const description = 'Switch to a branch.';
+export const description =
+  'Switch to a branch. If no branch is provided, opens an interactive selector.';
 export const aliases = ['co'];
 export const builder = args;
 

@@ -9,6 +9,7 @@ const args = {
     demandOption: false,
     type: 'string',
     positional: true,
+    hidden: true,
   },
   force: {
     describe: `Allow renaming a branch that is already associated with an open GitHub pull request.`,

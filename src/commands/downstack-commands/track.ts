@@ -8,6 +8,7 @@ const args = {
     demandOption: false,
     positional: true,
     type: 'string',
+    hidden: true,
   },
   force: {
     describe: `Sets the parent of each branch to the most recent ancestor without interactive selection.`,
@@ -23,7 +24,7 @@ export const command = 'track [branch]';
 export const canonical = 'downstack track';
 export const aliases = ['tr'];
 export const description =
-  "Track a series of untracked branches, by specifying each branch's parent, stopping when you reach a tracked branch.";
+  "Track a series of untracked branches, by specifying each's parent. Starts at the current (or provided) branch and stops when you reach a tracked branch.";
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(
