@@ -66,7 +66,7 @@ async function graphiteInternal(
   process.on('SIGINT', (): never => {
     handlerMaybeWithCacheLock.cacheLock?.release();
     // End all current traces abruptly.
-    tracer.allSpans.forEach((s) => s.end(new KilledError()));
+    tracer.allSpans.forEach((s) => s.end(undefined, new KilledError()));
     postTelemetryInBackground();
     // eslint-disable-next-line no-restricted-syntax
     process.exit(1);
@@ -93,7 +93,11 @@ async function graphiteInternal(
         }
 
         const context = initContext(contextLite, args);
-        await graphiteHelper(canonicalName, handlerMaybeWithCacheLock, context);
+        return await graphiteHelper(
+          canonicalName,
+          handlerMaybeWithCacheLock,
+          context
+        );
       }
     );
   } catch (err) {
@@ -113,7 +117,12 @@ async function graphiteHelper(
   canonicalName: string,
   handler: TGraphiteCommandHandlerWithCacheLock,
   context: TContext
-): Promise<void> {
+): Promise<{
+  cacheBefore: string;
+  cacheAfter: string;
+}> {
+  const cacheBefore = context.metaCache.debug;
+
   try {
     refreshPRInfoInBackground(context);
 
@@ -138,6 +147,8 @@ async function graphiteHelper(
     }
     handler.cacheLock.release();
   }
+
+  return { cacheBefore, cacheAfter: context.metaCache.debug };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

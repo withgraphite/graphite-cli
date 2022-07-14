@@ -20,6 +20,9 @@ export const handler = async (argv: argsT): Promise<void> => {
   const cacheLock = getCacheLock();
   cacheLock.lock();
   const context = initContext(initContextLite({ debug: true }));
-  context.metaCache[argv.clear ? 'clear' : 'debug']();
+  if (argv.clear) {
+    context.metaCache.clear();
+  }
+  context.splog.debug(context.metaCache.debug);
   cacheLock.release();
 };

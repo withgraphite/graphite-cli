@@ -1,7 +1,9 @@
 // https://docs.datadoghq.com/api/latest/tracing/
 import { cuteString } from './cute_string';
 
-type spanNameT = 'function' | 'execSync' | 'command';
+// feel free to add to either of these if necessary
+type spanNameT = 'execSync' | 'command';
+type spanReturnT = string | Record<string, string> | undefined;
 
 type spanT = {
   duration: number;
@@ -59,17 +61,20 @@ class Span {
     this.start = currentNanoSeconds();
   }
 
-  end(err?: Error): void {
+  end(result?: spanReturnT, err?: Error): void {
     this.endedSpan = {
       error: err ? 1 : 0,
-      meta: err
-        ? {
-            'error.msg': err.message,
-            'error.type': err.constructor.name,
-            ...(err.stack ? { 'error.stack': err.stack } : {}),
-            ...this.meta,
-          }
-        : this.meta,
+      meta: {
+        ...(typeof result === 'string' ? { result } : { ...result }),
+        ...(err
+          ? {
+              'error.msg': err.message,
+              'error.type': err.constructor.name,
+              ...(err.stack ? { 'error.stack': err.stack } : {}),
+            }
+          : {}),
+        ...this.meta,
+      },
       metrics: {},
       name: this.name,
       resource: this.resource,
@@ -101,7 +106,7 @@ class Tracer {
     return span;
   }
 
-  public spanSync<T>(
+  public spanSync<T extends spanReturnT>(
     opts: {
       resource: string;
       name: spanNameT;
@@ -115,15 +120,15 @@ class Tracer {
     try {
       result = handler();
     } catch (err) {
-      span.end(err);
+      span.end(result, err);
       throw err;
     }
-    span.end();
+    span.end(result);
     this.currentSpanId = span.parentId;
     return result;
   }
 
-  public async span<T>(
+  public async span<T extends spanReturnT>(
     opts: {
       resource: string;
       name: spanNameT;
@@ -137,10 +142,10 @@ class Tracer {
     try {
       result = await handler();
     } catch (err) {
-      span.end(err);
+      span.end(result, err);
       throw err;
     }
-    span.end();
+    span.end(result);
     this.currentSpanId = span.parentId;
     return result;
   }

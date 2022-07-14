@@ -47,7 +47,7 @@ import { validateOrFixParentBranchRevision } from './parse_branches_and_meta';
 import { TScopeSpec } from './scope_spec';
 
 export type TMetaCache = {
-  debug: () => void;
+  debug: string;
   persist: () => void;
   clear: () => void;
 
@@ -395,8 +395,8 @@ export function composeMetaCache({
   };
 
   return {
-    debug() {
-      splog.debug(cuteString(cache));
+    get debug() {
+      return cuteString(cache);
     },
     persist() {
       cacheLoader.persistCache(trunkName, cache.branches);
