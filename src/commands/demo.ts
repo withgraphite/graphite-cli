@@ -64,10 +64,12 @@ export const handler = async (argv: argsT): Promise<void> => {
       command:
         'git remote add origin git@github.com:withgraphite/graphite-demo-repo.git',
       options: { cwd: tmpDir.name },
+      onError: 'throw',
     });
     gpExecSync({
       command: 'git push origin main -f',
       options: { cwd: tmpDir.name },
+      onError: 'throw',
     });
   });
 };
@@ -79,5 +81,6 @@ function execCliCommand(command: string, opts: { fromDir: string }) {
       stdio: 'inherit',
       cwd: opts.fromDir,
     },
+    onError: 'throw',
   });
 }

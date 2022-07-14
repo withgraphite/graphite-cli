@@ -64,6 +64,7 @@ export function recreateState(stateJson: string, splog: TSplog): string {
       `git add first.txt`,
       `git commit -m "first"`,
     ].join(' && '),
+    onError: 'throw',
   });
 
   splog.info(`Creating ${Object.keys(state.commitTree).length} commits`);
@@ -119,9 +120,13 @@ function createBranches(
 ): void {
   Object.keys(opts.branches).forEach((branch) => {
     const originalRef = opts.refMappingsOldToNew[opts.branches[branch]];
-    if (branch != gpExecSync({ command: `git branch --show-current` })) {
+    if (
+      branch !=
+      gpExecSync({ command: `git branch --show-current`, onError: 'ignore' })
+    ) {
       gpExecSync({
         command: `git branch -f ${q(branch)} ${originalRef}`,
+        onError: 'throw',
       });
     } else {
       splog.warn(
@@ -148,6 +153,7 @@ function recreateCommits(
   const firstCommitRef = getShaOrThrow('HEAD');
   const treeSha = gpExecSync({
     command: `git cat-file -p HEAD | grep tree | awk '{print $2}'`,
+    onError: 'throw',
   });
   const totalOldCommits = Object.keys(opts.commitTree).length;
 
@@ -178,6 +184,7 @@ function recreateCommits(
               .map((newParentRef) => `-p ${newParentRef}`)
               .join(' ')
       }`,
+      onError: 'throw',
     });
 
     // Save mapping so we can later associate branches.

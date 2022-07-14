@@ -5,6 +5,7 @@ export function detectStagedChanges(): boolean {
   return (
     gpExecSync({
       command: `git --no-pager diff --no-ext-diff --shortstat --cached`,
+      onError: 'throw',
     }).length > 0
   );
 }
@@ -15,6 +16,7 @@ export function isDiffEmpty(left: string, right: string): boolean {
       command: `git --no-pager diff --no-ext-diff --shortstat ${q(left)} ${q(
         right
       )} -- `,
+      onError: 'throw',
     }).length === 0
   );
 }

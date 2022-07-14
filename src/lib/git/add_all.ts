@@ -1,13 +1,5 @@
-import { ExitFailedError } from '../errors';
 import { gpExecSync } from '../utils/exec_sync';
 
 export function addAll(): void {
-  gpExecSync(
-    {
-      command: 'git add --all',
-    },
-    (err) => {
-      throw new ExitFailedError('Failed to add changes. Aborting...', err);
-    }
-  );
+  gpExecSync({ command: 'git add --all', onError: 'throw' });
 }

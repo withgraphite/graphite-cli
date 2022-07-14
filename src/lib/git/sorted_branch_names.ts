@@ -5,6 +5,7 @@ export function getBranchNamesAndRevisions(): Record<string, string> {
 
   gpExecSyncAndSplitLines({
     command: `git for-each-ref --format='%(refname:short):%(objectname)' --sort=-committerdate refs/heads/`,
+    onError: 'throw',
   })
     .map((line) => line.split(':'))
     .filter(

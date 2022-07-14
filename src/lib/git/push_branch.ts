@@ -9,16 +9,12 @@ export function pushBranch(opts: {
 }): void {
   const forceOption = opts.forcePush ? '--force' : '--force-with-lease';
 
-  gpExecSync(
-    {
-      command: [
-        `git push ${q(opts.remote)}`,
-        `${forceOption} ${q(opts.branchName)} 2>&1`,
-        ...[opts.noVerify ? ['--no-verify'] : []],
-      ].join(' '),
-    },
-    (err) => {
-      throw err;
-    }
-  );
+  gpExecSync({
+    command: [
+      `git push ${q(opts.remote)}`,
+      `${forceOption} ${q(opts.branchName)} 2>&1`,
+      ...[opts.noVerify ? ['--no-verify'] : []],
+    ].join(' '),
+    onError: 'throw',
+  });
 }

@@ -1,4 +1,5 @@
-import { execSync, ExecSyncOptions, SpawnSyncReturns } from 'child_process';
+import { execSync, ExecSyncOptions } from 'child_process';
+import { CommandFailedError } from '../errors';
 import { cuteString } from './cute_string';
 import { TSplog } from './splog';
 import { tracer } from './tracer';
@@ -12,22 +13,19 @@ type GPExecSyncOptions = {
   };
 } & Omit<ExecSyncOptions, 'encoding'>;
 
-export function gpExecSyncAndSplitLines(command: {
-  command: string;
-  options?: ExecSyncOptions & GPExecSyncOptions;
-}): string[] {
-  return gpExecSync(command)
+export function gpExecSyncAndSplitLines(
+  ...args: Parameters<typeof gpExecSync>
+): string[] {
+  return gpExecSync(...args)
     .split('\n')
     .filter((l) => l.length > 0);
 }
 
-export function gpExecSync(
-  command: {
-    command: string;
-    options?: GPExecSyncOptions;
-  },
-  onError?: (e: Error & SpawnSyncReturns<string>) => void
-): string {
+export function gpExecSync(command: {
+  command: string;
+  options?: GPExecSyncOptions;
+  onError: (() => void) | 'throw' | 'ignore';
+}): string {
   try {
     // Only measure if we're with an existing span.
     if (tracer.currentSpanId) {
@@ -45,8 +43,17 @@ export function gpExecSync(
       return gpExecSyncImpl(command);
     }
   } catch (e) {
-    onError?.(e);
-    return '';
+    if (command.onError === 'ignore') {
+      return '';
+    }
+    if (command.onError !== 'throw') {
+      command.onError?.();
+    }
+    throw new CommandFailedError(
+      command.command,
+      e.stdout || '',
+      e.stderr || ''
+    );
   }
 }
 

@@ -6,7 +6,6 @@ import {
   readMetadataRef,
   writeMetadataRef,
 } from '../../lib/engine/metadata_ref';
-import { ExitFailedError } from '../../lib/errors';
 import { graphite } from '../../lib/runner';
 import { cuteString } from '../../lib/utils/cute_string';
 import { gpExecSync } from '../../lib/utils/exec_sync';
@@ -41,18 +40,11 @@ export const handler = async (argv: argsT): Promise<void> => {
     }
     const tmpfilePath = path.join(tmp.dirSync().name, 'meta');
     fs.writeFileSync(tmpfilePath, metaString);
-    gpExecSync(
-      {
-        command: `${context.userConfig.getEditor()} "${tmpfilePath}"`,
-        options: { stdio: 'inherit' },
-      },
-      (err) => {
-        throw new ExitFailedError(
-          'Failed to prompt for meta edit. Aborting...',
-          err
-        );
-      }
-    );
+    gpExecSync({
+      command: `${context.userConfig.getEditor()} "${tmpfilePath}"`,
+      options: { stdio: 'inherit' },
+      onError: 'throw',
+    });
     writeMetadataRef(argv.branch, fs.readJSONSync(tmpfilePath));
     context.metaCache.rebuild();
   });

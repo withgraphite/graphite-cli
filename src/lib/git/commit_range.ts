@@ -20,11 +20,13 @@ export function getCommitRange(
         command: `git --no-pager log --pretty=format:"%H" ${q(base)}..${q(
           head
         )}`,
+        onError: 'throw',
       }).map((sha) =>
         gpExecSync({
           command: `git --no-pager log -1 --pretty=format:"${
             FORMAT[format]
           }" ${q(sha)}`,
+          onError: 'throw',
         })
       )
     : [
@@ -32,6 +34,7 @@ export function getCommitRange(
           command: `git --no-pager log -1 --pretty=format:"${
             FORMAT[format]
           }" ${q(head)}`,
+          onError: 'throw',
         }),
       ];
 }

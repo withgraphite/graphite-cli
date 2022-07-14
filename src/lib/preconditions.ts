@@ -10,8 +10,9 @@ import { gpExecSync } from './utils/exec_sync';
 export function getRepoRootPathPrecondition(): string {
   const repoRootPath = gpExecSync({
     command: `git rev-parse --git-common-dir`,
+    onError: 'ignore',
   });
-  if (!repoRootPath || repoRootPath.length === 0) {
+  if (!repoRootPath) {
     throw new PreconditionsFailedError('No .git repository found.');
   }
   return repoRootPath;
@@ -52,8 +53,9 @@ function cliAuthPrecondition(context: TContext): string {
 function currentGitRepoPrecondition(): string {
   const repoRootPath = gpExecSync({
     command: `git rev-parse --show-toplevel`,
+    onError: 'ignore',
   });
-  if (!repoRootPath || repoRootPath.length === 0) {
+  if (!repoRootPath) {
     throw new PreconditionsFailedError('No .git repository found.');
   }
   return repoRootPath;

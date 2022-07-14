@@ -45,6 +45,7 @@ export function writeMetadataRef(
       input: cuteString(meta),
       cwd,
     },
+    onError: 'throw',
   });
   gpExecSync({
     command: `git update-ref refs/branch-metadata/${q(branchName)} ${metaSha}`,
@@ -52,6 +53,7 @@ export function writeMetadataRef(
       stdio: 'ignore',
       cwd,
     },
+    onError: 'throw',
   });
 }
 
@@ -65,6 +67,7 @@ export function readMetadataRef(branchName: string, cwd?: string): TMeta {
         options: {
           cwd,
         },
+        onError: 'ignore',
       })
     );
 
@@ -77,6 +80,7 @@ export function readMetadataRef(branchName: string, cwd?: string): TMeta {
 export function deleteMetadataRef(branchName: string): void {
   gpExecSync({
     command: `git update-ref -d refs/branch-metadata/${q(branchName)}`,
+    onError: 'ignore',
   });
 }
 
@@ -85,6 +89,7 @@ export function getMetadataRefList(): Record<string, string> {
 
   gpExecSyncAndSplitLines({
     command: `git for-each-ref --format='%(refname:lstrip=2):%(objectname)' refs/branch-metadata/`,
+    onError: 'throw',
   })
     .map((line) => line.split(':'))
     .filter(

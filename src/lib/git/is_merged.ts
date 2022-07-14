@@ -17,6 +17,7 @@ export function isMerged({
       )} $(git commit-tree $(git rev-parse ${q(
         branchName
       )}^{tree}) -p $(git merge-base ${q(branchName)} ${q(trunkName)}) -m _)`,
+      onError: 'ignore',
     }).startsWith('-')
   ) {
     return true;
