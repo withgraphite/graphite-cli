@@ -40,7 +40,10 @@ export async function submitPullRequest(
 
   if (pr.response.status === 'error') {
     throw new ExitFailedError(
-      `Error in submitting ${pr.response.head}: ${pr.response.error}`
+      `Failed to submit PR for ${pr.response.head}: ${
+        JSON.parse(pr.response.error)?.response?.data?.message ??
+        pr.response.error
+      }`
     );
   }
 
