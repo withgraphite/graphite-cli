@@ -18,6 +18,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     gpExecSync({
       command: `git log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --branches`,
       options: { stdio: 'inherit' },
+      onError: 'throw',
     });
   });
 };

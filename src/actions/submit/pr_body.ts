@@ -60,6 +60,7 @@ async function editPRBody(args: {
   gpExecSync({
     command: `${args.editor} ${file.name}`,
     options: { stdio: 'inherit' },
+    onError: 'throw',
   });
   const contents = fs.readFileSync(file.name).toString();
   file.removeCallback();

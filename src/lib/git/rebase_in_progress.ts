@@ -5,6 +5,7 @@ export function rebaseInProgress(opts?: { dir: string }): boolean {
   let rebaseDir = path.join(
     gpExecSync({
       command: `git ${opts ? `-C "${opts.dir}"` : ''} rev-parse --git-dir`,
+      onError: 'throw',
     }),
     'rebase-merge'
   );

@@ -7,5 +7,6 @@ export function showCommits(base: string, head: string, patch?: boolean): void {
       head
     )} --`,
     options: { stdio: 'inherit' },
+    onError: 'throw',
   });
 }

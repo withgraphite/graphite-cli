@@ -19,6 +19,13 @@ export class ExitFailedError extends ExitError {
   }
 }
 
+export class CommandFailedError extends ExitError {
+  constructor(command: string, stdout: string, stderr: string) {
+    super(`Command failed (${command}):\n${stdout}\n${stderr}`);
+    this.name = 'CommandFailed';
+  }
+}
+
 export class RebaseConflictError extends ExitError {
   constructor() {
     super(`Hit a conflict during rebase.`);

@@ -6,6 +6,7 @@ export function findRemoteBranch(remote: string): string | undefined {
   // we take the first line of the output
   const branchName = gpExecSyncAndSplitLines({
     command: `git config --get-regexp remote$ "^${q(remote)}$"`,
+    onError: 'ignore',
   })[0]
     // and retrieve branchName from `branch.<branchName>.remote`
     ?.split('.')[1];

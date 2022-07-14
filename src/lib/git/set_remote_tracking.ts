@@ -10,14 +10,10 @@ export function setRemoteTracking({
   branchName: string;
   sha: string;
 }): void {
-  gpExecSync(
-    {
-      command: `git update-ref refs/remotes/${q(remote)}/${q(branchName)} ${q(
-        sha
-      )}`,
-    },
-    (err) => {
-      throw err;
-    }
-  );
+  gpExecSync({
+    command: `git update-ref refs/remotes/${q(remote)}/${q(branchName)} ${q(
+      sha
+    )}`,
+    onError: 'throw',
+  });
 }

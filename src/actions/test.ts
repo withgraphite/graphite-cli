@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import tmp from 'tmp';
 import { TContext } from '../lib/context';
 import { SCOPE, TScopeSpec } from '../lib/engine/scope_spec';
+import { CommandFailedError } from '../lib/errors';
 import { gpExecSync } from '../lib/utils/exec_sync';
 
 type TTestStatus = '[pending]' | '[success]' | '[fail]' | '[running]';
@@ -65,14 +66,26 @@ function testBranch(
   // Execute the command.
   fs.appendFileSync(opts.outputPath, `\n\n${opts.branchName}\n`);
   const startTime = Date.now();
-  const output = gpExecSync({ command: `${opts.command} 2>&1` }, () => {
-    opts.state[opts.branchName].status = '[fail]';
-  });
+
+  const output = (() => {
+    try {
+      const out = gpExecSync({
+        command: opts.command,
+        onError: 'throw',
+      });
+      opts.state[opts.branchName].status = '[success]';
+      return out;
+    } catch (e) {
+      if (e instanceof CommandFailedError) {
+        opts.state[opts.branchName].status = '[fail]';
+        return e.message;
+      }
+      throw e;
+    }
+  })();
+
   opts.state[opts.branchName].duration = Date.now() - startTime;
   fs.appendFileSync(opts.outputPath, output);
-  if (opts.state[opts.branchName].status !== '[fail]') {
-    opts.state[opts.branchName].status = '[success]';
-  }
 
   // Write output to the output file.
   logState(opts.state, true, context);

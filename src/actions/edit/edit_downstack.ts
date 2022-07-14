@@ -1,6 +1,5 @@
 import { TContext } from '../../lib/context';
 import { SCOPE } from '../../lib/engine/scope_spec';
-import { ExitFailedError } from '../../lib/errors';
 import { q } from '../../lib/utils/escape_for_shell';
 import { gpExecSync } from '../../lib/utils/exec_sync';
 import { performInTmpDir } from '../../lib/utils/perform_in_tmp_dir';
@@ -48,18 +47,11 @@ async function promptForEdit(context: TContext): Promise<string[]> {
   );
   return performInTmpDir((tmpDir) => {
     const editFilePath = createStackEditFile({ branchNames, tmpDir }, context);
-    gpExecSync(
-      {
-        command: `${context.userConfig.getEditor()} ${q(editFilePath)}`,
-        options: { stdio: 'inherit' },
-      },
-      (err) => {
-        throw new ExitFailedError(
-          'Failed to prompt for stack edit. Aborting...',
-          err
-        );
-      }
-    );
+    gpExecSync({
+      command: `${context.userConfig.getEditor()} ${q(editFilePath)}`,
+      options: { stdio: 'inherit' },
+      onError: 'throw',
+    });
     return parseEditFile(editFilePath);
   });
 }

@@ -17,6 +17,7 @@ import {
 import { getCacheLock, TCacheLock } from './engine/cache_lock';
 import {
   BadTrunkOperationError,
+  CommandFailedError,
   ConcurrentExecutionError,
   ExitFailedError,
   KilledError,
@@ -156,6 +157,7 @@ function handleGraphiteError(err: any, context: TContextLite): void {
     case ExitFailedError:
     case ConcurrentExecutionError:
     case PreconditionsFailedError:
+    case CommandFailedError:
     default:
       context.splog.error(err.message);
       return;

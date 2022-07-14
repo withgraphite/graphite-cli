@@ -80,12 +80,13 @@ function inferRepoGitHubInfo(remote: string): {
   // file to overrule what our CLI tries to intelligently infer.
   const url = gpExecSync({
     command: `git config --get remote.${q(remote)}.url`,
+    onError: 'ignore',
   });
 
   const inferError = new ExitFailedError(
     `Failed to infer the owner and name of this repo from remote ${remote} "${url}". Please run \`gt repo owner --set <owner>\` and \`gt repo name --set <name>\` to manually set the repo owner/name. (e.g. in the repo 'withgraphite/graphite-cli', 'withgraphite' is the repo owner and 'graphite-cli' is the repo name)`
   );
-  if (!url || url.length === 0) {
+  if (!url) {
     throw inferError;
   }
 

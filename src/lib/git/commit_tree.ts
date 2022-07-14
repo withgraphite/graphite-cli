@@ -11,6 +11,7 @@ export function getCommitTree(branchNames: string[]): Record<string, string[]> {
     options: {
       maxBuffer: 1024 * 1024 * 1024,
     },
+    onError: 'throw',
   })
     .map((l) => l.split(' '))
     .forEach((l) => (ret[l[0]] = l.slice(1)));

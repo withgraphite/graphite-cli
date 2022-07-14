@@ -16,6 +16,7 @@ export function rebase(args: {
         : ''
     }--onto ${q(args.onto)} ${q(args.from)} ${q(args.branchName)}`,
     options: { stdio: 'ignore' },
+    onError: 'ignore',
   });
   return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
 }
@@ -24,6 +25,7 @@ export function rebaseContinue(): TRebaseResult {
   gpExecSync({
     command: `GIT_EDITOR=true git rebase --continue`,
     options: { stdio: 'ignore' },
+    onError: 'ignore',
   });
   return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
 }
@@ -32,6 +34,7 @@ export function rebaseAbort(): void {
   gpExecSync({
     command: `git rebase --abort`,
     options: { stdio: 'ignore' },
+    onError: 'throw',
   });
 }
 
@@ -44,6 +47,7 @@ export function rebaseInteractive(args: {
       args.branchName
     )}`,
     options: { stdio: 'inherit' },
+    onError: 'throw',
   });
   return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
 }
