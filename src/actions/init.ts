@@ -20,16 +20,19 @@ export async function init(
 ): Promise<void> {
   const allBranchNames = context.metaCache.allBranchNames;
 
-  logWelcomeMessage(context);
+  context.splog.info(
+    context.repoConfig.graphiteInitialized()
+      ? `Reinitializing Graphite...`
+      : `Welcome to Graphite!`
+  );
   context.splog.newline();
 
   if (allBranchNames.length === 0) {
-    context.splog.error(
-      `Ouch! We can't setup Graphite in a repo without any branches -- this is likely because you're initializing Graphite in a blank repo. Please create your first commit and then re-run your Graphite command.`
-    );
-    context.splog.newline();
     throw new PreconditionsFailedError(
-      `No branches found in current repo; cannot initialize Graphite.`
+      [
+        `No branches found in current repo; cannot initialize Graphite.`,
+        `Please create your first commit and then re-run your Graphite command.`,
+      ].join('\n')
     );
   }
 
@@ -46,21 +49,10 @@ export async function init(
   } else {
     context.metaCache.rebuild(newTrunkName);
   }
-
-  context.splog.info(
-    `Graphite repo config saved at ${chalk.blueBright(context.repoConfig.path)}`
-  );
+  context.splog.newline();
 
   if (context.interactive) {
     await branchOnboardingFlow(context);
-  }
-}
-
-function logWelcomeMessage(context: TContext): void {
-  if (!context.repoConfig.graphiteInitialized()) {
-    context.splog.info('Welcome to Graphite!');
-  } else {
-    context.splog.info(`Regenerating Graphite repo config...`);
   }
 }
 
