@@ -46,3 +46,11 @@ export function forceCheckoutNewBranch(branchName: string, sha: string): void {
     onError: 'throw',
   });
 }
+
+export function forceCreateBranch(branchName: string, sha: string): void {
+  gpExecSync({
+    command: `git branch -f  ${q(branchName)} ${q(sha)}`,
+    options: { stdio: 'pipe' },
+    onError: 'throw',
+  });
+}
