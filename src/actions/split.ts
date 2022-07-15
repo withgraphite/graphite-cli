@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
+import { GRAPHITE_COLORS } from '../lib/colors';
 import { TContext } from '../lib/context';
 import { SCOPE } from '../lib/engine/scope_spec';
 import { KilledError, PreconditionsFailedError } from '../lib/errors';
@@ -54,24 +55,119 @@ export async function splitCurrentBranch(
       : 'hunk');
 
   const actions = {
-    commit: (context: TContext) => {
-      void context;
-    },
+    commit: splitByCommit,
     hunk: splitByHunk,
     abort: () => {
       throw new KilledError();
     },
   };
 
-  await actions[style](context);
-}
-
-async function splitByHunk(context: TContext): Promise<void> {
   const branchToSplit = context.metaCache.currentBranchPrecondition;
   const branchesToRestack = context.metaCache.getRelativeStack(
     branchToSplit,
     SCOPE.UPSTACK_EXCLUSIVE
   );
+
+  await actions[style](branchToSplit, context);
+
+  restackBranches(branchesToRestack, context);
+}
+
+async function splitByCommit(
+  branchToSplit: string,
+  context: TContext
+): Promise<void> {
+  context.splog.info(
+    [
+      `Splitting the commits of ${chalk.cyan(
+        branchToSplit
+      )} into multiple branches.`,
+      ...(context.metaCache.getPrInfo(branchToSplit)?.number
+        ? [
+            `If any of the new branches keeps the name ${chalk.cyan(
+              branchToSplit
+            )}, it will be linked to #${
+              context.metaCache.getPrInfo(branchToSplit)?.number
+            }.`,
+          ]
+        : []),
+      ``,
+      chalk.yellow(`For each branch you'd like to create:`),
+      `1. Choose which commit it begins at using the below prompt.`,
+      `2. Choose its name.`,
+    ].join('\n')
+  );
+
+  const readableCommits = context.metaCache.getAllCommits(
+    branchToSplit,
+    'READABLE'
+  );
+
+  const branchPoints = getBranchPoints(readableCommits);
+  void branchPoints; // TODO implement
+}
+
+async function getBranchPoints(readableCommits: string[]): Promise<number[]> {
+  // Array where nth index is whether we want a branch pointing to nth commit
+  const isBranchPoint: boolean[] = readableCommits.map((_, idx) => idx === 0);
+
+  let lastValue: number | 'DONE' = 0;
+  while (lastValue !== 'DONE') {
+    // Never toggle the first commmit, it always needs a branch
+    if (lastValue !== 0) {
+      isBranchPoint[lastValue] = !isBranchPoint[lastValue];
+    }
+    // We count branches in reverse so start at the total number of branch points
+    let branchNumber = Object.values(isBranchPoint).filter((v) => v).length + 1;
+    lastValue = (
+      await prompts(
+        {
+          type: 'select',
+          name: 'value',
+          message: `Toggle a commit to split the branch there.`,
+          hint: 'Arrow keys and return/space. Select confirm to finish.',
+          choices: readableCommits
+            .map((commit, index) => {
+              const shouldDisplayBranchNumber = isBranchPoint[index];
+              if (shouldDisplayBranchNumber) {
+                branchNumber--;
+              }
+              return {
+                title: chalk.rgb(
+                  ...GRAPHITE_COLORS[
+                    (branchNumber - 1) % GRAPHITE_COLORS.length
+                  ]
+                )(
+                  `${
+                    shouldDisplayBranchNumber ? `${branchNumber}. ` : '   '
+                  }${commit}`
+                ),
+                value: '' + index,
+              };
+            })
+            .concat([{ title: '   Confirm', value: 'DONE' }]),
+        },
+        {
+          onCancel: () => {
+            throw new KilledError();
+          },
+        }
+      )
+    ).value as number | 'DONE';
+    // Clear the prompt result
+    process.stdout.moveCursor(0, -1);
+    process.stdout.clearLine(1);
+  }
+
+  return isBranchPoint
+    .map((value, index) => (value ? index : undefined))
+    .filter((value): value is number => typeof value !== 'undefined');
+}
+
+async function splitByHunk(
+  branchToSplit: string,
+  context: TContext
+): Promise<void> {
   const defaultCommitMessage = context.metaCache
     .getAllCommits(branchToSplit, 'MESSAGE')
     .reverse()
@@ -130,8 +226,6 @@ async function splitByHunk(context: TContext): Promise<void> {
   }
 
   context.metaCache.finalizeSplit(branchToSplit, branchNames);
-
-  restackBranches(branchesToRestack, context);
 }
 
 async function createSplitCommit(
