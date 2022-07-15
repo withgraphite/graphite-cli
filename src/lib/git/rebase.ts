@@ -9,25 +9,17 @@ export function rebase(args: {
   branchName: string;
   restackCommitterDateIsAuthorDate?: boolean;
 }): TRebaseResult {
-  gpExecSync({
-    command: `git rebase ${
+  return rebaseInternal(
+    `git rebase ${
       args.restackCommitterDateIsAuthorDate
         ? `--committer-date-is-author-date`
         : ''
-    }--onto ${q(args.onto)} ${q(args.from)} ${q(args.branchName)}`,
-    options: { stdio: 'pipe' },
-    onError: 'ignore',
-  });
-  return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
+    }--onto ${q(args.onto)} ${q(args.from)} ${q(args.branchName)}`
+  );
 }
 
 export function rebaseContinue(): TRebaseResult {
-  gpExecSync({
-    command: `GIT_EDITOR=true git rebase --continue`,
-    options: { stdio: 'pipe' },
-    onError: 'ignore',
-  });
-  return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
+  return rebaseInternal(`GIT_EDITOR=true git rebase --continue`);
 }
 
 export function rebaseAbort(): void {
@@ -42,12 +34,24 @@ export function rebaseInteractive(args: {
   parentBranchRevision: string;
   branchName: string;
 }): TRebaseResult {
-  gpExecSync({
-    command: `git rebase -i ${q(args.parentBranchRevision)} ${q(
-      args.branchName
-    )}`,
-    options: { stdio: 'pipe' },
-    onError: 'throw',
-  });
-  return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
+  return rebaseInternal(
+    `git rebase -i ${q(args.parentBranchRevision)} ${q(args.branchName)}`
+  );
+}
+
+function rebaseInternal(command: string) {
+  try {
+    gpExecSync({
+      command,
+      options: { stdio: 'pipe' },
+      onError: 'throw',
+    });
+  } catch (e) {
+    if (rebaseInProgress()) {
+      return 'REBASE_CONFLICT';
+    } else {
+      throw e;
+    }
+  }
+  return 'REBASE_DONE';
 }
