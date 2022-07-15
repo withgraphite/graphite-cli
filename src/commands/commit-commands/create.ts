@@ -16,6 +16,13 @@ const args = {
     describe: 'The message for the new commit.',
     required: false,
   },
+  patch: {
+    describe: `Pick hunks to stage before committing.`,
+    demandOption: false,
+    default: false,
+    type: 'boolean',
+    alias: 'p',
+  },
 } as const;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -31,6 +38,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       {
         message: argv.message,
         addAll: argv.all,
+        patch: argv.patch,
       },
       context
     )

@@ -24,6 +24,13 @@ const args = {
     type: 'boolean',
     alias: 'a',
   },
+  patch: {
+    describe: `Pick hunks to stage before committing.`,
+    demandOption: false,
+    default: false,
+    type: 'boolean',
+    alias: 'p',
+  },
   insert: {
     describe: `When true, any existing children of the current branch will become children of the new branch.`,
     demandOption: false,
@@ -48,6 +55,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         message: argv.message,
         all: argv.all,
         insert: argv.insert,
+        patch: argv.patch,
       },
       context
     );

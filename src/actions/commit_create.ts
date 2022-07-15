@@ -7,6 +7,7 @@ import { restackBranches } from './restack';
 export function commitCreateAction(
   opts: {
     addAll: boolean;
+    patch: boolean;
     message?: string;
   },
   context: TContext
@@ -18,6 +19,7 @@ export function commitCreateAction(
   ensureSomeStagedChangesPrecondition(context);
   context.metaCache.commit({
     message: opts.message,
+    patch: !opts.addAll && opts.patch,
   });
 
   restackBranches(

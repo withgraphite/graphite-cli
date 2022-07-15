@@ -12,6 +12,7 @@ export async function createBranchAction(
     message?: string;
     all?: boolean;
     insert?: boolean;
+    patch?: boolean;
   },
   context: TContext
 ): Promise<void> {
@@ -22,15 +23,16 @@ export async function createBranchAction(
     );
   }
 
+  context.metaCache.checkoutNewBranch(branchName);
+
   if (opts.all) {
     addAll();
   }
 
-  context.metaCache.checkoutNewBranch(branchName);
-
-  if (detectStagedChanges()) {
+  if (opts.all || opts.patch || detectStagedChanges()) {
     context.metaCache.commit({
       message: opts.message,
+      patch: !opts.all && opts.patch,
       rollbackOnError: () => context.metaCache.deleteBranch(branchName),
     });
   } else {

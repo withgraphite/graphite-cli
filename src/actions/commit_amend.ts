@@ -9,6 +9,7 @@ export function commitAmendAction(
     addAll: boolean;
     message?: string;
     noEdit: boolean;
+    patch: boolean;
   },
   context: TContext
 ): void {
@@ -24,6 +25,7 @@ export function commitAmendAction(
     amend: true,
     noEdit: opts.noEdit,
     message: opts.message,
+    patch: !opts.addAll && opts.patch,
   });
 
   if (!opts.noEdit) {
