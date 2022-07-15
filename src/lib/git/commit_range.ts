@@ -4,7 +4,7 @@ import { gpExecSync, gpExecSyncAndSplitLines } from '../utils/exec_sync';
 const FORMAT = {
   READABLE: '%h - %s',
   SUBJECT: '%s',
-  MESSAGE: '## %B%n',
+  MESSAGE: '%B%n',
   COMMITTER_DATE: '%cr',
   SHA: '%H',
 } as const;

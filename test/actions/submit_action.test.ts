@@ -62,7 +62,7 @@ for (const scene of [new BasicScene()]) {
       ).to.equals(title);
       expect(
         inferPRBody({ branchName: 'a' }, scene.getContext()).body
-      ).to.equal(`## ${title}\n\n## ${secondSubj}`);
+      ).to.equal(`${title}\n\n${secondSubj}`);
     });
 
     it('aborts if the branch is empty', async () => {
