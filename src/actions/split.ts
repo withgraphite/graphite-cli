@@ -8,13 +8,65 @@ import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
 import { replaceUnsupportedCharacters } from '../lib/utils/branch_name';
 import { restackBranches } from './restack';
 
-export async function splitCurrentBranch(context: TContext): Promise<void> {
+export async function splitCurrentBranch(
+  args: { style: 'hunk' | 'commit' | undefined },
+  context: TContext
+): Promise<void> {
   if (!context.interactive) {
     throw new PreconditionsFailedError(
       'This command must be run in interactive mode.'
     );
   }
   uncommittedTrackedChangesPrecondition();
+
+  // If user did not select a style, prompt unless there is only one commit
+  const style: 'hunk' | 'commit' | 'abort' =
+    args.style ??
+    (context.metaCache.getAllCommits(
+      context.metaCache.currentBranchPrecondition,
+      'SHA'
+    ).length > 1
+      ? (
+          await prompts(
+            {
+              type: 'select',
+              name: 'value',
+              message: `How would you like to split ${context.metaCache.currentBranchPrecondition}?`,
+              choices: [
+                {
+                  title: 'By commit - slice up the history of this branch.',
+                  value: 'commit',
+                },
+                {
+                  title: 'By hunk - split into new single-commit branches.',
+                  value: 'hunk',
+                },
+                { title: 'Cancel this command (Ctrl+C).', value: 'abort' },
+              ],
+            },
+            {
+              onCancel: () => {
+                throw new KilledError();
+              },
+            }
+          )
+        ).value
+      : 'hunk');
+
+  const actions = {
+    commit: (context: TContext) => {
+      void context;
+    },
+    hunk: splitByHunk,
+    abort: () => {
+      throw new KilledError();
+    },
+  };
+
+  await actions[style](context);
+}
+
+async function splitByHunk(context: TContext): Promise<void> {
   const branchToSplit = context.metaCache.currentBranchPrecondition;
   const branchesToRestack = context.metaCache.getRelativeStack(
     branchToSplit,
