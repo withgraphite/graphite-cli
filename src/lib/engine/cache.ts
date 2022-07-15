@@ -26,8 +26,7 @@ import {
 } from '../git/rebase';
 import { softReset } from '../git/reset_branch';
 import { setRemoteTracking } from '../git/set_remote_tracking';
-import { switchBranch } from '../git/switch_branch';
-import { forceCreateBranch } from '../git/write_branch';
+import { forceCheckoutNewBranch, switchBranch } from '../git/switch_branch';
 import { cuteString } from '../utils/cute_string';
 import { TSplog } from '../utils/splog';
 import {
@@ -597,7 +596,7 @@ export function composeMetaCache({
           );
         deleteAllBranchData(parentBranchName);
       } else {
-        forceCreateBranch(parentBranchName, cachedMeta.branchRevision);
+        forceCheckoutNewBranch(parentBranchName, cachedMeta.branchRevision);
         updateMeta(parentBranchName, {
           ...parentCachedMeta,
           branchRevision: cachedMeta.branchRevision,
@@ -800,7 +799,7 @@ export function composeMetaCache({
       validateNewParent(branchName, parentBranchName);
       assertBranch(parentBranchName);
       const { head, base } = { head: readFetchHead(), base: readFetchBase() };
-      forceCreateBranch(branchName, head);
+      forceCheckoutNewBranch(branchName, head);
       setRemoteTracking({ remote, branchName, sha: head });
 
       updateMeta(branchName, {

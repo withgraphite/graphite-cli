@@ -8,3 +8,11 @@ export function switchBranch(branch: string, opts?: { new?: boolean }): void {
     onError: 'throw',
   });
 }
+
+export function forceCheckoutNewBranch(branchName: string, sha: string): void {
+  gpExecSync({
+    command: `git switch -C ${q(branchName)} ${q(sha)}`,
+    options: { stdio: 'pipe' },
+    onError: 'throw',
+  });
+}
