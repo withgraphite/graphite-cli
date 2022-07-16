@@ -95,6 +95,7 @@ async function splitByCommit(
       chalk.yellow(`For each branch you'd like to create:`),
       `1. Choose which commit it begins at using the below prompt.`,
       `2. Choose its name.`,
+      ``,
     ].join('\n')
   );
 
@@ -208,10 +209,12 @@ async function splitByHunk(
       context.splog.info(chalk.yellow('Remaining changes:'));
       context.splog.info(' ' + unstagedChanges);
       context.splog.newline();
-      await createSplitCommit(
-        { branchToSplit, branchNames, defaultCommitMessage },
-        context
-      );
+      await promptNextBranchName({ branchNames, branchToSplit }, context);
+      context.metaCache.commit({
+        message: defaultCommitMessage,
+        edit: true,
+        patch: true,
+      });
       context.splog.newline();
     }
   } catch (e) {
@@ -227,25 +230,22 @@ async function splitByHunk(
 
   context.metaCache.finalizeSplit(branchToSplit, branchNames);
 }
-
-async function createSplitCommit(
+async function promptNextBranchName(
   {
     branchToSplit,
     branchNames,
-    defaultCommitMessage,
   }: {
     branchToSplit: string;
     branchNames: string[];
-    defaultCommitMessage: string;
   },
   context: TContext
-): Promise<void> {
+) {
   const { branchName } = await prompts(
     {
       type: 'text',
       name: 'branchName',
       message: 'Branch name',
-      initial: getInitialBranchName(branchToSplit, branchNames),
+      initial: getInitialNextBranchName(branchToSplit, branchNames),
       validate: (name) => {
         const calculatedName = replaceUnsupportedCharacters(name, context);
         return branchNames.includes(calculatedName) ||
@@ -262,19 +262,13 @@ async function createSplitCommit(
     }
   );
   branchNames.push(branchName);
-
-  context.metaCache.commit({
-    message: defaultCommitMessage,
-    edit: true,
-    patch: true,
-  });
 }
 
-function getInitialBranchName(
+function getInitialNextBranchName(
   originalBranchName: string,
   branchNames: string[]
 ): string {
   return branchNames.includes(originalBranchName)
-    ? getInitialBranchName(`${originalBranchName}_split`, branchNames)
+    ? getInitialNextBranchName(`${originalBranchName}_split`, branchNames)
     : originalBranchName;
 }
