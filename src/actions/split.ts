@@ -192,9 +192,9 @@ async function splitByHunk(
       : []),
     ``,
     chalk.yellow(`For each branch you'd like to create:`),
-    `1. Pick a branch name.`,
-    `2. Follow the prompts to stage the changes that you'd like to include.`,
-    `3. Enter a commit message.`,
+    `1. Follow the prompts to stage the changes that you'd like to include.`,
+    `2. Enter a commit message.`,
+    `3. Pick a branch name.`,
     `The command will continue until all changes have been added to a new branch.`,
   ].join('\n');
 
@@ -209,12 +209,12 @@ async function splitByHunk(
       context.splog.info(chalk.yellow('Remaining changes:'));
       context.splog.info(' ' + unstagedChanges);
       context.splog.newline();
-      await promptNextBranchName({ branchNames, branchToSplit }, context);
       context.metaCache.commit({
         message: defaultCommitMessage,
         edit: true,
         patch: true,
       });
+      await promptNextBranchName({ branchNames, branchToSplit }, context);
       context.splog.newline();
     }
   } catch (e) {
