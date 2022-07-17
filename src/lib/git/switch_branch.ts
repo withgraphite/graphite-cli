@@ -4,7 +4,7 @@ import { gpExecSync } from '../utils/exec_sync';
 export function switchBranch(branch: string, opts?: { new?: boolean }): void {
   gpExecSync({
     command: `git switch ${opts?.new ? '-c ' : ''}${q(branch)}`,
-    options: { stdio: 'ignore' },
+    options: { stdio: 'pipe' },
     onError: 'throw',
   });
 }

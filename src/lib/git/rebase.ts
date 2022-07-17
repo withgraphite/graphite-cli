@@ -15,7 +15,7 @@ export function rebase(args: {
         ? `--committer-date-is-author-date`
         : ''
     }--onto ${q(args.onto)} ${q(args.from)} ${q(args.branchName)}`,
-    options: { stdio: 'ignore' },
+    options: { stdio: 'pipe' },
     onError: 'ignore',
   });
   return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
@@ -24,7 +24,7 @@ export function rebase(args: {
 export function rebaseContinue(): TRebaseResult {
   gpExecSync({
     command: `GIT_EDITOR=true git rebase --continue`,
-    options: { stdio: 'ignore' },
+    options: { stdio: 'pipe' },
     onError: 'ignore',
   });
   return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';
@@ -33,7 +33,7 @@ export function rebaseContinue(): TRebaseResult {
 export function rebaseAbort(): void {
   gpExecSync({
     command: `git rebase --abort`,
-    options: { stdio: 'ignore' },
+    options: { stdio: 'pipe' },
     onError: 'throw',
   });
 }
@@ -46,7 +46,7 @@ export function rebaseInteractive(args: {
     command: `git rebase -i ${q(args.parentBranchRevision)} ${q(
       args.branchName
     )}`,
-    options: { stdio: 'inherit' },
+    options: { stdio: 'pipe' },
     onError: 'throw',
   });
   return rebaseInProgress() ? 'REBASE_CONFLICT' : 'REBASE_DONE';

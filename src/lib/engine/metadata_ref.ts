@@ -50,7 +50,7 @@ export function writeMetadataRef(
   gpExecSync({
     command: `git update-ref refs/branch-metadata/${q(branchName)} ${metaSha}`,
     options: {
-      stdio: 'ignore',
+      stdio: 'pipe',
       cwd,
     },
     onError: 'throw',
