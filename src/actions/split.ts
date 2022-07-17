@@ -9,6 +9,17 @@ import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
 import { replaceUnsupportedCharacters } from '../lib/utils/branch_name';
 import { restackBranches } from './restack';
 
+type TSplit = {
+  // list of branch names from oldest to newest
+  branchNames: string[];
+  // list of commits to branch at keyed by distance from HEAD,
+  // i.e. if the branch log shows:
+  // C
+  // B
+  // A
+  // and we have [0,2] we would branch at A and C
+  branchPoints: number[];
+};
 export async function splitCurrentBranch(
   args: { style: 'hunk' | 'commit' | undefined },
   context: TContext
@@ -68,7 +79,12 @@ export async function splitCurrentBranch(
     SCOPE.UPSTACK_EXCLUSIVE
   );
 
-  await actions[style](branchToSplit, context);
+  const split = await actions[style](branchToSplit, context);
+
+  context.metaCache.applySplitToCommits({
+    branchToSplit,
+    ...split,
+  });
 
   restackBranches(branchesToRestack, context);
 }
@@ -76,7 +92,7 @@ export async function splitCurrentBranch(
 async function splitByCommit(
   branchToSplit: string,
   context: TContext
-): Promise<void> {
+): Promise<TSplit> {
   context.splog.info(
     [
       `Splitting the commits of ${chalk.cyan(
@@ -105,7 +121,14 @@ async function splitByCommit(
   );
 
   const branchPoints = await getBranchPoints(readableCommits);
-  void branchPoints; // TODO implement
+  const branchNames: string[] = [];
+  for (let _ = 0; _ < branchPoints.length; _++) {
+    await promptNextBranchName({ branchNames, branchToSplit }, context);
+    context.splog.newline();
+  }
+
+  context.metaCache.detach();
+  return { branchNames, branchPoints };
 }
 
 async function getBranchPoints(readableCommits: string[]): Promise<number[]> {
@@ -172,13 +195,12 @@ async function getBranchPoints(readableCommits: string[]): Promise<number[]> {
 async function splitByHunk(
   branchToSplit: string,
   context: TContext
-): Promise<void> {
+): Promise<TSplit> {
   const defaultCommitMessage = context.metaCache
     .getAllCommits(branchToSplit, 'MESSAGE')
     .reverse()
     .join('\n\n');
 
-  const branchNames: string[] = [];
   context.metaCache.detachAndResetBranchChanges();
 
   const instructions = [
@@ -202,6 +224,7 @@ async function splitByHunk(
     `The command will continue until all changes have been added to a new branch.`,
   ].join('\n');
 
+  const branchNames: string[] = [];
   try {
     for (
       let unstagedChanges = getUnstagedChanges();
@@ -233,12 +256,11 @@ async function splitByHunk(
     throw e;
   }
 
-  context.metaCache.applySplitToCommits({
-    branchToSplit,
+  return {
     branchNames,
     // for single-commit branches, there is a branch point at each commit
     branchPoints: branchNames.map((_, idx) => idx),
-  });
+  };
 }
 async function promptNextBranchName(
   {
@@ -254,7 +276,7 @@ async function promptNextBranchName(
     {
       type: 'text',
       name: 'branchName',
-      message: 'Branch name',
+      message: `${branchNames.length + 1}. Branch name`,
       initial: getInitialNextBranchName(branchToSplit, branchNames),
       validate: (name) => {
         const calculatedName = replaceUnsupportedCharacters(name, context);
