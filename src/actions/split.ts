@@ -229,7 +229,12 @@ async function splitByHunk(
     throw e;
   }
 
-  context.metaCache.applySplitToCommits(branchToSplit, branchNames);
+  context.metaCache.applySplitToCommits({
+    branchToSplit,
+    branchNames,
+    // for single-commit branches, there is a branch point at each commit
+    branchPoints: branchNames.map((_, idx) => idx),
+  });
 }
 async function promptNextBranchName(
   {
