@@ -135,6 +135,6 @@ async function branchOnboardingFlow(context: TContext) {
     return;
   }
 
-  await checkoutBranch(context.metaCache.trunk, context);
+  await checkoutBranch({ branchName: context.metaCache.trunk }, context);
   while (await trackBranchInteractive(context));
 }

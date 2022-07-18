@@ -3,13 +3,20 @@ import { TContext } from '../lib/context';
 import { interactiveBranchSelection } from './log';
 
 export async function checkoutBranch(
-  branchName: string | undefined,
+  {
+    branchName,
+    showUntracked,
+  }: {
+    branchName: string | undefined;
+    showUntracked?: boolean;
+  },
   context: TContext
 ): Promise<void> {
   if (!branchName) {
     branchName = await interactiveBranchSelection(
       {
         message: 'Checkout a branch (autocomplete or arrow keys)',
+        showUntracked,
       },
       context
     );
