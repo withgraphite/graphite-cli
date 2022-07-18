@@ -93,7 +93,11 @@ export type TMetaCache = {
   squashCurrentBranch: (opts: { message?: string; noEdit?: boolean }) => void;
 
   detachAndResetBranchChanges: () => void;
-  applySplitToCommits: (branchToSplit: string, branchNames: string[]) => void;
+  applySplitToCommits: (args: {
+    branchToSplit: string;
+    branchNames: string[];
+    branchPoints: number[];
+  }) => void;
   forceCheckoutBranch: (branchToSplit: string) => void;
 
   restackBranch: (branchName: string) =>
@@ -673,19 +677,33 @@ export function composeMetaCache({
       switchBranch(cachedMeta.branchRevision, { detach: true });
       trackedReset(cachedMeta.parentBranchRevision);
     },
-    applySplitToCommits(branchToSplit: string, branchNames: string[]) {
+    applySplitToCommits({
+      branchToSplit,
+      branchNames,
+      branchPoints,
+    }: {
+      branchToSplit: string;
+      branchNames: string[];
+      branchPoints: number[];
+    }) {
+      if (branchNames.length !== branchPoints.length) {
+        throw new PreconditionsFailedError(`Invalid number of branch names.`);
+      }
       assertBranch(branchToSplit);
       const cachedMeta = cache.branches[branchToSplit];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
 
+      // we reverse the branch points because they are referencing
+      // commits from newest to oldest, but we name branches from
+      // oldest to newest (parent to child)
+      const reversedBranchPoints = branchPoints.slice().reverse();
+      // keep track of the last branch's name + SHA for metadata
       const lastBranch = {
         name: cachedMeta.parentBranchName,
         revision: cachedMeta.parentBranchRevision,
       };
       branchNames.forEach((branchName, idx) => {
-        const branchRevision = getShaOrThrow(
-          `@~${branchNames.length - 1 - idx}`
-        );
+        const branchRevision = getShaOrThrow(`@~${reversedBranchPoints[idx]}`);
         forceCreateBranch(branchName, branchRevision);
         updateMeta(branchName, {
           validationResult: 'VALID',
