@@ -28,12 +28,12 @@ export function deleteBranch(branchName: string): void {
 
 export function switchBranch(
   branch: string,
-  opts?: { new?: boolean; detach?: boolean }
+  opts?: { new?: boolean; detach?: boolean; force?: boolean }
 ): void {
   gpExecSync({
-    command: `git switch ${opts?.detach ? '-d ' : ''}${
-      opts?.new ? '-c ' : ''
-    }${q(branch)}`,
+    command: `git switch ${opts?.detach ? '-d ' : ''} ${
+      opts?.force ? '-f ' : ''
+    } ${opts?.new ? '-c ' : ''}${q(branch)}`,
     options: { stdio: 'pipe' },
     onError: 'throw',
   });
