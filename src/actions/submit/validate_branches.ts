@@ -67,7 +67,7 @@ function validateBaseRevisions(branchNames: string[], context: TContext): void {
         context.splog.info(
           `Note that ${chalk.yellow(
             branchName
-          )} is not restacked on trunk. You may encounter conflicts if you attempt to merge it.`
+          )} has fallen behind trunk. You may encounter conflicts if you attempt to merge it.`
         );
       }
     } else if (validatedBranches.has(parentBranchName)) {
