@@ -7,12 +7,21 @@ import { KilledError } from '../lib/errors';
 import { suggest } from '../lib/utils/prompts_helpers';
 import { getBranchInfo } from './show_branch';
 
+function getUntrackedBranchNames(context: TContext) {
+  return context.metaCache.allBranchNames.filter(
+    (branchName) =>
+      !context.metaCache.isTrunk(branchName) &&
+      !context.metaCache.isBranchTracked(branchName)
+  );
+}
+
 export function logAction(
   opts: {
     style: 'SHORT' | 'FULL';
     reverse: boolean;
     steps: number | undefined;
     branchName: string;
+    showUntracked?: boolean;
   },
   context: TContext
 ): void {
@@ -26,6 +35,14 @@ export function logAction(
     },
     context
   ).forEach((line) => context.splog.info(line));
+
+  if (opts.showUntracked) {
+    context.splog.newline();
+    context.splog.info(chalk.yellowBright(`Untracked branches:`));
+    getUntrackedBranchNames(context).map((branchName) =>
+      context.splog.info(branchName)
+    );
+  }
 
   if (
     opts.style === 'SHORT' &&
@@ -83,13 +100,10 @@ export async function interactiveBranchSelection(
       ),
     }))
     .concat(
-      context.metaCache.allBranchNames
-        .filter(
-          (branchName) =>
-            !context.metaCache.isTrunk(branchName) &&
-            !context.metaCache.isBranchTracked(branchName)
-        )
-        .map((branchName) => ({ title: branchName, value: branchName }))
+      getUntrackedBranchNames(context).map((branchName) => ({
+        title: branchName,
+        value: branchName,
+      }))
     );
 
   const indexOfCurrentIfPresent = choices.findIndex(
