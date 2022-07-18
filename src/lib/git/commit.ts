@@ -5,6 +5,8 @@ export type TCommitOpts = {
   amend?: boolean;
   message?: string;
   noEdit?: boolean;
+  edit?: boolean;
+  patch?: boolean;
   rollbackOnError?: () => void;
 };
 export function commit(opts: TCommitOpts & { noVerify: boolean }): void {
@@ -14,6 +16,8 @@ export function commit(opts: TCommitOpts & { noVerify: boolean }): void {
       opts.amend ? `--amend` : '',
       opts.message ? `-m ${q(opts.message)}` : '',
       opts.noEdit ? `--no-edit` : '',
+      opts.edit ? `-e` : '',
+      opts.patch ? `-p` : '',
       opts.noVerify ? '-n' : '',
     ].join(' '),
     options: {
