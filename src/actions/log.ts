@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import stripAnsi from 'strip-ansi';
+import { GRAPHITE_COLORS } from '../lib/colors';
 import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
 import { suggest } from '../lib/utils/prompts_helpers';
@@ -124,21 +125,9 @@ type TPrintStackArgs = {
   steps?: number;
 };
 
-const LOG_SHORT_COLORS: Parameters<typeof chalk.rgb>[] = [
-  [76, 203, 241],
-  [77, 202, 125],
-  [110, 173, 38],
-  [245, 200, 0],
-  [248, 144, 72],
-  [244, 98, 81],
-  [235, 130, 188],
-  [159, 131, 228],
-  [80, 132, 243],
-];
-
 function getLogShortColor(toColor: string, index: number): string {
   return chalk.rgb(
-    ...LOG_SHORT_COLORS[Math.floor(index / 2) % LOG_SHORT_COLORS.length]
+    ...GRAPHITE_COLORS[Math.floor(index / 2) % GRAPHITE_COLORS.length]
   )(toColor);
 }
 
