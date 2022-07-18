@@ -16,6 +16,13 @@ async function getNewBranchName(
       name: 'branchName',
       message: 'Branch Name',
       initial: oldBranchName,
+      validate: (name) => {
+        const calculatedName = replaceUnsupportedCharacters(name, context);
+        return oldBranchName !== calculatedName &&
+          context.metaCache.allBranchNames.includes(calculatedName)
+          ? 'Branch name is unavailable.'
+          : true;
+      },
     },
     {
       onCancel: () => {
