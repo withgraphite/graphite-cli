@@ -104,7 +104,7 @@ async function splitByCommit(
     'READABLE'
   );
 
-  const branchPoints = getBranchPoints(readableCommits);
+  const branchPoints = await getBranchPoints(readableCommits);
   void branchPoints; // TODO implement
 }
 
@@ -112,49 +112,53 @@ async function getBranchPoints(readableCommits: string[]): Promise<number[]> {
   // Array where nth index is whether we want a branch pointing to nth commit
   const isBranchPoint: boolean[] = readableCommits.map((_, idx) => idx === 0);
 
-  let lastValue: number | 'DONE' = 0;
-  while (lastValue !== 'DONE') {
+  let lastValue = 0;
+  // -1 signifies that we are done
+  while (lastValue !== -1) {
     // Never toggle the first commmit, it always needs a branch
     if (lastValue !== 0) {
       isBranchPoint[lastValue] = !isBranchPoint[lastValue];
     }
     // We count branches in reverse so start at the total number of branch points
     let branchNumber = Object.values(isBranchPoint).filter((v) => v).length + 1;
-    lastValue = (
-      await prompts(
-        {
-          type: 'select',
-          name: 'value',
-          message: `Toggle a commit to split the branch there.`,
-          hint: 'Arrow keys and return/space. Select confirm to finish.',
-          choices: readableCommits
-            .map((commit, index) => {
-              const shouldDisplayBranchNumber = isBranchPoint[index];
-              if (shouldDisplayBranchNumber) {
-                branchNumber--;
-              }
-              return {
-                title: chalk.rgb(
-                  ...GRAPHITE_COLORS[
-                    (branchNumber - 1) % GRAPHITE_COLORS.length
-                  ]
-                )(
-                  `${
-                    shouldDisplayBranchNumber ? `${branchNumber}. ` : '   '
-                  }${commit}`
-                ),
-                value: '' + index,
-              };
-            })
-            .concat([{ title: '   Confirm', value: 'DONE' }]),
-        },
-        {
-          onCancel: () => {
-            throw new KilledError();
+    lastValue = parseInt(
+      (
+        await prompts(
+          {
+            type: 'select',
+            name: 'value',
+            message: `Toggle a commit to split the branch there.`,
+            hint: 'Arrow keys and return/space. Select confirm to finish.',
+            initial: lastValue,
+            choices: readableCommits
+              .map((commit, index) => {
+                const shouldDisplayBranchNumber = isBranchPoint[index];
+                if (shouldDisplayBranchNumber) {
+                  branchNumber--;
+                }
+                return {
+                  title: chalk.rgb(
+                    ...GRAPHITE_COLORS[
+                      (branchNumber - 1) % GRAPHITE_COLORS.length
+                    ]
+                  )(
+                    `${
+                      shouldDisplayBranchNumber ? `${branchNumber}. ` : '   '
+                    }${commit}`
+                  ),
+                  value: '' + index,
+                };
+              })
+              .concat([{ title: '   Confirm', value: '-1' }]),
           },
-        }
-      )
-    ).value as number | 'DONE';
+          {
+            onCancel: () => {
+              throw new KilledError();
+            },
+          }
+        )
+      ).value
+    );
     // Clear the prompt result
     process.stdout.moveCursor(0, -1);
     process.stdout.clearLine(1);
