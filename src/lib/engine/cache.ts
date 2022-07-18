@@ -92,6 +92,7 @@ export type TMetaCache = {
   commit: (opts: TCommitOpts) => void;
   squashCurrentBranch: (opts: { message?: string; noEdit?: boolean }) => void;
 
+  detach: () => void;
   detachAndResetBranchChanges: () => void;
   applySplitToCommits: (args: {
     branchToSplit: string;
@@ -669,6 +670,13 @@ export function composeMetaCache({
         branchRevision: getShaOrThrow(cache.currentBranch),
       };
     },
+    detach() {
+      const branchName = cache.currentBranch;
+      assertBranch(branchName);
+      const cachedMeta = cache.branches[branchName];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+      switchBranch(cachedMeta.branchRevision, { detach: true });
+    },
     detachAndResetBranchChanges() {
       const branchName = cache.currentBranch;
       assertBranch(branchName);
@@ -687,6 +695,8 @@ export function composeMetaCache({
       branchPoints: number[];
     }) {
       if (branchNames.length !== branchPoints.length) {
+        splog.debug(branchNames.toString());
+        splog.debug(branchPoints.toString());
         throw new PreconditionsFailedError(`Invalid number of branch names.`);
       }
       assertBranch(branchToSplit);
