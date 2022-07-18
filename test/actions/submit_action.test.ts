@@ -28,6 +28,20 @@ for (const scene of [new BasicScene()]) {
           { branchName: 'a', template: 'template' },
           scene.getContext()
         ).body
+      ).to.equals(`template`);
+
+      scene
+        .getContext()
+        .userConfig.update((data) => (data.submitIncludeCommitMessages = true));
+
+      expect(
+        await getPRTitle({ branchName: 'a' }, scene.getContext())
+      ).to.equals(title);
+      expect(
+        inferPRBody(
+          { branchName: 'a', template: 'template' },
+          scene.getContext()
+        ).body
       ).to.equals(`${body}\n\ntemplate`);
     });
 
@@ -56,6 +70,17 @@ for (const scene of [new BasicScene()]) {
       scene.repo.createChange('a');
       scene.repo.execCliCommand(`branch create "a" -m "${title}" -q`);
       scene.repo.createChangeAndCommit(secondSubj);
+
+      expect(
+        await getPRTitle({ branchName: 'a' }, scene.getContext())
+      ).to.equals(title);
+      expect(
+        inferPRBody({ branchName: 'a' }, scene.getContext()).body
+      ).to.equal(``);
+
+      scene
+        .getContext()
+        .userConfig.update((data) => (data.submitIncludeCommitMessages = true));
 
       expect(
         await getPRTitle({ branchName: 'a' }, scene.getContext())

@@ -12,6 +12,7 @@ const schema = t.shape({
   tips: t.optional(t.boolean),
   editor: t.optional(t.string),
   restackCommitterDateIsAuthorDate: t.optional(t.boolean),
+  submitIncludeCommitMessages: t.optional(t.boolean),
 });
 
 export const userConfigFactory = spiffy({
