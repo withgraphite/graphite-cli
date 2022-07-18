@@ -24,6 +24,13 @@ export function detectStagedChanges(): boolean {
   );
 }
 
+export function getUnstagedChanges(): string {
+  return gpExecSync({
+    command: `git -c color.ui=always --no-pager diff --no-ext-diff --stat`,
+    onError: 'throw',
+  });
+}
+
 export function isDiffEmpty(left: string, right: string): boolean {
   return (
     gpExecSync({
