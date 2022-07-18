@@ -93,27 +93,8 @@ async function splitByCommit(
   branchToSplit: string,
   context: TContext
 ): Promise<TSplit> {
-  context.splog.info(
-    [
-      `Splitting the commits of ${chalk.cyan(
-        branchToSplit
-      )} into multiple branches.`,
-      ...(context.metaCache.getPrInfo(branchToSplit)?.number
-        ? [
-            `If any of the new branches keeps the name ${chalk.cyan(
-              branchToSplit
-            )}, it will be linked to #${
-              context.metaCache.getPrInfo(branchToSplit)?.number
-            }.`,
-          ]
-        : []),
-      ``,
-      chalk.yellow(`For each branch you'd like to create:`),
-      `1. Choose which commit it begins at using the below prompt.`,
-      `2. Choose its name.`,
-      ``,
-    ].join('\n')
-  );
+  const instructions = getSplitByCommitInstructions(branchToSplit, context);
+  context.splog.info(instructions);
 
   const readableCommits = context.metaCache.getAllCommits(
     branchToSplit,
@@ -123,25 +104,48 @@ async function splitByCommit(
   const branchPoints = await getBranchPoints(readableCommits);
   const branchNames: string[] = [];
   for (let _ = 0; _ < branchPoints.length; _++) {
-    await promptNextBranchName({ branchNames, branchToSplit }, context);
-    context.splog.newline();
+    branchNames.push(
+      await promptNextBranchName({ branchNames, branchToSplit }, context)
+    );
   }
 
   context.metaCache.detach();
   return { branchNames, branchPoints };
 }
 
+function getSplitByCommitInstructions(
+  branchToSplit: string,
+  context: TContext
+): string {
+  return [
+    `Splitting the commits of ${chalk.cyan(
+      branchToSplit
+    )} into multiple branches.`,
+    ...(context.metaCache.getPrInfo(branchToSplit)?.number
+      ? [
+          `If any of the new branches keeps the name ${chalk.cyan(
+            branchToSplit
+          )}, it will be linked to #${
+            context.metaCache.getPrInfo(branchToSplit)?.number
+          }.`,
+        ]
+      : []),
+    ``,
+    chalk.yellow(`For each branch you'd like to create:`),
+    `1. Choose which commit it begins at using the below prompt.`,
+    `2. Choose its name.`,
+    ``,
+  ].join('\n');
+}
+
 async function getBranchPoints(readableCommits: string[]): Promise<number[]> {
   // Array where nth index is whether we want a branch pointing to nth commit
   const isBranchPoint: boolean[] = readableCommits.map((_, idx) => idx === 0);
 
+  //  start the cursor at the current commmit
   let lastValue = 0;
-  // -1 signifies that we are done
+  // -1 signifies thatwe are done
   while (lastValue !== -1) {
-    // Never toggle the first commmit, it always needs a branch
-    if (lastValue !== 0) {
-      isBranchPoint[lastValue] = !isBranchPoint[lastValue];
-    }
     // We count branches in reverse so start at the total number of branch points
     let branchNumber = Object.values(isBranchPoint).filter((v) => v).length + 1;
     lastValue = parseInt(
@@ -159,18 +163,15 @@ async function getBranchPoints(readableCommits: string[]): Promise<number[]> {
                 if (shouldDisplayBranchNumber) {
                   branchNumber--;
                 }
-                return {
-                  title: chalk.rgb(
-                    ...GRAPHITE_COLORS[
-                      (branchNumber - 1) % GRAPHITE_COLORS.length
-                    ]
-                  )(
-                    `${
-                      shouldDisplayBranchNumber ? `${branchNumber}. ` : '   '
-                    }${commit}`
-                  ),
-                  value: '' + index,
-                };
+
+                const titleColor =
+                  GRAPHITE_COLORS[(branchNumber - 1) % GRAPHITE_COLORS.length];
+                const titleText = `${
+                  shouldDisplayBranchNumber ? `${branchNumber}. ` : '   '
+                }${commit}`;
+
+                const title = chalk.rgb(...titleColor)(titleText);
+                return { title, value: '' + index };
               })
               .concat([{ title: '   Confirm', value: '-1' }]),
           },
@@ -185,6 +186,10 @@ async function getBranchPoints(readableCommits: string[]): Promise<number[]> {
     // Clear the prompt result
     process.stdout.moveCursor(0, -1);
     process.stdout.clearLine(1);
+    // Never toggle the first commmit, it always needs a branch
+    if (lastValue !== 0) {
+      isBranchPoint[lastValue] = !isBranchPoint[lastValue];
+    }
   }
 
   return isBranchPoint
@@ -196,36 +201,16 @@ async function splitByHunk(
   branchToSplit: string,
   context: TContext
 ): Promise<TSplit> {
-  const defaultCommitMessage = context.metaCache
-    .getAllCommits(branchToSplit, 'MESSAGE')
-    .reverse()
-    .join('\n\n');
-
+  // Keeps new files tracked so they get added by the `commit -p`
   context.metaCache.detachAndResetBranchChanges();
-
-  const instructions = [
-    `Splitting ${chalk.cyan(
-      branchToSplit
-    )} into multiple single-commit branches.`,
-    ...(context.metaCache.getPrInfo(branchToSplit)?.number
-      ? [
-          `If any of the new branches keeps the name ${chalk.cyan(
-            branchToSplit
-          )}, it will be linked to #${
-            context.metaCache.getPrInfo(branchToSplit)?.number
-          }.`,
-        ]
-      : []),
-    ``,
-    chalk.yellow(`For each branch you'd like to create:`),
-    `1. Follow the prompts to stage the changes that you'd like to include.`,
-    `2. Enter a commit message.`,
-    `3. Pick a branch name.`,
-    `The command will continue until all changes have been added to a new branch.`,
-  ].join('\n');
 
   const branchNames: string[] = [];
   try {
+    const instructions = getSplitByHunkInstructions(branchToSplit, context);
+    const defaultCommitMessage = context.metaCache
+      .getAllCommits(branchToSplit, 'MESSAGE')
+      .reverse()
+      .join('\n\n');
     for (
       let unstagedChanges = getUnstagedChanges();
       unstagedChanges.length > 0;
@@ -241,8 +226,9 @@ async function splitByHunk(
         edit: true,
         patch: true,
       });
-      await promptNextBranchName({ branchNames, branchToSplit }, context);
-      context.splog.newline();
+      branchNames.push(
+        await promptNextBranchName({ branchNames, branchToSplit }, context)
+      );
     }
   } catch (e) {
     // Handle a CTRL-C gracefully
@@ -262,6 +248,33 @@ async function splitByHunk(
     branchPoints: branchNames.map((_, idx) => idx),
   };
 }
+
+function getSplitByHunkInstructions(
+  branchToSplit: string,
+  context: TContext
+): string {
+  return [
+    `Splitting ${chalk.cyan(
+      branchToSplit
+    )} into multiple single-commit branches.`,
+    ...(context.metaCache.getPrInfo(branchToSplit)?.number
+      ? [
+          `If any of the new branches keeps the name ${chalk.cyan(
+            branchToSplit
+          )}, it will be linked to #${
+            context.metaCache.getPrInfo(branchToSplit)?.number
+          }.`,
+        ]
+      : []),
+    ``,
+    chalk.yellow(`For each branch you'd like to create:`),
+    `1. Follow the prompts to stage the changes that you'd like to include.`,
+    `2. Enter a commit message.`,
+    `3. Pick a branch name.`,
+    `The command will continue until all changes have been added to a new branch.`,
+  ].join('\n');
+}
+
 async function promptNextBranchName(
   {
     branchToSplit,
@@ -271,7 +284,7 @@ async function promptNextBranchName(
     branchNames: string[];
   },
   context: TContext
-) {
+): Promise<string> {
   const { branchName } = await prompts(
     {
       type: 'text',
@@ -293,7 +306,8 @@ async function promptNextBranchName(
       },
     }
   );
-  branchNames.push(branchName);
+  context.splog.newline();
+  return branchName;
 }
 
 function getInitialNextBranchName(
