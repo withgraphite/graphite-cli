@@ -4,6 +4,7 @@ import {
   branchMove,
   deleteBranch,
   forceCheckoutNewBranch,
+  forceCreateBranch,
   getCurrentBranchName,
   switchBranch,
 } from '../git/branch_ops';
@@ -92,6 +93,8 @@ export type TMetaCache = {
   squashCurrentBranch: (opts: { message?: string; noEdit?: boolean }) => void;
 
   startSplit: () => void;
+  finalizeSplit: (branchToSplit: string, branchNames: string[]) => void;
+  handleSplitError: (branchToSplit: string) => void;
 
   restackBranch: (branchName: string) =>
     | {
@@ -669,6 +672,43 @@ export function composeMetaCache({
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
       switchBranch(cachedMeta.branchRevision, { detach: true });
       trackedReset(cachedMeta.parentBranchRevision);
+    },
+    finalizeSplit(branchToSplit: string, branchNames: string[]) {
+      assertBranch(branchToSplit);
+      const cachedMeta = cache.branches[branchToSplit];
+      assertCachedMetaIsValidAndNotTrunk(cachedMeta);
+
+      const lastBranch = {
+        name: cachedMeta.parentBranchName,
+        revision: cachedMeta.parentBranchRevision,
+      };
+      branchNames.forEach((branchName, idx) => {
+        const branchRevision = getShaOrThrow(
+          `@~${branchNames.length - 1 - idx}`
+        );
+        forceCreateBranch(branchName, branchRevision);
+        updateMeta(branchName, {
+          validationResult: 'VALID',
+          branchRevision,
+          parentBranchName: lastBranch.name,
+          parentBranchRevision: lastBranch.revision,
+          children: [],
+          prInfo: branchName === branchToSplit ? cachedMeta.prInfo : undefined,
+        });
+        lastBranch.name = branchName;
+        lastBranch.revision = branchRevision;
+      });
+      cachedMeta.children.forEach((childBranchName) =>
+        setParent(childBranchName, lastBranch.name)
+      );
+      if (!branchNames.includes(branchToSplit)) {
+        deleteAllBranchData(branchToSplit);
+      }
+      cache.currentBranch = lastBranch.name;
+      switchBranch(lastBranch.name);
+    },
+    handleSplitError: (branchToSplit: string) => {
+      switchBranch(branchToSplit, { force: true });
     },
     restackBranch: (branchName: string) => {
       assertBranch(branchName);
