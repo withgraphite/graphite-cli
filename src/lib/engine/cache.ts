@@ -92,9 +92,9 @@ export type TMetaCache = {
   commit: (opts: TCommitOpts) => void;
   squashCurrentBranch: (opts: { message?: string; noEdit?: boolean }) => void;
 
-  startSplit: () => void;
-  finalizeSplit: (branchToSplit: string, branchNames: string[]) => void;
-  handleSplitError: (branchToSplit: string) => void;
+  detachAndResetBranchChanges: () => void;
+  applySplitToCommits: (branchToSplit: string, branchNames: string[]) => void;
+  forceCheckoutBranch: (branchToSplit: string) => void;
 
   restackBranch: (branchName: string) =>
     | {
@@ -665,7 +665,7 @@ export function composeMetaCache({
         branchRevision: getShaOrThrow(cache.currentBranch),
       };
     },
-    startSplit() {
+    detachAndResetBranchChanges() {
       const branchName = cache.currentBranch;
       assertBranch(branchName);
       const cachedMeta = cache.branches[branchName];
@@ -673,7 +673,7 @@ export function composeMetaCache({
       switchBranch(cachedMeta.branchRevision, { detach: true });
       trackedReset(cachedMeta.parentBranchRevision);
     },
-    finalizeSplit(branchToSplit: string, branchNames: string[]) {
+    applySplitToCommits(branchToSplit: string, branchNames: string[]) {
       assertBranch(branchToSplit);
       const cachedMeta = cache.branches[branchToSplit];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
@@ -707,7 +707,7 @@ export function composeMetaCache({
       cache.currentBranch = lastBranch.name;
       switchBranch(lastBranch.name);
     },
-    handleSplitError: (branchToSplit: string) => {
+    forceCheckoutBranch: (branchToSplit: string) => {
       switchBranch(branchToSplit, { force: true });
     },
     restackBranch: (branchName: string) => {

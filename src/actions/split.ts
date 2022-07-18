@@ -175,7 +175,7 @@ async function splitByHunk(
     .join('\n\n');
 
   const branchNames: string[] = [];
-  context.metaCache.startSplit();
+  context.metaCache.detachAndResetBranchChanges();
 
   const instructions = [
     `Splitting ${chalk.cyan(
@@ -218,7 +218,8 @@ async function splitByHunk(
       context.splog.newline();
     }
   } catch (e) {
-    context.metaCache.handleSplitError(branchToSplit);
+    // Handle a CTRL-C gracefully
+    context.metaCache.forceCheckoutBranch(branchToSplit);
     context.splog.newline();
     context.splog.info(
       `Exited early: no new branches created. You are still on ${chalk.cyan(
@@ -228,7 +229,7 @@ async function splitByHunk(
     throw e;
   }
 
-  context.metaCache.finalizeSplit(branchToSplit, branchNames);
+  context.metaCache.applySplitToCommits(branchToSplit, branchNames);
 }
 async function promptNextBranchName(
   {
