@@ -59,10 +59,16 @@ export async function getPRInfoForBranches(
     const parentBranchName = context.metaCache.getParentPrecondition(
       action.branchName
     );
+    const base =
+      parentBranchName === context.metaCache.trunk &&
+      context.repoConfig.data.remoteTrunk
+        ? context.repoConfig.data.remoteTrunk
+        : parentBranchName;
+
     submissionInfo.push({
       head: action.branchName,
       headSha: context.metaCache.getRevision(action.branchName),
-      base: parentBranchName,
+      base,
       baseSha: context.metaCache.getRevision(parentBranchName),
       ...(action.update
         ? {
