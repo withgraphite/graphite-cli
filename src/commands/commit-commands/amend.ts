@@ -22,6 +22,13 @@ const args = {
     demandOption: false,
     default: true,
   },
+  patch: {
+    describe: `Pick hunks to stage before amending.`,
+    demandOption: false,
+    default: false,
+    type: 'boolean',
+    alias: 'p',
+  },
   'no-edit': {
     type: 'boolean',
     describe:
@@ -46,6 +53,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         message: argv.message,
         noEdit: argv['no-edit'] || !argv.edit,
         addAll: argv.all,
+        patch: argv.patch,
       },
       context
     )
