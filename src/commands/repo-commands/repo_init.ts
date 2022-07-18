@@ -4,10 +4,18 @@ import { graphite } from '../../lib/runner';
 
 const args = {
   trunk: {
-    describe: `The name of your trunk branch.`,
+    describe: `The name of your trunk branch (the branch your stack are based on locally)`,
     demandOption: false,
     optional: true,
     type: 'string',
+    alias: ['t'],
+  },
+  ['remote-trunk']: {
+    describe: `The name of your remote trunk branch (the branch your PRs merge into on GitHub).`,
+    demandOption: false,
+    optional: true,
+    type: 'string',
+    alias: ['r'],
   },
   reset: {
     describe: `Untrack all branches.`,
@@ -29,5 +37,12 @@ export const handler = async (argv: argsT): Promise<void> =>
     argv,
     canonical,
     async (context) =>
-      await init({ trunk: argv.trunk, reset: argv.reset }, context)
+      await init(
+        {
+          trunk: argv.trunk,
+          remoteTrunk: argv['remote-trunk'],
+          reset: argv.reset,
+        },
+        context
+      )
   );

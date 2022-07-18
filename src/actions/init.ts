@@ -14,6 +14,7 @@ import { trackBranchInteractive } from './track_branch';
 export async function init(
   args: {
     trunk?: string;
+    remoteTrunk?: string;
     reset?: boolean;
   },
   context: TContext
@@ -40,8 +41,20 @@ export async function init(
     (args.trunk ? allBranchNames.find((b) => b === args.trunk) : undefined) ??
     (await selectTrunkBranch(allBranchNames, context));
 
+  const newRemoteTrunkName: string =
+    (args.remoteTrunk
+      ? allBranchNames.find((b) => b === args.remoteTrunk)
+      : undefined) ??
+    (await selectRemoteTrunkBranch({ allBranchNames, newTrunkName }, context));
+
   context.repoConfig.setTrunk(newTrunkName);
+  context.repoConfig.setRemoteTrunk(newRemoteTrunkName);
   context.splog.info(`Trunk set to ${chalk.green(newTrunkName)}`);
+  if (newRemoteTrunkName !== newTrunkName) {
+    context.splog.info(
+      `Remote trunk set to ${chalk.green(newRemoteTrunkName)}`
+    );
+  }
 
   if (args.reset) {
     context.metaCache.reset(newTrunkName);
@@ -79,9 +92,7 @@ async function selectTrunkBranch(
       {
         type: 'autocomplete',
         name: 'branch',
-        message: `Select a trunk branch, which you open pull requests against${
-          inferredTrunk ? ` - inferred trunk ${chalk.green(inferredTrunk)}` : ''
-        } (autocomplete or arrow keys)`,
+        message: `Select a trunk branch (the branch your changes will be based upon).`,
         choices: allBranchNames.map((b) => {
           return { title: b, value: b };
         }),
@@ -95,6 +106,54 @@ async function selectTrunkBranch(
       }
     )
   ).branch;
+}
+
+async function selectRemoteTrunkBranch(
+  {
+    allBranchNames,
+    newTrunkName,
+  }: { allBranchNames: string[]; newTrunkName: string },
+  context: TContext
+): Promise<string> {
+  if (!context.interactive) {
+    return newTrunkName;
+  }
+
+  return (
+    await prompts(
+      {
+        type: 'confirm',
+        name: 'value',
+        message: `Will ${newTrunkName} also be the branch your PRs merge into?`,
+        initial: true,
+      },
+      {
+        onCancel: () => {
+          throw new KilledError();
+        },
+      }
+    )
+  ).value
+    ? newTrunkName
+    : (
+        await prompts(
+          {
+            type: 'autocomplete',
+            name: 'branch',
+            message: `Select a remote trunk branch (the branch your PRs will merge into).`,
+            choices: allBranchNames.map((b) => {
+              return { title: b, value: b };
+            }),
+            ...(newTrunkName ? { initial: newTrunkName } : {}),
+            suggest,
+          },
+          {
+            onCancel: () => {
+              throw new KilledError();
+            },
+          }
+        )
+      ).branch;
 }
 
 function findCommonlyNamedTrunk(context: TContext): string | undefined {
