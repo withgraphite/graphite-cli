@@ -1,10 +1,14 @@
 import chalk from 'chalk';
 import { PreconditionsFailedError } from '../errors';
-import { branchMove } from '../git/branch_move';
+import {
+  branchMove,
+  deleteBranch,
+  forceCheckoutNewBranch,
+  getCurrentBranchName,
+  switchBranch,
+} from '../git/branch_ops';
 import { commit, TCommitOpts } from '../git/commit';
 import { getCommitRange, TCommitFormat } from '../git/commit_range';
-import { getCurrentBranchName } from '../git/current_branch_name';
-import { deleteBranch } from '../git/delete_branch';
 import { isDiffEmpty } from '../git/diff';
 import {
   fetchBranch,
@@ -26,7 +30,6 @@ import {
 } from '../git/rebase';
 import { softReset } from '../git/reset_branch';
 import { setRemoteTracking } from '../git/set_remote_tracking';
-import { forceCheckoutNewBranch, switchBranch } from '../git/switch_branch';
 import { cuteString } from '../utils/cute_string';
 import { TSplog } from '../utils/splog';
 import {

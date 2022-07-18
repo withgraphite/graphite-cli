@@ -8,12 +8,14 @@ import {
   TMeta,
   writeMetadataRef,
 } from './engine/metadata_ref';
+import {
+  deleteBranch,
+  getCurrentBranchName,
+  switchBranch,
+} from './git/branch_ops';
 import { getCommitTree } from './git/commit_tree';
-import { getCurrentBranchName } from './git/current_branch_name';
-import { deleteBranch } from './git/delete_branch';
 import { getShaOrThrow } from './git/get_sha';
 import { getBranchNamesAndRevisions } from './git/sorted_branch_names';
-import { switchBranch } from './git/switch_branch';
 import { TRepoConfig } from './spiffy/repo_config_spf';
 import { TUserConfig } from './spiffy/user_config_spf';
 import { cuteString } from './utils/cute_string';
