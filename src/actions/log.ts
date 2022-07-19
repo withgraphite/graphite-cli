@@ -262,7 +262,7 @@ function getUpstackExclusiveLines(
 function getBranchLines(
   args: TPrintStackArgs & {
     overallIndent?: { value: number };
-    skipBranchingLine?: boolean; // for standard
+    skipBranchingLine?: boolean;
   },
   context: TContext
 ): string[] {
@@ -285,12 +285,16 @@ function getBranchLines(
   if (args.short) {
     return [
       `${'│ '.repeat(args.indentLevel)}${'◯'}${
-        numChildren <= 2
+        args.skipBranchingLine || numChildren <= 2
           ? ''
           : (args.reverse ? '─┬' : '─┴').repeat(numChildren - 2)
-      }${numChildren <= 1 ? '' : args.reverse ? '─┐' : '─┘'}▸${
-        args.branchName
       }${
+        args.skipBranchingLine || numChildren <= 1
+          ? ''
+          : args.reverse
+          ? '─┐'
+          : '─┘'
+      }▸${args.branchName}${
         args.noStyleBranchName ||
         context.metaCache.isBranchFixed(args.branchName)
           ? ''
