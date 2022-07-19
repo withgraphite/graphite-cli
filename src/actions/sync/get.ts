@@ -45,7 +45,7 @@ export async function getAction(
     {
       branchName:
         args.branchName ?? context.metaCache.currentBranchPrecondition,
-      trunkName: context.metaCache.trunk,
+      trunkName: context.repoConfig.data.remoteTrunk ?? context.metaCache.trunk,
     },
     {
       authToken,
