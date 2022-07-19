@@ -69,6 +69,13 @@ export const args = {
     default: false,
     alias: 'c',
   },
+  select: {
+    describe:
+      'Reports the PRs that would be submitted and asks the user to select which should be updated/created. If either of --no-interactive or --dry-run is passed, this flag is ignored.',
+    type: 'boolean',
+    default: false,
+    alias: 's',
+  },
   'update-only': {
     describe: 'Only update the PRs that have been already been submitted.',
     type: 'boolean',

@@ -21,6 +21,7 @@ export async function submitAction(
     reviewers: boolean;
     confirm: boolean;
     forcePush: boolean;
+    select: boolean;
   },
   context: TContext
 ): Promise<void> {
@@ -82,6 +83,7 @@ export async function submitAction(
       updateOnly: args.updateOnly,
       reviewers: args.reviewers,
       dryRun: args.dryRun,
+      select: args.select,
     },
     context
   );
