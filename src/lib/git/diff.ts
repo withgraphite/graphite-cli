@@ -31,6 +31,16 @@ export function getUnstagedChanges(): string {
   });
 }
 
+export function showDiff(left: string, right: string): void {
+  gpExecSync({
+    command: `git -c color.ui=always --no-pager diff --no-ext-diff ${q(
+      left
+    )} ${q(right)} -- `,
+    options: { stdio: 'inherit' },
+    onError: 'throw',
+  });
+}
+
 export function isDiffEmpty(left: string, right: string): boolean {
   return (
     gpExecSync({
