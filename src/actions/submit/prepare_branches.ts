@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import prompts from 'prompts';
 import { TContext } from '../../lib/context';
 import { TBranchPRInfo } from '../../lib/engine/metadata_ref';
 import { detectUnsubmittedChanges } from '../../lib/git/diff';
@@ -36,26 +37,30 @@ export async function getPRInfoForBranches(
     updateOnly: boolean;
     dryRun: boolean;
     reviewers: boolean;
+    select: boolean;
   },
   context: TContext
 ): Promise<TPRSubmissionInfo> {
-  const branchActions = args.branchNames
-    .map((branchName) =>
-      getPRAction(
-        {
-          branchName,
-          updateOnly: args.updateOnly,
-          draft: args.draft,
-          publish: args.publish,
-          dryRun: args.dryRun,
-        },
-        context
-      )
-    )
-    .filter((action): action is TPRSubmissionAction => action !== undefined);
+  const prActions = [];
+  for await (const branchName of args.branchNames) {
+    const action = await getPRAction(
+      {
+        branchName,
+        updateOnly: args.updateOnly,
+        draft: args.draft,
+        publish: args.publish,
+        dryRun: args.dryRun,
+        select: args.select,
+      },
+      context
+    );
+    if (action) {
+      prActions.push(action);
+    }
+  }
 
   const submissionInfo = [];
-  for await (const action of branchActions) {
+  for await (const action of prActions) {
     const parentBranchName = context.metaCache.getParentPrecondition(
       action.branchName
     );
@@ -89,16 +94,17 @@ export async function getPRInfoForBranches(
   return submissionInfo;
 }
 
-function getPRAction(
+async function getPRAction(
   args: {
     branchName: string;
     updateOnly: boolean;
     draft: boolean;
     publish: boolean;
     dryRun: boolean;
+    select: boolean;
   },
   context: TContext
-): TPRSubmissionAction | undefined {
+): Promise<TPRSubmissionAction | undefined> {
   // The branch here should always have a parent - above, the branches we've
   // gathered should exclude trunk which ensures that every branch we're submitting
   // a PR for has a valid parent.
@@ -108,7 +114,7 @@ function getPRAction(
   const prInfo = context.metaCache.getPrInfo(args.branchName);
   const prNumber = prInfo?.number;
 
-  const status =
+  const calculatedStatus =
     prNumber === undefined
       ? args.updateOnly
         ? 'NOOP'
@@ -124,6 +130,13 @@ function getPRAction(
       ? 'DRAFT'
       : args.publish === true && prInfo.isDraft !== false
       ? 'PUBLISH'
+      : 'NOOP';
+
+  const status =
+    !args.select ||
+    calculatedStatus === 'NOOP' ||
+    (await selectBranch(args.branchName))
+      ? calculatedStatus
       : 'NOOP';
 
   context.splog.info(
@@ -145,6 +158,21 @@ function getPRAction(
           ? { update: false }
           : { update: true, prNumber }),
       };
+}
+
+async function selectBranch(branchName: string): Promise<boolean> {
+  const result = (
+    await prompts({
+      name: 'value',
+      initial: true,
+      type: 'confirm',
+      message: `Would you like to submit ${chalk.cyan(branchName)}?`,
+    })
+  ).value;
+  // Clear the prompt result
+  process.stdout.moveCursor(0, -1);
+  process.stdout.clearLine(1);
+  return result;
 }
 
 async function getPRCreationInfo(

@@ -31,6 +31,7 @@ export const handler = async (argv: argsT): Promise<void> => {
         reviewers: argv.reviewers,
         confirm: argv.confirm,
         forcePush: argv.force,
+        select: argv.select,
       },
       context
     );
