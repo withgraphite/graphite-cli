@@ -28,7 +28,14 @@ export async function checkoutBranch(
   }
   context.metaCache.checkoutBranch(branchName);
   context.splog.info(`Checked out ${chalk.cyan(branchName)}.`);
-  if (!context.metaCache.isBranchTracked(branchName)) {
+  printBranchInfo(branchName, context);
+}
+
+function printBranchInfo(branchName: string, context: TContext) {
+  if (
+    !context.metaCache.isTrunk(branchName) &&
+    !context.metaCache.isBranchTracked(branchName)
+  ) {
     context.splog.info(`This branch is not tracked by Graphite.`);
   } else if (!context.metaCache.isBranchFixed(branchName)) {
     context.splog.info(
