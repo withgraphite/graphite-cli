@@ -10,12 +10,19 @@ const args = {
     type: 'boolean',
     alias: 'p',
   },
-  description: {
-    describe: `Show the PR description, if it exists.`,
+  diff: {
+    describe: `Show the diff between this branch and its parent. Takes precedence over patch`,
     demandOption: false,
     default: false,
     type: 'boolean',
     alias: 'd',
+  },
+  body: {
+    describe: `Show the PR body, if it exists.`,
+    demandOption: false,
+    default: false,
+    type: 'boolean',
+    alias: 'b',
   },
 } as const;
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
@@ -29,7 +36,7 @@ export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async (context) => {
     await showBranchAction(
       context.metaCache.currentBranchPrecondition,
-      { patch: argv.patch, description: argv.description },
+      { patch: argv.patch, diff: argv.diff, body: argv.body },
       context
     );
   });

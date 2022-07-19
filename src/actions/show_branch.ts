@@ -1,11 +1,12 @@
 import chalk from 'chalk';
 import { TContext } from '../lib/context';
 import { TBranchPRInfo } from '../lib/engine/metadata_ref';
+import { showDiff } from '../lib/git/diff';
 import { showCommits } from '../lib/git/show_commits';
 
 export async function showBranchAction(
   branchName: string,
-  opts: { patch: boolean; description: boolean },
+  opts: { patch: boolean; diff: boolean; body: boolean },
   context: TContext
 ): Promise<void> {
   context.splog.info(getBranchInfo({ branchName }, context).join('\n'));
@@ -22,11 +23,10 @@ export async function showBranchAction(
     );
   }
 
-  const description =
-    opts.description && context.metaCache.getPrInfo(branchName)?.body;
-  if (description) {
+  const body = opts.body && context.metaCache.getPrInfo(branchName)?.body;
+  if (body) {
     context.splog.newline();
-    context.splog.info(description);
+    context.splog.info(body);
   }
 
   context.splog.newline();
@@ -35,8 +35,18 @@ export async function showBranchAction(
       ? `${branchName}~`
       : context.metaCache.getBaseRevision(branchName),
     branchName,
-    opts.patch
+    opts.patch && !opts.diff
   );
+
+  if (opts.diff) {
+    context.splog.newline();
+    showDiff(
+      context.metaCache.isTrunk(branchName)
+        ? `${branchName}~`
+        : context.metaCache.getBaseRevision(branchName),
+      branchName
+    );
+  }
 }
 
 export function getBranchInfo(
