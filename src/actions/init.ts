@@ -121,7 +121,7 @@ async function branchOnboardingFlow(context: TContext) {
         {
           type: 'confirm',
           name: 'value',
-          message: `Would you like start tracking existing branches to create your first stack?`,
+          message: `Would you like to start tracking existing branches to create your first stack?`,
           initial: false,
         },
         {
