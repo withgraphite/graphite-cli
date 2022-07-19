@@ -3,6 +3,7 @@ import prompts from 'prompts';
 import { TContext } from '../lib/context';
 import { ExitFailedError, KilledError } from '../lib/errors';
 import { suggest } from '../lib/utils/prompts_helpers';
+import { checkoutBranch } from './checkout_branch';
 
 type TBranchNavigation =
   | {
@@ -22,8 +23,7 @@ export async function switchBranchAction(
     context
   );
   if (newBranchName !== currentBranchName) {
-    context.metaCache.checkoutBranch(newBranchName);
-    context.splog.info(`Checked out ${chalk.cyan(newBranchName)}.`);
+    await checkoutBranch({ branchName: newBranchName }, context);
     return;
   }
   context.splog.info(
