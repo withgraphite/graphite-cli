@@ -4,7 +4,7 @@ import stripAnsi from 'strip-ansi';
 import { GRAPHITE_COLORS } from '../lib/colors';
 import { TContext } from '../lib/context';
 import { KilledError } from '../lib/errors';
-import { suggest } from '../lib/utils/prompts_helpers';
+import { clearPromptResultLine, suggest } from '../lib/utils/prompts_helpers';
 import { getBranchInfo } from './show_branch';
 
 function getUntrackedBranchNames(context: TContext) {
@@ -139,6 +139,7 @@ export async function interactiveBranchSelection(
     )
   ).branch;
 
+  clearPromptResultLine();
   context.splog.debug(`Selected ${chosenBranch}`);
   return chosenBranch;
 }
