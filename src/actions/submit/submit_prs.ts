@@ -40,10 +40,9 @@ export async function submitPullRequest(
 
   if (pr.response.status === 'error') {
     throw new ExitFailedError(
-      `Failed to submit PR for ${pr.response.head}: ${
-        JSON.parse(pr.response.error)?.response?.data?.message ??
+      `Failed to submit PR for ${pr.response.head}: ${parseSubmitError(
         pr.response.error
-      }`
+      )}`
     );
   }
 
@@ -67,6 +66,14 @@ export async function submitPullRequest(
       created: chalk.green,
     }[pr.response.status](pr.response.status)})`
   );
+}
+
+function parseSubmitError(error: string): string {
+  try {
+    return JSON.parse(error)?.response?.data?.message ?? error;
+  } catch {
+    return error;
+  }
 }
 
 const SUCCESS_RESPONSE_CODE = 200;
