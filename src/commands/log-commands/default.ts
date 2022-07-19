@@ -21,6 +21,13 @@ const args = {
     alias: 'n',
     default: undefined,
   },
+  'show-untracked': {
+    describe: `Include untracked branched in interactive selection`,
+    demandOption: false,
+    type: 'boolean',
+    positional: false,
+    alias: 'u',
+  },
 } as const;
 
 export const command = '*';
@@ -41,6 +48,7 @@ export const handler = async (argv: argsT): Promise<void> =>
             ? context.metaCache.currentBranchPrecondition
             : context.metaCache.trunk,
         steps: argv.steps,
+        showUntracked: argv['show-untracked'],
       },
       context
     )
