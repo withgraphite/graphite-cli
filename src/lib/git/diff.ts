@@ -7,9 +7,9 @@ export function detectUnsubmittedChanges(
 ): boolean {
   return (
     gpExecSync({
-      command: `git --no-pager diff --shortstat ${q(branchName)} ${q(
+      command: `git --no-pager log --oneline ${q(branchName)}...${q(
         remote
-      )}/${q(branchName)} `,
+      )}/${q(branchName)}`,
       onError: 'throw',
     }).length !== 0
   );
