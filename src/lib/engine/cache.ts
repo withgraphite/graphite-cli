@@ -75,6 +75,7 @@ export type TMetaCache = {
 
   getPrInfo: (branchName: string) => TBranchPRInfo | undefined;
   upsertPrInfo: (branchName: string, prInfo: Partial<TBranchPRInfo>) => void;
+  clearPrInfo: (branchName: string) => void;
 
   getChildren: (branchName: string) => string[];
 
@@ -526,6 +527,16 @@ export function composeMetaCache({
       updateMeta(branchName, {
         ...meta,
         prInfo: { ...meta.prInfo, ...prInfo },
+      });
+    },
+    clearPrInfo: (branchName: string) => {
+      const meta = cache.branches[branchName];
+      if (meta?.validationResult !== 'VALID') {
+        return;
+      }
+      updateMeta(branchName, {
+        ...meta,
+        prInfo: {},
       });
     },
     getChildren,
