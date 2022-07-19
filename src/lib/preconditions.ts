@@ -18,7 +18,7 @@ export function getRepoRootPathPrecondition(): string {
   return repoRootPath;
 }
 
-function uncommittedTrackedChangesPrecondition(): void {
+export function uncommittedTrackedChangesPrecondition(): void {
   if (trackedUncommittedChanges()) {
     throw new PreconditionsFailedError(
       `There are tracked changes that have not been committed. Please resolve and then retry.`
@@ -26,7 +26,7 @@ function uncommittedTrackedChangesPrecondition(): void {
   }
 }
 
-function ensureSomeStagedChangesPrecondition(context: TContext): void {
+export function ensureSomeStagedChangesPrecondition(context: TContext): void {
   if (detectStagedChanges()) {
     return;
   }
@@ -40,7 +40,7 @@ function ensureSomeStagedChangesPrecondition(context: TContext): void {
   throw new PreconditionsFailedError(`Cannot run without staged changes.`);
 }
 
-function cliAuthPrecondition(context: TContext): string {
+export function cliAuthPrecondition(context: TContext): string {
   const token = context.userConfig.data.authToken;
   if (!token || token.length === 0) {
     throw new PreconditionsFailedError(
@@ -50,7 +50,7 @@ function cliAuthPrecondition(context: TContext): string {
   return token;
 }
 
-function currentGitRepoPrecondition(): string {
+export function currentGitRepoPrecondition(): string {
   const repoRootPath = gpExecSync({
     command: `git rev-parse --show-toplevel`,
     onError: 'ignore',
@@ -60,10 +60,3 @@ function currentGitRepoPrecondition(): string {
   }
   return repoRootPath;
 }
-
-export {
-  uncommittedTrackedChangesPrecondition,
-  currentGitRepoPrecondition,
-  ensureSomeStagedChangesPrecondition,
-  cliAuthPrecondition,
-};
