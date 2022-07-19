@@ -6,7 +6,7 @@
   "types": "dist/src/index.d.ts",
   "homepage": "https://github.com/withgraphite/graphite-cli",
   "dependencies": {
-    "@withgraphite/graphite-cli-routes": "^0.21.0",
+    "@withgraphite/graphite-cli-routes": "^0.22.0",
     "@withgraphite/retype": "^0.3.11",
     "@withgraphite/retyped-routes": "^0.3.1",
     "chalk": "^4.1.2",
@@ -18,12 +18,23 @@
     "tmp": "^0.2.1",
     "yargs": "^17.5.1"
   },
+  "pkg": {
+    "scripts": "dist/src/**/*.js",
+    "assets": "dist/src/commands/**/*",
+    "targets": [
+      "node16-macos",
+      "node16-win",
+      "node16-linux"
+    ],
+    "outputPath": "pkg"
+  },
   "scripts": {
     "prepublishOnly": "yarn build",
     "preinstall": "node scripts/node_version.js",
     "lint": "eslint src --quiet --ext .ts --cache",
     "check": "tsc --noEmit",
     "build": "rm -rf dist/ && yarn lint && tsc",
+    "pkg": "yarn build && pkg dist/src/index.js -c package.json --public-packages \"*\"",
     "dev": "./scripts/installation/develop.sh",
     "cli": "node ./dist/src/index.js",
     "test": "tsc && yarn mocha \"dist/test/**/*.test.js\"  --parallel --jobs 8",
