@@ -13,6 +13,7 @@ export async function trackBranchInteractive(
     .filter(
       (branchName) =>
         !context.metaCache.isTrunk(branchName) &&
+        branchName !== context.repoConfig.data.remoteTrunk &&
         !context.metaCache.isBranchTracked(branchName) &&
         (context.metaCache.isTrunk(parentBranchName) ||
           context.metaCache.isDescendantOf(branchName, parentBranchName))
@@ -64,13 +65,14 @@ function getPotentialParents(
   return context.metaCache.allBranchNames
     .filter(
       (potentialParentBranchName) =>
-        context.metaCache.isTrunk(potentialParentBranchName) ||
-        ((!args.onlyTrackedParents ||
-          context.metaCache.isBranchTracked(potentialParentBranchName)) &&
-          context.metaCache.isDescendantOf(
-            args.branchName,
-            potentialParentBranchName
-          ))
+        potentialParentBranchName !== context.repoConfig.data.remoteTrunk &&
+        (context.metaCache.isTrunk(potentialParentBranchName) ||
+          ((!args.onlyTrackedParents ||
+            context.metaCache.isBranchTracked(potentialParentBranchName)) &&
+            context.metaCache.isDescendantOf(
+              args.branchName,
+              potentialParentBranchName
+            )))
     )
     .sort((left, right) => {
       return left === right
@@ -101,6 +103,7 @@ export async function trackStack(
 
   if (
     context.metaCache.isTrunk(branchName) ||
+    branchName === context.repoConfig.data.remoteTrunk ||
     context.metaCache.isBranchTracked(branchName)
   ) {
     context.splog.info(`${chalk.cyan(branchName)} is already tracked!`);
