@@ -57,7 +57,11 @@ export function logForConflictStatus(
 }
 
 export async function interactiveBranchSelection(
-  opts: { message: string; omitCurrentBranch?: boolean },
+  opts: {
+    message: string;
+    omitCurrentBranch?: boolean;
+    showUntracked?: boolean;
+  },
   context: TContext
 ): Promise<string> {
   const choices = getStackLines(
@@ -70,13 +74,23 @@ export async function interactiveBranchSelection(
       noStyleBranchName: true,
     },
     context
-  ).map((stackLine) => ({
-    title: stackLine,
-    value: ((stackLine) =>
-      stackLine.substring(stackLine.lastIndexOf('  ') + 2))(
-      stripAnsi(stackLine)
-    ),
-  }));
+  )
+    .map((stackLine) => ({
+      title: stackLine,
+      value: ((stackLine) =>
+        stackLine.substring(stackLine.lastIndexOf('  ') + 2))(
+        stripAnsi(stackLine)
+      ),
+    }))
+    .concat(
+      context.metaCache.allBranchNames
+        .filter(
+          (branchName) =>
+            !context.metaCache.isTrunk(branchName) &&
+            !context.metaCache.isBranchTracked(branchName)
+        )
+        .map((branchName) => ({ title: branchName, value: branchName }))
+    );
 
   const indexOfCurrentIfPresent = choices.findIndex(
     (choice) =>
