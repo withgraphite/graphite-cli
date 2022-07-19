@@ -103,7 +103,18 @@ async function splitByCommit(
 
   const branchPoints = await getBranchPoints(readableCommits);
   const branchNames: string[] = [];
-  for (let _ = 0; _ < branchPoints.length; _++) {
+  for (let i = 0; i < branchPoints.length; i++) {
+    context.splog.info(chalk.yellow('Commits:'));
+    context.splog.info(
+      readableCommits
+        .slice(
+          branchPoints[branchPoints.length - i - 1],
+          // we want the next line to be undefined for i = 0
+          branchPoints[branchPoints.length - i]
+        )
+        .join('\n')
+    );
+    context.splog.newline();
     branchNames.push(
       await promptNextBranchName({ branchNames, branchToSplit }, context)
     );
