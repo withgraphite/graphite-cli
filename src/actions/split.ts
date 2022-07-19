@@ -7,6 +7,7 @@ import { KilledError, PreconditionsFailedError } from '../lib/errors';
 import { getUnstagedChanges } from '../lib/git/diff';
 import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
 import { replaceUnsupportedCharacters } from '../lib/utils/branch_name';
+import { clearPromptResultLine } from '../lib/utils/prompts_helpers';
 import { restackBranches } from './restack';
 
 type TSplit = {
@@ -243,9 +244,7 @@ async function getBranchPoints({
         )
       ).value
     );
-    // Clear the prompt result
-    process.stdout.moveCursor(0, -1);
-    process.stdout.clearLine(1);
+    clearPromptResultLine();
     // Never toggle the first commmit, it always needs a branch
     if (lastValue !== 0) {
       isBranchPoint[lastValue] = !isBranchPoint[lastValue];
