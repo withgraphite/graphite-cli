@@ -9,7 +9,6 @@ import {
   TMessageConfig,
 } from '../lib/spiffy/upgrade_message_spf';
 import { spawnDetached } from '../lib/utils/spawn';
-import { SHOULD_REPORT_TELEMETRY } from './post_traces';
 
 function printAndClearOldMessage(context: TContextLite): void {
   const oldMessage = context.messageConfig.data.message;
@@ -29,7 +28,7 @@ export function fetchUpgradePromptInBackground(context: TContextLite): void {
 async function fetchUpgradePrompt(
   messageConfig: TMessageConfig
 ): Promise<void> {
-  if (!SHOULD_REPORT_TELEMETRY) {
+  if (process.env.GRAPHITE_DISABLE_UPGRADE_PROMPT) {
     return;
   }
   try {

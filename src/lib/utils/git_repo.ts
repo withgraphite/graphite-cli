@@ -34,7 +34,8 @@ export class GitRepo {
     gpExecSync({
       command: [
         `${USER_CONFIG_OVERRIDE_ENV}=${this.userConfigPath}`,
-        `NODE_ENV=development`,
+        `GRAPHITE_DISABLE_TELEMETRY=1`,
+        `GRAPHITE_DISABLE_UPGRADE_PROMPT=1`,
         `node ${__dirname}/../../../../dist/src/index.js ${command}`,
       ].join(' '),
       options: {
@@ -60,7 +61,8 @@ export class GitRepo {
     return gpExecSync({
       command: [
         `${USER_CONFIG_OVERRIDE_ENV}=${this.userConfigPath}`,
-        `NODE_ENV=development`,
+        `GRAPHITE_DISABLE_TELEMETRY=1`,
+        `GRAPHITE_DISABLE_UPGRADE_PROMPT=1`,
         `node ${__dirname}/../../../../dist/src/index.js ${command}`,
       ].join(' '),
       options: {

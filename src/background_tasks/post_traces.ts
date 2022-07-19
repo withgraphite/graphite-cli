@@ -9,8 +9,6 @@ import { userConfigFactory } from '../lib/spiffy/user_config_spf';
 import { spawnDetached } from '../lib/utils/spawn';
 import { tracer } from '../lib/utils/tracer';
 
-export const SHOULD_REPORT_TELEMETRY = process.env.NODE_ENV != 'development';
-
 function saveTracesToTmpFile(): string {
   const tmpDir = tmp.dirSync();
   const json = tracer.flushJson();
@@ -25,7 +23,7 @@ export function postTelemetryInBackground(): void {
 }
 
 async function postTelemetry(): Promise<void> {
-  if (!SHOULD_REPORT_TELEMETRY) {
+  if (!process.env.GRAPHITE_DISABLE_TELEMETRY) {
     return;
   }
   const tracesPath = process.argv[2];
