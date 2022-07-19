@@ -79,6 +79,13 @@ export function inferPRBody(
     };
   }
 
+  if (!context.userConfig.data.submitIncludeCommitMessages) {
+    return {
+      body: template,
+      skipDescription: template ? 'paste template' : 'leave empty',
+    };
+  }
+
   const messages = context.metaCache
     .getAllCommits(branchName, 'MESSAGE')
     .reverse();

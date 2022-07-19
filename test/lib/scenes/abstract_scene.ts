@@ -52,7 +52,7 @@ export abstract class AbstractScene {
     const context = initContext(
       initContextLite({
         interactive: false,
-        quiet: !!process.env.DEBUG,
+        quiet: !process.env.DEBUG,
         debug: !!process.env.DEBUG,
       }),
       {
