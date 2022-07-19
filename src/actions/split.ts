@@ -74,10 +74,6 @@ export async function splitCurrentBranch(
   };
 
   const branchToSplit = context.metaCache.currentBranchPrecondition;
-  const branchesToRestack = context.metaCache.getRelativeStack(
-    branchToSplit,
-    SCOPE.UPSTACK_EXCLUSIVE
-  );
 
   const split = await actions[style](branchToSplit, context);
 
@@ -86,7 +82,13 @@ export async function splitCurrentBranch(
     ...split,
   });
 
-  restackBranches(branchesToRestack, context);
+  restackBranches(
+    context.metaCache.getRelativeStack(
+      context.metaCache.currentBranchPrecondition,
+      SCOPE.UPSTACK_EXCLUSIVE
+    ),
+    context
+  );
 }
 
 async function splitByCommit(
@@ -100,11 +102,18 @@ async function splitByCommit(
     branchToSplit,
     'READABLE'
   );
+  const numChildren = context.metaCache.getChildren(branchToSplit).length;
+  const parentBranchName =
+    context.metaCache.getParentPrecondition(branchToSplit);
 
-  const branchPoints = await getBranchPoints(readableCommits);
+  const branchPoints = await getBranchPoints({
+    readableCommits,
+    numChildren,
+    parentBranchName,
+  });
   const branchNames: string[] = [];
   for (let i = 0; i < branchPoints.length; i++) {
-    context.splog.info(chalk.yellow('Commits:'));
+    context.splog.info(chalk.yellow(`Commits for branch ${i + 1}:`));
     context.splog.info(
       readableCommits
         .slice(
@@ -136,7 +145,7 @@ function getSplitByCommitInstructions(
       ? [
           `If any of the new branches keeps the name ${chalk.cyan(
             branchToSplit
-          )}, it will be linked to #${
+          )}, it will be linked to PR #${
             context.metaCache.getPrInfo(branchToSplit)?.number
           }.`,
         ]
@@ -149,7 +158,15 @@ function getSplitByCommitInstructions(
   ].join('\n');
 }
 
-async function getBranchPoints(readableCommits: string[]): Promise<number[]> {
+async function getBranchPoints({
+  readableCommits,
+  numChildren,
+  parentBranchName,
+}: {
+  readableCommits: string[];
+  numChildren: number;
+  parentBranchName: string;
+}): Promise<number[]> {
   // Array where nth index is whether we want a branch pointing to nth commit
   const isBranchPoint: boolean[] = readableCommits.map((_, idx) => idx === 0);
 
@@ -159,17 +176,36 @@ async function getBranchPoints(readableCommits: string[]): Promise<number[]> {
   while (lastValue !== -1) {
     // We count branches in reverse so start at the total number of branch points
     let branchNumber = Object.values(isBranchPoint).filter((v) => v).length + 1;
+    const showChildrenLine = numChildren > 0;
     lastValue = parseInt(
       (
         await prompts(
           {
             type: 'select',
             name: 'value',
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore the types are out of date
+            warn: ' ',
             message: `Toggle a commit to split the branch there.`,
             hint: 'Arrow keys and return/space. Select confirm to finish.',
-            initial: lastValue,
-            choices: readableCommits
-              .map((commit, index) => {
+            initial: lastValue + (showChildrenLine ? 1 : 0),
+            choices: [
+              ...(showChildrenLine
+                ? [
+                    {
+                      title: chalk.reset(
+                        `${' '.repeat(10)}${chalk.dim(
+                          `${numChildren} ${
+                            numChildren > 1 ? 'children' : 'child'
+                          }`
+                        )}`
+                      ),
+                      ['disabled' as 'disable']: true, // prompts types are wrong
+                      value: '0', // noop
+                    },
+                  ]
+                : []),
+              ...readableCommits.map((commit, index) => {
                 const shouldDisplayBranchNumber = isBranchPoint[index];
                 if (shouldDisplayBranchNumber) {
                   branchNumber--;
@@ -178,13 +214,26 @@ async function getBranchPoints(readableCommits: string[]): Promise<number[]> {
                 const titleColor =
                   GRAPHITE_COLORS[(branchNumber - 1) % GRAPHITE_COLORS.length];
                 const titleText = `${
-                  shouldDisplayBranchNumber ? `${branchNumber}. ` : '   '
+                  shouldDisplayBranchNumber
+                    ? `Branch ${branchNumber}: `
+                    : ' '.repeat(10)
                 }${commit}`;
 
                 const title = chalk.rgb(...titleColor)(titleText);
                 return { title, value: '' + index };
-              })
-              .concat([{ title: '   Confirm', value: '-1' }]),
+              }),
+              {
+                title: chalk.reset(
+                  `${' '.repeat(10)}${chalk.dim(parentBranchName)}`
+                ),
+                ['disabled' as 'disable']: true, // prompts types are wrong
+                value: '0', // noop
+              },
+              {
+                title: `${' '.repeat(10)}Confirm`,
+                value: '-1', // done
+              },
+            ],
           },
           {
             onCancel: () => {
@@ -232,6 +281,9 @@ async function splitByHunk(
       context.splog.info(chalk.yellow('Remaining changes:'));
       context.splog.info(' ' + unstagedChanges);
       context.splog.newline();
+      context.splog.info(
+        chalk.yellow(`Stage changes for branch ${branchNames.length + 1}:`)
+      );
       context.metaCache.commit({
         message: defaultCommitMessage,
         edit: true,
@@ -272,7 +324,7 @@ function getSplitByHunkInstructions(
       ? [
           `If any of the new branches keeps the name ${chalk.cyan(
             branchToSplit
-          )}, it will be linked to #${
+          )}, it will be linked to PR #${
             context.metaCache.getPrInfo(branchToSplit)?.number
           }.`,
         ]
@@ -300,14 +352,14 @@ async function promptNextBranchName(
     {
       type: 'text',
       name: 'branchName',
-      message: `${branchNames.length + 1}. Branch name`,
+      message: `Choose a name for branch ${branchNames.length + 1}`,
       initial: getInitialNextBranchName(branchToSplit, branchNames),
       validate: (name) => {
         const calculatedName = replaceUnsupportedCharacters(name, context);
         return branchNames.includes(calculatedName) ||
           (calculatedName !== branchToSplit &&
             context.metaCache.allBranchNames.includes(calculatedName))
-          ? 'Branch name is unavailable.'
+          ? 'Branch name is already in use, choose a different name.'
           : true;
       },
     },
@@ -318,7 +370,7 @@ async function promptNextBranchName(
     }
   );
   context.splog.newline();
-  return branchName;
+  return replaceUnsupportedCharacters(branchName, context);
 }
 
 function getInitialNextBranchName(
