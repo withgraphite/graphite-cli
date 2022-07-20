@@ -9,14 +9,18 @@ for (const scene of [new BasicScene()]) {
 
     it('Can silently clean up invalid config', () => {
       // should work fine.
-      expect(() => scene.repo.execCliCommand(`log short`)).to.not.throw(Error);
+      expect(() => scene.repo.runCliCommand([`log`, `short`])).to.not.throw(
+        Error
+      );
       // write an invalid config
       fs.writeFileSync(
         `${scene.repo.dir}/.git/.graphite_merge_conflict`,
         'abc'
       );
       // Should still not error
-      expect(() => scene.repo.execCliCommand(`log short`)).to.not.throw(Error);
+      expect(() => scene.repo.runCliCommand([`log`, `short`])).to.not.throw(
+        Error
+      );
     });
   });
 }

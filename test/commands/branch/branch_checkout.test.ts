@@ -8,9 +8,9 @@ for (const scene of allScenes) {
 
     it('Can checkout a branch', () => {
       scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand(`branch create a -m "a" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
       scene.repo.checkoutBranch('main');
-      scene.repo.execCliCommand(`branch checkout a`);
+      scene.repo.runCliCommand([`branch`, `checkout`, `a`]);
 
       expect(scene.repo.currentBranchName()).to.eq('a');
     });

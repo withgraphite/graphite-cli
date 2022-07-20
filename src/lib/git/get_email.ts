@@ -1,8 +1,9 @@
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 
 export function getUserEmail(): string {
-  return gpExecSync({
-    command: `git config user.email`,
+  return runCommand({
+    command: `git`,
+    args: [`config`, `user.email`],
     onError: 'ignore',
   });
 }

@@ -1,7 +1,6 @@
 import * as t from '@withgraphite/retype';
 import { cuteString } from '../utils/cute_string';
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync, gpExecSyncAndSplitLines } from '../utils/exec_sync';
+import { runCommand, runCommandAndSplitLines } from '../utils/run_command';
 
 export const prInfoSchema = t.shape({
   number: t.optional(t.number),
@@ -39,16 +38,18 @@ export function writeMetadataRef(
   meta: TMeta,
   cwd?: string
 ): void {
-  const metaSha = gpExecSync({
-    command: `git hash-object -w --stdin`,
+  const metaSha = runCommand({
+    command: `git`,
+    args: [`hash-object`, `-w`, `--stdin`],
     options: {
       input: cuteString(meta),
       cwd,
     },
     onError: 'throw',
   });
-  gpExecSync({
-    command: `git update-ref refs/branch-metadata/${q(branchName)} ${metaSha}`,
+  runCommand({
+    command: `git`,
+    args: [`update-ref`, `refs/branch-metadata/${branchName}`, metaSha],
     options: {
       stdio: 'pipe',
       cwd,
@@ -60,10 +61,9 @@ export function writeMetadataRef(
 export function readMetadataRef(branchName: string, cwd?: string): TMeta {
   try {
     const meta = JSON.parse(
-      gpExecSync({
-        command: `git cat-file -p refs/branch-metadata/${q(
-          branchName
-        )} 2> /dev/null`,
+      runCommand({
+        command: `git`,
+        args: [`cat-file`, `-p`, `refs/branch-metadata/${branchName}`],
         options: {
           cwd,
         },
@@ -78,17 +78,22 @@ export function readMetadataRef(branchName: string, cwd?: string): TMeta {
 }
 
 export function deleteMetadataRef(branchName: string): void {
-  gpExecSync({
-    command: `git update-ref -d refs/branch-metadata/${q(branchName)}`,
-    onError: 'ignore',
+  runCommand({
+    command: `git`,
+    args: [`update-ref`, `-d`, `refs/branch-metadata/${branchName}`],
+    onError: 'throw',
   });
 }
 
 export function getMetadataRefList(): Record<string, string> {
   const meta: Record<string, string> = {};
-
-  gpExecSyncAndSplitLines({
-    command: `git for-each-ref --format='%(refname:lstrip=2):%(objectname)' refs/branch-metadata/`,
+  runCommandAndSplitLines({
+    command: `git`,
+    args: [
+      `for-each-ref`,
+      `--format=%(refname:lstrip=2):%(objectname)`,
+      `refs/branch-metadata/`,
+    ],
     onError: 'throw',
   })
     .map((line) => line.split(':'))

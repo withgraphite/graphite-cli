@@ -22,9 +22,9 @@ for (const scene of [new BasicScene()]) {
 
     it('Can make a no-op downstack edit without conflict or error', () => {
       scene.repo.createChange('2', 'a');
-      scene.repo.execCliCommand("branch create 'a' -m '2' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `2`]);
       scene.repo.createChange('3', 'b');
-      scene.repo.execCliCommand("branch create 'b' -m '3' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `3`]);
 
       performInTmpDir((dirPath) => {
         const inputPath = createStackEditsInput({
@@ -32,7 +32,7 @@ for (const scene of [new BasicScene()]) {
           orderedBranches: ['b', 'a'],
         });
         expect(() =>
-          scene.repo.execCliCommand(`downstack edit --input "${inputPath}"`)
+          scene.repo.runCliCommand([`downstack`, `edit`, `--input`, inputPath])
         ).to.not.throw(Error);
         expect(scene.repo.rebaseInProgress()).to.be.false;
       });
@@ -40,9 +40,9 @@ for (const scene of [new BasicScene()]) {
 
     it('Can can resolve a conflict and continue', () => {
       scene.repo.createChange('2', 'a');
-      scene.repo.execCliCommand("branch create 'a' -m '2' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `2`]);
       scene.repo.createChange('3', 'a'); // change the same file with a new value.
-      scene.repo.execCliCommand("branch create 'b' -m '3' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `3`]);
 
       performInTmpDir((dirPath) => {
         const inputPath = createStackEditsInput({
@@ -50,19 +50,19 @@ for (const scene of [new BasicScene()]) {
           orderedBranches: ['a', 'b'], // reverse the order
         });
         expect(() =>
-          scene.repo.execCliCommand(`downstack edit --input "${inputPath}"`)
+          scene.repo.runCliCommand([`downstack`, `edit`, `--input`, inputPath])
         ).to.throw(Error);
         expect(scene.repo.rebaseInProgress()).to.be.true;
 
         scene.repo.resolveMergeConflicts();
         scene.repo.markMergeConflictsAsResolved();
 
-        expect(() => scene.repo.execCliCommand('continue')).to.throw();
+        expect(() => scene.repo.runCliCommand(['continue'])).to.throw();
         expect(scene.repo.rebaseInProgress()).to.eq(true);
 
         scene.repo.resolveMergeConflicts();
         scene.repo.markMergeConflictsAsResolved();
-        scene.repo.execCliCommand('continue');
+        scene.repo.runCliCommand(['continue']);
         expectCommits(scene.repo, '2, 3, 1');
       });
     });

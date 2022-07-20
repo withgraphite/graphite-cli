@@ -1,10 +1,16 @@
-import { gpExecSyncAndSplitLines } from '../utils/exec_sync';
+import { runCommandAndSplitLines } from '../utils/run_command';
 
 export function getBranchNamesAndRevisions(): Record<string, string> {
   const branches: Record<string, string> = {};
 
-  gpExecSyncAndSplitLines({
-    command: `git for-each-ref --format='%(refname:short):%(objectname)' --sort=-committerdate refs/heads/`,
+  runCommandAndSplitLines({
+    command: `git`,
+    args: [
+      `for-each-ref`,
+      `--format=%(refname:short):%(objectname)`,
+      `--sort=-committerdate`,
+      `refs/heads/`,
+    ],
     onError: 'throw',
   })
     .map((line) => line.split(':'))

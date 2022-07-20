@@ -8,7 +8,7 @@ import {
 } from '../../lib/engine/metadata_ref';
 import { graphite } from '../../lib/runner';
 import { cuteString } from '../../lib/utils/cute_string';
-import { gpExecSync } from '../../lib/utils/exec_sync';
+import { runCommand } from '../../lib/utils/run_command';
 
 const args = {
   branch: {
@@ -40,8 +40,9 @@ export const handler = async (argv: argsT): Promise<void> => {
     }
     const tmpfilePath = path.join(tmp.dirSync().name, 'meta');
     fs.writeFileSync(tmpfilePath, metaString);
-    gpExecSync({
-      command: `${context.userConfig.getEditor()} "${tmpfilePath}"`,
+    runCommand({
+      command: context.userConfig.getEditor(),
+      args: [tmpfilePath],
       options: { stdio: 'inherit' },
       onError: 'throw',
     });

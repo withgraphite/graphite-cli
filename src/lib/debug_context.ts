@@ -19,8 +19,7 @@ import { getBranchNamesAndRevisions } from './git/sorted_branch_names';
 import { TRepoConfig } from './spiffy/repo_config_spf';
 import { TUserConfig } from './spiffy/user_config_spf';
 import { cuteString } from './utils/cute_string';
-import { q } from './utils/escape_for_shell';
-import { gpExecSync } from './utils/exec_sync';
+import { runCommand } from './utils/run_command';
 import { TSplog } from './utils/splog';
 
 type TState = {
@@ -59,13 +58,20 @@ export function recreateState(stateJson: string, splog: TSplog): string {
 
   const oldDir = process.cwd();
   process.chdir(tmpDir);
-  gpExecSync({
-    command: [
-      `git init -b "${tmpTrunk}"`,
-      `echo "first" > first.txt`,
-      `git add first.txt`,
-      `git commit -m "first"`,
-    ].join(' && '),
+  runCommand({
+    command: 'git',
+    args: ['init', '-b', tmpTrunk],
+    onError: 'throw',
+  });
+  fs.writeFileSync(path.join(process.cwd(), 'first.txt'), 'first');
+  runCommand({
+    command: 'git',
+    args: ['add', 'first.txt'],
+    onError: 'throw',
+  });
+  runCommand({
+    command: 'git',
+    args: ['commit', '-m', 'first'],
     onError: 'throw',
   });
 
@@ -124,10 +130,15 @@ function createBranches(
     const originalRef = opts.refMappingsOldToNew[opts.branches[branch]];
     if (
       branch !=
-      gpExecSync({ command: `git branch --show-current`, onError: 'ignore' })
+      runCommand({
+        command: `git`,
+        args: [`branch`, `--show-current`],
+        onError: 'ignore',
+      })
     ) {
-      gpExecSync({
-        command: `git branch -f ${q(branch)} ${originalRef}`,
+      runCommand({
+        command: `git`,
+        args: [`branch`, `-f`, branch, originalRef],
         onError: 'throw',
       });
     } else {
@@ -153,8 +164,9 @@ function recreateCommits(
   );
 
   const firstCommitRef = getShaOrThrow('HEAD');
-  const treeSha = gpExecSync({
-    command: `git cat-file -p HEAD | grep tree | awk '{print $2}'`,
+  const treeSha = runCommand({
+    command: `git`,
+    args: [`rev-parse`, `HEAD^{tree}`],
     onError: 'throw',
   });
   const totalOldCommits = Object.keys(opts.commitTree).length;
@@ -177,15 +189,20 @@ function recreateCommits(
       continue;
     }
 
-    const newCommitRef = gpExecSync({
-      command: `git commit-tree ${treeSha} -m "${originalCommitRef}" ${
-        originalParents.length === 0
-          ? `-p ${firstCommitRef}`
-          : originalParents
-              .map((p) => opts.refMappingsOldToNew[p])
-              .map((newParentRef) => `-p ${newParentRef}`)
-              .join(' ')
-      }`,
+    const newCommitRef = runCommand({
+      command: 'git',
+      args: [
+        'commit-tree',
+        treeSha,
+        '-m',
+        originalCommitRef,
+        ...(originalParents.length === 0
+          ? ['-p', firstCommitRef]
+          : originalParents.flatMap((p) => [
+              `-p`,
+              opts.refMappingsOldToNew[p],
+            ])),
+      ],
       onError: 'throw',
     });
 

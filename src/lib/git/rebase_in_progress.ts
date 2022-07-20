@@ -1,16 +1,18 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { gpExecSync } from '../utils/exec_sync';
-export function rebaseInProgress(opts?: { dir: string }): boolean {
+import { runCommand } from '../utils/run_command';
+export function rebaseInProgress(options?: { cwd: string }): boolean {
   let rebaseDir = path.join(
-    gpExecSync({
-      command: `git ${opts ? `-C "${opts.dir}"` : ''} rev-parse --git-dir`,
+    runCommand({
+      command: `git`,
+      args: [`rev-parse`, `--git-dir`],
+      ...options,
       onError: 'throw',
     }),
     'rebase-merge'
   );
-  if (opts) {
-    rebaseDir = path.join(opts.dir, rebaseDir);
+  if (options?.cwd) {
+    rebaseDir = path.join(options.cwd, rebaseDir);
   }
   return fs.existsSync(rebaseDir);
 }

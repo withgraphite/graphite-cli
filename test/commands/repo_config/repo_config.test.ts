@@ -34,11 +34,11 @@ for (const scene of [new BasicScene()]) {
     });
 
     it('Can read the existing repo config when executing from a subfolder in the project', () => {
-      expect(() => scene.repo.execCliCommand(`ls`)).to.not.throw(Error);
+      expect(() => scene.repo.runCliCommand([`ls`])).to.not.throw(Error);
       const subDir = path.join(scene.dir, 'tmpDir');
       fs.mkdirSync(subDir);
       expect(() =>
-        scene.repo.execCliCommand(`ls`, { cwd: subDir })
+        scene.repo.runCliCommand([`ls`], { cwd: subDir })
       ).to.not.throw(Error);
     });
 

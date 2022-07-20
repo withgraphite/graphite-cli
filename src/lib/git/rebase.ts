@@ -1,5 +1,4 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 import { rebaseInProgress } from './rebase_in_progress';
 
 type TRebaseResult = 'REBASE_CONFLICT' | 'REBASE_DONE';
@@ -9,22 +8,27 @@ export function rebase(args: {
   branchName: string;
   restackCommitterDateIsAuthorDate?: boolean;
 }): TRebaseResult {
-  return rebaseInternal(
-    `git rebase ${
-      args.restackCommitterDateIsAuthorDate
-        ? `--committer-date-is-author-date`
-        : ''
-    }--onto ${q(args.onto)} ${q(args.from)} ${q(args.branchName)}`
-  );
+  return rebaseInternal([
+    ...(args.restackCommitterDateIsAuthorDate
+      ? [`--committer-date-is-author-date`]
+      : []),
+    `--onto`,
+    args.onto,
+    args.from,
+    args.branchName,
+  ]);
 }
 
 export function rebaseContinue(): TRebaseResult {
-  return rebaseInternal(`GIT_EDITOR=true git rebase --continue`);
+  return rebaseInternal(['--continue'], {
+    env: { ...process.env, GIT_EDITOR: 'true' },
+  });
 }
 
 export function rebaseAbort(): void {
-  gpExecSync({
-    command: `git rebase --abort`,
+  runCommand({
+    command: `git`,
+    args: [`rebase`, `--abort`],
     options: { stdio: 'pipe' },
     onError: 'throw',
   });
@@ -34,16 +38,15 @@ export function rebaseInteractive(args: {
   parentBranchRevision: string;
   branchName: string;
 }): TRebaseResult {
-  return rebaseInternal(
-    `git rebase -i ${q(args.parentBranchRevision)} ${q(args.branchName)}`
-  );
+  return rebaseInternal([`-i`, args.parentBranchRevision, args.branchName]);
 }
 
-function rebaseInternal(command: string) {
+function rebaseInternal(args: string[], options?: { env: NodeJS.ProcessEnv }) {
   try {
-    gpExecSync({
-      command,
-      options: { stdio: 'pipe' },
+    runCommand({
+      command: 'git',
+      args: ['rebase', ...args],
+      options: { stdio: 'pipe', ...options },
       onError: 'throw',
     });
   } catch (e) {

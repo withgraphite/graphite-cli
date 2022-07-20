@@ -10,20 +10,22 @@ for (const scene of allScenes) {
 
     it('Can continue a stack restack with single merge conflict', () => {
       scene.repo.createChange('a');
-      scene.repo.execCliCommand("branch create 'a' -m 'a' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       scene.repo.createChange('b');
-      scene.repo.execCliCommand("branch create 'b' -m 'b' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
       scene.repo.checkoutBranch('a');
       scene.repo.createChangeAndAmend('1');
 
-      expect(() => scene.repo.execCliCommand('stack restack -q')).to.throw();
+      expect(() =>
+        scene.repo.runCliCommand(['stack', 'restack', '-q'])
+      ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue');
+      scene.repo.runCliCommand(['continue']);
 
       // Continue should finish the work that stack restack started, not only
       // completing the rebase but also re-checking out the original
@@ -38,13 +40,13 @@ for (const scene of allScenes) {
 
     it('Can run continue multiple times on a stack restack with multiple merge conflicts', () => {
       scene.repo.createChange('a');
-      scene.repo.execCliCommand("branch create 'a' -m 'a' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       scene.repo.createChange('b');
-      scene.repo.execCliCommand("branch create 'b' -m 'b' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
       scene.repo.createChange('c');
-      scene.repo.execCliCommand("branch create 'c' -m 'c' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `c`, `-m`, `c`]);
 
       scene.repo.checkoutBranch('a');
       scene.repo.createChangeAndAmend('a1');
@@ -54,18 +56,20 @@ for (const scene of allScenes) {
 
       scene.repo.checkoutBranch('a');
 
-      expect(() => scene.repo.execCliCommand('stack restack -q')).to.throw();
+      expect(() =>
+        scene.repo.runCliCommand(['stack', 'restack', '-q'])
+      ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
 
-      expect(() => scene.repo.execCliCommand('continue')).to.throw();
+      expect(() => scene.repo.runCliCommand(['continue'])).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue');
+      scene.repo.runCliCommand(['continue']);
 
       // Note that even though multiple continues have been run, the original
       // context - that the original stack restack was kicked off at 'a' - should

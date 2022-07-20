@@ -1,11 +1,15 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 
 export function showCommits(base: string, head: string, patch?: boolean): void {
-  gpExecSync({
-    command: `git --no-pager log ${patch ? '-p' : ''} ${q(base)}..${q(
-      head
-    )} --`,
+  runCommand({
+    command: `git`,
+    args: [
+      `--no-pager`,
+      `log`,
+      ...(patch ? ['-p'] : []),
+      `${base}..${head}`,
+      `--`,
+    ],
     options: { stdio: 'inherit' },
     onError: 'throw',
   });

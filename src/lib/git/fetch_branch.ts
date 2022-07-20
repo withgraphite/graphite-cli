@@ -1,14 +1,18 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 import { getShaOrThrow } from './get_sha';
 
 const FETCH_HEAD = 'refs/gt-metadata/FETCH_HEAD';
 const FETCH_BASE = 'refs/gt-metadata/FETCH_BASE';
 export function fetchBranch(remote: string, branchName: string): void {
-  gpExecSync({
-    command: `git fetch --no-write-fetch-head -f  ${q(remote)} ${q(
-      branchName
-    )}:${FETCH_HEAD}`,
+  runCommand({
+    command: `git`,
+    args: [
+      `fetch`,
+      `--no-write-fetch-head`,
+      `-f`,
+      remote,
+      `${branchName}:${FETCH_HEAD}`,
+    ],
     options: { stdio: 'pipe' },
     onError: 'throw',
   });
@@ -22,8 +26,9 @@ export function readFetchBase(): string {
 }
 
 export function writeFetchBase(sha: string): void {
-  gpExecSync({
-    command: `git update-ref ${FETCH_BASE} ${q(sha)}`,
+  runCommand({
+    command: `git`,
+    args: [`update-ref`, FETCH_BASE, sha],
     options: { stdio: 'pipe' },
     onError: 'throw',
   });
