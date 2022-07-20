@@ -11,8 +11,10 @@ export function pushBranch(opts: {
 
   gpExecSync({
     command: [
-      `git push ${q(opts.remote)}`,
-      `${forceOption} ${q(opts.branchName)}`,
+      `git push -u`,
+      q(opts.remote),
+      forceOption,
+      q(opts.branchName),
       ...[opts.noVerify ? ['--no-verify'] : []],
     ].join(' '),
     options: { stdio: 'pipe' },
