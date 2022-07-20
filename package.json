@@ -1,6 +1,6 @@
 {
   "name": "@withgraphite/graphite-cli",
-  "version": "0.20.0",
+  "version": "0.20.1",
   "license": "None",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -30,10 +30,10 @@
   },
   "scripts": {
     "prepublishOnly": "yarn build",
-    "preinstall": "node scripts/node_version.js",
+    "postinstall": "node scripts/node_version.js || node dist/scripts/node_version.js",
     "lint": "eslint src --quiet --ext .ts --cache",
     "check": "tsc --noEmit",
-    "build": "rm -rf dist/ && yarn lint && tsc",
+    "build": "rm -rf dist/ && yarn lint && tsc && cp scripts/node_version.js dist/scripts/node_version.js",
     "pkg": "yarn build && pkg dist/src/index.js -c package.json --public-packages \"*\"",
     "dev": "./scripts/installation/develop.sh",
     "cli": "node ./dist/src/index.js",
