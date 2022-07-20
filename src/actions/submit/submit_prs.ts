@@ -86,48 +86,41 @@ async function requestServerToSubmitPRs(
   submissionInfo: TPRSubmissionInfo,
   context: TContext
 ): Promise<TSubmittedPR[]> {
-  try {
-    const response = await request.requestWithArgs(
-      API_SERVER,
-      API_ROUTES.submitPullRequests,
-      {
-        authToken: cliAuthToken,
-        repoOwner: context.repoConfig.getRepoOwner(),
-        repoName: context.repoConfig.getRepoName(),
-        prs: submissionInfo,
-      }
-    );
-
-    if (
-      response._response.status === SUCCESS_RESPONSE_CODE &&
-      response._response.body
-    ) {
-      const requests: { [head: string]: TSubmittedPRRequest } = {};
-      submissionInfo.forEach((prRequest) => {
-        requests[prRequest.head] = prRequest;
-      });
-
-      return response.prs.map((prResponse) => {
-        return {
-          request: requests[prResponse.head],
-          response: prResponse,
-        };
-      });
-    } else if (response._response.status === UNAUTHORIZED_RESPONSE_CODE) {
-      throw new PreconditionsFailedError(
-        'Your Graphite auth token is invalid/expired.\n\nPlease obtain a new auth token by visiting https://app.graphite.dev/activate.'
-      );
-    } else {
-      throw new ExitFailedError(
-        `unexpected server response (${
-          response._response.status
-        }).\n\nResponse: ${cuteString(response)}`
-      );
+  const response = await request.requestWithArgs(
+    API_SERVER,
+    API_ROUTES.submitPullRequests,
+    {
+      authToken: cliAuthToken,
+      repoOwner: context.repoConfig.getRepoOwner(),
+      repoName: context.repoConfig.getRepoName(),
+      prs: submissionInfo,
     }
-  } catch (error) {
+  );
+
+  if (
+    response._response.status === SUCCESS_RESPONSE_CODE &&
+    response._response.body
+  ) {
+    const requests: { [head: string]: TSubmittedPRRequest } = {};
+    submissionInfo.forEach((prRequest) => {
+      requests[prRequest.head] = prRequest;
+    });
+
+    return response.prs.map((prResponse) => {
+      return {
+        request: requests[prResponse.head],
+        response: prResponse,
+      };
+    });
+  } else if (response._response.status === UNAUTHORIZED_RESPONSE_CODE) {
+    throw new PreconditionsFailedError(
+      'Your Graphite auth token is invalid/expired.\n\nPlease obtain a new auth token by visiting https://app.graphite.dev/activate.'
+    );
+  } else {
     throw new ExitFailedError(
-      `Failed to submit PR${submissionInfo.length > 1 ? 's' : ''}`,
-      error
+      `Unexpected server response (${
+        response._response.status
+      }).\n\nResponse: ${cuteString(response)}`
     );
   }
 }

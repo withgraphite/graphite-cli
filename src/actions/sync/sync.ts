@@ -1,7 +1,6 @@
 import chalk from 'chalk';
 import { TContext } from '../../lib/context';
 import { SCOPE } from '../../lib/engine/scope_spec';
-import { ExitFailedError } from '../../lib/errors';
 import { uncommittedTrackedChangesPrecondition } from '../../lib/preconditions';
 import { restackBranches } from '../restack';
 import { syncPrInfo } from '../sync_pr_info';
@@ -100,17 +99,11 @@ export function pullTrunk(context: TContext): void {
   context.splog.info(
     `🌲 Pulling ${chalk.cyan(context.metaCache.trunk)} from remote...`
   );
-  try {
-    context.splog.info(
-      context.metaCache.pullTrunk() === 'PULL_UNNEEDED'
-        ? `${chalk.green(context.metaCache.trunk)} is up to date.`
-        : `${chalk.green(
-            context.metaCache.trunk
-          )} fast-forwarded to ${chalk.gray(
-            context.metaCache.getRevision(context.metaCache.trunk)
-          )}.`
-    );
-  } catch (err) {
-    throw new ExitFailedError(`Failed to pull trunk`, err);
-  }
+  context.splog.info(
+    context.metaCache.pullTrunk() === 'PULL_UNNEEDED'
+      ? `${chalk.green(context.metaCache.trunk)} is up to date.`
+      : `${chalk.green(context.metaCache.trunk)} fast-forwarded to ${chalk.gray(
+          context.metaCache.getRevision(context.metaCache.trunk)
+        )}.`
+  );
 }
