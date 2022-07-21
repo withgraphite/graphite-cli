@@ -1,11 +1,11 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 
 function doChangesExist(args: string[]): boolean {
   return (
-    runCommand({
-      command: `git`,
+    runGitCommand({
       args,
       onError: 'throw',
+      resource: 'doChangesExist',
     }).length > 0
   );
 }

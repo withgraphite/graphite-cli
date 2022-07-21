@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { graphite } from '../../lib/runner';
-import { runCommand } from '../../lib/utils/run_command';
+import { runGitCommand } from '../../lib/utils/run_command';
 
 const args = {} as const;
 
@@ -15,8 +15,7 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const handler = async (argv: argsT): Promise<void> => {
   return graphite(argv, canonical, async () => {
     // If this flag is passed, print the old logging style:
-    runCommand({
-      command: `git`,
+    runGitCommand({
       args: [
         `log`,
         `--graph`,
@@ -27,6 +26,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       ],
       options: { stdio: 'inherit' },
       onError: 'throw',
+      resource: `logLong`,
     });
   });
 };

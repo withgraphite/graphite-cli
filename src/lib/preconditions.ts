@@ -5,13 +5,13 @@ import {
   trackedUncommittedChanges,
   unstagedChanges,
 } from './git/git_status_utils';
-import { runCommand } from './utils/run_command';
+import { runGitCommand } from './utils/run_command';
 
 export function getRepoRootPathPrecondition(): string {
-  const repoRootPath = runCommand({
-    command: `git`,
+  const repoRootPath = runGitCommand({
     args: [`rev-parse`, `--git-common-dir`],
     onError: 'ignore',
+    resource: 'getRepoRootPathPrecondition',
   });
 
   if (!repoRootPath) {
@@ -53,10 +53,10 @@ export function cliAuthPrecondition(context: TContext): string {
 }
 
 export function currentGitRepoPrecondition(): string {
-  const repoRootPath = runCommand({
-    command: `git`,
+  const repoRootPath = runGitCommand({
     args: [`rev-parse`, `--show-toplevel`],
     onError: 'ignore',
+    resource: 'currentGitRepoPrecondition',
   });
   if (!repoRootPath) {
     throw new PreconditionsFailedError('No .git repository found.');

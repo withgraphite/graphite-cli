@@ -1,10 +1,10 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 
 export function getGitEditor(): string | undefined {
-  const editor = runCommand({
-    command: `git`,
+  const editor = runGitCommand({
     args: [`config`, `--global`, `core.editor`],
     onError: 'ignore',
+    resource: 'getGitEditor',
   });
   return editor.length > 0 ? editor : undefined;
 }

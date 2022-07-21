@@ -10,31 +10,33 @@ type TRunCommandParameters = {
   onError: (() => void) | 'throw' | 'ignore';
 };
 
-export function runCommandAndSplitLines(
-  params: TRunCommandParameters
+export function runGitCommandAndSplitLines(
+  params: Omit<TRunCommandParameters, 'command'> & { resource: string | null }
 ): string[] {
-  return runCommand(params)
+  return runGitCommand(params)
     .split('\n')
     .filter((l) => l.length > 0);
 }
 
-export function runCommand(params: TRunCommandParameters): string {
+export function runGitCommand(
+  params: Omit<TRunCommandParameters, 'command'> & { resource: string | null }
+): string {
   // Only measure if we're with an existing span.
-  return tracer.currentSpanId
+  return params.resource && tracer.currentSpanId
     ? tracer.spanSync(
         {
           name: 'spawnedCommand',
-          resource: 'runCommand',
+          resource: params.resource,
           meta: { runCommandArgs: cuteString(params) },
         },
         () => {
-          return runCommandImpl(params);
+          return runCommand({ command: 'git', ...params });
         }
       )
-    : runCommandImpl(params);
+    : runCommand({ command: 'git', ...params });
 }
 
-function runCommandImpl(params: TRunCommandParameters): string {
+export function runCommand(params: TRunCommandParameters): string {
   const spawnSyncOutput = spawnSync(params.command, params.args, {
     ...params.options,
     encoding: 'utf-8',

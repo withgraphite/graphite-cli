@@ -19,7 +19,7 @@ import { getBranchNamesAndRevisions } from './git/sorted_branch_names';
 import { TRepoConfig } from './spiffy/repo_config_spf';
 import { TUserConfig } from './spiffy/user_config_spf';
 import { cuteString } from './utils/cute_string';
-import { runCommand } from './utils/run_command';
+import { runGitCommand } from './utils/run_command';
 import { TSplog } from './utils/splog';
 
 type TState = {
@@ -58,21 +58,21 @@ export function recreateState(stateJson: string, splog: TSplog): string {
 
   const oldDir = process.cwd();
   process.chdir(tmpDir);
-  runCommand({
-    command: 'git',
+  runGitCommand({
     args: ['init', '-b', tmpTrunk],
     onError: 'throw',
+    resource: 'debugContextInit',
   });
   fs.writeFileSync(path.join(process.cwd(), 'first.txt'), 'first');
-  runCommand({
-    command: 'git',
+  runGitCommand({
     args: ['add', 'first.txt'],
     onError: 'throw',
+    resource: 'debugContextInitAdd',
   });
-  runCommand({
-    command: 'git',
+  runGitCommand({
     args: ['commit', '-m', 'first'],
     onError: 'throw',
+    resource: 'debugContextInitCommit',
   });
 
   splog.info(`Creating ${Object.keys(state.commitTree).length} commits`);
@@ -130,16 +130,16 @@ function createBranches(
     const originalRef = opts.refMappingsOldToNew[opts.branches[branch]];
     if (
       branch !=
-      runCommand({
-        command: `git`,
+      runGitCommand({
         args: [`branch`, `--show-current`],
         onError: 'ignore',
+        resource: 'debugContextCurrentBranch',
       })
     ) {
-      runCommand({
-        command: `git`,
+      runGitCommand({
         args: [`branch`, `-f`, branch, originalRef],
         onError: 'throw',
+        resource: 'debugContextCreateBranch',
       });
     } else {
       splog.warn(
@@ -164,10 +164,10 @@ function recreateCommits(
   );
 
   const firstCommitRef = getShaOrThrow('HEAD');
-  const treeSha = runCommand({
-    command: `git`,
+  const treeSha = runGitCommand({
     args: [`rev-parse`, `HEAD^{tree}`],
     onError: 'throw',
+    resource: 'debugContextTreeSha',
   });
   const totalOldCommits = Object.keys(opts.commitTree).length;
 
@@ -189,8 +189,7 @@ function recreateCommits(
       continue;
     }
 
-    const newCommitRef = runCommand({
-      command: 'git',
+    const newCommitRef = runGitCommand({
       args: [
         'commit-tree',
         treeSha,
@@ -204,6 +203,7 @@ function recreateCommits(
             ])),
       ],
       onError: 'throw',
+      resource: 'debugContextCommit',
     });
 
     // Save mapping so we can later associate branches.

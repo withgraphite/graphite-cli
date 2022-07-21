@@ -1,11 +1,11 @@
 import chalk from 'chalk';
 import { PreconditionsFailedError } from '../errors';
 import {
-  branchMove,
   deleteBranch,
   forceCheckoutNewBranch,
   forceCreateBranch,
   getCurrentBranchName,
+  moveBranch,
   switchBranch,
 } from '../git/branch_ops';
 import { commit, TCommitOpts } from '../git/commit';
@@ -586,7 +586,7 @@ export function composeMetaCache({
       const cachedMeta = cache.branches[cache.currentBranch];
       assertCachedMetaIsValidAndNotTrunk(cachedMeta);
 
-      branchMove(branchName);
+      moveBranch(branchName);
       updateMeta(branchName, { ...cachedMeta, prInfo: {} });
 
       cachedMeta.children.forEach((childBranchName) =>

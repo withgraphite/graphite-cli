@@ -1,6 +1,9 @@
 import * as t from '@withgraphite/retype';
 import { cuteString } from '../utils/cute_string';
-import { runCommand, runCommandAndSplitLines } from '../utils/run_command';
+import {
+  runGitCommand,
+  runGitCommandAndSplitLines,
+} from '../utils/run_command';
 
 export const prInfoSchema = t.shape({
   number: t.optional(t.number),
@@ -38,36 +41,36 @@ export function writeMetadataRef(
   meta: TMeta,
   cwd?: string
 ): void {
-  const metaSha = runCommand({
-    command: `git`,
+  const metaSha = runGitCommand({
     args: [`hash-object`, `-w`, `--stdin`],
     options: {
       input: cuteString(meta),
       cwd,
     },
     onError: 'throw',
+    resource: 'hashMetadataRef',
   });
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [`update-ref`, `refs/branch-metadata/${branchName}`, metaSha],
     options: {
       stdio: 'pipe',
       cwd,
     },
     onError: 'throw',
+    resource: 'writeMetadataRef',
   });
 }
 
 export function readMetadataRef(branchName: string, cwd?: string): TMeta {
   try {
     const meta = JSON.parse(
-      runCommand({
-        command: `git`,
+      runGitCommand({
         args: [`cat-file`, `-p`, `refs/branch-metadata/${branchName}`],
         options: {
           cwd,
         },
         onError: 'ignore',
+        resource: 'readMetadataRef',
       })
     );
 
@@ -78,23 +81,23 @@ export function readMetadataRef(branchName: string, cwd?: string): TMeta {
 }
 
 export function deleteMetadataRef(branchName: string): void {
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [`update-ref`, `-d`, `refs/branch-metadata/${branchName}`],
     onError: 'throw',
+    resource: 'deleteMetadataRef',
   });
 }
 
 export function getMetadataRefList(): Record<string, string> {
   const meta: Record<string, string> = {};
-  runCommandAndSplitLines({
-    command: `git`,
+  runGitCommandAndSplitLines({
     args: [
       `for-each-ref`,
       `--format=%(refname:lstrip=2):%(objectname)`,
       `refs/branch-metadata/`,
     ],
     onError: 'throw',
+    resource: 'getMetadataRefList',
   })
     .map((line) => line.split(':'))
     .filter(

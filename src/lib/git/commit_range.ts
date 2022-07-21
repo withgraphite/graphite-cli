@@ -1,4 +1,7 @@
-import { runCommand, runCommandAndSplitLines } from '../utils/run_command';
+import {
+  runGitCommand,
+  runGitCommandAndSplitLines,
+} from '../utils/run_command';
 
 const FORMAT = {
   READABLE: '%h - %s',
@@ -15,13 +18,12 @@ export function getCommitRange(
   format: TCommitFormat
 ): string[] {
   return base // if no base is passed in, just get one commit (e.g. trunk)
-    ? runCommandAndSplitLines({
-        command: `git`,
+    ? runGitCommandAndSplitLines({
         args: [`--no-pager`, `log`, `--pretty=format:%H`, `${base}..${head}`],
         onError: 'throw',
+        resource: 'getCommitRangeHashes',
       }).map((sha) =>
-        runCommand({
-          command: `git`,
+        runGitCommand({
           args: [
             `--no-pager`,
             `log`,
@@ -30,11 +32,11 @@ export function getCommitRange(
             sha,
           ],
           onError: 'throw',
+          resource: 'getCommitRangeFormatted',
         })
       )
     : [
-        runCommand({
-          command: `git`,
+        runGitCommand({
           args: [
             `--no-pager`,
             `log`,
@@ -43,6 +45,7 @@ export function getCommitRange(
             head,
           ],
           onError: 'throw',
+          resource: 'getCommitRangeFormatted',
         }),
       ];
 }
