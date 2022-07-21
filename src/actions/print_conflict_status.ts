@@ -21,17 +21,14 @@ export function printConflictStatus(
   );
   context.splog.newline();
 
-  try {
-    const rebaseHead = getRebaseHead();
+  const rebaseHead = getRebaseHead();
+  // this should never be undefined in this case, but we don't need to fail here
+  if (rebaseHead) {
     context.splog.info(
-      chalk.yellow(`You are here (resolving ${chalk.yellow(rebaseHead)}):`)
+      chalk.yellow(`You are here (resolving ${chalk.blueBright(rebaseHead)}):`)
     );
     logForConflictStatus(rebaseHead, context);
     context.splog.newline();
-  } catch {
-    // Silently fail if there is an issue getting the rebase head.
-    // We don't want to be too dependent on git here, but this is the simplest way
-    // to get the info we need.  There is likely a way for metaCache to do this.
   }
 
   context.splog.info(

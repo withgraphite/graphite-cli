@@ -41,6 +41,7 @@ function getAllBranchesAndMeta(
 export type TCacheSeed = {
   version: string;
   trunkName: string | undefined;
+  rebaseHead: string | undefined;
   gitBranchNamesAndRevisions: Record<string, string>;
   metadataRefList: Record<string, string>;
 };

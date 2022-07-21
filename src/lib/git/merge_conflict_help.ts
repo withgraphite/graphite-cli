@@ -19,17 +19,21 @@ export function getUnmergedFiles(): string[] {
   });
 }
 
-export function getRebaseHead(): string {
+export function getRebaseHead(): string | undefined {
   const gitDir = runGitCommand({
     args: [`rev-parse`, `--git-dir`],
     onError: 'throw',
     resource: 'getRebaseHead',
   });
 
-  return fs
-    .readFileSync(path.join(`${gitDir}`, `rebase-merge`, `head-name`), {
-      encoding: 'utf-8',
-    })
+  const rebaseHeadPath = path.join(`${gitDir}`, `rebase-merge`, `head-name`);
 
-    .slice('refs/heads/'.length);
+  return fs.existsSync(rebaseHeadPath)
+    ? fs
+        .readFileSync(rebaseHeadPath, {
+          encoding: 'utf-8',
+        })
+        .trim()
+        .slice('refs/heads/'.length)
+    : undefined;
 }

@@ -8,6 +8,33 @@ for (const scene of allScenes) {
   describe(`(${scene}): restack continue`, function () {
     configureTest(this, scene);
 
+    it('Can abort a restack with a merge conflict', () => {
+      scene.repo.createChange('a');
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
+
+      scene.repo.createChange('b');
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
+
+      scene.repo.checkoutBranch('a');
+      scene.repo.createChangeAndAmend('1');
+
+      expect(() =>
+        scene.repo.runCliCommand(['stack', 'restack', '-q'])
+      ).to.throw();
+      expect(scene.repo.rebaseInProgress()).to.be.true;
+
+      scene.repo.runGitCommand(['rebase', '--abort']);
+
+      expect(scene.repo.rebaseInProgress()).to.be.false;
+      expect(scene.getContext().metaCache.currentBranchPrecondition).to.equal(
+        'b'
+      );
+      expect(scene.repo.currentBranchName()).to.equal('b');
+
+      scene.repo.checkoutBranch('b');
+      expectCommits(scene.repo, 'b, a, 1');
+    });
+
     it('Can continue a stack restack with single merge conflict', () => {
       scene.repo.createChange('a');
       scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
