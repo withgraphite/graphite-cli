@@ -72,8 +72,10 @@ function testPRTemplates(
     createFile(path.join(scene.repo.dir, nonTemplate))
   );
 
-  const foundPRTemplates =
-    scene.repo.execCliCommandAndGetOutput('repo pr-templates');
+  const foundPRTemplates = scene.repo.runCliCommandAndGetOutput([
+    'repo',
+    'pr-templates',
+  ]);
   args.templatePaths.forEach(
     (template) => expect(foundPRTemplates.includes(template)).to.be.true
   );

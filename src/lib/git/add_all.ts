@@ -1,5 +1,5 @@
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 
 export function addAll(): void {
-  gpExecSync({ command: 'git add --all', onError: 'throw' });
+  runCommand({ command: 'git', args: ['add', '--all'], onError: 'throw' });
 }

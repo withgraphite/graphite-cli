@@ -9,19 +9,21 @@ for (const scene of allScenes) {
 
     it('Can continue an upstack onto with single merge conflict', () => {
       scene.repo.createChange('a');
-      scene.repo.execCliCommand("branch create 'a' -m 'a' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       scene.repo.checkoutBranch('main');
 
       scene.repo.createChange('b');
-      scene.repo.execCliCommand("branch create 'b' -m 'b' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
-      expect(() => scene.repo.execCliCommand('upstack onto a')).to.throw();
+      expect(() =>
+        scene.repo.runCliCommand(['upstack', 'onto', 'a'])
+      ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      const output = scene.repo.execCliCommandAndGetOutput('continue');
+      const output = scene.repo.runCliCommandAndGetOutput(['continue']);
 
       // Continue should finish the work that stack fix started, not only
       // completing the rebase but also re-checking out the original
@@ -35,30 +37,32 @@ for (const scene of allScenes) {
     it('Can run continue multiple times on an upstack onto with multiple merge conflicts', () => {
       scene.repo.createChange('a', '1');
       scene.repo.createChange('a', '2');
-      scene.repo.execCliCommand("branch create 'a' -m 'a' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       scene.repo.checkoutBranch('main');
 
       scene.repo.createChange('b', '1');
-      scene.repo.execCliCommand("branch create 'b' -m 'b' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
       scene.repo.createChange('c', '2');
-      scene.repo.execCliCommand("branch create 'c' -m 'c' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `c`, `-m`, `c`]);
 
       scene.repo.checkoutBranch('b');
 
-      expect(() => scene.repo.execCliCommand('upstack onto a')).to.throw();
+      expect(() =>
+        scene.repo.runCliCommand(['upstack', 'onto', 'a'])
+      ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
 
-      expect(() => scene.repo.execCliCommand('continue')).to.throw();
+      expect(() => scene.repo.runCliCommand(['continue'])).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue');
+      scene.repo.runCliCommand(['continue']);
 
       // Continue should finish the work that stack fix started, not only
       // completing the rebase but also re-checking out the original

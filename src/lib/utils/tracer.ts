@@ -2,7 +2,7 @@
 import { cuteString } from './cute_string';
 
 // feel free to add to either of these if necessary
-type spanNameT = 'execSync' | 'command';
+type spanNameT = 'spawnedCommand' | 'command' | 'execSync';
 type spanReturnT = string | Record<string, string> | undefined;
 
 type spanT = {

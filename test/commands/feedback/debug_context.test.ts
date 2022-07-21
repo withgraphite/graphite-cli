@@ -10,25 +10,29 @@ for (const scene of [new TrailingProdScene()]) {
 
     it('Can create debug-context', () => {
       expect(() =>
-        scene.repo.execCliCommand(`feedback debug-context`)
+        scene.repo.runCliCommand([`feedback`, `debug-context`])
       ).to.not.throw(Error);
     });
 
     it('Can recreate a tmp repo based on debug context', () => {
       scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand(`branch create a -m "a"`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       scene.repo.createChange('b', 'b');
-      scene.repo.execCliCommand(`branch create b -m "b"`);
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
-      const context = scene.repo.execCliCommandAndGetOutput(
-        `feedback debug-context`
-      );
+      const context = scene.repo.runCliCommandAndGetOutput([
+        `feedback`,
+        `debug-context`,
+      ]);
 
       const outputLines = scene.repo
-        .execCliCommandAndGetOutput(
-          `feedback debug-context --recreate '${context}'`
-        )
+        .runCliCommandAndGetOutput([
+          `feedback`,
+          `debug-context`,
+          `--recreate`,
+          context,
+        ])
         .toString()
         .trim()
         .split('\n');
@@ -39,7 +43,7 @@ for (const scene of [new TrailingProdScene()]) {
       newRepo.checkoutBranch('b');
       expect(newRepo.currentBranchName()).to.eq('b');
 
-      newRepo.execCliCommand(`bd`);
+      newRepo.runCliCommand([`bd`]);
       expect(newRepo.currentBranchName()).to.eq('a');
 
       fs.emptyDirSync(tmpDir);

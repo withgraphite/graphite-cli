@@ -1,5 +1,4 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 
 export type TCommitOpts = {
   amend?: boolean;
@@ -10,16 +9,17 @@ export type TCommitOpts = {
   rollbackOnError?: () => void;
 };
 export function commit(opts: TCommitOpts & { noVerify: boolean }): void {
-  gpExecSync({
-    command: [
-      'git commit',
-      opts.amend ? `--amend` : '',
-      opts.message ? `-m ${q(opts.message)}` : '',
-      opts.noEdit ? `--no-edit` : '',
-      opts.edit ? `-e` : '',
-      opts.patch ? `-p` : '',
-      opts.noVerify ? '-n' : '',
-    ].join(' '),
+  runCommand({
+    command: 'git',
+    args: [
+      'commit',
+      ...(opts.amend ? [`--amend`] : []),
+      ...(opts.message ? [`-m`, opts.message] : []),
+      ...(opts.noEdit ? [`--no-edit`] : []),
+      ...(opts.edit ? [`-e`] : []),
+      ...(opts.patch ? [`-p`] : []),
+      ...(opts.noVerify ? ['-n'] : []),
+    ],
     options: {
       stdio: 'inherit',
     },

@@ -1,18 +1,19 @@
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 
-function doChangesExist(cmd: string): boolean {
+function doChangesExist(args: string[]): boolean {
   return (
-    gpExecSync({
-      command: cmd,
+    runCommand({
+      command: `git`,
+      args,
       onError: 'throw',
     }).length > 0
   );
 }
 
 export function unstagedChanges(): boolean {
-  return doChangesExist(`git ls-files --others --exclude-standard`); // untracked changes only
+  return doChangesExist([`ls-files`, `--others`, `--exclude-standard`]); // untracked changes only
 }
 
 export function trackedUncommittedChanges(): boolean {
-  return doChangesExist(`git status -uno --porcelain=v1 2>/dev/null`); // staged but uncommitted changes only
+  return doChangesExist([`status`, `-uno`, `--porcelain=v1`]); // staged but uncommitted changes only
 }

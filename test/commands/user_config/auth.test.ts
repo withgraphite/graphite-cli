@@ -8,21 +8,23 @@ for (const scene of [new BasicScene()]) {
     it('Sanity check - can read previously written auth token', () => {
       const authToken = 'SUPER_SECRET_AUTH_TOKEN';
       expect(() =>
-        scene.repo.execCliCommand(`auth -t ${authToken}`)
+        scene.repo.runCliCommand([`auth`, `-t`, `${authToken}`])
       ).to.not.throw(Error);
-      expect(scene.repo.execCliCommandAndGetOutput(`auth`)).to.equal(authToken);
+      expect(scene.repo.runCliCommandAndGetOutput([`auth`])).to.equal(
+        authToken
+      );
     });
 
     it('Overwrites any previously stored auth token', () => {
       const authTokenOld = 'SUPER_SECRET_AUTH_TOKEN_OLD';
       const authTokenNew = 'SUPER_SECRET_AUTH_TOKEN_NEW';
       expect(() =>
-        scene.repo.execCliCommand(`auth -t ${authTokenOld}`)
+        scene.repo.runCliCommand([`auth`, `-t`, `${authTokenOld}`])
       ).to.not.throw(Error);
       expect(() =>
-        scene.repo.execCliCommand(`auth -t ${authTokenNew}`)
+        scene.repo.runCliCommand([`auth`, `-t`, `${authTokenNew}`])
       ).to.not.throw(Error);
-      expect(scene.repo.execCliCommandAndGetOutput(`auth`)).to.equal(
+      expect(scene.repo.runCliCommandAndGetOutput([`auth`])).to.equal(
         authTokenNew
       );
     });

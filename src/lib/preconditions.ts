@@ -5,13 +5,15 @@ import {
   trackedUncommittedChanges,
   unstagedChanges,
 } from './git/git_status_utils';
-import { gpExecSync } from './utils/exec_sync';
+import { runCommand } from './utils/run_command';
 
 export function getRepoRootPathPrecondition(): string {
-  const repoRootPath = gpExecSync({
-    command: `git rev-parse --git-common-dir`,
+  const repoRootPath = runCommand({
+    command: `git`,
+    args: [`rev-parse`, `--git-common-dir`],
     onError: 'ignore',
   });
+
   if (!repoRootPath) {
     throw new PreconditionsFailedError('No .git repository found.');
   }
@@ -51,8 +53,9 @@ export function cliAuthPrecondition(context: TContext): string {
 }
 
 export function currentGitRepoPrecondition(): string {
-  const repoRootPath = gpExecSync({
-    command: `git rev-parse --show-toplevel`,
+  const repoRootPath = runCommand({
+    command: `git`,
+    args: [`rev-parse`, `--show-toplevel`],
     onError: 'ignore',
   });
   if (!repoRootPath) {

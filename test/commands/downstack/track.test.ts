@@ -15,21 +15,21 @@ for (const scene of allScenes) {
       scene.repo.createChangeAndCommit('c', 'c');
 
       expect(() => {
-        scene.repo.execCliCommand('downstack track -f');
+        scene.repo.runCliCommand(['downstack', 'track', '-f']);
       }).not.to.throw();
 
       expect(() => {
-        scene.repo.execCliCommand('branch down');
+        scene.repo.runCliCommand([`branch`, `down`]);
       }).not.to.throw();
       expect(scene.repo.currentBranchName()).to.eq('b');
 
       expect(() => {
-        scene.repo.execCliCommand('branch down');
+        scene.repo.runCliCommand([`branch`, `down`]);
       }).not.to.throw();
       expect(scene.repo.currentBranchName()).to.eq('a');
 
       expect(() => {
-        scene.repo.execCliCommand('branch down');
+        scene.repo.runCliCommand([`branch`, `down`]);
       }).not.to.throw();
       expect(scene.repo.currentBranchName()).to.eq('main');
     });
@@ -45,21 +45,21 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('main');
 
       expect(() => {
-        scene.repo.execCliCommand('downstack track -f c');
+        scene.repo.runCliCommand(['downstack', 'track', '-f', 'c']);
       }).not.to.throw();
 
       expect(() => {
-        scene.repo.execCliCommand('branch up');
+        scene.repo.runCliCommand([`branch`, `up`]);
       }).not.to.throw();
       expect(scene.repo.currentBranchName()).to.eq('a');
 
       expect(() => {
-        scene.repo.execCliCommand('branch up');
+        scene.repo.runCliCommand([`branch`, `up`]);
       }).not.to.throw();
       expect(scene.repo.currentBranchName()).to.eq('b');
 
       expect(() => {
-        scene.repo.execCliCommand('branch up');
+        scene.repo.runCliCommand([`branch`, `up`]);
       }).not.to.throw();
       expect(scene.repo.currentBranchName()).to.eq('c');
     });

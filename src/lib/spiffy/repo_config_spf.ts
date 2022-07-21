@@ -1,7 +1,6 @@
 import * as t from '@withgraphite/retype';
 import { ExitFailedError } from '../errors';
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 import { spiffy } from './spiffy';
 
 const schema = t.shape({
@@ -78,8 +77,9 @@ function inferRepoGitHubInfo(remote: string): {
   // This assumes the remote to fetch from is the same as the remote to push to.
   // If a user runs into this is not true, they can manually edit the repo config
   // file to overrule what our CLI tries to intelligently infer.
-  const url = gpExecSync({
-    command: `git config --get remote.${q(remote)}.url`,
+  const url = runCommand({
+    command: `git`,
+    args: [`config`, `--get`, `remote.${remote}.url`],
     onError: 'ignore',
   });
 

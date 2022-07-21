@@ -11,7 +11,7 @@ for (const scene of [new CloneScene()]) {
 
     it('can push a branch to remote', async () => {
       scene.repo.createChange('1');
-      scene.repo.execCliCommand(`branch create 1 -am "1"`);
+      scene.repo.runCliCommand([`branch`, `create`, `1`, `-am`, `1`]);
       expect(scene.repo.currentBranchName()).to.equal('1');
 
       pushBranch({
@@ -28,11 +28,11 @@ for (const scene of [new CloneScene()]) {
 
     it('fails to push to a branch with external commits', () => {
       scene.repo.createChange('1');
-      scene.repo.execCliCommand(`branch create 1 -am "1"`);
+      scene.repo.runCliCommand([`branch`, `create`, `1`, `-am`, `1`]);
       expect(scene.repo.currentBranchName()).to.equal('1');
 
       scene.originRepo.createChange('2');
-      scene.originRepo.execCliCommand(`branch create 1 -am "1"`);
+      scene.originRepo.runCliCommand([`branch`, `create`, `1`, `-am`, `1`]);
       expect(scene.originRepo.getRef('refs/heads/1')).to.not.equal(
         scene.repo.getRef('refs/heads/1')
       );

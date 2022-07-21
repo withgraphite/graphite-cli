@@ -1,16 +1,17 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 
 export function softReset(sha: string): void {
-  gpExecSync({
-    command: `git reset -q --soft ${q(sha)}`,
+  runCommand({
+    command: `git`,
+    args: [`reset`, `-q`, `--soft`, sha],
     onError: 'throw',
   });
 }
 
 export function trackedReset(sha: string): void {
-  gpExecSync({
-    command: `git reset -Nq ${q(sha)}`,
+  runCommand({
+    command: `git`,
+    args: [`reset`, `-Nq`, sha],
     onError: 'throw',
   });
 }

@@ -9,15 +9,15 @@ for (const scene of allScenes) {
 
     it('Can restack a stack of three branches', () => {
       scene.repo.createChange('2', 'a');
-      scene.repo.execCliCommand("branch create 'a' -m '2' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `2`]);
       scene.repo.createChangeAndCommit('2.5', 'a.5');
 
       scene.repo.createChange('3', 'b');
-      scene.repo.execCliCommand("branch create 'b' -m '3' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `3`]);
       scene.repo.createChangeAndCommit('3.5', 'b.5');
 
       scene.repo.createChange('4', 'c');
-      scene.repo.execCliCommand("branch create 'c' -m '4' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `c`, `-m`, `4`]);
 
       expectCommits(scene.repo, '4, 3.5, 3, 2.5, 2, 1');
 
@@ -28,7 +28,7 @@ for (const scene of allScenes) {
       ).to.equal('1.5, 1');
 
       scene.repo.checkoutBranch('c');
-      scene.repo.execCliCommand('downstack restack -q');
+      scene.repo.runCliCommand(['downstack', 'restack']);
 
       expect(scene.repo.currentBranchName()).to.equal('c');
 
@@ -38,10 +38,10 @@ for (const scene of allScenes) {
 
     it('Can handle merge conflicts', () => {
       scene.repo.createChange('2');
-      scene.repo.execCliCommand("branch create 'a' -m '2' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `2`]);
 
       scene.repo.createChange('3');
-      scene.repo.execCliCommand("branch create 'b' -m '3' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `3`]);
 
       scene.repo.checkoutBranch('main');
       scene.repo.createChangeAndCommit('1.5');
@@ -49,17 +49,17 @@ for (const scene of allScenes) {
       scene.repo.checkoutBranch('b');
 
       expect(() =>
-        scene.repo.execCliCommand('downstack restack -q')
+        scene.repo.runCliCommand(['downstack', 'restack'])
       ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.eq(true);
 
       scene.repo.resolveMergeConflicts();
 
-      expect(() => scene.repo.execCliCommand('continue -q')).to.throw();
+      expect(() => scene.repo.runCliCommand(['continue', '-q'])).to.throw();
       expect(scene.repo.rebaseInProgress()).to.eq(true);
 
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue -q');
+      scene.repo.runCliCommand(['continue', '-q']);
 
       expect(scene.repo.rebaseInProgress()).to.eq(false);
       expect(scene.repo.currentBranchName()).to.eq('b');
@@ -71,16 +71,16 @@ for (const scene of allScenes) {
 
     it('Can restack one specific stack', () => {
       scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand("branch create 'a' -m 'a' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       scene.repo.createChange('b', 'b');
-      scene.repo.execCliCommand("branch create 'b' -m 'b' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
       scene.repo.checkoutBranch('a');
       scene.repo.createChangeAndCommit('1.5', '1.5');
 
       scene.repo.checkoutBranch('b');
-      scene.repo.execCliCommand('downstack restack -q');
+      scene.repo.runCliCommand(['downstack', 'restack']);
 
       expect(scene.repo.currentBranchName()).to.eq('b');
       expectCommits(scene.repo, 'b, 1.5, a, 1');
@@ -88,10 +88,10 @@ for (const scene of allScenes) {
 
     it("Doesn't restack above current commit", () => {
       scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand("branch create 'a' -m 'a' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       scene.repo.createChange('b', 'b');
-      scene.repo.execCliCommand("branch create 'b' -m 'b' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
       scene.repo.checkoutBranch('a');
       scene.repo.createChangeAndCommit('2.5', '2.5');
@@ -101,7 +101,7 @@ for (const scene of allScenes) {
 
       scene.repo.checkoutBranch('a');
 
-      scene.repo.execCliCommand('downstack restack -q');
+      scene.repo.runCliCommand(['downstack', 'restack']);
 
       scene.repo.checkoutBranch('b');
 

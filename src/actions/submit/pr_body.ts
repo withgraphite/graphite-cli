@@ -3,8 +3,8 @@ import prompts from 'prompts';
 import tmp from 'tmp';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
-import { gpExecSync } from '../../lib/utils/exec_sync';
 import { getPRTemplate } from '../../lib/utils/pr_templates';
+import { runCommand } from '../../lib/utils/run_command';
 
 export async function getPRBody(
   args: {
@@ -57,8 +57,9 @@ async function editPRBody(args: {
 }): Promise<string> {
   const file = tmp.fileSync({ name: 'EDIT_DESCRIPTION' });
   fs.writeFileSync(file.name, args.initial);
-  gpExecSync({
-    command: `${args.editor} ${file.name}`,
+  runCommand({
+    command: args.editor,
+    args: [file.name],
     options: { stdio: 'inherit' },
     onError: 'throw',
   });

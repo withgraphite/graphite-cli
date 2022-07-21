@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { USER_CONFIG_OVERRIDE_ENV } from '../context';
 import { rebaseInProgress } from '../git/rebase_in_progress';
-import { gpExecSync, gpExecSyncAndSplitLines } from './exec_sync';
+import { runCommand, runCommandAndSplitLines } from './run_command';
 
 const TEXT_FILE_NAME = 'test.txt';
 export class GitRepo {
@@ -18,68 +18,84 @@ export class GitRepo {
       return;
     }
     if (opts?.repoUrl) {
-      gpExecSync({
-        command: `git clone ${opts.repoUrl} ${dir}`,
+      runCommand({
+        command: `git`,
+        args: [`clone`, opts.repoUrl, dir],
         onError: 'throw',
       });
     } else {
-      gpExecSync({
-        command: `git init ${dir} -b main`,
+      runCommand({
+        command: `git`,
+        args: [`init`, dir, `-b`, `main`],
         onError: 'throw',
       });
     }
   }
 
-  execCliCommand(command: string, opts?: { cwd?: string }): void {
-    gpExecSync({
-      command: [
-        `${USER_CONFIG_OVERRIDE_ENV}=${this.userConfigPath}`,
-        `GRAPHITE_DISABLE_TELEMETRY=1`,
-        `GRAPHITE_DISABLE_UPGRADE_PROMPT=1`,
-        `node ${__dirname}/../../../../dist/src/index.js ${command}`,
-      ].join(' '),
+  runCliCommand(command: string[], opts?: { cwd?: string }): void {
+    runCommand({
+      command: process.argv[0],
+      args: [
+        path.join(__dirname, `..`, `..`, `..`, `..`, `dist`, `src`, `index.js`),
+        ...command,
+      ],
       options: {
-        stdio: process.env.DEBUG ? 'inherit' : 'ignore',
+        stdio: process.env.DEBUG ? 'inherit' : 'pipe',
         cwd: opts?.cwd || this.dir,
+        env: {
+          ...process.env,
+          [USER_CONFIG_OVERRIDE_ENV]: this.userConfigPath,
+          GRAPHITE_DISABLE_TELEMETRY: '1',
+          GRAPHITE_DISABLE_UPGRADE_PROMPT: '1',
+        },
       },
       onError: 'throw',
     });
   }
 
-  execGitCommand(command: string, opts?: { cwd?: string }): void {
-    gpExecSync({
-      command: `git ${command}`,
+  runGitCommand(args: string[], opts?: { cwd?: string }): void {
+    runCommand({
+      command: `git`,
+      args,
       options: {
-        stdio: process.env.DEBUG ? 'inherit' : 'ignore',
+        stdio: process.env.DEBUG ? 'inherit' : 'pipe',
         cwd: opts?.cwd || this.dir,
       },
       onError: 'ignore',
     });
   }
 
-  execCliCommandAndGetOutput(command: string): string {
-    return gpExecSync({
-      command: [
-        `${USER_CONFIG_OVERRIDE_ENV}=${this.userConfigPath}`,
-        `GRAPHITE_DISABLE_TELEMETRY=1`,
-        `GRAPHITE_DISABLE_UPGRADE_PROMPT=1`,
-        `node ${__dirname}/../../../../dist/src/index.js ${command}`,
-      ].join(' '),
+  runCliCommandAndGetOutput(args: string[]): string {
+    return runCommand({
+      command: process.argv[0],
+      args: [
+        path.join(__dirname, `..`, `..`, `..`, `..`, `dist`, `src`, `index.js`),
+        ...args,
+      ],
       options: {
         cwd: this.dir,
+        env: {
+          ...process.env,
+          [USER_CONFIG_OVERRIDE_ENV]: this.userConfigPath,
+          GRAPHITE_DISABLE_TELEMETRY: '1',
+          GRAPHITE_DISABLE_UPGRADE_PROMPT: '1',
+        },
       },
       onError: 'ignore',
     });
   }
 
   createChange(textValue: string, prefix?: string, unstaged?: boolean): void {
-    const filePath = `${this.dir}/${
-      prefix ? prefix + '_' : ''
-    }${TEXT_FILE_NAME}`;
+    const filePath = path.join(
+      `${this.dir}`,
+      `${prefix ? prefix + '_' : ''}${TEXT_FILE_NAME}`
+    );
     fs.writeFileSync(filePath, textValue);
     if (!unstaged) {
-      gpExecSync({
-        command: `git -C "${this.dir}" add ${filePath}`,
+      runCommand({
+        command: `git`,
+        args: [`add`, filePath],
+        options: { cwd: this.dir },
         onError: 'throw',
       });
     }
@@ -87,25 +103,41 @@ export class GitRepo {
 
   createChangeAndCommit(textValue: string, prefix?: string): void {
     this.createChange(textValue, prefix);
-    gpExecSync({ command: `git -C "${this.dir}" add .`, onError: 'throw' });
-    gpExecSync({
-      command: `git -C "${this.dir}" commit -m "${textValue}"`,
+    runCommand({
+      command: `git`,
+      args: [`add`, `.`],
+      options: { cwd: this.dir },
+      onError: 'throw',
+    });
+    runCommand({
+      command: `git`,
+      args: [`commit`, `-m`, textValue],
+      options: { cwd: this.dir },
       onError: 'throw',
     });
   }
 
   createChangeAndAmend(textValue: string, prefix?: string): void {
     this.createChange(textValue, prefix);
-    gpExecSync({ command: `git -C "${this.dir}" add .`, onError: 'throw' });
-    gpExecSync({
-      command: `git -C "${this.dir}" commit --amend --no-edit`,
+    runCommand({
+      command: `git`,
+      args: [`add`, `.`],
+      options: { cwd: this.dir },
+      onError: 'throw',
+    });
+    runCommand({
+      command: `git`,
+      args: [`commit`, `--amend`, `--no-edit`],
+      options: { cwd: this.dir },
       onError: 'throw',
     });
   }
 
   deleteBranch(name: string): void {
-    gpExecSync({
-      command: `git -C "${this.dir}" branch -D ${name}`,
+    runCommand({
+      command: `git`,
+      args: [`branch`, `-D`, name],
+      options: { cwd: this.dir },
       onError: 'throw',
     });
   }
@@ -113,74 +145,101 @@ export class GitRepo {
   createPrecommitHook(contents: string): void {
     fs.mkdirpSync(`${this.dir}/.git/hooks`);
     fs.writeFileSync(`${this.dir}/.git/hooks/pre-commit`, contents);
-    gpExecSync({
-      command: `chmod +x ${this.dir}/.git/hooks/pre-commit`,
+    runCommand({
+      command: `chmod`,
+      args: [`+x`, `${this.dir}/.git/hooks/pre-commit`],
+      options: { cwd: this.dir },
       onError: 'throw',
     });
   }
 
   createAndCheckoutBranch(name: string): void {
-    gpExecSync({
-      command: `git -C "${this.dir}" checkout -b "${name}"`,
-      options: { stdio: process.env.DEBUG ? 'inherit' : 'ignore' },
+    runCommand({
+      command: `git`,
+      args: [`checkout`, `-b`, name],
+      options: {
+        stdio: process.env.DEBUG ? 'inherit' : 'pipe',
+        cwd: this.dir,
+      },
       onError: 'throw',
     });
   }
 
   checkoutBranch(name: string): void {
-    gpExecSync({
-      command: `git -C "${this.dir}" checkout "${name}"`,
-      options: { stdio: process.env.DEBUG ? 'inherit' : 'ignore' },
+    runCommand({
+      command: `git`,
+      args: [`checkout`, name],
+      options: {
+        stdio: process.env.DEBUG ? 'inherit' : 'pipe',
+        cwd: this.dir,
+      },
       onError: 'throw',
     });
   }
 
   rebaseInProgress(): boolean {
-    return rebaseInProgress({ dir: this.dir });
+    return rebaseInProgress({ cwd: this.dir });
   }
 
   resolveMergeConflicts(): void {
-    gpExecSync({
-      command: `git -C "${this.dir}" checkout --theirs .`,
-      options: { stdio: process.env.DEBUG ? 'inherit' : 'ignore' },
+    runCommand({
+      command: `git`,
+      args: [`checkout`, `--theirs`, `.`],
+      options: {
+        stdio: process.env.DEBUG ? 'inherit' : 'pipe',
+        cwd: this.dir,
+      },
       onError: 'throw',
     });
   }
 
   markMergeConflictsAsResolved(): void {
-    gpExecSync({
-      command: `git -C "${this.dir}" add .`,
-      options: { stdio: process.env.DEBUG ? 'inherit' : 'ignore' },
+    runCommand({
+      command: `git`,
+      args: [`add`, `.`],
+      options: {
+        stdio: process.env.DEBUG ? 'inherit' : 'pipe',
+        cwd: this.dir,
+      },
       onError: 'throw',
     });
   }
 
   currentBranchName(): string {
-    return gpExecSync({
-      command: `git -C "${this.dir}" branch --show-current`,
+    return runCommand({
+      command: `git`,
+      args: [`branch`, `--show-current`],
+      options: { cwd: this.dir },
       onError: 'ignore',
     });
   }
 
   getRef(refName: string): string {
-    return gpExecSync({
-      command: `git -C "${this.dir}" show-ref -s ${refName}`,
+    return runCommand({
+      command: `git`,
+      args: [`show-ref`, `-s`, refName],
+      options: { cwd: this.dir },
       onError: 'ignore',
     });
   }
 
   listCurrentBranchCommitMessages(): string[] {
-    return gpExecSyncAndSplitLines({
-      command: `git -C "${this.dir}" log --oneline  --format=%B`,
+    return runCommandAndSplitLines({
+      command: `git`,
+      args: [`log`, `--oneline`, `--format=%B`],
+      options: { cwd: this.dir },
       onError: 'ignore',
     });
   }
 
   mergeBranch(args: { branch: string; mergeIn: string }): void {
-    gpExecSync({
-      command: `git -C "${this.dir}" checkout ${args.branch}; git merge ${args.mergeIn}`,
+    this.checkoutBranch(args.branch);
+    runCommand({
+      command: `git`,
+      args: [`merge`, args.mergeIn],
       options: {
-        stdio: process.env.DEBUG ? 'inherit' : 'ignore',
+        cwd: this.dir,
+        stdio: process.env.DEBUG ? 'inherit' : 'pipe',
       },
       onError: 'throw',
     });

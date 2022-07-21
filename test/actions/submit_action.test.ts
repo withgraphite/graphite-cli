@@ -18,7 +18,7 @@ for (const scene of [new BasicScene()]) {
       const message = `${title}\n\n${body}`;
 
       scene.repo.createChange('a');
-      scene.repo.execCliCommand(`branch create "a" -m "${message}" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, message]);
 
       expect(
         await getPRTitle({ branchName: 'a' }, scene.getContext())
@@ -50,7 +50,7 @@ for (const scene of [new BasicScene()]) {
       const commitMessage = title;
 
       scene.repo.createChange('a');
-      scene.repo.execCliCommand(`branch create "a" -m "${commitMessage}" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, commitMessage]);
 
       expect(
         await getPRTitle({ branchName: 'a' }, scene.getContext())
@@ -68,7 +68,7 @@ for (const scene of [new BasicScene()]) {
       const secondSubj = 'Second commit subject';
 
       scene.repo.createChange('a');
-      scene.repo.execCliCommand(`branch create "a" -m "${title}" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, title]);
       scene.repo.createChangeAndCommit(secondSubj);
 
       expect(
@@ -91,14 +91,14 @@ for (const scene of [new BasicScene()]) {
     });
 
     it('aborts if the branch is empty', async () => {
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
       await expect(validateNoEmptyBranches(['a'], scene.getContext())).to.be
         .rejected;
     });
 
     it('does not abort if the branch is not empty', async () => {
       scene.repo.createChange('a');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
       await expect(validateNoEmptyBranches(['a'], scene.getContext())).to.be
         .fulfilled;
     });

@@ -9,38 +9,38 @@ for (const scene of allScenes) {
 
     it('Can rename a branch', () => {
       scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       scene.repo.createChange('b', 'b');
-      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
       scene.repo.checkoutBranch('a');
-      scene.repo.execCliCommand(`branch rename a1`);
+      scene.repo.runCliCommand([`branch`, `rename`, `a1`]);
 
-      expect(() => scene.repo.execCliCommand(`log short`)).not.to.throw();
+      expect(() => scene.repo.runCliCommand([`ls`])).not.to.throw();
 
       scene.repo.checkoutBranch('b');
 
       expectCommits(scene.repo, 'b, a, 1');
 
-      scene.repo.execCliCommand(`branch down --no-interactive`);
+      scene.repo.runCliCommand([`branch`, `down`, `--no-interactive`]);
       expect(scene.repo.currentBranchName()).to.equal('a1');
 
-      scene.repo.execCliCommand(`branch down --no-interactive`);
+      scene.repo.runCliCommand([`branch`, `down`, `--no-interactive`]);
       expect(scene.repo.currentBranchName()).to.equal('main');
     });
     it("Renaming a branch to its own name doesn't break", () => {
       scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       scene.repo.createChange('b', 'b');
-      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
       scene.repo.checkoutBranch('a');
-      scene.repo.execCliCommand(`branch rename a`);
+      scene.repo.runCliCommand([`branch`, `rename`, `a`]);
 
-      expect(() => scene.repo.execCliCommand(`log short`)).not.to.throw();
-      expect(() => scene.repo.execCliCommand(`branch up`)).not.to.throw();
+      expect(() => scene.repo.runCliCommand([`ls`])).not.to.throw();
+      expect(() => scene.repo.runCliCommand([`bu`])).not.to.throw();
       expectCommits(scene.repo, 'b, a, 1');
     });
   });

@@ -1,15 +1,18 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 
 export function detectUnsubmittedChanges(
   branchName: string,
   remote: string
 ): boolean {
   return (
-    gpExecSync({
-      command: `git --no-pager log --oneline ${q(branchName)}...${q(
-        remote
-      )}/${q(branchName)}`,
+    runCommand({
+      command: `git`,
+      args: [
+        `--no-pager`,
+        `log`,
+        `--oneline`,
+        `${branchName}...${remote}/${branchName}`,
+      ],
       onError: 'throw',
     }).length !== 0
   );
@@ -17,25 +20,42 @@ export function detectUnsubmittedChanges(
 
 export function detectStagedChanges(): boolean {
   return (
-    gpExecSync({
-      command: `git --no-pager diff --no-ext-diff --shortstat --cached`,
+    runCommand({
+      command: `git`,
+      args: [`--no-pager`, `diff`, `--no-ext-diff`, `--shortstat`, `--cached`],
       onError: 'throw',
     }).length > 0
   );
 }
 
 export function getUnstagedChanges(): string {
-  return gpExecSync({
-    command: `git -c color.ui=always --no-pager diff --no-ext-diff --stat`,
+  return runCommand({
+    command: `git`,
+    args: [
+      `-c`,
+      `color.ui=always`,
+      `--no-pager`,
+      `diff`,
+      `--no-ext-diff`,
+      `--stat`,
+    ],
     onError: 'throw',
   });
 }
 
 export function showDiff(left: string, right: string): void {
-  gpExecSync({
-    command: `git -c color.ui=always --no-pager diff --no-ext-diff ${q(
-      left
-    )} ${q(right)} -- `,
+  runCommand({
+    command: `git`,
+    args: [
+      `-c`,
+      `color.ui=always`,
+      `--no-pager`,
+      `diff`,
+      `--no-ext-diff`,
+      left,
+      right,
+      `--`,
+    ],
     options: { stdio: 'inherit' },
     onError: 'throw',
   });
@@ -43,10 +63,17 @@ export function showDiff(left: string, right: string): void {
 
 export function isDiffEmpty(left: string, right: string): boolean {
   return (
-    gpExecSync({
-      command: `git --no-pager diff --no-ext-diff --shortstat ${q(left)} ${q(
-        right
-      )} -- `,
+    runCommand({
+      command: `git`,
+      args: [
+        `--no-pager`,
+        `diff`,
+        `--no-ext-diff`,
+        `--shortstat`,
+        left,
+        right,
+        `--`,
+      ],
       onError: 'throw',
     }).length === 0
   );

@@ -1,16 +1,25 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 
 export function getShaOrThrow(ref: string): string {
-  return gpExecSync({
-    command: `git rev-parse ${q(ref)} 2>/dev/null`,
+  return runCommand({
+    command: `git`,
+    args: [`rev-parse`, ref],
     onError: 'throw',
   });
 }
 
+export function getSha(ref: string): string {
+  return runCommand({
+    command: `git`,
+    args: [`rev-parse`, ref],
+    onError: 'ignore',
+  });
+}
+
 export function getRemoteSha(ref: string, remote: string): string | undefined {
-  const output = gpExecSync({
-    command: `git ls-remote ${q(remote)} ${q(ref)}`,
+  const output = runCommand({
+    command: `git`,
+    args: [`ls-remote`, remote, ref],
     onError: 'ignore',
   });
   return output.slice(0, output.search(/\s/)) || undefined;

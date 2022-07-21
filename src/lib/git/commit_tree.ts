@@ -1,13 +1,24 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSyncAndSplitLines } from '../utils/exec_sync';
+import { runCommand, runCommandAndSplitLines } from '../utils/run_command';
+import { getSha } from './get_sha';
 
 export function getCommitTree(branchNames: string[]): Record<string, string[]> {
-  const allBranches = branchNames.map((b) => q(b)).join(' ');
+  const parentOfMergeBase = getSha(
+    `${runCommand({
+      command: `git`,
+      args: [`merge-base`, `--octopus`, ...branchNames],
+      onError: 'ignore',
+    })}~`
+  );
   const ret: Record<string, string[]> = {};
-  gpExecSyncAndSplitLines({
-    command:
-      // Check that there is a commit behind this branch before getting the full list.
-      `git rev-list --parents ^$(git merge-base --octopus ${allBranches})~1 ${allBranches} 2> /dev/null || git rev-list --parents --all`,
+  runCommandAndSplitLines({
+    command: `git`,
+    args: [
+      `rev-list`,
+      `--parents`,
+      ...(parentOfMergeBase
+        ? [`^${parentOfMergeBase}`, ...branchNames]
+        : [`--all`]),
+    ],
     options: {
       maxBuffer: 1024 * 1024 * 1024,
     },

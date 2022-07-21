@@ -17,11 +17,11 @@ for (const scene of [
     configureTest(this, scene);
 
     it('Can run stacks quickly', () => {
-      scene.repo.execCliCommand(`log short`);
+      scene.repo.runCliCommand([`log`, `short`]);
     }).timeout(scene.timeout);
 
     it('Can run log quickly', () => {
-      scene.repo.execCliCommand(`log`);
+      scene.repo.runCliCommand([`log`]);
     }).timeout(scene.timeout);
   });
 }

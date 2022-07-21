@@ -10,7 +10,7 @@ for (const scene of [new TrailingProdScene()]) {
     it('Can run repo init', () => {
       const repoConfigPath = `${scene.repo.dir}/.git/.graphite_repo_config`;
       fs.removeSync(repoConfigPath);
-      scene.repo.execCliCommand('repo init --trunk main');
+      scene.repo.runCliCommand([`repo`, `init`, `--trunk`, `main`]);
       const savedConfig = JSON.parse(
         fs.readFileSync(repoConfigPath).toString()
       );
@@ -19,7 +19,13 @@ for (const scene of [new TrailingProdScene()]) {
 
     it('Falls back to main if non-existent branch is passed in', () => {
       const repoConfigPath = `${scene.repo.dir}/.git/.graphite_repo_config`;
-      scene.repo.execCliCommand('repo init --trunk random --no-interactive');
+      scene.repo.runCliCommand([
+        `repo`,
+        `init`,
+        `--trunk`,
+        `random`,
+        `--no-interactive`,
+      ]);
       const savedConfig = JSON.parse(
         fs.readFileSync(repoConfigPath).toString()
       );
@@ -27,9 +33,15 @@ for (const scene of [new TrailingProdScene()]) {
     });
 
     it('Cannot set an invalid trunk if trunk cannot be inferred', () => {
-      scene.repo.execGitCommand('branch -m main2');
+      scene.repo.runGitCommand([`branch`, `-m`, `main2`]);
       expect(() =>
-        scene.repo.execCliCommand('repo init --trunk random --no-interactive')
+        scene.repo.runCliCommand([
+          `repo`,
+          `init`,
+          `--trunk`,
+          `random`,
+          `--no-interactive`,
+        ])
       ).to.throw(Error);
     });
   });

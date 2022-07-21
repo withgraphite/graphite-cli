@@ -1,6 +1,9 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 
 export function pruneRemote(remote: string): void {
-  gpExecSync({ command: `git remote prune ${q(remote)}`, onError: 'ignore' });
+  runCommand({
+    command: `git`,
+    args: [`remote`, `prune`, remote],
+    onError: 'ignore',
+  });
 }

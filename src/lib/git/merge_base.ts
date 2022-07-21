@@ -1,9 +1,9 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 
 export function getMergeBase(left: string, right: string): string {
-  return gpExecSync({
-    command: `git merge-base ${q(left)} ${q(right)}`,
+  return runCommand({
+    command: `git`,
+    args: [`merge-base`, left, right],
     onError: 'throw',
   });
 }

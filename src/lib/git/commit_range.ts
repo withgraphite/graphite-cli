@@ -1,5 +1,4 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync, gpExecSyncAndSplitLines } from '../utils/exec_sync';
+import { runCommand, runCommandAndSplitLines } from '../utils/run_command';
 
 const FORMAT = {
   READABLE: '%h - %s',
@@ -16,24 +15,33 @@ export function getCommitRange(
   format: TCommitFormat
 ): string[] {
   return base // if no base is passed in, just get one commit (e.g. trunk)
-    ? gpExecSyncAndSplitLines({
-        command: `git --no-pager log --pretty=format:"%H" ${q(base)}..${q(
-          head
-        )}`,
+    ? runCommandAndSplitLines({
+        command: `git`,
+        args: [`--no-pager`, `log`, `--pretty=format:%H`, `${base}..${head}`],
         onError: 'throw',
       }).map((sha) =>
-        gpExecSync({
-          command: `git --no-pager log -1 --pretty=format:"${
-            FORMAT[format]
-          }" ${q(sha)}`,
+        runCommand({
+          command: `git`,
+          args: [
+            `--no-pager`,
+            `log`,
+            `-1`,
+            `--pretty=format:${FORMAT[format]}`,
+            sha,
+          ],
           onError: 'throw',
         })
       )
     : [
-        gpExecSync({
-          command: `git --no-pager log -1 --pretty=format:"${
-            FORMAT[format]
-          }" ${q(head)}`,
+        runCommand({
+          command: `git`,
+          args: [
+            `--no-pager`,
+            `log`,
+            `-1`,
+            `--pretty=format:${FORMAT[format]}`,
+            head,
+          ],
           onError: 'throw',
         }),
       ];

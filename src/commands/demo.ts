@@ -1,9 +1,9 @@
 import tmp from 'tmp';
 import yargs from 'yargs';
 import { graphiteWithoutRepo } from '../lib/runner';
-import { gpExecSync } from '../lib/utils/exec_sync';
 import { GitRepo } from '../lib/utils/git_repo';
 import { makeId } from '../lib/utils/make_id';
+import { runCommand } from '../lib/utils/run_command';
 
 export const command = 'demo';
 export const canonical = 'demo';
@@ -25,61 +25,99 @@ export const handler = async (argv: argsT): Promise<void> => {
     repo.createChangeAndCommit('Second commit');
 
     repo.createChange('[Product] Add review queue filter api');
-    execCliCommand(
-      `branch create 'tr-${id}--review_queue_api' -m '[Product] Add review queue filter api'`,
-      { fromDir: tmpDir.name }
+    runCliCommand(
+      [
+        'branch',
+        'create',
+        `branch create 'tr-${id}--review_queue_api`,
+        '-m',
+        '[Product] Add review queue filter api',
+      ],
+      tmpDir.name
     );
 
     repo.createChange('[Product] Add review queue filter server');
-    execCliCommand(
-      `branch create 'tr-${id}--review_queue_server' -m '[Product] Add review queue filter server'`,
-      { fromDir: tmpDir.name }
+    runCliCommand(
+      [
+        'branch',
+        'create',
+        `tr-${id}--review_queue_server`,
+        '-m',
+        '[Product] Add review queue filter server',
+      ],
+      tmpDir.name
     );
 
     repo.createChange('[Product] Add review queue filter frontend');
-    execCliCommand(
-      `branch create 'tr-${id}--review_queue_frontend' -m '[Product] Add review queue filter frontend'`,
-      { fromDir: tmpDir.name }
+    runCliCommand(
+      [
+        'branch',
+        'create',
+        `tr-${id}--review_queue_frontend`,
+        '-m',
+        '[Product] Add review queue filter frontend',
+      ],
+      tmpDir.name
     );
 
     repo.checkoutBranch('main');
 
     repo.createChange('[Bug Fix] Fix crashes on reload');
-    execCliCommand(
-      `branch create 'tr-${id}--fix_crash_on_reload' -m '[Bug Fix] Fix crashes on reload'`,
-      { fromDir: tmpDir.name }
+    runCliCommand(
+      [
+        'branch',
+        'create',
+        `tr-${id}--fix_crash_on_reload`,
+        '-m',
+        '[Bug Fix] Fix crashes on reload',
+      ],
+      tmpDir.name
     );
 
     repo.checkoutBranch('main');
 
     repo.createChange('[Bug Fix] Account for empty state');
-    execCliCommand(
-      `branch create 'tr-${id}--account_for_empty_state' -m '[Bug Fix] Account for empty state'`,
-      { fromDir: tmpDir.name }
+    runCliCommand(
+      [
+        'branch',
+        'create',
+        `tr-${id}--account_for_empty_state`,
+        '-m',
+        '[Bug Fix] Account for empty state',
+      ],
+      tmpDir.name
     );
 
     repo.checkoutBranch('main');
 
-    gpExecSync({
-      command:
-        'git remote add origin git@github.com:withgraphite/graphite-demo-repo.git',
+    runCommand({
+      command: 'git',
+      args: [
+        'remote',
+        'add',
+        'origin',
+        'git@github.com:withgraphite/graphite-demo-repo.git',
+      ],
       options: { cwd: tmpDir.name },
       onError: 'throw',
     });
-    gpExecSync({
-      command: 'git push origin main -f',
+
+    runCommand({
+      command: 'git',
+      args: ['push', 'origin', 'main', '-f'],
       options: { cwd: tmpDir.name },
       onError: 'throw',
     });
   });
 };
 
-function execCliCommand(command: string, opts: { fromDir: string }) {
-  gpExecSync({
-    command: `gt ${command}`,
+function runCliCommand(args: string[], fromDir: string) {
+  runCommand({
+    command: 'gt',
+    args,
     options: {
       stdio: 'inherit',
-      cwd: opts.fromDir,
+      cwd: fromDir,
     },
     onError: 'throw',
   });

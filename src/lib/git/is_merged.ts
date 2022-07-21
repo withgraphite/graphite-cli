@@ -1,6 +1,6 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 import { isDiffEmpty } from './diff';
+import { getMergeBase } from './merge_base';
 
 export function isMerged({
   branchName,
@@ -9,14 +9,25 @@ export function isMerged({
   branchName: string;
   trunkName: string;
 }): boolean {
+  const sha = runCommand({
+    command: `git`,
+    args: [
+      `commit-tree`,
+      `${branchName}^{tree}`,
+      `-p`,
+      getMergeBase(branchName, trunkName),
+      `-m`,
+      `_`,
+    ],
+    onError: 'ignore',
+  });
+
   // Are the changes on this branch already applied to main?
   if (
-    gpExecSync({
-      command: `git cherry ${q(
-        trunkName
-      )} $(git commit-tree $(git rev-parse ${q(
-        branchName
-      )}^{tree}) -p $(git merge-base ${q(branchName)} ${q(trunkName)}) -m _)`,
+    sha &&
+    runCommand({
+      command: `git`,
+      args: [`cherry`, trunkName, sha],
       onError: 'ignore',
     }).startsWith('-')
   ) {

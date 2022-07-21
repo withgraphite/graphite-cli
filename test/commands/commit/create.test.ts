@@ -8,41 +8,41 @@ for (const scene of allScenes) {
     configureTest(this, scene);
 
     it('Can create a commit', () => {
-      scene.repo.execCliCommand(`branch create 1 -m "1" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
       scene.repo.createChange('2');
-      scene.repo.execCliCommand(`commit create -m "2" -q`);
+      scene.repo.runCliCommand([`commit`, `create`, `-m`, `2`]);
 
-      expect(scene.repo.currentBranchName()).to.equal('1');
+      expect(scene.repo.currentBranchName()).to.equal('a');
       expectCommits(scene.repo, '2, 1');
     });
 
     it('Can create a commit with a multi-word commit message', () => {
-      scene.repo.execCliCommand(`branch create 1 -m "1" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
       scene.repo.createChange('2');
-      scene.repo.execCliCommand(`commit create -m "a b c" -q`);
+      scene.repo.runCliCommand([`commit`, `create`, `-m`, `a b c`]);
 
-      expect(scene.repo.currentBranchName()).to.equal('1');
+      expect(scene.repo.currentBranchName()).to.equal('a');
       expectCommits(scene.repo, 'a b c');
     });
 
     it('Fails to create a commit if there are no staged changes', () => {
-      scene.repo.execCliCommand(`branch create 1 -m "1" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       expect(() =>
-        scene.repo.execCliCommand(`commit create -m "a" -q`)
+        scene.repo.runCliCommand([`commit`, `create`, `-m`, `a`])
       ).to.throw(Error);
     });
 
     it('Automatically restacks upwards', () => {
       scene.repo.createChange('2', '2');
-      scene.repo.execCliCommand(`branch create a -m "2" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `2`]);
 
       scene.repo.createChange('3', '3');
-      scene.repo.execCliCommand(`branch create b -m "3" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `3`]);
 
       scene.repo.checkoutBranch('a');
       scene.repo.createChange('2.5', '2.5');
-      scene.repo.execCliCommand(`commit create -m "2.5" -q`);
+      scene.repo.runCliCommand([`commit`, `create`, `-m`, `2.5`]);
 
       scene.repo.checkoutBranch('b');
       expectCommits(scene.repo, '3, 2.5, 2, 1');

@@ -8,18 +8,18 @@ for (const scene of allScenes) {
 
     it('Can squash two commits into one and restack a child', () => {
       scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
       scene.repo.createChange('a2', 'a2');
-      scene.repo.execCliCommand(`commit create -m "a2" -q`);
+      scene.repo.runCliCommand([`commit`, `create`, `-m`, `a2`]);
 
       scene.repo.createChange('b', 'b');
-      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
       expectCommits(scene.repo, 'b, a2, a, 1');
 
-      scene.repo.execCliCommand(`branch down`);
-      scene.repo.execCliCommand(`branch squash -n`);
-      scene.repo.execCliCommand(`branch up`);
+      scene.repo.runCliCommand([`branch`, `down`]);
+      scene.repo.runCliCommand([`branch`, `squash`, `-n`]);
+      scene.repo.runCliCommand([`branch`, `up`]);
 
       expectCommits(scene.repo, 'b, a, 1');
     });

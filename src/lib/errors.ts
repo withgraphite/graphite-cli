@@ -8,8 +8,21 @@ export class ExitFailedError extends ExitError {
 }
 
 export class CommandFailedError extends ExitError {
-  constructor(command: string, stdout: string, stderr: string) {
-    super(`Command failed (${command}):\n${stdout}\n${stderr}`);
+  constructor(failure: {
+    command: string;
+    args: string[];
+    status: number;
+    stdout: string;
+    stderr: string;
+  }) {
+    super(
+      [
+        `Command failed with exit code ${failure.status}:`,
+        [failure.command].concat(failure.args).join(' '),
+        failure.stdout,
+        failure.stderr,
+      ].join('\n')
+    );
     this.name = 'CommandFailed';
   }
 }

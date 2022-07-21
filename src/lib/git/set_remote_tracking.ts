@@ -1,5 +1,4 @@
-import { q } from '../utils/escape_for_shell';
-import { gpExecSync } from '../utils/exec_sync';
+import { runCommand } from '../utils/run_command';
 
 export function setRemoteTracking({
   remote,
@@ -10,10 +9,9 @@ export function setRemoteTracking({
   branchName: string;
   sha: string;
 }): void {
-  gpExecSync({
-    command: `git update-ref refs/remotes/${q(remote)}/${q(branchName)} ${q(
-      sha
-    )}`,
+  runCommand({
+    command: `git`,
+    args: [`update-ref`, `refs/remotes/${remote}/${branchName}`, sha],
     onError: 'throw',
   });
 }

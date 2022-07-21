@@ -9,16 +9,16 @@ for (const scene of allScenes) {
 
     it('Can continue a commit amend with single merge conflict', () => {
       scene.repo.createChange('a');
-      scene.repo.execCliCommand("branch create 'a' -m 'a' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       scene.repo.createChange('b');
-      scene.repo.execCliCommand("branch create 'b' -m 'b' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
       scene.repo.checkoutBranch('a');
       scene.repo.createChange('1');
 
       expect(() =>
-        scene.repo.execCliCommand("commit amend -m 'c' -q")
+        scene.repo.runCliCommand(['commit', 'amend', '-m', 'c', '-q'])
       ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
@@ -26,9 +26,9 @@ for (const scene of allScenes) {
       scene.repo.markMergeConflictsAsResolved();
 
       // ensure that continue state is not affected by running another command
-      scene.repo.execCliCommand('log');
+      scene.repo.runCliCommand(['log']);
 
-      scene.repo.execCliCommand('continue');
+      scene.repo.runCliCommand(['continue']);
 
       // Continue should finish the work that stack fix started, not only
       // completing the rebase but also re-checking out the original
@@ -45,32 +45,32 @@ for (const scene of allScenes) {
     it('Can run continue multiple times on a commit amend with multiple merge conflicts', () => {
       scene.repo.createChange('a', '1');
       scene.repo.createChange('a', '2');
-      scene.repo.execCliCommand("branch create 'a' -m 'a' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
       scene.repo.createChange('b', '1');
-      scene.repo.execCliCommand("branch create 'b' -m 'b' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
 
       scene.repo.createChange('c', '2');
-      scene.repo.execCliCommand("branch create 'c' -m 'c' -q");
+      scene.repo.runCliCommand([`branch`, `create`, `c`, `-m`, `c`]);
 
       scene.repo.checkoutBranch('a');
       scene.repo.createChange('1', '1');
       scene.repo.createChange('2', '2');
 
       expect(() =>
-        scene.repo.execCliCommand("commit amend -m 'a12' -q")
+        scene.repo.runCliCommand(['commit', `amend`, `-m`, 'a12'])
       ).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
 
-      expect(() => scene.repo.execCliCommand('continue')).to.throw();
+      expect(() => scene.repo.runCliCommand(['continue'])).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
       scene.repo.markMergeConflictsAsResolved();
-      scene.repo.execCliCommand('continue');
+      scene.repo.runCliCommand(['continue']);
 
       // Note that even though multiple continues have been run, the original
       // context - that the original commit amend was kicked off at 'a' -

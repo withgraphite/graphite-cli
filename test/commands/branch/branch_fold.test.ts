@@ -10,34 +10,38 @@ for (const scene of allScenes) {
 
     it("Can't fold from trunk or into trunk", () => {
       scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
 
-      expect(() => scene.repo.execCliCommand(`branch fold`)).to.throw();
-      expect(() => scene.repo.execCliCommand(`branch fold --keep`)).to.throw();
+      expect(() => scene.repo.runCliCommand([`branch`, `fold`])).to.throw();
+      expect(() =>
+        scene.repo.runCliCommand([`branch`, `fold`, `--keep`])
+      ).to.throw();
 
-      scene.repo.execCliCommand(`branch down`);
+      scene.repo.runCliCommand([`branch`, `down`]);
 
-      expect(() => scene.repo.execCliCommand(`branch fold`)).to.throw();
-      expect(() => scene.repo.execCliCommand(`branch fold --keep`)).to.throw();
+      expect(() => scene.repo.runCliCommand([`branch`, `fold`])).to.throw();
+      expect(() =>
+        scene.repo.runCliCommand([`branch`, `fold`, `--keep`])
+      ).to.throw();
     });
 
     it('Can fold without --keep and restack children accordingly', () => {
       scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
       scene.repo.createChange('b', 'b');
-      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
       scene.repo.createChange('c', 'c');
-      scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
-      scene.repo.execCliCommand(`branch down 2`);
+      scene.repo.runCliCommand([`branch`, `create`, `c`, `-m`, `c`]);
+      scene.repo.runCliCommand([`branch`, `down`, `2`]);
       scene.repo.createChange('d', 'd');
-      scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `d`, `-m`, `d`]);
       scene.repo.checkoutBranch('b');
 
-      scene.repo.execCliCommand(`branch fold`);
+      scene.repo.runCliCommand([`branch`, `fold`]);
       expectBranches(scene.repo, 'a, c, d, main');
       expectCommits(scene.repo, 'b, a, 1');
 
-      scene.repo.execCliCommand(`branch down`);
+      scene.repo.runCliCommand([`branch`, `down`]);
       expectCommits(scene.repo, '1');
 
       scene.repo.checkoutBranch('c');
@@ -49,21 +53,21 @@ for (const scene of allScenes) {
 
     it('Can fold with --keep and restack children accordingly', () => {
       scene.repo.createChange('a', 'a');
-      scene.repo.execCliCommand(`branch create "a" -m "a" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
       scene.repo.createChange('b', 'b');
-      scene.repo.execCliCommand(`branch create "b" -m "b" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `b`, `-m`, `b`]);
       scene.repo.createChange('c', 'c');
-      scene.repo.execCliCommand(`branch create "c" -m "c" -q`);
-      scene.repo.execCliCommand(`branch down 2`);
+      scene.repo.runCliCommand([`branch`, `create`, `c`, `-m`, `c`]);
+      scene.repo.runCliCommand([`branch`, `down`, `2`]);
       scene.repo.createChange('d', 'd');
-      scene.repo.execCliCommand(`branch create "d" -m "d" -q`);
+      scene.repo.runCliCommand([`branch`, `create`, `d`, `-m`, `d`]);
       scene.repo.checkoutBranch('b');
 
-      scene.repo.execCliCommand(`branch fold --keep`);
+      scene.repo.runCliCommand([`branch`, `fold`, `--keep`]);
       expectBranches(scene.repo, 'b, c, d, main');
       expectCommits(scene.repo, 'b, a, 1');
 
-      scene.repo.execCliCommand(`branch down`);
+      scene.repo.runCliCommand([`branch`, `down`]);
       expectCommits(scene.repo, '1');
 
       scene.repo.checkoutBranch('c');
