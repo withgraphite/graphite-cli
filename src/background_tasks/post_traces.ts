@@ -23,7 +23,7 @@ export function postTelemetryInBackground(): void {
 }
 
 async function postTelemetry(): Promise<void> {
-  if (!process.env.GRAPHITE_DISABLE_TELEMETRY) {
+  if (process.env.GRAPHITE_DISABLE_TELEMETRY) {
     return;
   }
   const tracesPath = process.argv[2];
