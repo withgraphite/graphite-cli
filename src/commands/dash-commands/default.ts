@@ -1,6 +1,6 @@
 import open from 'open';
 import yargs from 'yargs';
-import { graphite } from '../../lib/runner';
+import { graphiteWithoutRepo } from '../../lib/runner';
 
 const args = {} as const;
 
@@ -15,4 +15,4 @@ type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 const DASHBOARD_URL = 'https://app.graphite.dev/';
 
 export const handler = async (argv: argsT): Promise<void> =>
-  graphite(argv, canonical, async () => void open(DASHBOARD_URL));
+  graphiteWithoutRepo(argv, canonical, async () => void open(DASHBOARD_URL));
