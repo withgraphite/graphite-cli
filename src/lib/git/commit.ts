@@ -1,4 +1,4 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 
 export type TCommitOpts = {
   amend?: boolean;
@@ -9,8 +9,7 @@ export type TCommitOpts = {
   rollbackOnError?: () => void;
 };
 export function commit(opts: TCommitOpts & { noVerify: boolean }): void {
-  runCommand({
-    command: 'git',
+  runGitCommand({
     args: [
       'commit',
       ...(opts.amend ? [`--amend`] : []),
@@ -26,5 +25,6 @@ export function commit(opts: TCommitOpts & { noVerify: boolean }): void {
     onError: () => {
       opts.rollbackOnError?.();
     },
+    resource: 'commit',
   });
 }

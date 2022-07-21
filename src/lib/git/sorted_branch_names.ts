@@ -1,10 +1,9 @@
-import { runCommandAndSplitLines } from '../utils/run_command';
+import { runGitCommandAndSplitLines } from '../utils/run_command';
 
 export function getBranchNamesAndRevisions(): Record<string, string> {
   const branches: Record<string, string> = {};
 
-  runCommandAndSplitLines({
-    command: `git`,
+  runGitCommandAndSplitLines({
     args: [
       `for-each-ref`,
       `--format=%(refname:short):%(objectname)`,
@@ -12,6 +11,7 @@ export function getBranchNamesAndRevisions(): Record<string, string> {
       `refs/heads/`,
     ],
     onError: 'throw',
+    resource: 'getBranchNamesAndRevisions',
   })
     .map((line) => line.split(':'))
     .filter(

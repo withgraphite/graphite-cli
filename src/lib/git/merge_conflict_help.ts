@@ -1,10 +1,12 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { runCommand, runCommandAndSplitLines } from '../utils/run_command';
+import {
+  runGitCommand,
+  runGitCommandAndSplitLines,
+} from '../utils/run_command';
 
 export function getUnmergedFiles(): string[] {
-  return runCommandAndSplitLines({
-    command: `git`,
+  return runGitCommandAndSplitLines({
     args: [
       `--no-pager`,
       `diff`,
@@ -13,14 +15,15 @@ export function getUnmergedFiles(): string[] {
       `--diff-filter=U`,
     ],
     onError: 'throw',
+    resource: 'getUnmergedFiles',
   });
 }
 
 export function getRebaseHead(): string {
-  const gitDir = runCommand({
-    command: `git`,
+  const gitDir = runGitCommand({
     args: [`rev-parse`, `--git-dir`],
     onError: 'throw',
+    resource: 'getRebaseHead',
   });
 
   return fs

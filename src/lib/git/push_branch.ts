@@ -1,4 +1,4 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 
 export function pushBranch(opts: {
   remote: string;
@@ -8,8 +8,7 @@ export function pushBranch(opts: {
 }): void {
   const forceOption = opts.forcePush ? '--force' : '--force-with-lease';
 
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [
       `push`,
       `-u`,
@@ -20,5 +19,6 @@ export function pushBranch(opts: {
     ],
     options: { stdio: 'pipe' },
     onError: 'throw',
+    resource: 'pushBranch',
   });
 }

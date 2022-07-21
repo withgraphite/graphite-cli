@@ -1,9 +1,9 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 
 export function getUserEmail(): string {
-  return runCommand({
-    command: `git`,
+  return runGitCommand({
     args: [`config`, `user.email`],
     onError: 'ignore',
+    resource: 'getUserEmail',
   });
 }

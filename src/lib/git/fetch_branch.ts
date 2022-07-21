@@ -1,11 +1,10 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 import { getShaOrThrow } from './get_sha';
 
 const FETCH_HEAD = 'refs/gt-metadata/FETCH_HEAD';
 const FETCH_BASE = 'refs/gt-metadata/FETCH_BASE';
 export function fetchBranch(remote: string, branchName: string): void {
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [
       `fetch`,
       `--no-write-fetch-head`,
@@ -15,6 +14,7 @@ export function fetchBranch(remote: string, branchName: string): void {
     ],
     options: { stdio: 'pipe' },
     onError: 'throw',
+    resource: 'fetchBranch',
   });
 }
 export function readFetchHead(): string {
@@ -26,10 +26,10 @@ export function readFetchBase(): string {
 }
 
 export function writeFetchBase(sha: string): void {
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [`update-ref`, FETCH_BASE, sha],
     options: { stdio: 'pipe' },
     onError: 'throw',
+    resource: 'writeFetchBase',
   });
 }

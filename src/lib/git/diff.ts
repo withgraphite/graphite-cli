@@ -1,12 +1,11 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 
 export function detectUnsubmittedChanges(
   branchName: string,
   remote: string
 ): boolean {
   return (
-    runCommand({
-      command: `git`,
+    runGitCommand({
       args: [
         `--no-pager`,
         `log`,
@@ -14,23 +13,23 @@ export function detectUnsubmittedChanges(
         `${branchName}...${remote}/${branchName}`,
       ],
       onError: 'throw',
+      resource: 'detectUnsubmittedChanges',
     }).length !== 0
   );
 }
 
 export function detectStagedChanges(): boolean {
   return (
-    runCommand({
-      command: `git`,
+    runGitCommand({
       args: [`--no-pager`, `diff`, `--no-ext-diff`, `--shortstat`, `--cached`],
       onError: 'throw',
+      resource: 'detectStagedChanges',
     }).length > 0
   );
 }
 
 export function getUnstagedChanges(): string {
-  return runCommand({
-    command: `git`,
+  return runGitCommand({
     args: [
       `-c`,
       `color.ui=always`,
@@ -40,12 +39,12 @@ export function getUnstagedChanges(): string {
       `--stat`,
     ],
     onError: 'throw',
+    resource: 'getUnstagedChanges',
   });
 }
 
 export function showDiff(left: string, right: string): void {
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [
       `-c`,
       `color.ui=always`,
@@ -58,13 +57,13 @@ export function showDiff(left: string, right: string): void {
     ],
     options: { stdio: 'inherit' },
     onError: 'throw',
+    resource: 'showDiff',
   });
 }
 
 export function isDiffEmpty(left: string, right: string): boolean {
   return (
-    runCommand({
-      command: `git`,
+    runGitCommand({
       args: [
         `--no-pager`,
         `diff`,
@@ -75,6 +74,7 @@ export function isDiffEmpty(left: string, right: string): boolean {
         `--`,
       ],
       onError: 'throw',
+      resource: 'isDiffEmpty',
     }).length === 0
   );
 }

@@ -1,5 +1,9 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 
 export function addAll(): void {
-  runCommand({ command: 'git', args: ['add', '--all'], onError: 'throw' });
+  runGitCommand({
+    args: ['add', '--all'],
+    onError: 'throw',
+    resource: 'addAll',
+  });
 }

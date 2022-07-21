@@ -1,30 +1,30 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 
 export function getCurrentBranchName(): string | undefined {
-  const branchName = runCommand({
-    command: `git`,
+  const branchName = runGitCommand({
     args: [`branch`, `--show-current`],
     onError: 'ignore',
+    resource: 'getCurrentBranchName',
   });
 
   return branchName.length > 0 ? branchName : undefined;
 }
 
-export function branchMove(newName: string): void {
-  runCommand({
-    command: `git`,
+export function moveBranch(newName: string): void {
+  runGitCommand({
     args: [`branch`, `-m`, newName],
     options: { stdio: 'pipe' },
     onError: 'throw',
+    resource: 'moveBranch',
   });
 }
 
 export function deleteBranch(branchName: string): void {
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [`branch`, `-D`, branchName],
     options: { stdio: 'pipe' },
     onError: 'throw',
+    resource: 'deleteBranch',
   });
 }
 
@@ -32,8 +32,7 @@ export function switchBranch(
   branch: string,
   opts?: { new?: boolean; detach?: boolean; force?: boolean }
 ): void {
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [
       `switch`,
       ...(opts?.detach ? ['-d'] : []),
@@ -43,23 +42,24 @@ export function switchBranch(
     ],
     options: { stdio: 'pipe' },
     onError: 'throw',
+    resource: 'switchBranch',
   });
 }
 
 export function forceCheckoutNewBranch(branchName: string, sha: string): void {
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [`switch`, `-C`, branchName, sha],
     options: { stdio: 'pipe' },
     onError: 'throw',
+    resource: 'forceCheckoutNewBranch',
   });
 }
 
 export function forceCreateBranch(branchName: string, sha: string): void {
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [`branch`, `-f`, branchName, sha],
     options: { stdio: 'pipe' },
     onError: 'throw',
+    resource: 'forceCreateBranch',
   });
 }

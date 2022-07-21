@@ -3,7 +3,7 @@ import yargs from 'yargs';
 import { graphiteWithoutRepo } from '../lib/runner';
 import { GitRepo } from '../lib/utils/git_repo';
 import { makeId } from '../lib/utils/make_id';
-import { runCommand } from '../lib/utils/run_command';
+import { runCommand, runGitCommand } from '../lib/utils/run_command';
 
 export const command = 'demo';
 export const canonical = 'demo';
@@ -29,7 +29,7 @@ export const handler = async (argv: argsT): Promise<void> => {
       [
         'branch',
         'create',
-        `branch create 'tr-${id}--review_queue_api`,
+        `tr-${id}--review_queue_api`,
         '-m',
         '[Product] Add review queue filter api',
       ],
@@ -90,8 +90,7 @@ export const handler = async (argv: argsT): Promise<void> => {
 
     repo.checkoutBranch('main');
 
-    runCommand({
-      command: 'git',
+    runGitCommand({
       args: [
         'remote',
         'add',
@@ -100,13 +99,14 @@ export const handler = async (argv: argsT): Promise<void> => {
       ],
       options: { cwd: tmpDir.name },
       onError: 'throw',
+      resource: null, // no tracing from demo
     });
 
-    runCommand({
-      command: 'git',
+    runGitCommand({
       args: ['push', 'origin', 'main', '-f'],
       options: { cwd: tmpDir.name },
       onError: 'throw',
+      resource: null, // no tracing from demo
     });
   });
 };

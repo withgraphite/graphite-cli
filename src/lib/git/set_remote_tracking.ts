@@ -1,4 +1,4 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 
 export function setRemoteTracking({
   remote,
@@ -9,9 +9,9 @@ export function setRemoteTracking({
   branchName: string;
   sha: string;
 }): void {
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [`update-ref`, `refs/remotes/${remote}/${branchName}`, sha],
     onError: 'throw',
+    resource: 'setRemoteTracking',
   });
 }

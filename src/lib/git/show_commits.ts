@@ -1,8 +1,7 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 
 export function showCommits(base: string, head: string, patch?: boolean): void {
-  runCommand({
-    command: `git`,
+  runGitCommand({
     args: [
       `--no-pager`,
       `log`,
@@ -12,5 +11,6 @@ export function showCommits(base: string, head: string, patch?: boolean): void {
     ],
     options: { stdio: 'inherit' },
     onError: 'throw',
+    resource: 'showCommits',
   });
 }

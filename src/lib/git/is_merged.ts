@@ -1,4 +1,4 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 import { isDiffEmpty } from './diff';
 import { getMergeBase } from './merge_base';
 
@@ -9,8 +9,7 @@ export function isMerged({
   branchName: string;
   trunkName: string;
 }): boolean {
-  const sha = runCommand({
-    command: `git`,
+  const sha = runGitCommand({
     args: [
       `commit-tree`,
       `${branchName}^{tree}`,
@@ -20,15 +19,16 @@ export function isMerged({
       `_`,
     ],
     onError: 'ignore',
+    resource: 'mergeBaseCommitTree',
   });
 
   // Are the changes on this branch already applied to main?
   if (
     sha &&
-    runCommand({
-      command: `git`,
+    runGitCommand({
       args: [`cherry`, trunkName, sha],
       onError: 'ignore',
+      resource: 'isMerged',
     }).startsWith('-')
   ) {
     return true;

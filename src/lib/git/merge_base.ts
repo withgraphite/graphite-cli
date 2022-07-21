@@ -1,9 +1,9 @@
-import { runCommand } from '../utils/run_command';
+import { runGitCommand } from '../utils/run_command';
 
 export function getMergeBase(left: string, right: string): string {
-  return runCommand({
-    command: `git`,
+  return runGitCommand({
     args: [`merge-base`, left, right],
     onError: 'throw',
+    resource: 'getMergeBase',
   });
 }
