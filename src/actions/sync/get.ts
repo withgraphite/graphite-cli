@@ -2,11 +2,7 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { getDownstackDependencies } from '../../lib/api/get_downstack_dependencies';
 import { TContext } from '../../lib/context';
-import {
-  ExitFailedError,
-  KilledError,
-  RebaseConflictError,
-} from '../../lib/errors';
+import { KilledError, RebaseConflictError } from '../../lib/errors';
 import {
   cliAuthPrecondition,
   uncommittedTrackedChangesPrecondition,
@@ -25,20 +21,14 @@ export async function getAction(
     `Pulling ${chalk.cyan(context.metaCache.trunk)} from remote...`
   );
 
-  try {
-    context.splog.info(
-      context.metaCache.pullTrunk() === 'PULL_UNNEEDED'
-        ? `${chalk.green(context.metaCache.trunk)} is up to date.`
-        : `${chalk.green(
-            context.metaCache.trunk
-          )} fast-forwarded to ${chalk.gray(
-            context.metaCache.getRevision(context.metaCache.trunk)
-          )}.`
-    );
-    context.splog.newline();
-  } catch (err) {
-    throw new ExitFailedError(`Failed to pull trunk`, err);
-  }
+  context.splog.info(
+    context.metaCache.pullTrunk() === 'PULL_UNNEEDED'
+      ? `${chalk.green(context.metaCache.trunk)} is up to date.`
+      : `${chalk.green(context.metaCache.trunk)} fast-forwarded to ${chalk.gray(
+          context.metaCache.getRevision(context.metaCache.trunk)
+        )}.`
+  );
+  context.splog.newline();
 
   const authToken = cliAuthPrecondition(context);
   const downstackToSync = await getDownstackDependencies(
