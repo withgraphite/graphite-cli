@@ -1,14 +1,24 @@
 import chalk from 'chalk';
+import cp from 'child_process';
 import fs from 'fs-extra';
+import path from 'path';
 import tmp from 'tmp';
 import { TContext } from '../lib/context';
 import { SCOPE, TScopeSpec } from '../lib/engine/scope_spec';
-import { CommandFailedError } from '../lib/errors';
-import { gpExecSync } from '../lib/utils/exec_sync';
 
-type TTestStatus = '[pending]' | '[success]' | '[fail]' | '[running]';
+type TTestStatus =
+  | '[pending]'
+  | '[success]'
+  | '[failed]'
+  | '[running]'
+  | '[killed]';
+
 type TTestState = {
-  [branchName: string]: { status: TTestStatus; duration: number | undefined };
+  [branchName: string]: {
+    status: TTestStatus;
+    duration: number | undefined;
+    outfile: string | undefined;
+  };
 };
 
 export function testStack(
@@ -26,22 +36,25 @@ export function testStack(
   // Initialize state to print out.
   const state: TTestState = {};
   branches.forEach((b) => {
-    state[b] = { status: '[pending]', duration: undefined };
+    state[b] = { status: '[pending]', duration: undefined, outfile: undefined };
   });
 
-  // Create a tmp output file for debugging.
-  const tmpDir = tmp.dirSync();
-  const outputPath = `${tmpDir.name}/output.txt`;
-  fs.writeFileSync(outputPath, '');
-  context.splog.info(chalk.grey(`Writing results to ${outputPath}\n`));
+  // Create a tmp output directory for debugging.
+  const tmpDirName = tmp.dirSync().name;
 
   // Kick off the testing.
   logState(state, false, context);
   branches.forEach((branchName) =>
     testBranch(
-      { command: opts.command, branchName, outputPath, state },
+      { command: opts.command, branchName, tmpDirName, state },
       context
     )
+  );
+
+  context.splog.info(
+    `Output files: ${chalk.gray(
+      `/var/folders/gg/xctw127s4hs8gzlcdtghgzdr0000gn/T/tmp-31480-L1GLB4ngiQkT/`
+    )}`
   );
 
   // Finish off.
@@ -53,39 +66,38 @@ function testBranch(
     state: TTestState;
     branchName: string;
     command: string;
-    outputPath: string;
+    tmpDirName: string;
   },
   context: TContext
 ) {
   context.metaCache.checkoutBranch(opts.branchName);
 
+  const outputPath = path.join(opts.tmpDirName, opts.branchName);
+
   // Mark the branch as running.
   opts.state[opts.branchName].status = '[running]';
   logState(opts.state, true, context);
 
-  // Execute the command.
-  fs.appendFileSync(opts.outputPath, `\n\n${opts.branchName}\n`);
   const startTime = Date.now();
 
-  const output = (() => {
-    try {
-      const out = gpExecSync({
-        command: opts.command,
-        onError: 'throw',
-      });
-      opts.state[opts.branchName].status = '[success]';
-      return out;
-    } catch (e) {
-      if (e instanceof CommandFailedError) {
-        opts.state[opts.branchName].status = '[fail]';
-        return e.message;
-      }
+  try {
+    const out = cp.execSync(opts.command, { encoding: 'utf-8' });
+    fs.writeFileSync(outputPath, out);
+    opts.state[opts.branchName].status = '[success]';
+  } catch (e) {
+    if (e?.signal) {
+      fs.writeFileSync(outputPath, [e.stdout, e.stderr, e.signal].join('\n'));
+      opts.state[opts.branchName].status = '[killed]';
+    } else if (e?.status) {
+      fs.writeFileSync(outputPath, [e.stdout, e.stderr, e.status].join('\n'));
+      opts.state[opts.branchName].status = '[failed]';
+    } else {
       throw e;
     }
-  })();
+  }
 
   opts.state[opts.branchName].duration = Date.now() - startTime;
-  fs.appendFileSync(opts.outputPath, output);
+  opts.state[opts.branchName].outfile = outputPath;
 
   // Write output to the output file.
   logState(opts.state, true, context);
@@ -97,7 +109,8 @@ function logState(state: TTestState, refresh: boolean, context: TContext) {
   }
   Object.keys(state).forEach((branchName) => {
     const color: (arg0: string) => string =
-      state[branchName].status === '[fail]'
+      state[branchName].status === '[failed]' ||
+      state[branchName].status === '[killed]'
         ? chalk.red
         : state[branchName].status === '[success]'
         ? chalk.green
