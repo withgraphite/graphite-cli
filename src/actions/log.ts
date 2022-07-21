@@ -100,12 +100,13 @@ export async function interactiveBranchSelection(
       ),
     }))
     .concat(
-      getUntrackedBranchNames(context).map((branchName) => ({
-        title: branchName,
-        value: branchName,
-      }))
+      opts.showUntracked
+        ? getUntrackedBranchNames(context).map((branchName) => ({
+            title: branchName,
+            value: branchName,
+          }))
+        : []
     );
-
   const indexOfCurrentIfPresent = choices.findIndex(
     (choice) =>
       choice.value ===
