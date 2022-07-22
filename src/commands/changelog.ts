@@ -15,7 +15,7 @@ export const builder = args;
 export const handler = async (argv: argsT): Promise<void> =>
   graphiteWithoutRepo(argv, canonical, async (context) => {
     context.splog.info(
-      fs.readFileSync(path.join(__dirname, '..', '..', '..', '.CHANGELOG.md'), {
+      fs.readFileSync(path.join(__dirname, '..', '..', '.CHANGELOG.md'), {
         encoding: 'utf-8',
       })
     );
