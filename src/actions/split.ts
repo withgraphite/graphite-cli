@@ -9,6 +9,7 @@ import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
 import { replaceUnsupportedCharacters } from '../lib/utils/branch_name';
 import { clearPromptResultLine } from '../lib/utils/prompts_helpers';
 import { restackBranches } from './restack';
+import { trackBranch } from './track_branch';
 
 type TSplit = {
   // list of branch names from oldest to newest
@@ -32,19 +33,25 @@ export async function splitCurrentBranch(
   }
   uncommittedTrackedChangesPrecondition();
 
+  const branchToSplit = context.metaCache.currentBranchPrecondition;
+
+  if (!context.metaCache.isBranchTracked(branchToSplit)) {
+    await trackBranch(
+      { branchName: branchToSplit, parentBranchName: undefined, force: false },
+      context
+    );
+  }
+
   // If user did not select a style, prompt unless there is only one commit
   const style: 'hunk' | 'commit' | 'abort' =
     args.style ??
-    (context.metaCache.getAllCommits(
-      context.metaCache.currentBranchPrecondition,
-      'SHA'
-    ).length > 1
+    (context.metaCache.getAllCommits(branchToSplit, 'SHA').length > 1
       ? (
           await prompts(
             {
               type: 'select',
               name: 'value',
-              message: `How would you like to split ${context.metaCache.currentBranchPrecondition}?`,
+              message: `How would you like to split ${branchToSplit}?`,
               choices: [
                 {
                   title: 'By commit - slice up the history of this branch.',
@@ -74,8 +81,6 @@ export async function splitCurrentBranch(
     },
   };
 
-  const branchToSplit = context.metaCache.currentBranchPrecondition;
-
   const split = await actions[style](branchToSplit, context);
 
   context.metaCache.applySplitToCommits({
@@ -84,10 +89,7 @@ export async function splitCurrentBranch(
   });
 
   restackBranches(
-    context.metaCache.getRelativeStack(
-      context.metaCache.currentBranchPrecondition,
-      SCOPE.UPSTACK_EXCLUSIVE
-    ),
+    context.metaCache.getRelativeStack(branchToSplit, SCOPE.UPSTACK_EXCLUSIVE),
     context
   );
 }
