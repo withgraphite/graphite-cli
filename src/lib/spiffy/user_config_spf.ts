@@ -1,4 +1,6 @@
 import * as t from '@withgraphite/retype';
+import { execSync } from 'child_process';
+import { CommandFailedError } from '../errors';
 import { getGitEditor } from '../git/git_editor';
 import { spiffy } from './spiffy';
 
@@ -27,16 +29,25 @@ export const userConfigFactory = spiffy({
     return {};
   },
   helperFunctions: (data) => {
+    const getEditor = () => {
+      // If we don't have an editor set, do what git would do
+      return (
+        data.editor ??
+        getGitEditor() ??
+        process.env.GIT_EDITOR ??
+        process.env.EDITOR ??
+        'vi'
+      );
+    };
     return {
-      getEditor: () => {
-        // If we don't have an editor set, do what git would do
-        return (
-          data.editor ??
-          getGitEditor() ??
-          process.env.GIT_EDITOR ??
-          process.env.EDITOR ??
-          'vi'
-        );
+      getEditor,
+      execEditor: (editFilePath: string) => {
+        const command = `${getEditor()} ${editFilePath}`;
+        try {
+          execSync(command, { stdio: 'inherit', encoding: 'utf-8' });
+        } catch (e) {
+          throw new CommandFailedError({ command, args: [editFilePath], ...e });
+        }
       },
     };
   },

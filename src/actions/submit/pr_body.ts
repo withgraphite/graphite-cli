@@ -4,7 +4,6 @@ import tmp from 'tmp';
 import { TContext } from '../../lib/context';
 import { KilledError } from '../../lib/errors';
 import { getPRTemplate } from '../../lib/utils/pr_templates';
-import { runCommand } from '../../lib/utils/run_command';
 
 export async function getPRBody(
   args: {
@@ -21,14 +20,16 @@ export async function getPRBody(
     return body;
   }
 
-  const editor = context.userConfig.getEditor();
   const response = await prompts(
     {
       type: 'select',
       name: 'body',
       message: 'Body',
       choices: [
-        { title: `Edit Body (using ${editor})`, value: 'edit' },
+        {
+          title: `Edit Body (using ${context.userConfig.getEditor()})`,
+          value: 'edit',
+        },
         {
           title: `Skip (${skipDescription})`,
           value: 'skip',
@@ -45,24 +46,13 @@ export async function getPRBody(
     return body;
   }
 
-  return await editPRBody({
-    initial: body,
-    editor,
-  });
+  return await editPRBody(body, context);
 }
 
-async function editPRBody(args: {
-  initial: string;
-  editor: string;
-}): Promise<string> {
+async function editPRBody(initial: string, context: TContext): Promise<string> {
   const file = tmp.fileSync({ name: 'EDIT_DESCRIPTION' });
-  fs.writeFileSync(file.name, args.initial);
-  runCommand({
-    command: args.editor,
-    args: [file.name],
-    options: { stdio: 'inherit' },
-    onError: 'throw',
-  });
+  fs.writeFileSync(file.name, initial);
+  context.userConfig.execEditor(file.name);
   const contents = fs.readFileSync(file.name).toString();
   file.removeCallback();
   return contents;
