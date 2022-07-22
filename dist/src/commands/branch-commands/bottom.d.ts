@@ -1,0 +1,10 @@
+import yargs from 'yargs';
+declare const args: {};
+declare type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
+export declare const command = "bottom";
+export declare const canonical = "branch bottom";
+export declare const aliases: string[];
+export declare const description = "Switch to the first branch from trunk in the current stack.";
+export declare const builder: {};
+export declare const handler: (argv: argsT) => Promise<void>;
+export {};
