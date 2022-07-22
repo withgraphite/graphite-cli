@@ -1,0 +1,1 @@
+{"version":3,"file":"merge_base.js","sourceRoot":"","sources":["../../../../src/lib/git/merge_base.ts"],"names":[],"mappings":";;;AAAA,sDAAqD;AAErD,SAAgB,YAAY,CAAC,IAAY,EAAE,KAAa;IACtD,OAAO,IAAA,2BAAa,EAAC;QACnB,IAAI,EAAE,CAAC,YAAY,EAAE,IAAI,EAAE,KAAK,CAAC;QACjC,OAAO,EAAE,OAAO;QAChB,QAAQ,EAAE,cAAc;KACzB,CAAC,CAAC;AACL,CAAC;AAND,oCAMC"}

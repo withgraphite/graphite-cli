@@ -1,0 +1,1 @@
+{"version":3,"file":"get_email.js","sourceRoot":"","sources":["../../../../src/lib/git/get_email.ts"],"names":[],"mappings":";;;AAAA,sDAAqD;AAErD,SAAgB,YAAY;IAC1B,OAAO,IAAA,2BAAa,EAAC;QACnB,IAAI,EAAE,CAAC,QAAQ,EAAE,YAAY,CAAC;QAC9B,OAAO,EAAE,QAAQ;QACjB,QAAQ,EAAE,cAAc;KACzB,CAAC,CAAC;AACL,CAAC;AAND,oCAMC"}
