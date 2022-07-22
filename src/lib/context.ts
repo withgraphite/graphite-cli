@@ -66,13 +66,13 @@ export function initContext(
   }
 ): TContext {
   const repoConfig = repoConfigFactory.load();
-  const continueConfig = continueConfigFactory.load();
   if (!rebaseInProgress()) {
-    continueConfig.delete();
+    continueConfigFactory.load().delete();
   }
+  const continueConfig = continueConfigFactory.load();
   const metaCache = composeMetaCache({
     trunkName: repoConfig.data.trunk,
-    currentBranchOverride: continueConfig?.data.currentBranchOverride,
+    currentBranchOverride: continueConfig.data.currentBranchOverride,
     splog: contextLite.splog,
     noVerify: !(opts?.verify ?? true),
     remote: repoConfig.getRemote(),

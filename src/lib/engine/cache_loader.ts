@@ -1,5 +1,6 @@
 import { createHash } from 'crypto';
 import { version } from '../../../package.json';
+import { getRebaseHead } from '../git/merge_conflict_help';
 import { getBranchNamesAndRevisions } from '../git/sorted_branch_names';
 import { cachePersistenceFactory } from '../spiffy/cache_spf';
 import { TSplog } from '../utils/splog';
@@ -57,6 +58,7 @@ function getCacheSeed(trunkName: string | undefined): TCacheSeed {
   return {
     version,
     trunkName,
+    rebaseHead: getRebaseHead(),
     gitBranchNamesAndRevisions: getBranchNamesAndRevisions(),
     metadataRefList: getMetadataRefList(),
   };
