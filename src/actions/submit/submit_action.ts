@@ -105,17 +105,14 @@ export async function submitAction(
     try {
       context.metaCache.pushBranch(submissionInfo.head, args.forcePush);
     } catch (err) {
-      context.splog.error(
-        `Failed to push changes for ${submissionInfo.head} to remote.`
-      );
-
       context.splog.tip(
         [
           `This push may have failed due to external changes to the remote branch.`,
-          'If you are collaborating on this stack, try `gt downstack sync`  to pull in changes.',
+          'If you are collaborating on this stack, try `gt downstack sync` to pull in changes.',
+          'Alternatively, use the `--force` option of this command to bypass the stale info warning.',
         ].join('\n')
       );
-      throw new ExitFailedError(err.stdout.toString());
+      throw err;
     }
 
     await submitPullRequest(
