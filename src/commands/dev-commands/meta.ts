@@ -8,7 +8,6 @@ import {
 } from '../../lib/engine/metadata_ref';
 import { graphite } from '../../lib/runner';
 import { cuteString } from '../../lib/utils/cute_string';
-import { runCommand } from '../../lib/utils/run_command';
 
 const args = {
   branch: {
@@ -40,12 +39,7 @@ export const handler = async (argv: argsT): Promise<void> => {
     }
     const tmpfilePath = path.join(tmp.dirSync().name, 'meta');
     fs.writeFileSync(tmpfilePath, metaString);
-    runCommand({
-      command: context.userConfig.getEditor(),
-      args: [tmpfilePath],
-      options: { stdio: 'inherit' },
-      onError: 'throw',
-    });
+    context.userConfig.execEditor(tmpfilePath);
     writeMetadataRef(argv.branch, fs.readJSONSync(tmpfilePath));
     context.metaCache.rebuild();
   });

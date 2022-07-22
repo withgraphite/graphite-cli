@@ -1,7 +1,6 @@
 import { TContext } from '../../lib/context';
 import { SCOPE } from '../../lib/engine/scope_spec';
 import { performInTmpDir } from '../../lib/utils/perform_in_tmp_dir';
-import { runCommand } from '../../lib/utils/run_command';
 import { restackBranches } from '../restack';
 import { createStackEditFile, parseEditFile } from './stack_edit_file';
 
@@ -46,12 +45,7 @@ async function promptForEdit(context: TContext): Promise<string[]> {
   );
   return performInTmpDir((tmpDir) => {
     const editFilePath = createStackEditFile({ branchNames, tmpDir }, context);
-    runCommand({
-      command: context.userConfig.getEditor(),
-      args: [editFilePath],
-      options: { stdio: 'inherit' },
-      onError: 'throw',
-    });
+    context.userConfig.execEditor(editFilePath);
     return parseEditFile(editFilePath);
   });
 }
