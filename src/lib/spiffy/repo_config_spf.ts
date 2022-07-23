@@ -8,6 +8,7 @@ const schema = t.shape({
   name: t.optional(t.string),
   trunk: t.optional(t.string),
   remote: t.optional(t.string),
+  remoteTrunk: t.optional(t.string),
   lastFetchedPRInfoMs: t.optional(t.number),
 });
 
@@ -32,6 +33,10 @@ export const repoConfigFactory = spiffy({
 
       setTrunk: (trunk: string) => {
         update((data) => (data.trunk = trunk));
+      },
+
+      setRemoteTrunk: (remoteTrunk: string) => {
+        update((data) => (data.remoteTrunk = remoteTrunk));
       },
 
       graphiteInitialized: (): boolean => !!data.trunk,
