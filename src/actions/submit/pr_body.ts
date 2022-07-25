@@ -12,13 +12,35 @@ export async function getPRBody(
   },
   context: TContext
 ): Promise<string> {
-  const { body, skipDescription } = inferPRBody(
+  const priorSubmitBody = context.metaCache.getPrInfo(args.branchName)?.body;
+  const { inferredBody, skipDescription } = inferPRBody(
     { branchName: args.branchName, template: await getPRTemplate() },
     context
   );
+
   if (!args.editPRFieldsInline) {
-    return body;
+    return priorSubmitBody ?? inferredBody;
   }
+
+  const usePriorSubmitBody =
+    !!priorSubmitBody &&
+    (
+      await prompts(
+        {
+          type: 'confirm',
+          name: 'confirm',
+          initial: true,
+          message: 'Detected a PR body from an aborted submit, use it?',
+        },
+        {
+          onCancel: () => {
+            throw new KilledError();
+          },
+        }
+      )
+    ).confirm;
+
+  const body = usePriorSubmitBody ? priorSubmitBody : inferredBody;
 
   const response = await prompts(
     {
@@ -31,7 +53,11 @@ export async function getPRBody(
           value: 'edit',
         },
         {
-          title: `Skip (${skipDescription})`,
+          title: `Skip (${
+            usePriorSubmitBody
+              ? `use body from aborted submit`
+              : skipDescription
+          })`,
           value: 'skip',
         },
       ],
@@ -61,18 +87,10 @@ async function editPRBody(initial: string, context: TContext): Promise<string> {
 export function inferPRBody(
   { branchName, template = '' }: { branchName: string; template?: string },
   context: TContext
-): { body: string; skipDescription: string } {
-  const priorSubmitBody = context.metaCache.getPrInfo(branchName)?.body;
-  if (priorSubmitBody !== undefined) {
-    return {
-      body: priorSubmitBody,
-      skipDescription: 'use body from aborted submit',
-    };
-  }
-
+): { inferredBody: string; skipDescription: string } {
   if (!context.userConfig.data.submitIncludeCommitMessages) {
     return {
-      body: template,
+      inferredBody: template,
       skipDescription: template ? 'paste template' : 'leave empty',
     };
   }
@@ -86,7 +104,7 @@ export function inferPRBody(
     : messages.join('\n\n');
 
   return {
-    body: `${commitMessages}${
+    inferredBody: `${commitMessages}${
       commitMessages && template ? '\n\n' : ''
     }${template}`,
 
