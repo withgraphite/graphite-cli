@@ -27,7 +27,7 @@ for (const scene of [new BasicScene()]) {
         inferPRBody(
           { branchName: 'a', template: 'template' },
           scene.getContext()
-        ).body
+        ).inferredBody
       ).to.equals(`template`);
 
       scene
@@ -41,7 +41,7 @@ for (const scene of [new BasicScene()]) {
         inferPRBody(
           { branchName: 'a', template: 'template' },
           scene.getContext()
-        ).body
+        ).inferredBody
       ).to.equals(`${body}\n\ntemplate`);
     });
 
@@ -59,7 +59,7 @@ for (const scene of [new BasicScene()]) {
         inferPRBody(
           { branchName: 'a', template: 'template' },
           scene.getContext()
-        ).body
+        ).inferredBody
       ).to.equal('template');
     });
 
@@ -75,7 +75,7 @@ for (const scene of [new BasicScene()]) {
         await getPRTitle({ branchName: 'a' }, scene.getContext())
       ).to.equals(title);
       expect(
-        inferPRBody({ branchName: 'a' }, scene.getContext()).body
+        inferPRBody({ branchName: 'a' }, scene.getContext()).inferredBody
       ).to.equal(``);
 
       scene
@@ -86,7 +86,7 @@ for (const scene of [new BasicScene()]) {
         await getPRTitle({ branchName: 'a' }, scene.getContext())
       ).to.equals(title);
       expect(
-        inferPRBody({ branchName: 'a' }, scene.getContext()).body
+        inferPRBody({ branchName: 'a' }, scene.getContext()).inferredBody
       ).to.equal(`${title}\n\n${secondSubj}`);
     });
 
