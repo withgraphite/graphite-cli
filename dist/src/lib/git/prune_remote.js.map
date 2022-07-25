@@ -1,0 +1,1 @@
+{"version":3,"file":"prune_remote.js","sourceRoot":"","sources":["../../../../src/lib/git/prune_remote.ts"],"names":[],"mappings":";;;AAAA,sDAAqD;AAErD,SAAgB,WAAW,CAAC,MAAc;IACxC,IAAA,2BAAa,EAAC;QACZ,IAAI,EAAE,CAAC,QAAQ,EAAE,OAAO,EAAE,MAAM,CAAC;QACjC,OAAO,EAAE,QAAQ;QACjB,QAAQ,EAAE,aAAa;KACxB,CAAC,CAAC;AACL,CAAC;AAND,kCAMC"}

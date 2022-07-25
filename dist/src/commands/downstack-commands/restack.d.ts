@@ -1,0 +1,10 @@
+import yargs from 'yargs';
+declare const args: {};
+declare type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
+export declare const aliases: string[];
+export declare const command = "restack";
+export declare const canonical = "downstack restack";
+export declare const description = "From trunk to the current branch, ensure each is based on its parent, rebasing if necessary.";
+export declare const builder: {};
+export declare const handler: (argv: argsT) => Promise<void>;
+export {};
