@@ -1,3 +1,4 @@
+import { SpawnSyncOptions } from 'child_process';
 import { runGitCommand } from '../utils/run_command';
 import { rebaseInProgress } from './rebase_in_progress';
 
@@ -48,12 +49,13 @@ export function rebaseInteractive(args: {
   return rebaseInternal({
     args: [`-i`, args.parentBranchRevision, args.branchName],
     resource: 'rebaseInteractive',
+    options: { stdio: 'inherit' },
   });
 }
 
 function rebaseInternal(params: {
   args: string[];
-  options?: { env: NodeJS.ProcessEnv };
+  options?: Pick<SpawnSyncOptions, 'stdio' | 'env'>;
   resource: string;
 }) {
   try {
