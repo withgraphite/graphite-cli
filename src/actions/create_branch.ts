@@ -19,7 +19,7 @@ export async function createBranchAction(
   const branchName = newBranchName(opts.branchName, opts.message, context);
   if (!branchName) {
     throw new ExitFailedError(
-      `Must specify either a branch name or commit message`
+      `Must specify either a branch name or commit message.`
     );
   }
 
@@ -29,7 +29,7 @@ export async function createBranchAction(
     addAll();
   }
 
-  if (opts.all || opts.patch || detectStagedChanges()) {
+  if (detectStagedChanges()) {
     context.metaCache.commit({
       message: opts.message,
       patch: !opts.all && opts.patch,
