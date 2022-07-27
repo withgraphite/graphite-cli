@@ -230,7 +230,7 @@ async function getPRCreationInfo(
 
   const createAsDraft = args.publish
     ? false
-    : args.draft || !args.editPRFieldsInline
+    : args.draft || !context.interactive
     ? true
     : await getPRDraftStatus(context);
 
