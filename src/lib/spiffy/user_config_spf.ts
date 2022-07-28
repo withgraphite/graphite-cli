@@ -1,7 +1,7 @@
 import * as t from '@withgraphite/retype';
 import { execSync } from 'child_process';
 import { CommandFailedError } from '../errors';
-import { getGitEditor } from '../git/git_editor';
+import { getGitEditor, getGitPager } from '../git/git_editor';
 import { spiffy } from './spiffy';
 
 const schema = t.shape({
@@ -13,6 +13,7 @@ const schema = t.shape({
   authToken: t.optional(t.string),
   tips: t.optional(t.boolean),
   editor: t.optional(t.string),
+  pager: t.optional(t.string),
   restackCommitterDateIsAuthorDate: t.optional(t.boolean),
   submitIncludeCommitMessages: t.optional(t.boolean),
 });
@@ -39,8 +40,16 @@ export const userConfigFactory = spiffy({
         'vi'
       );
     };
+
+    const getPager = () => {
+      // If we don't have a pager set, do what git would do
+      const pager = data.pager ?? getGitPager() ?? process.env.PAGER ?? 'less';
+      return pager === '' ? undefined : pager;
+    };
+
     return {
       getEditor,
+      getPager,
       execEditor: (editFilePath: string) => {
         const command = `${getEditor()} ${editFilePath}`;
         try {

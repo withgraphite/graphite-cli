@@ -25,7 +25,7 @@ export function logAction(
   },
   context: TContext
 ): void {
-  const output = getStackLines(
+  const logOutput = getStackLines(
     {
       short: opts.style === 'SHORT',
       reverse: opts.reverse,
@@ -46,7 +46,7 @@ export function logAction(
     )
     .join('\n');
 
-  context.splog.info(output);
+  context.splog.page(logOutput);
 
   if (
     opts.style === 'SHORT' &&
