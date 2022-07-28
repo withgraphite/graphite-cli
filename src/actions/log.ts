@@ -25,7 +25,7 @@ export function logAction(
   },
   context: TContext
 ): void {
-  getStackLines(
+  const output = getStackLines(
     {
       short: opts.style === 'SHORT',
       reverse: opts.reverse,
@@ -34,15 +34,19 @@ export function logAction(
       steps: opts.steps,
     },
     context
-  ).forEach((line) => context.splog.info(line));
+  )
+    .concat(
+      opts.showUntracked
+        ? [
+            '',
+            chalk.yellowBright(`Untracked branches:`),
+            ...getUntrackedBranchNames(context),
+          ]
+        : []
+    )
+    .join('\n');
 
-  if (opts.showUntracked) {
-    context.splog.newline();
-    context.splog.info(chalk.yellowBright(`Untracked branches:`));
-    getUntrackedBranchNames(context).map((branchName) =>
-      context.splog.info(branchName)
-    );
-  }
+  context.splog.info(output);
 
   if (
     opts.style === 'SHORT' &&
