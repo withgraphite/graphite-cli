@@ -43,8 +43,8 @@ export function getUnstagedChanges(): string {
   });
 }
 
-export function showDiff(left: string, right: string): void {
-  runGitCommand({
+export function showDiff(left: string, right: string): string {
+  return runGitCommand({
     args: [
       `-c`,
       `color.ui=always`,
@@ -55,7 +55,6 @@ export function showDiff(left: string, right: string): void {
       right,
       `--`,
     ],
-    options: { stdio: 'inherit' },
     onError: 'throw',
     resource: 'showDiff',
   });

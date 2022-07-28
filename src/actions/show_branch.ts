@@ -9,44 +9,49 @@ export async function showBranchAction(
   opts: { patch: boolean; diff: boolean; body: boolean },
   context: TContext
 ): Promise<void> {
-  context.splog.info(getBranchInfo({ branchName }, context).join('\n'));
+  const output = getBranchInfo({ branchName }, context);
 
   const parentBranchName = context.metaCache.getParent(branchName);
   if (parentBranchName) {
-    context.splog.info(`${chalk.cyan('Parent')}: ${parentBranchName}`);
+    output.push(`${chalk.cyan('Parent')}: ${parentBranchName}`);
   }
 
   const children = context.metaCache.getChildren(branchName);
   if (children.length) {
-    context.splog.info(
-      `${chalk.cyan('Children')}:\n${children.map((c) => `▸ ${c}`).join('\n')}`
-    );
+    output.push(`${chalk.cyan('Children')}:`);
+    output.concat(children.map((c) => `▸ ${c}`));
   }
 
   const body = opts.body && context.metaCache.getPrInfo(branchName)?.body;
   if (body) {
-    context.splog.newline();
-    context.splog.info(body);
+    output.push('');
+    output.push(body);
   }
 
-  context.splog.newline();
-  showCommits(
-    context.metaCache.isTrunk(branchName)
-      ? `${branchName}~`
-      : context.metaCache.getBaseRevision(branchName),
-    branchName,
-    opts.patch && !opts.diff
-  );
-
-  if (opts.diff) {
-    context.splog.newline();
-    showDiff(
+  output.push('');
+  output.push(
+    showCommits(
       context.metaCache.isTrunk(branchName)
         ? `${branchName}~`
         : context.metaCache.getBaseRevision(branchName),
-      branchName
+      branchName,
+      opts.patch && !opts.diff
+    )
+  );
+
+  if (opts.diff) {
+    output.push('');
+    output.push(
+      showDiff(
+        context.metaCache.isTrunk(branchName)
+          ? `${branchName}~`
+          : context.metaCache.getBaseRevision(branchName),
+        branchName
+      )
     );
   }
+
+  context.splog.page(output.join('\n'));
 }
 
 export function getBranchInfo(
