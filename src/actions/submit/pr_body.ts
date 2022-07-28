@@ -76,12 +76,24 @@ export async function getPRBody(
 }
 
 async function editPRBody(initial: string, context: TContext): Promise<string> {
-  const file = tmp.fileSync({ name: 'EDIT_DESCRIPTION' });
+  // We give the file the name EDIT_DESCRIPTION so certain editors treat it like a commit message
+  // Because of this, we need to create a new directory for each PR body so as to avoid collision
+  const dir = tmp.dirSync();
+  const file = tmp.fileSync({
+    dir: dir.name,
+    name: 'EDIT_DESCRIPTION',
+  });
   fs.writeFileSync(file.name, initial);
-  context.userConfig.execEditor(file.name);
-  const contents = fs.readFileSync(file.name).toString();
-  file.removeCallback();
-  return contents;
+
+  try {
+    context.userConfig.execEditor(file.name);
+    const contents = fs.readFileSync(file.name).toString();
+    return contents;
+  } finally {
+    // Remove the file and directory even if the user kills the submit
+    file.removeCallback();
+    dir.removeCallback();
+  }
 }
 
 export function inferPRBody(
