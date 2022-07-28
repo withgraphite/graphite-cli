@@ -7,19 +7,19 @@ const args = {
     demandOption: false,
     default: '',
     type: 'string',
-    describe: 'Set default editor for Graphite. eg --set vim',
+    describe: 'Set default editor for Graphite. eg --set vim.',
   },
   unset: {
     demandOption: false,
     default: false,
     type: 'boolean',
-    describe: 'Unset default editor for Graphite. eg --unset',
+    describe: 'Unset default editor for Graphite.',
   },
 } as const;
 
 type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
 export const command = 'editor';
-export const description = 'The editor opened by Graphite';
+export const description = 'The editor opened by Graphite.';
 export const canonical = 'user editor';
 export const builder = args;
 export const handler = async (argv: argsT): Promise<void> => {

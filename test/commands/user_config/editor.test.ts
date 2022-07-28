@@ -22,7 +22,7 @@ for (const scene of [new BasicScene()]) {
     });
 
     it('Sanity check - can unset editor', () => {
-      process.env.GIT_EDITOR = 'vi';
+      process.env.TEST_GIT_EDITOR = 'vi';
       expect(
         scene.repo.runCliCommandAndGetOutput([`user`, `editor`, `--unset`])
       ).to.equal(
