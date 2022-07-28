@@ -11,6 +11,7 @@ export function detectUnsubmittedChanges(
         `log`,
         `--oneline`,
         `${branchName}...${remote}/${branchName}`,
+        `--`,
       ],
       onError: 'throw',
       resource: 'detectUnsubmittedChanges',
