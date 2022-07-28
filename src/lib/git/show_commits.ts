@@ -7,6 +7,8 @@ export function showCommits(
 ): string {
   return runGitCommand({
     args: [
+      `-c`,
+      `color.ui=always`,
       `--no-pager`,
       `log`,
       ...(patch ? ['-p'] : []),
