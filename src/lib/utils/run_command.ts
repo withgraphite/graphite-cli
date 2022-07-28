@@ -40,6 +40,8 @@ export function runCommand(params: TRunCommandParameters): string {
   const spawnSyncOutput = spawnSync(params.command, params.args, {
     ...params.options,
     encoding: 'utf-8',
+    // 1MB should be enough to never have to worry about this
+    maxBuffer: 1024 * 1024 * 1024,
   });
 
   // this is a syscall failure, not a command failure
