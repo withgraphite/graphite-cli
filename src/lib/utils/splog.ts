@@ -1,5 +1,9 @@
 /* eslint-disable no-console */
 import chalk from 'chalk';
+import { execSync } from 'child_process';
+import tmp from 'tmp';
+import fs from 'fs-extra';
+import { CommandFailedError } from '../errors';
 
 export type TSplog = {
   newline: () => void;
@@ -9,6 +13,7 @@ export type TSplog = {
   warn: (msg: string) => void;
   message: (msg: string) => void;
   tip: (msg: string) => void;
+  page: (msg: string) => void;
 };
 
 export function composeSplog(
@@ -16,6 +21,7 @@ export function composeSplog(
     quiet?: boolean;
     outputDebugLogs?: boolean;
     tips?: boolean;
+    pager?: string;
   } = {}
 ): TSplog {
   return {
@@ -43,5 +49,21 @@ export function composeSplog(
             )
           )
         : () => void 0,
+    page: opts.pager
+      ? (s: string) => {
+          const tmpFile = tmp.fileSync();
+          fs.writeFileSync(tmpFile.fd, s);
+          const command = `${opts.pager} ${tmpFile.name}`;
+          try {
+            execSync(command, { stdio: 'inherit', encoding: 'utf-8' });
+          } catch (e) {
+            throw new CommandFailedError({
+              command,
+              args: [tmpFile.name],
+              ...e,
+            });
+          }
+        }
+      : (s: string) => console.log(s),
   };
 }

@@ -46,6 +46,7 @@ export function initContextLite(opts?: {
     quiet: opts?.quiet,
     outputDebugLogs: opts?.debug,
     tips: userConfig.data.tips,
+    pager: userConfig.getPager(),
   });
 
   return {
