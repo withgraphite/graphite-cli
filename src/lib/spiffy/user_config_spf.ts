@@ -31,9 +31,11 @@ export const userConfigFactory = spiffy({
   },
   helperFunctions: (data) => {
     const getEditor = () => {
-      // If we don't have an editor set, do what git would do
       return (
+        process.env.GT_EDITOR ?? // single command override
         data.editor ??
+        process.env.TEST_GT_EDITOR ?? // for tests
+        // If we don't have an editor set, do what git would do
         getGitEditor() ??
         process.env.GIT_EDITOR ??
         process.env.EDITOR ??
@@ -43,7 +45,15 @@ export const userConfigFactory = spiffy({
 
     const getPager = () => {
       // If we don't have a pager set, do what git would do
-      const pager = data.pager ?? getGitPager() ?? process.env.PAGER ?? 'less';
+      const pager =
+        process.env.GT_PAGER ?? // single command override
+        data.pager ??
+        process.env.TEST_GT_PAGER ?? // for tests
+        // If we don't have a pager set, do what git would do
+        getGitPager() ??
+        process.env.GIT_PAGER ??
+        process.env.PAGER ??
+        'less';
       return pager === '' ? undefined : pager;
     };
 
