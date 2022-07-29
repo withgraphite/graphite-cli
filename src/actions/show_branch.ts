@@ -4,7 +4,7 @@ import { TBranchPRInfo } from '../lib/engine/metadata_ref';
 import { showDiff } from '../lib/git/diff';
 import { showCommits } from '../lib/git/show_commits';
 
-export async function showBranchAction(
+export async function showBranchInfo(
   branchName: string,
   opts: { patch: boolean; diff: boolean; body: boolean },
   context: TContext
